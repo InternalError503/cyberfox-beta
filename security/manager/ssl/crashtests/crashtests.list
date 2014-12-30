@@ -1,0 +1,1 @@
+asserts-if(browserIsRemote,1) load 398665-1.html # bug 582297
