@@ -589,9 +589,6 @@ Section "-Application" APP_IDX
     ${EndUnless}
   ${EndIf}
 
-  ; Add the Firewall entries during install
-  Call AddFirewallEntries
-
 !ifdef MOZ_MAINTENANCE_SERVICE
   ${If} $TmpVal == "HKLM"
     ; Add the registry keys for allowed certificates.

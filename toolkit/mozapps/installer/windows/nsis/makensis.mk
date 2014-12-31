@@ -30,7 +30,6 @@ CUSTOM_NSIS_PLUGINS = \
 	CityHash.dll \
 	InetBgDL.dll \
 	InvokeShellVerb.dll \
-	liteFirewallW.dll \
 	ServicesHelper.dll \
 	ShellLink.dll \
 	UAC.dll \
