@@ -29,6 +29,8 @@ var gAdvancedPane = {
 		document.getElementById("updateOptions").hidden = true;
 		document.getElementById("app.update.autocheck").hidden = true;
 		document.getElementById("app.update.check.enabled").hidden = true;
+		Services.prefs.setBoolPref("app.update.autocheck", false);
+		Services.prefs.setBoolPref("app.update.check.enabled", false);		
 	}	
 	
     var preference = document.getElementById("browser.preferences.advanced.selectedTabIndex");
