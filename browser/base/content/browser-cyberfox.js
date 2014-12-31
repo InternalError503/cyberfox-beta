@@ -31,34 +31,20 @@ try{
         
 },
 
-	//Clones current tab into new tab
-	CloneCurrentTab : function(e) {
+	//Clones current tab into new tab or window.
+	CloneCurrent : function(type) {
 	
-try{
+	try{
 
-	if (gURLBar.value){
-			gBrowser.selectedTab = openUILinkIn(gURLBar.value, 'tab');		
-		}else{}
-		}catch (e){
+			if (gURLBar.value){
+					gBrowser.selectedTab = openUILinkIn(gURLBar.value, type);		
+			}
+			
+		}catch (type){
 			//Catch any nasty errors and output to console
-			console.log("Were sorry but something has gone wrong with 'CloneCurrentTab' " + e);
+			console.log("Were sorry but something has gone wrong with 'CloneCurrent' " + type +" " + e);
 
-	}
-},
-
-
-	//Clones current tab in new window	
-	CloneCurrentTabNewWindow : function(e) {
-	
-try{
-
-	if (gURLBar.value){	
-			gBrowser.selectedTab = openUILinkIn(gURLBar.value, 'window');
-		}else{}
-		}catch (e){
-			//Catch any nasty errors and output to console
-			console.log("Were sorry but something has gone wrong with 'CloneCurrentTabNewWindow' " + e);
-	}		
+		}
 },
 
 	//Copies current tab url to clipboard	
