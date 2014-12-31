@@ -148,6 +148,8 @@
 }
 %endif
 
+%include cyberfoxgonfig.inc
+
 /**
  * In the classic themes, the titlebar has a horizontal gradient, which is
  * problematic for reading the text of background tabs when they're in the

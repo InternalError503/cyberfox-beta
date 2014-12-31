@@ -24,8 +24,8 @@
 #include <io.h>
 #include <shellapi.h>
 
-static const WCHAR* kFirefoxExe = L"firefox.exe";
-static const WCHAR* kDefaultMetroBrowserIDPathKey = L"FirefoxURL";
+static const WCHAR* kFirefoxExe = L"Cyberfox.exe";
+static const WCHAR* kDefaultMetroBrowserIDPathKey = L"CyberfoxURL";
 
 // Logging pipe handle
 HANDLE gTestOutputPipe = INVALID_HANDLE_VALUE;
@@ -36,7 +36,7 @@ char buffer[PIPE_BUFFER_SIZE + 1];
 CString sAppParams;
 CString sFirefoxPath;
 
-// The tests file we write out for firefox.exe which contains test
+// The tests file we write out for Cyberfox.exe which contains test
 // startup command line paramters.
 #define kMetroTestFile "tests.ini"
 
@@ -108,7 +108,7 @@ static bool GetModulePath(CStringW& aPathBuffer)
 }
 
 /*
- * Retrieve 'module dir path\firefox.exe'
+ * Retrieve 'module dir path\Cyberfox.exe'
  *
  * @aPathBuffer Buffer to fill
  */
@@ -118,7 +118,7 @@ static bool GetDesktopBrowserPath(CStringW& aPathBuffer)
     return false;
 
   // ceh.exe sits in dist/bin root with the desktop browser. Since this
-  // is a firefox only component, this hardcoded filename is ok.
+  // is a Cyberfox only component, this hardcoded filename is ok.
   aPathBuffer.Append(L"\\");
   aPathBuffer.Append(kFirefoxExe);
   return true;
@@ -243,7 +243,7 @@ static int Launch()
   // If provided, validate the firefox path passed in.
   int binLen = wcslen(kFirefoxExe);
   if (sFirefoxPath.GetLength() && sFirefoxPath.Right(binLen) != kFirefoxExe) {
-    Log(L"firefoxpath is missing a valid bin name! Assuming '%s'.", kFirefoxExe);
+    Log(L"cyberfoxpath is missing a valid bin name! Assuming '%s'.", kFirefoxExe);
     if (sFirefoxPath.Right(1) != L"\\") {
       sFirefoxPath += L"\\";
     }
@@ -257,7 +257,7 @@ static int Launch()
     // Use the firefoxpath passed to us by the test harness
     int index = sFirefoxPath.ReverseFind('\\');
     if (index == -1) {
-      Fail(false, L"Bad firefoxpath path");
+      Fail(false, L"Bad cyberfoxpath path");
       return FAILURE;
     }
     testFilePath = sFirefoxPath.Mid(0, index);
@@ -379,7 +379,7 @@ int wmain(int argc, WCHAR* argv[])
 
     // Pickup the firefox path param and store it, we'll need this
     // when we create the tests.ini file.
-    if (param == "-firefoxpath") {
+    if (param == "-cyberfoxpath") {
       firefoxParam = true;
       continue;
     } else if (firefoxParam) {

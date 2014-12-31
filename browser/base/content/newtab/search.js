@@ -16,6 +16,7 @@ let gSearch = {
   },
 
   init: function () {
+  if(isSearchEnabled){
     for (let idSuffix of this._nodeIDSuffixes) {
       this._nodes[idSuffix] =
         document.getElementById("newtab-search-" + idSuffix);
@@ -26,10 +27,26 @@ let gSearch = {
     }
 
     window.addEventListener("ContentSearchService", this);
+ }else{
+ 
+ try{
+	  let rmvEle = document.getElementById("newtab-search-form");
+	  let rmvXulEle = document.getElementById("newtab-search-panel");
+			if (rmvEle === null){return;}
+				rmvEle.parentNode.removeChild(rmvEle);
+			rmvXulEle.parentNode.removeChild(rmvXulEle);
+		}catch (e){
+		//Catch any nasty errors and output to dialogue and console
+		alert("Were sorry but something has gone wrong with 'browser.newtab.search.enabled' " + e);
+		console.log("Were sorry but something has gone wrong with 'browser.newtab.search.enabled' " + e);    	
+		}
+	}
+  
     this._send("GetState");
   },
 
   showPanel: function () {
+  if(isSearchEnabled){ 
     let panel = this._nodes.panel;
     let logo = this._nodes.logo;
     panel.openPopup(logo);
@@ -37,7 +54,8 @@ let gSearch = {
     panel.addEventListener("popuphidden", function onHidden() {
       panel.removeEventListener("popuphidden", onHidden);
       logo.removeAttribute("active");
-    });
+     });
+    }
   },
 
   search: function (event) {
@@ -81,7 +99,9 @@ let gSearch = {
   onState: function (data) {
     this._newEngines = data.engines;
     this._setCurrentEngine(data.currentEngine);
+if(isSearchEnabled){	
     this._initWhenInitalStateReceived();
+}
   },
 
   onCurrentState: function (data) {
@@ -116,7 +136,9 @@ let gSearch = {
     this._nodes.form.addEventListener("submit", e => this.search(e));
     this._nodes.logo.addEventListener("click", e => this.showPanel());
     this._nodes.manage.addEventListener("click", e => this.manageEngines());
+ if(isSearchEnabled){ 
     this._nodes.panel.addEventListener("popupshowing", e => this._setUpPanel());
+ }
     this._initialStateReceived = true;
     this._initWhenInitalStateReceived = function () {};
   },
@@ -212,6 +234,8 @@ let gSearch = {
   _setCurrentEngine: function (engine) {
     this.currentEngineName = engine.name;
 
+if(isSearchEnabled){	
+
     if (!this.useNewUI) {
       let type = "";
       let uri;
@@ -246,5 +270,6 @@ let gSearch = {
                                          () => this.search());
     }
     this._suggestionController.engineName = engine.name;
+    }
   },
 };

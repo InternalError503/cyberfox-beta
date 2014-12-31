@@ -76,10 +76,12 @@ loop.shared.actions = (function() {
     }),
 
     /**
-     * Fetch a new call url from the server, intended to be sent over email when
+     * Fetch a new room url from the server, intended to be sent over email when
      * a contact can't be reached.
      */
-    FetchEmailLink: Action.define("fetchEmailLink", {
+    FetchRoomEmailLink: Action.define("fetchRoomEmailLink", {
+      roomOwner: String,
+      roomName: String
     }),
 
     /**
@@ -163,6 +165,12 @@ loop.shared.actions = (function() {
     }),
 
     /**
+     * Used for notifying that local media has been obtained.
+     */
+    GotMediaPermission: Action.define("gotMediaPermission", {
+    }),
+
+    /**
      * Used for notifying that the media is now up for the call.
      */
     MediaConnected: Action.define("mediaConnected", {
@@ -190,11 +198,22 @@ loop.shared.actions = (function() {
     }),
 
     /**
+     * When a room has been created.
+     * XXX: should move to some roomActions module - refs bug 1079284
+     */
+    CreatedRoom: Action.define("createdRoom", {
+      roomToken: String
+    }),
+
+    /**
      * Rooms creation error.
      * XXX: should move to some roomActions module - refs bug 1079284
      */
     CreateRoomError: Action.define("createRoomError", {
-      error: Error
+      // There's two types of error possible - one thrown by our code (and Error)
+      // and the other is an Object about the error codes from the server as
+      // returned by the Hawk request.
+      error: Object
     }),
 
     /**
@@ -210,7 +229,10 @@ loop.shared.actions = (function() {
      * XXX: should move to some roomActions module - refs bug 1079284
      */
     DeleteRoomError: Action.define("deleteRoomError", {
-      error: Error
+      // There's two types of error possible - one thrown by our code (and Error)
+      // and the other is an Object about the error codes from the server as
+      // returned by the Hawk request.
+      error: Object
     }),
 
     /**
@@ -322,6 +344,13 @@ loop.shared.actions = (function() {
       sessionToken: String,
       sessionId: String,
       expires: Number
+    }),
+
+    /**
+     * Used to indicate that the feedback cycle is completed and the countdown
+     * finished.
+     */
+    FeedbackComplete: Action.define("feedbackComplete", {
     }),
 
     /**

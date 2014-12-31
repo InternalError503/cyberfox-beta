@@ -146,9 +146,9 @@ describe("loop.roomViews", function () {
             }));
         });
 
-      it("should dispatch a RenameRoom action when enter is pressed",
+      it("should dispatch a RenameRoom action when Enter key is pressed",
         function() {
-          React.addons.TestUtils.Simulate.submit(roomNameBox);
+          TestUtils.Simulate.keyDown(roomNameBox, {key: "Enter", which: 13});
 
           sinon.assert.calledOnce(dispatcher.dispatch);
           sinon.assert.calledWithExactly(dispatcher.dispatch,
@@ -206,15 +206,6 @@ describe("loop.roomViews", function () {
         }));
     }
 
-    it("should dispatch a setupStreamElements action when the view is created",
-      function() {
-        view = mountTestComponent();
-
-        sinon.assert.calledOnce(dispatcher.dispatch);
-        sinon.assert.calledWithMatch(dispatcher.dispatch,
-          sinon.match.hasOwn("name", "setupStreamElements"));
-    });
-
     it("should dispatch a setMute action when the audio mute button is pressed",
       function() {
         view = mountTestComponent();
@@ -269,6 +260,44 @@ describe("loop.roomViews", function () {
       var muteBtn = view.getDOMNode().querySelector('.btn-mute-audio');
 
       expect(muteBtn.classList.contains("muted")).eql(true);
+    });
+
+    describe("#componentWillUpdate", function() {
+      function expectActionDispatched(view) {
+        sinon.assert.calledOnce(dispatcher.dispatch);
+        sinon.assert.calledWithExactly(dispatcher.dispatch,
+          sinon.match.instanceOf(sharedActions.SetupStreamElements));
+        sinon.assert.calledWithExactly(dispatcher.dispatch,
+          sinon.match(function(value) {
+            return value.getLocalElementFunc() ===
+                   view.getDOMNode().querySelector(".local");
+          }));
+        sinon.assert.calledWithExactly(dispatcher.dispatch,
+          sinon.match(function(value) {
+            return value.getRemoteElementFunc() ===
+                   view.getDOMNode().querySelector(".remote");
+          }));
+      }
+
+      it("should dispatch a `SetupStreamElements` action when the MEDIA_WAIT state " +
+        "is entered", function() {
+          activeRoomStore.setStoreState({roomState: ROOM_STATES.READY});
+          var view = mountTestComponent();
+
+          activeRoomStore.setStoreState({roomState: ROOM_STATES.MEDIA_WAIT});
+
+          expectActionDispatched(view);
+        });
+
+      it("should dispatch a `SetupStreamElements` action on MEDIA_WAIT state is " +
+        "re-entered", function() {
+          activeRoomStore.setStoreState({roomState: ROOM_STATES.ENDED});
+          var view = mountTestComponent();
+
+          activeRoomStore.setStoreState({roomState: ROOM_STATES.MEDIA_WAIT});
+
+          expectActionDispatched(view);
+        });
     });
 
     describe("#render", function() {
@@ -328,6 +357,21 @@ describe("loop.roomViews", function () {
 
           TestUtils.findRenderedComponentWithType(view,
             loop.shared.views.FeedbackView);
+        });
+    });
+
+    describe("Mute", function() {
+      it("should render local media as audio-only if video is muted",
+        function() {
+          activeRoomStore.setStoreState({
+            roomState: ROOM_STATES.SESSION_CONNECTED,
+            videoMuted: true
+          });
+
+          view = mountTestComponent();
+
+          expect(view.getDOMNode().querySelector(".local-stream-audio"))
+            .not.eql(null);
         });
     });
   });

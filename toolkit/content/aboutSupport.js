@@ -34,7 +34,7 @@ let snapshotFormatters = {
   application: function application(data) {
     $("application-box").textContent = data.name;
     $("useragent-box").textContent = data.userAgent;
-    $("supportLink").href = data.supportURL;
+    $("supportLink").href = data.supportURL + "/index.php";
     let version = data.version;
     if (data.vendor)
       version += " (" + data.vendor + ")";
@@ -623,8 +623,11 @@ function populateResetBox() {
  */
 function setupEventListeners(){
   $("show-update-history-button").addEventListener("click", function (event) {
-    var prompter = Cc["@mozilla.org/updates/update-prompt;1"].createInstance(Ci.nsIUpdatePrompt);
-      prompter.showUpdateHistory(window);
+  //Set Update History Link.
+       var historylink = document.getElementById("support-update-history");
+	     var url = Services.urlFormatter.formatURLPref("app.support.baseURL");
+			  url += "/viewtopic.php?f=6&t=322#support-update-history";		 
+				historylink.setAttribute("href", url);
   });
   $("reset-box-button").addEventListener("click", function (event){
     ResetProfile.openConfirmationDialog(window);

@@ -86,6 +86,7 @@ browser.jar:
         skin/classic/browser/search-indicator.png                    (../shared/search/search-indicator.png)
         skin/classic/browser/search-indicator-add-engine.png         (../shared/search/search-indicator-add-engine.png)
         skin/classic/browser/search-engine-placeholder.png           (../shared/search/search-engine-placeholder.png)
+        skin/classic/browser/search-history-icon.svg                 (../shared/search/history-icon.svg)
         skin/classic/browser/badge-add-engine.png                    (../shared/search/badge-add-engine.png)
         skin/classic/browser/Secure24.png
         skin/classic/browser/setDesktopBackground.css
@@ -118,9 +119,9 @@ browser.jar:
         skin/classic/browser/webRTC-microphone-white-16.png          (../shared/webrtc/microphone-white-16.png)
         skin/classic/browser/webRTC-screen-white-16.png              (../shared/webrtc/screen-white-16.png)
         skin/classic/browser/loop/menuPanel.png                      (loop/menuPanel.png)
-        skin/classic/browser/loop/toolbar.png                        (loop/toolbar-XPVista7.png)
-        skin/classic/browser/loop/toolbar-lunaSilver.png             (loop/toolbar-lunaSilver.png)
+        skin/classic/browser/loop/toolbar.png                        (loop/toolbar-XP.png)
         skin/classic/browser/loop/toolbar-inverted.png               (loop/toolbar-inverted.png)
+        skin/classic/browser/loop/toolbar-lunaSilver.png             (loop/toolbar-lunaSilver.png)
         skin/classic/browser/customizableui/background-noise-toolbar.png  (customizableui/background-noise-toolbar.png)
         skin/classic/browser/customizableui/customizeFavicon.ico  (../shared/customizableui/customizeFavicon.ico)
         skin/classic/browser/customizableui/customize-illustration.png  (../shared/customizableui/customize-illustration.png)
@@ -135,10 +136,10 @@ browser.jar:
 *       skin/classic/browser/customizableui/panelUIOverlay.css       (customizableui/panelUIOverlay.css)
         skin/classic/browser/customizableui/subView-arrow-back-inverted.png  (../shared/customizableui/subView-arrow-back-inverted.png)
         skin/classic/browser/customizableui/subView-arrow-back-inverted-rtl.png  (../shared/customizableui/subView-arrow-back-inverted-rtl.png)
-        skin/classic/browser/customizableui/whimsy.png  (../shared/customizableui/whimsy.png)
-        skin/classic/browser/customizableui/whimsy@2x.png  (../shared/customizableui/whimsy@2x.png)
-        skin/classic/browser/customizableui/whimsy-bw.png  (../shared/customizableui/whimsy-bw.png)
-        skin/classic/browser/customizableui/whimsy-bw@2x.png  (../shared/customizableui/whimsy-bw@2x.png)
+        skin/classic/browser/customizableui/8pecx.png  (../shared/customizableui/8pecx.png)
+        skin/classic/browser/customizableui/8pecx@2x.png  (../shared/customizableui/8pecx@2x.png)
+        skin/classic/browser/customizableui/8pecx-bw.png  (../shared/customizableui/8pecx-bw.png)
+        skin/classic/browser/customizableui/8pecx-bw@2x.png  (../shared/customizableui/8pecx-bw@2x.png)
 *       skin/classic/browser/downloads/allDownloadsViewOverlay.css   (downloads/allDownloadsViewOverlay.css)
         skin/classic/browser/downloads/buttons.png                   (downloads/buttons.png)
         skin/classic/browser/downloads/contentAreaDownloadsView.css  (downloads/contentAreaDownloadsView.css)
@@ -194,8 +195,14 @@ browser.jar:
         skin/classic/browser/preferences/in-content/favicon.ico      (../shared/incontentprefs/favicon.ico)
         skin/classic/browser/preferences/in-content/icons.png        (../shared/incontentprefs/icons.png)
         skin/classic/browser/preferences/in-content/icons@2x.png     (../shared/incontentprefs/icons@2x.png)
+        skin/classic/browser/preferences/in-content/search.css       (../shared/incontentprefs/search.css)
+        skin/classic/browser/preferences/in-content/check.png        (../shared/incontentprefs/check.png)
+        skin/classic/browser/preferences/in-content/check@2x.png     (../shared/incontentprefs/check@2x.png)
         skin/classic/browser/preferences/applications.css            (preferences/applications.css)
         skin/classic/browser/preferences/aboutPermissions.css        (preferences/aboutPermissions.css)
+        skin/classic/browser/preferences/search.css                  (preferences/search.css)
+        skin/classic/browser/preferences/checkbox.png                (preferences/checkbox-xp.png)
+        skin/classic/browser/preferences/checkbox-classic.png        (preferences/checkbox-classic.png)
         skin/classic/browser/social/services-16.png                  (social/services-16.png)
         skin/classic/browser/social/services-64.png                  (social/services-64.png)
         skin/classic/browser/social/chat-icons.svg                   (../shared/social/chat-icons.svg)
@@ -524,6 +531,7 @@ browser.jar:
         skin/classic/aero/browser/search-indicator.png               (../shared/search/search-indicator.png)
         skin/classic/aero/browser/search-indicator-add-engine.png    (../shared/search/search-indicator-add-engine.png)
         skin/classic/aero/browser/search-engine-placeholder.png      (../shared/search/search-engine-placeholder.png)
+        skin/classic/aero/browser/search-history-icon.svg            (../shared/search/history-icon.svg)
         skin/classic/aero/browser/badge-add-engine.png               (../shared/search/badge-add-engine.png)
         skin/classic/aero/browser/Secure24.png                       (Secure24-aero.png)
         skin/classic/aero/browser/setDesktopBackground.css
@@ -556,9 +564,10 @@ browser.jar:
         skin/classic/aero/browser/webRTC-camera-white-16.png              (../shared/webrtc/camera-white-16.png)
         skin/classic/aero/browser/webRTC-microphone-white-16.png          (../shared/webrtc/microphone-white-16.png)
         skin/classic/aero/browser/webRTC-screen-white-16.png              (../shared/webrtc/screen-white-16.png)
-        skin/classic/aero/browser/loop/menuPanel.png                      (loop/menuPanel-aero.png)
+        skin/classic/aero/browser/loop/menuPanel.png                      (loop/menuPanel.png)
+        skin/classic/aero/browser/loop/menuPanel-aero.png                 (loop/menuPanel-aero.png)
         skin/classic/aero/browser/loop/toolbar.png                        (loop/toolbar.png)
-        skin/classic/aero/browser/loop/toolbar-XPVista7.png               (loop/toolbar-XPVista7.png)
+        skin/classic/aero/browser/loop/toolbar-aero.png                   (loop/toolbar-aero.png)
         skin/classic/aero/browser/loop/toolbar-inverted.png               (loop/toolbar-inverted.png)
         skin/classic/aero/browser/customizableui/background-noise-toolbar.png  (customizableui/background-noise-toolbar.png)
         skin/classic/aero/browser/customizableui/customize-illustration.png  (../shared/customizableui/customize-illustration.png)
@@ -574,10 +583,10 @@ browser.jar:
 *       skin/classic/aero/browser/customizableui/panelUIOverlay.css  (customizableui/panelUIOverlay-aero.css)
         skin/classic/aero/browser/customizableui/subView-arrow-back-inverted.png  (../shared/customizableui/subView-arrow-back-inverted.png)
         skin/classic/aero/browser/customizableui/subView-arrow-back-inverted-rtl.png  (../shared/customizableui/subView-arrow-back-inverted-rtl.png)
-        skin/classic/aero/browser/customizableui/whimsy.png  (../shared/customizableui/whimsy.png)
-        skin/classic/aero/browser/customizableui/whimsy@2x.png  (../shared/customizableui/whimsy@2x.png)
-        skin/classic/aero/browser/customizableui/whimsy-bw.png  (../shared/customizableui/whimsy-bw.png)
-        skin/classic/aero/browser/customizableui/whimsy-bw@2x.png  (../shared/customizableui/whimsy-bw@2x.png)
+        skin/classic/aero/browser/customizableui/8pecx.png  (../shared/customizableui/8pecx.png)
+        skin/classic/aero/browser/customizableui/8pecx@2x.png  (../shared/customizableui/8pecx@2x.png)
+        skin/classic/aero/browser/customizableui/8pecx-bw.png  (../shared/customizableui/8pecx-bw.png)
+        skin/classic/aero/browser/customizableui/8pecx-bw@2x.png  (../shared/customizableui/8pecx-bw@2x.png)
 *       skin/classic/aero/browser/downloads/allDownloadsViewOverlay.css (downloads/allDownloadsViewOverlay-aero.css)
         skin/classic/aero/browser/downloads/buttons.png              (downloads/buttons-aero.png)
         skin/classic/aero/browser/downloads/contentAreaDownloadsView.css (downloads/contentAreaDownloadsView.css)
@@ -634,8 +643,15 @@ browser.jar:
         skin/classic/aero/browser/preferences/in-content/favicon.ico      (../shared/incontentprefs/favicon.ico)
         skin/classic/aero/browser/preferences/in-content/icons.png       (../shared/incontentprefs/icons.png)
         skin/classic/aero/browser/preferences/in-content/icons@2x.png    (../shared/incontentprefs/icons@2x.png)
+        skin/classic/aero/browser/preferences/in-content/search.css      (../shared/incontentprefs/search.css)
+        skin/classic/aero/browser/preferences/in-content/check.png       (../shared/incontentprefs/check.png)
+        skin/classic/aero/browser/preferences/in-content/check@2x.png    (../shared/incontentprefs/check@2x.png)
         skin/classic/aero/browser/preferences/applications.css       (preferences/applications.css)
         skin/classic/aero/browser/preferences/aboutPermissions.css   (preferences/aboutPermissions.css)
+        skin/classic/aero/browser/preferences/search.css             (preferences/search.css)
+        skin/classic/aero/browser/preferences/checkbox.png           (preferences/checkbox-8.png)
+        skin/classic/aero/browser/preferences/checkbox-aero.png      (preferences/checkbox-aero.png)
+        skin/classic/aero/browser/preferences/checkbox-classic.png   (preferences/checkbox-classic.png)
         skin/classic/aero/browser/social/services-16.png             (social/services-16.png)
         skin/classic/aero/browser/social/services-64.png             (social/services-64.png)
         skin/classic/aero/browser/social/chat-icons.svg              (../shared/social/chat-icons.svg)
@@ -887,11 +903,30 @@ browser.jar:
 % override chrome://browser/skin/menuPanel-small.png       chrome://browser/skin/menuPanel-small-aero.png          os=WINNT osversion=6
 % override chrome://browser/skin/menuPanel-small.png       chrome://browser/skin/menuPanel-small-aero.png          os=WINNT osversion=6.1
 
+% override chrome://browser/skin/preferences/checkbox.png  chrome://browser/skin/preferences/checkbox-aero.png     os=WINNT osversion=6
+% override chrome://browser/skin/preferences/checkbox.png  chrome://browser/skin/preferences/checkbox-aero.png     os=WINNT osversion=6.1
+
 % override chrome://browser/skin/theme-switcher-icon.png   chrome://browser/skin/theme-switcher-icon-aero.png      os=WINNT osversion=6
 % override chrome://browser/skin/theme-switcher-icon.png   chrome://browser/skin/theme-switcher-icon-aero.png      os=WINNT osversion=6.1
 
 % override chrome://browser/skin/sync-horizontalbar.png          chrome://browser/skin/sync-horizontalbar-XPVista7.png          os=WINNT osversion<6.2
 % override chrome://browser/skin/syncProgress-horizontalbar.png  chrome://browser/skin/syncProgress-horizontalbar-XPVista7.png  os=WINNT osversion<6.2
 
-% override chrome://browser/skin/loop/toolbar.png          chrome://browser/skin/loop/toolbar-XPVista7.png         os=WINNT osversion=6
-% override chrome://browser/skin/loop/toolbar.png          chrome://browser/skin/loop/toolbar-XPVista7.png         os=WINNT osversion=6.1
+% override chrome://browser/skin/loop/toolbar.png          chrome://browser/skin/loop/toolbar-aero.png             os=WINNT osversion=6
+% override chrome://browser/skin/loop/toolbar.png          chrome://browser/skin/loop/toolbar-aero.png             os=WINNT osversion=6.1
+
+% override chrome://browser/skin/loop/menuPanel.png        chrome://browser/skin/loop/menuPanel-aero.png           os=WINNT osversion=6
+% override chrome://browser/skin/loop/menuPanel.png        chrome://browser/skin/loop/menuPanel-aero.png           os=WINNT osversion=6.1
+
+# Add Files For Cyberfox
+
+#Browser Theme Core
+        skin/classic/browser/newtab/noise.png               (newtab/noise.png)
+        skin/classic/aero/browser/newtab/noise.png                   (newtab/noise.png)
+#Browser Theme Core Menu
+        skin/classic/browser/appmenu-icons.png
+        skin/classic/browser/appmenu-dropmarker.png
+        skin/classic/aero/browser/appmenu-dropmarker.png
+        skin/classic/aero/browser/appmenu-icons.png
+        skin/classic/browser/appmenu-icons-cf.png
+        skin/classic/aero/browser/appmenu-icons-cf.png

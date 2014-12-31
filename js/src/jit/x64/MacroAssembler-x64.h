@@ -7,7 +7,7 @@
 #ifndef jit_x64_MacroAssembler_x64_h
 #define jit_x64_MacroAssembler_x64_h
 
-#include "jit/IonFrames.h"
+#include "jit/JitFrames.h"
 #include "jit/MoveResolver.h"
 #include "jit/shared/MacroAssembler-x86-shared.h"
 
@@ -1385,8 +1385,7 @@ class MacroAssemblerX64 : public MacroAssemblerX86Shared
     void callWithABI(Address fun, MoveOp::Type result = MoveOp::GENERAL);
     void callWithABI(Register fun, MoveOp::Type result = MoveOp::GENERAL);
 
-    void handleFailureWithHandler(void *handler);
-    void handleFailureWithHandlerTail();
+    void handleFailureWithHandlerTail(void *handler);
 
     void makeFrameDescriptor(Register frameSizeReg, FrameType type) {
         shlq(Imm32(FRAMESIZE_SHIFT), frameSizeReg);

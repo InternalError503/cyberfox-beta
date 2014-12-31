@@ -28,7 +28,7 @@ function log(msg) {
 };
 
 function error(msg) {
-  console.log("Firefox Account Error: " + msg + "\n");
+  console.log("Cyberfox|Firefox Account Error: " + msg + "\n");
 };
 
 function getPreviousAccountNameHash() {
@@ -276,7 +276,8 @@ function handleOldSync() {
     .QueryInterface(Ci.nsIInterfaceRequestor)
     .getInterface(Ci.nsIDOMWindow)
     .QueryInterface(Ci.nsIDOMChromeWindow);
-  let url = Services.urlFormatter.formatURLPref("app.support.baseURL") + "old-sync";
+  //Set Help Link Old Sync
+  let url = Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "old-sync";
   chromeWin.switchToTabHavingURI(url, true);
 }
 

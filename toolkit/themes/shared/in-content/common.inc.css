@@ -10,8 +10,8 @@ html|body,
 xul|page {
   font: message-box;
   -moz-appearance: none;
-  background-color: #f1f1f1;
-  color: #424e5a;
+  color: #737980;
+  background-image: linear-gradient(#fff, #ededed 100px);
 }
 
 html|body {

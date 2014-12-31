@@ -11,7 +11,6 @@ Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/PageThumbs.jsm");
 Cu.import("resource://gre/modules/BackgroundPageThumbs.jsm");
-Cu.import("resource:///modules/DirectoryLinksProvider.jsm");
 Cu.import("resource://gre/modules/NewTabUtils.jsm");
 
 XPCOMUtils.defineLazyModuleGetter(this, "Rect",
@@ -20,7 +19,9 @@ XPCOMUtils.defineLazyModuleGetter(this, "PrivateBrowsingUtils",
   "resource://gre/modules/PrivateBrowsingUtils.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "UpdateChannel",
   "resource://gre/modules/UpdateChannel.jsm");
-
+XPCOMUtils.defineLazyGetter(this, "gPrefService", function() {
+  return Services.prefs;
+}); 
 let {
   links: gLinks,
   allPages: gAllPages,
@@ -29,7 +30,7 @@ let {
   blockedLinks: gBlockedLinks,
   gridPrefs: gGridPrefs
 } = NewTabUtils;
-
+let isSearchEnabled = Services.prefs.getBoolPref("browser.newtab.search.enabled"); 
 XPCOMUtils.defineLazyGetter(this, "gStringBundle", function() {
   return Services.strings.
     createBundle("chrome://browser/locale/newTab.properties");
@@ -68,7 +69,6 @@ const TILES_PRIVACY_LINK = "https://www.mozilla.org/privacy/";
 #include undo.js
 #include search.js
 #include customize.js
-#include intro.js
 
 // Everything is loaded. Initialize the New Tab Page.
 gPage.init();

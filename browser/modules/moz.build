@@ -7,7 +7,6 @@
 BROWSER_CHROME_MANIFESTS += ['test/browser.ini']
 XPCSHELL_TESTS_MANIFESTS += [
     'test/unit/social/xpcshell.ini',
-    'test/xpcshell/xpcshell.ini',
 ]
 
 EXTRA_JS_MODULES += [
@@ -16,10 +15,8 @@ EXTRA_JS_MODULES += [
     'Chat.jsm',
     'ContentClick.jsm',
     'ContentLinkHandler.jsm',
-    'ContentSearch.jsm',
     'ContentWebRTC.jsm',
     'CustomizationTabPreloader.jsm',
-    'DirectoryLinksProvider.jsm',
     'E10SUtils.jsm',
     'Feeds.jsm',
     'FormSubmitObserver.jsm',
@@ -48,6 +45,7 @@ if CONFIG['NIGHTLY_BUILD']:
 
 EXTRA_PP_JS_MODULES += [
     'AboutHome.jsm',
+    'ContentSearch.jsm',
     'PluginContent.jsm',
     'RecentWindow.jsm',
     'UITour.jsm',

@@ -13,7 +13,7 @@
 <overlay xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
          id="downloadsOverlay">
-
+<script type="application/javascript" src="chrome://browser/content/browser-cyberfox.js"/>
   <commandset>
     <command id="downloadsCmd_doDefault"
              oncommand="goDoCommand('downloadsCmd_doDefault')"/>
@@ -40,12 +40,20 @@
          taskbar on Windows.  See bug 672365.  For accessibility to screen
          readers, we use a label on the panel instead of the anchor because the
          panel can also be displayed without an anchor. -->
+
+   <!--  Need to prevent the browser stealing focus when the the panel closes. 
+         So we need to set norestorefocus="true" see: https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL/Attribute/Norestorefocus
+         See: https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL/PopupGuide/Panels#Focus_in_panels
+         -->
+
     <panel id="downloadsPanel"
            aria-label="&downloads.title;"
            role="group"
            type="arrow"
            orient="vertical"
            level="top"
+           consumeoutsideclicks="true"
+           norestorefocus="true"
            onpopupshown="DownloadsPanel.onPopupShown(event);"
            onpopuphidden="DownloadsPanel.onPopupHidden(event);">
       <!-- The following popup menu should be a child of the panel element,
@@ -134,7 +142,7 @@
                 class="plain"
                 label="&downloadsHistory.label;"
                 accesskey="&downloadsHistory.accesskey;"
-                oncommand="DownloadsPanel.showDownloadsHistory();"/>
+                oncommand="gCyberfoxCustom.customDownloadsOverlay();"/>
       </vbox>
     </panel>
   </popupset>

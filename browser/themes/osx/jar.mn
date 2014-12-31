@@ -112,6 +112,7 @@ browser.jar:
   skin/classic/browser/search-indicator-add-engine@2x.png      (../shared/search/search-indicator-add-engine@2x.png)
   skin/classic/browser/search-engine-placeholder.png           (../shared/search/search-engine-placeholder.png)
   skin/classic/browser/search-engine-placeholder@2x.png        (../shared/search/search-engine-placeholder@2x.png)
+  skin/classic/browser/search-history-icon.svg                 (../shared/search/history-icon.svg)
   skin/classic/browser/badge-add-engine.png                    (../shared/search/badge-add-engine.png)
   skin/classic/browser/badge-add-engine@2x.png                 (../shared/search/badge-add-engine@2x.png)
   skin/classic/browser/Secure-Glyph.png
@@ -189,10 +190,10 @@ browser.jar:
   skin/classic/browser/customizableui/subView-arrow-back-inverted-rtl.png  (../shared/customizableui/subView-arrow-back-inverted-rtl.png)
   skin/classic/browser/customizableui/subView-arrow-back-inverted-rtl@2x.png  (../shared/customizableui/subView-arrow-back-inverted-rtl@2x.png)
 * skin/classic/browser/customizableui/panelUIOverlay.css    (customizableui/panelUIOverlay.css)
-  skin/classic/browser/customizableui/whimsy.png          (../shared/customizableui/whimsy.png)
-  skin/classic/browser/customizableui/whimsy@2x.png       (../shared/customizableui/whimsy@2x.png)
-  skin/classic/browser/customizableui/whimsy-bw.png       (../shared/customizableui/whimsy-bw.png)
-  skin/classic/browser/customizableui/whimsy-bw@2x.png    (../shared/customizableui/whimsy-bw@2x.png)
+  skin/classic/browser/customizableui/8pecx.png          (../shared/customizableui/8pecx.png)
+  skin/classic/browser/customizableui/8pecx@2x.png       (../shared/customizableui/8pecx@2x.png)
+  skin/classic/browser/customizableui/8pecx-bw.png       (../shared/customizableui/8pecx-bw.png)
+  skin/classic/browser/customizableui/8pecx-bw@2x.png    (../shared/customizableui/8pecx-bw@2x.png)
   skin/classic/browser/downloads/allDownloadsViewOverlay.css (downloads/allDownloadsViewOverlay.css)
   skin/classic/browser/downloads/buttons.png                (downloads/buttons.png)
   skin/classic/browser/downloads/buttons@2x.png             (downloads/buttons@2x.png)
@@ -276,8 +277,16 @@ browser.jar:
   skin/classic/browser/preferences/in-content/favicon.ico     (../shared/incontentprefs/favicon.ico)
   skin/classic/browser/preferences/in-content/icons.png       (../shared/incontentprefs/icons.png)
   skin/classic/browser/preferences/in-content/icons@2x.png    (../shared/incontentprefs/icons@2x.png)
+  skin/classic/browser/preferences/in-content/search.css      (../shared/incontentprefs/search.css)
+  skin/classic/browser/preferences/in-content/check.png       (../shared/incontentprefs/check.png)
+  skin/classic/browser/preferences/in-content/check@2x.png    (../shared/incontentprefs/check@2x.png)
   skin/classic/browser/preferences/applications.css         (preferences/applications.css)
   skin/classic/browser/preferences/aboutPermissions.css     (preferences/aboutPermissions.css)
+  skin/classic/browser/preferences/search.css               (preferences/search.css)
+  skin/classic/browser/preferences/checkbox.png             (preferences/checkbox.png)
+  skin/classic/browser/preferences/checkbox@2x.png          (preferences/checkbox@2x.png)
+  skin/classic/browser/yosemite/preferences/checkbox.png    (preferences/checkbox-yosemite.png)
+  skin/classic/browser/yosemite/preferences/checkbox@2x.png (preferences/checkbox-yosemite@2x.png)
   skin/classic/browser/social/services-16.png               (social/services-16.png)
   skin/classic/browser/social/services-16@2x.png            (social/services-16@2x.png)
   skin/classic/browser/social/services-64.png               (social/services-64.png)
@@ -587,7 +596,14 @@ browser.jar:
 % override chrome://browser/skin/menuPanel-help@2x.png                     chrome://browser/skin/yosemite/menuPanel-help@2x.png                    os=Darwin osversion>=10.10
 % override chrome://browser/skin/menuPanel-small.png                       chrome://browser/skin/yosemite/menuPanel-small.png                      os=Darwin osversion>=10.10
 % override chrome://browser/skin/menuPanel-small@2x.png                    chrome://browser/skin/yosemite/menuPanel-small@2x.png                   os=Darwin osversion>=10.10
+% override chrome://browser/skin/preferences/checkbox.png                  chrome://browser/skin/yosemite/preferences/checkbox.png                 os=Darwin osversion>=10.10
+% override chrome://browser/skin/preferences/checkbox@2x.png               chrome://browser/skin/yosemite/preferences/checkbox@2x.png              os=Darwin osversion>=10.10
 % override chrome://browser/skin/reload-stop-go.png                        chrome://browser/skin/yosemite/reload-stop-go.png                       os=Darwin osversion>=10.10
 % override chrome://browser/skin/reload-stop-go@2x.png                     chrome://browser/skin/yosemite/reload-stop-go@2x.png                    os=Darwin osversion>=10.10
 % override chrome://browser/skin/sync-horizontalbar.png                    chrome://browser/skin/yosemite/sync-horizontalbar.png                   os=Darwin osversion>=10.10
 % override chrome://browser/skin/sync-horizontalbar@2x.png                 chrome://browser/skin/yosemite/sync-horizontalbar@2x.png                os=Darwin osversion>=10.10
+
+# Add Files For Cyberfox
+
+#Browser Theme Core
+  skin/classic/browser/newtab/noise.png               (newtab/noise.png)

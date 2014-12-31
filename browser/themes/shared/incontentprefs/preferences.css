@@ -5,22 +5,28 @@
 %endif
 @namespace html "http://www.w3.org/1999/xhtml";
 
+@font-face {
+  font-family: "Clear Sans";
+  src: url("chrome://browser/content/fonts/ClearSans-Regular.woff") format('woff');
+}
+
 #dialogBox,
 dialog,
 window,
 prefwindow,
 .windowDialog {
   -moz-appearance: none;
-  background-color: #f1f1f1;
+  background-image: linear-gradient(#FFFFFF, #EDEDED 100px);
   color: #424E5A;
 }
 
 prefpane {
   max-width: 800px;
   padding: 0;
-  font: message-box;
+  font-family: "Clear Sans", sans-serif;
   font-size: 1.25rem;
   line-height: 22px;
+  color: #424E5A;
 }
 
 * {
@@ -348,10 +354,6 @@ description > html|a {
   width: 66ch;
 }
 
-tree:not(#rejectsTree) {
-  min-height: 15em;
-}
-
 :-moz-any(dialog, window, prefwindow) groupbox {
   -moz-margin-start: 8px;
   -moz-margin-end: 8px;
@@ -360,3 +362,5 @@ tree:not(#rejectsTree) {
 /**
  * End sub-dialog
  */
+
+%include preferences-cyberfox.inc

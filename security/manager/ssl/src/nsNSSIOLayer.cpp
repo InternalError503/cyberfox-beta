@@ -350,10 +350,11 @@ nsNSSSocketInfo::NoteTimeUntilReady()
     return;
 
   mNotedTimeUntilReady = true;
-
+#ifdef MOZ_TELEMETRY_REPORTING
   // This will include TCP and proxy tunnel wait time
   Telemetry::AccumulateTimeDelta(Telemetry::SSL_TIME_UNTIL_READY,
                                  mSocketCreationTimestamp, TimeStamp::Now());
+ #endif
   PR_LOG(gPIPNSSLog, PR_LOG_DEBUG,
          ("[%p] nsNSSSocketInfo::NoteTimeUntilReady\n", mFd));
 }
@@ -373,7 +374,7 @@ nsNSSSocketInfo::SetHandshakeCompleted()
                                 : mFalseStarted ? FalseStarted
                                 : mFalseStartCallbackCalled ? ChoseNotToFalseStart
                                 : NotAllowedToFalseStart;
-
+#ifdef MOZ_TELEMETRY_REPORTING
     // This will include TCP and proxy tunnel wait time
     Telemetry::AccumulateTimeDelta(Telemetry::SSL_TIME_UNTIL_HANDSHAKE_FINISHED,
                                    mSocketCreationTimestamp, TimeStamp::Now());
@@ -383,6 +384,7 @@ nsNSSSocketInfo::SetHandshakeCompleted()
     Telemetry::Accumulate(Telemetry::SSL_RESUMED_SESSION,
                           handshakeType == Resumption);
     Telemetry::Accumulate(Telemetry::SSL_HANDSHAKE_TYPE, handshakeType);
+#endif
   }
 
 
@@ -696,8 +698,10 @@ nsNSSSocketInfo::SetCertVerificationResult(PRErrorCode errorCode,
   }
 
   if (mPlaintextBytesRead && !errorCode) {
+#ifdef MOZ_TELEMETRY_REPORTING
     Telemetry::Accumulate(Telemetry::SSL_BYTES_BEFORE_CERT_CALLBACK,
                           AssertedCast<uint32_t>(mPlaintextBytesRead));
+#endif
   }
 
   mCertVerificationState = after_cert_verification;
@@ -888,6 +892,48 @@ nsSSLIOLayerHelpers::rememberIntolerantAtVersion(const nsACString& hostName,
       entry.intoleranceReason = 0;
       entry.AssertInvariant();
       mTLSIntoleranceInfo.Put(key, entry);
+    }
+
+    // If we know the server is tolerant at the version, we don't have to
+    // gather the telemetry.
+    if (intolerant <= entry.tolerant) {
+      return false;
+    }
+
+    uint32_t fallbackLimitBucket = 0;
+    // added if the version has reached the min version.
+    if (intolerant <= minVersion) {
+      switch (minVersion) {
+        case SSL_LIBRARY_VERSION_TLS_1_0:
+          fallbackLimitBucket += 1;
+          break;
+        case SSL_LIBRARY_VERSION_TLS_1_1:
+          fallbackLimitBucket += 2;
+          break;
+        case SSL_LIBRARY_VERSION_TLS_1_2:
+          fallbackLimitBucket += 3;
+          break;
+      }
+    }
+    // added if the version has reached the fallback limit.
+    if (intolerant <= mVersionFallbackLimit) {
+      switch (mVersionFallbackLimit) {
+        case SSL_LIBRARY_VERSION_TLS_1_0:
+          fallbackLimitBucket += 4;
+          break;
+        case SSL_LIBRARY_VERSION_TLS_1_1:
+          fallbackLimitBucket += 8;
+          break;
+        case SSL_LIBRARY_VERSION_TLS_1_2:
+          fallbackLimitBucket += 12;
+          break;
+      }
+    }
+    if (fallbackLimitBucket) {
+#ifdef MOZ_TELEMETRY_REPORTING
+      Telemetry::Accumulate(Telemetry::SSL_FALLBACK_LIMIT_REACHED,
+                            fallbackLimitBucket);
+#endif
     }
 
     return false;
@@ -1151,9 +1197,10 @@ retryDueToTLSIntolerance(PRErrorCode err, nsNSSSocketInfo* socketInfo)
     // all cases where there wasn't an original reason.
     PRErrorCode originalReason = socketInfo->SharedState().IOLayerHelpers()
       .getIntoleranceReason(socketInfo->GetHostName(), socketInfo->GetPort());
+#ifdef MOZ_TELEMETRY_REPORTING
     Telemetry::Accumulate(Telemetry::SSL_VERSION_FALLBACK_INAPPROPRIATE,
-                          tlsIntoleranceTelemetryBucket(originalReason));
-
+                          tlsIntoleranceTelemetryBucket(originalReason)); 
+#endif
     socketInfo->SharedState().IOLayerHelpers()
       .rememberTolerantAtVersion(socketInfo->GetHostName(),
                                  socketInfo->GetPort(),
@@ -1214,17 +1261,18 @@ retryDueToTLSIntolerance(PRErrorCode err, nsNSSSocketInfo* socketInfo)
 
   // The difference between _PRE and _POST represents how often we avoided
   // TLS intolerance fallback due to remembered tolerance.
+#ifdef MOZ_TELEMETRY_REPORTING
   Telemetry::Accumulate(pre, reason);
-
+#endif
   if (!socketInfo->SharedState().IOLayerHelpers()
                  .rememberIntolerantAtVersion(socketInfo->GetHostName(),
                                               socketInfo->GetPort(),
                                               range.min, range.max, err)) {
     return false;
   }
-
+#ifdef MOZ_TELEMETRY_REPORTING
   Telemetry::Accumulate(post, reason);
-
+#endif
   return true;
 }
 

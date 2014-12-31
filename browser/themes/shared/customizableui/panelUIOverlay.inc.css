@@ -36,63 +36,63 @@
 
 #PanelUI-popup #PanelUI-contents:empty::before {
   content: "";
-  background-image: url(chrome://browser/skin/customizableui/whimsy-bw.png);
+  background-image: url(chrome://browser/skin/customizableui/8pecx-bw.png);
   display: block;
   width: 64px;
   height: 64px;
   position: absolute;
   transition: transform 1s ease-out;
-  animation: whimsyMoveX 3.05s linear 0s infinite alternate,
-             whimsyMoveY 3.4s linear 0s infinite alternate;
+  animation: cyberfoxMoveX 3.05s linear 0s infinite alternate,
+             cyberfoxMoveY 3.4s linear 0s infinite alternate;
 }
 
 #PanelUI-popup #PanelUI-contents:active:empty::before {
-  animation: whimsyMoveX 3.05s linear 0s infinite alternate,
-             whimsyMoveY 3.4s linear 0s infinite alternate,
-             whimsyRotate 1s linear 0s infinite normal;
+  animation: cyberfoxMoveX 3.05s linear 0s infinite alternate,
+             cyberfoxMoveY 3.4s linear 0s infinite alternate,
+             cyberfoxRotate 1s linear 0s infinite normal;
 }
 
 #PanelUI-popup #PanelUI-contents:-moz-locale-dir(rtl):empty::before {
-  animation: whimsyMoveXRTL 3.05s linear 0s infinite alternate,
-             whimsyMoveY 3.4s linear 0s infinite alternate;
+  animation: cyberfoxMoveXRTL 3.05s linear 0s infinite alternate,
+             cyberfoxMoveY 3.4s linear 0s infinite alternate;
 }
 
 #PanelUI-popup #PanelUI-contents:-moz-locale-dir(rtl):active:empty::before {
-  animation: whimsyMoveXRTL 3.05s linear 0s infinite alternate,
-             whimsyMoveY 3.4s linear 0s infinite alternate,
-             whimsyRotate 1s linear 0s infinite normal;
+  animation: cyberfoxMoveXRTL 3.05s linear 0s infinite alternate,
+             cyberfoxMoveY 3.4s linear 0s infinite alternate,
+             cyberfoxRotate 1s linear 0s infinite normal;
 }
 
 #PanelUI-popup #PanelUI-contents:empty:hover::before {
-  background-image: url(chrome://browser/skin/customizableui/whimsy.png);
+  background-image: url(chrome://browser/skin/customizableui/8pecx.png);
 }
 
 @media (min-resolution: 2dppx) {
   #PanelUI-popup #PanelUI-contents:empty::before {
-    background-image: url(chrome://browser/skin/customizableui/whimsy-bw@2x.png);
+    background-image: url(chrome://browser/skin/customizableui/8pecx-bw@2x.png);
     background-size: 64px 64px;
   }
   #PanelUI-popup #PanelUI-contents:empty:hover::before {
-    background-image: url(chrome://browser/skin/customizableui/whimsy@2x.png);
+    background-image: url(chrome://browser/skin/customizableui/8pecx@2x.png);
   }
 }
 
-@keyframes whimsyMoveX {
+@keyframes cyberfoxMoveX {
   /* These values are adjusted for the padding on the panel. */
   from { margin-left: -15px; } to { margin-left: calc(100% - 49px); }
 }
 
-@keyframes whimsyMoveXRTL {
+@keyframes cyberfoxMoveXRTL {
   /* These values are adjusted for the padding on the panel. */
   from { margin-right: -15px; } to { margin-right: calc(100% - 49px); }
 }
 
-@keyframes whimsyMoveY {
+@keyframes cyberfoxMoveY {
   /* These values are adjusted for the padding and height of the panel. */
   from { margin-top: -.5em; } to { margin-top: calc(64px - .5em); }
 }
 
-@keyframes whimsyRotate {
+@keyframes cyberfoxRotate {
   to { transform: perspective(5000px) rotateY(360deg); }
 }
 

@@ -12,10 +12,9 @@
 <prefwindow id="ConnectionsDialog" type="child"
             xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             title="&connectionsDialog.title;"
-            dlgbuttons="accept,cancel,help"
+            dlgbuttons="accept,cancel"
             onbeforeaccept="return gConnectionsDialog.beforeAccept();"
             onload="gConnectionsDialog.checkForSystemProxy();"
-            ondialoghelp="openPrefsHelp()"
 #ifdef XP_MACOSX
             style="width: &window.macWidth; !important;">
 #else
@@ -24,8 +23,7 @@
 
   <script type="application/javascript" src="chrome://browser/content/utilityOverlay.js"/>
 
-  <prefpane id="ConnectionsDialogPane"
-            helpTopic="prefs-connection-settings">
+  <prefpane id="ConnectionsDialogPane">
 
     <preferences>
       <preference id="network.proxy.type"         name="network.proxy.type"         type="int" onchange="gConnectionsDialog.proxyTypeChanged();"/>

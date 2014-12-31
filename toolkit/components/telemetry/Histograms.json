@@ -6472,6 +6472,12 @@
     "n_values": 64,
     "description": "TLS/SSL version intolerance was falsely detected, server rejected handshake"
   },
+  "SSL_FALLBACK_LIMIT_REACHED": {
+    "expires_in_version": "default",
+    "kind": "enumerated",
+    "n_values": 16,
+    "description": "TLS/SSL version fallback reached the minimum version (1=TLS 1.0, 2=TLS 1.1, 3=TLS 1.2) or the fallback limit (4=TLS 1.0, 8=TLS 1.1, 12=TLS 1.2), stopped the fallback"
+  },
   "SSL_CIPHER_SUITE_FULL": {
     "expires_in_version": "never",
     "kind": "enumerated",
@@ -6865,5 +6871,17 @@
     "expires_in_version": "45",
     "kind": "count",
     "description": "How many onbeforeunload prompts has the user encountered in their session?"
+  },
+  "SUBPROCESS_ABNORMAL_ABORT": {
+    "expires_in_version": "never",
+    "kind": "count",
+    "keyed": true,
+    "description": "Counts of plugin/content process abnormal shutdown, whether or not a crash report was available."
+  },
+  "SUBPROCESS_CRASHES_WITH_DUMP": {
+    "expires_in_version": "never",
+    "kind": "count",
+    "keyed": true,
+    "description": "Counts of plugin and content process crashes which are reported with a crash dump."
   }
 }

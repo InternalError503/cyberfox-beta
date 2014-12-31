@@ -61,12 +61,11 @@ var SettingsCharm = {
         }
     });
 
-    // Help
+ //Set Help Link
     this.addEntry({
         label: Strings.browser.GetStringFromName("helpOnlineCharm"),
         onselected: function() {
-          let url = Services.urlFormatter.formatURLPref("app.support.baseURL") +
-            "firefox-help";
+          let url = Services.urlFormatter.formatURLPref("app.support.baseURL") + "/index.php";           
           BrowserUI.addAndShowTab(url, Browser.selectedTab);
         }
     });

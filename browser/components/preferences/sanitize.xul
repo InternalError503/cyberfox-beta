@@ -17,8 +17,7 @@
 
 <prefwindow id="SanitizeDialog" type="child"
             xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-            dlgbuttons="accept,cancel,help"
-            ondialoghelp="openPrefsHelp()"
+            dlgbuttons="accept,cancel"
             style="width: &dialog.width2;;"
             title="&sanitizePrefs2.title;"
             onload="gSanitizeDialog.onClearHistoryChanged();">
@@ -26,8 +25,7 @@
   <script type="application/javascript" src="chrome://browser/content/utilityOverlay.js"/>
   <script type="application/javascript" src="chrome://browser/content/preferences/sanitize.js"/>
 
-  <prefpane id="SanitizeDialogPane"
-            helpTopic="prefs-clear-private-data">
+  <prefpane id="SanitizeDialogPane">
 
     <preferences>
       <preference id="privacy.clearOnShutdown.history"               name="privacy.clearOnShutdown.history"               type="bool"

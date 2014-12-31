@@ -31,6 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -48,6 +49,10 @@ public class SearchEngineManager implements SharedPreferences.OnSharedPreference
     private Distribution distribution;
     private SearchEngineCallback changeCallback;
     private SearchEngine engine;
+
+    // Cached version of default locale included in Gecko chrome manifest.
+    // This should only be accessed from the background thread.
+    private String fallbackLocale;
 
     public static interface SearchEngineCallback {
         public void execute(SearchEngine engine);
@@ -289,6 +294,10 @@ public class SearchEngineManager implements SharedPreferences.OnSharedPreference
         }
 
         final File[] files = (new File(pluginsDir, "common")).listFiles();
+        if (files == null) {
+            Log.e(LOG_TAG, "Could not find search plugin files in distribution directory");
+            return null;
+        }
         return createEngineFromFileList(files, name);
     }
 
@@ -305,11 +314,9 @@ public class SearchEngineManager implements SharedPreferences.OnSharedPreference
      */
     private SearchEngine createEngineFromLocale(String name) {
         final InputStream in = getInputStreamFromSearchPluginsJar("list.txt");
-        InputStreamReader isr = null;
+        final BufferedReader br = getBufferedReader(in);
 
         try {
-            isr = new InputStreamReader(in);
-            BufferedReader br = new BufferedReader(isr);
             String identifier;
             while ((identifier = br.readLine()) != null) {
                 final InputStream pluginIn = getInputStreamFromSearchPluginsJar(identifier + ".xml");
@@ -321,15 +328,8 @@ public class SearchEngineManager implements SharedPreferences.OnSharedPreference
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error creating shipped search engine from name: " + name, e);
         } finally {
-            if (isr != null) {
-                try {
-                    isr.close();
-                } catch (IOException e) {
-                    // Ignore.
-                }
-            }
             try {
-                in.close();
+                br.close();
             } catch (IOException e) {
                 // Ignore.
             }
@@ -353,6 +353,10 @@ public class SearchEngineManager implements SharedPreferences.OnSharedPreference
         }
 
         final File[] files = pluginsDir.listFiles();
+        if (files == null) {
+            Log.e(LOG_TAG, "Could not find search plugin files in profile directory");
+            return null;
+        }
         return createEngineFromFileList(files, name);
     }
 
@@ -360,7 +364,7 @@ public class SearchEngineManager implements SharedPreferences.OnSharedPreference
      * This method iterates through an array of search plugin files, creating
      * SearchEngine instances until it finds one with the right name.
      *
-     * @param files Array of search plugin files.
+     * @param files Array of search plugin files. Should not be null.
      * @param name Search engine name.
      * @return SearchEngine instance for name.
      */
@@ -433,9 +437,45 @@ public class SearchEngineManager implements SharedPreferences.OnSharedPreference
             }
         }
 
-        // Finally, fall back to en-US.
-        url = getSearchPluginsJarURL("en-US", fileName);
+        // Finally, fall back to default locale defined in chrome registry.
+        url = getSearchPluginsJarURL(getFallbackLocale(), fileName);
         return GeckoJarReader.getStream(url);
+    }
+
+    /**
+     * Finds a fallback locale in the Gecko chrome registry. If a locale is declared
+     * here, we should be guaranteed to find a searchplugins directory for it.
+     *
+     * This method should only be accessed from the background thread.
+     */
+    private String getFallbackLocale() {
+        if (fallbackLocale != null) {
+            return fallbackLocale;
+        }
+
+        final InputStream in = GeckoJarReader.getStream(getJarURL("!/chrome/chrome.manifest"));
+        final BufferedReader br = getBufferedReader(in);
+
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                // We're looking for a line like "locale global en-US en-US/locale/en-US/global/"
+                // https://developer.mozilla.org/en/docs/Chrome_Registration#locale
+                if (line.startsWith("locale global ")) {
+                    fallbackLocale = line.split(" ", 4)[2];
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error reading fallback locale from chrome registry", e);
+        } finally {
+            try {
+                br.close();
+            } catch (IOException e) {
+                // Ignore.
+            }
+        }
+        return fallbackLocale;
     }
 
     /**
@@ -447,6 +487,19 @@ public class SearchEngineManager implements SharedPreferences.OnSharedPreference
      */
     private String getSearchPluginsJarURL(String locale, String fileName) {
         final String path = "!/chrome/" + locale + "/locale/" + locale + "/browser/searchplugins/" + fileName;
+        return getJarURL(path);
+    }
+
+    private String getJarURL(String path) {
         return "jar:jar:file://" + context.getPackageResourcePath() + "!/" + AppConstants.OMNIJAR_NAME + path;
+    }
+
+    private BufferedReader getBufferedReader(InputStream in) {
+        try {
+            return new BufferedReader(new InputStreamReader(in, "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            // Cannot happen.
+            return null;
+        }
     }
 }

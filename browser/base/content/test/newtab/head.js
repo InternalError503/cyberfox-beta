@@ -2,19 +2,16 @@
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
 const PREF_NEWTAB_ENABLED = "browser.newtabpage.enabled";
-const PREF_NEWTAB_DIRECTORYSOURCE = "browser.newtabpage.directory.source";
-
 Services.prefs.setBoolPref(PREF_NEWTAB_ENABLED, true);
 
 let tmp = {};
 Cu.import("resource://gre/modules/Promise.jsm", tmp);
 Cu.import("resource://gre/modules/NewTabUtils.jsm", tmp);
-Cu.import("resource:///modules/DirectoryLinksProvider.jsm", tmp);
 Cc["@mozilla.org/moz/jssubscript-loader;1"]
   .getService(Ci.mozIJSSubScriptLoader)
   .loadSubScript("chrome://browser/content/sanitize.js", tmp);
 Cu.import("resource://gre/modules/Timer.jsm", tmp);
-let {Promise, NewTabUtils, Sanitizer, clearTimeout, setTimeout, DirectoryLinksProvider} = tmp;
+let {Promise, NewTabUtils, Sanitizer, clearTimeout, setTimeout} = tmp;
 
 let uri = Services.io.newURI("about:newtab", null, null);
 let principal = Services.scriptSecurityManager.getNoAppCodebasePrincipal(uri);
@@ -23,10 +20,6 @@ let isMac = ("nsILocalFileMac" in Ci);
 let isLinux = ("@mozilla.org/gnome-gconf-service;1" in Cc);
 let isWindows = ("@mozilla.org/windows-registry-key;1" in Cc);
 let gWindow = window;
-
-// Default to dummy/empty directory links
-let gDirectorySource = 'data:application/json,{"test":1}';
-let gOrigDirectorySource;
 
 // The tests assume all 3 rows and all 3 columns of sites are shown, but the
 // window may be too small to actually show everything.  Resize it if necessary.
@@ -89,42 +82,8 @@ registerCleanupFunction(function () {
   }
 
   Services.prefs.clearUserPref(PREF_NEWTAB_ENABLED);
-  Services.prefs.setCharPref(PREF_NEWTAB_DIRECTORYSOURCE, gOrigDirectorySource);
 
-  return watchLinksChangeOnce();
 });
-
-/**
- * Resolves promise when directory links are downloaded and written to disk
- */
-function watchLinksChangeOnce() {
-  let deferred = Promise.defer();
-  let observer = {
-    onManyLinksChanged: () => {
-      DirectoryLinksProvider.removeObserver(observer);
-      deferred.resolve();
-    }
-  };
-  observer.onDownloadFail = observer.onManyLinksChanged;
-  DirectoryLinksProvider.addObserver(observer);
-  return deferred.promise;
-};
-
-/**
- * Provide the default test function to start our test runner.
- */
-function test() {
-  waitForExplicitFinish();
-  // start TestRunner.run() after directory links is downloaded and written to disk
-  watchLinksChangeOnce().then(() => {
-    // Wait for hidden page to update with the desired links
-    whenPagesUpdated(() => TestRunner.run(), true);
-  });
-
-  // Save the original directory source (which is set globally for tests)
-  gOrigDirectorySource = Services.prefs.getCharPref(PREF_NEWTAB_DIRECTORYSOURCE);
-  Services.prefs.setCharPref(PREF_NEWTAB_DIRECTORYSOURCE, gDirectorySource);
-}
 
 /**
  * The test runner that controls the execution flow of our tests.

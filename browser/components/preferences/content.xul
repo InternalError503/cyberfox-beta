@@ -8,23 +8,38 @@
 <!DOCTYPE overlay [
   <!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd">
   <!ENTITY % contentDTD SYSTEM "chrome://browser/locale/preferences/content.dtd">
+  <!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd">
   %brandDTD;
   %contentDTD;
+  %browserDTD;
 ]>
 
 <overlay id="ContentPaneOverlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <prefpane id="paneContent" 
-            onpaneload="gContentPane.init();"
-            helpTopic="prefs-content">
+            onpaneload="gContentPane.init();">
 
     <preferences id="contentPreferences">
       <!--XXX buttons prefs -->
+<!-- Disable Javascript & Block Images Feature Dont Remove -->
+      <!-- POPUPS, IMAGES, JAVASCRIPT -->
 
       <!-- POPUPS -->
       <preference id="dom.disable_open_during_load"   name="dom.disable_open_during_load"   type="bool"/>
-
+      <preference id="permissions.default.image"      name="permissions.default.image"      type="int"/>
+      <preference id="javascript.enabled"             name="javascript.enabled"             type="bool"/>
+	    <preference id="plugins.click_to_play"          name="plugins.click_to_play"          type="bool"/>
+      <preference id="pref.advanced.images.disable_button.view_image"
+                  name="pref.advanced.images.disable_button.view_image"
+                  type="bool"/>
+      <preference id="pref.advanced.javascript.disable_button.advanced"
+                  name="pref.advanced.javascript.disable_button.advanced"
+                  type="bool"/>
+      <preference id="plugins.click_to_play"
+                  name="plugins.click_to_play"
+                  type="bool"/>				  
+<!-- End Disable Javascript & Block Images Feature Dont Remove -->
       <!-- FONTS -->
       <preference id="font.language.group"
                   name="font.language.group"
@@ -61,6 +76,45 @@
                     oncommand="gContentPane.showPopupExceptions();"
                     accesskey="&popupExceptions.accesskey;"/>
           </row>
+<!-- Disable Javascript & Block Images Feature Dont Remove -->		  
+          <row id="enableImagesRow">
+            <vbox align="start">
+              <checkbox id="loadImages"
+                        label="&loadImages.label;"
+                        accesskey="&loadImages.accesskey;"
+                        preference="permissions.default.image"
+                        onsyncfrompreference="return gContentPane.readLoadImages();"
+                        onsynctopreference="return gContentPane.writeLoadImages();"/>
+            </vbox>
+            <vbox>
+              <button label="&exceptions.label;"
+                      accesskey="&exceptions.accesskey;"
+                      oncommand="gContentPane.showImageExceptions();"
+                      preference="pref.advanced.images.disable_button.view_image"/>
+            </vbox>
+          </row>
+          <row id="enableJavaScriptRow">
+            <vbox align="start">
+              <checkbox id="enableJavaScript" preference="javascript.enabled"
+                        label="&enableJavaScript.label;" accesskey="&enableJavaScript.accesskey;"
+                        onsyncfrompreference="return gContentPane.updateButtons('advancedJSButton', 
+                                                                            'javascript.enabled');"/>
+            </vbox>
+            <vbox>
+              <button id="advancedJSButton" label="&advancedJS.label;"
+                      accesskey="&advancedJS.accesskey;"
+                      oncommand="gContentPane.showAdvancedJS();"
+                      preference="pref.advanced.javascript.disable_button.advanced"/>
+            </vbox>
+          </row>
+		  <!--<row id="pluginsclick_to_playRow">
+		  <vbox align="start">
+              <checkbox id="pluginsclick_to_play" label="&enableClickToPlay.label;"
+                      oncommand="plugins.click_to_play.toggle();"
+                      preference="plugins.click_to_play"/>
+            </vbox>
+			</row>	-->	  
+<!-- End Disable Javascript & Block Images Feature Dont Remove -->
         </rows>
       </grid>
     </groupbox>

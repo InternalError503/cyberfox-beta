@@ -55,6 +55,12 @@
                     <prefs>
               </prefs>
     </emItem>
+      <emItem  blockID="i792" id="{8f894ed3-0bf2-498e-a103-27ef6e88899f}">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
       <emItem  blockID="i64" id="royal@facebook.com">
                         <versionRange  minVersion="0" maxVersion="*">
                     </versionRange>
@@ -131,6 +137,14 @@
                         <versionRange  minVersion="0" maxVersion="*" severity="1">
                     </versionRange>
                     <prefs>
+              </prefs>
+    </emItem>
+      <emItem  blockID="i800" id="{424b0d11-e7fe-4a04-b7df-8f2c77f58aaf}">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+                  <pref>browser.startup.homepage</pref>
+                  <pref>browser.search.defaultenginename</pref>
               </prefs>
     </emItem>
       <emItem  blockID="i62" id="jid0-EcdqvFOgWLKHNJPuqAnawlykCGZ@jetpack">
@@ -851,6 +865,14 @@
                     <prefs>
               </prefs>
     </emItem>
+      <emItem  blockID="i804" id="{ad7ce998-a77b-4062-9ffb-1d0b7cb23183}">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+                  <pref>browser.startup.homepage</pref>
+                  <pref>browser.search.defaultenginename</pref>
+              </prefs>
+    </emItem>
       <emItem  blockID="i533" id="extension@Fast_Free_Converter.com">
                         <versionRange  minVersion="0" maxVersion="*" severity="1">
                     </versionRange>
@@ -1561,6 +1583,14 @@
                     <prefs>
               </prefs>
     </emItem>
+      <emItem  blockID="i802" id="{18d5a8fe-5428-485b-968f-b97b05a92b54}">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+                  <pref>browser.startup.homepage</pref>
+                  <pref>browser.search.defaultenginename</pref>
+              </prefs>
+    </emItem>
       <emItem  blockID="i780" id="{b6ef1336-69bb-45b6-8cba-e578fc0e4433}">
                         <versionRange  minVersion="0" maxVersion="*" severity="3">
                     </versionRange>
@@ -1611,6 +1641,12 @@
     </emItem>
       <emItem  blockID="i535" id="/^ext@WebexpEnhancedV1alpha[0-9]+\.net$/">
                         <versionRange  minVersion="0" maxVersion="*" severity="1">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+      <emItem  blockID="i790" id="JMLv@njMaHh.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
                     </versionRange>
                     <prefs>
               </prefs>
@@ -2238,6 +2274,580 @@
                           <prefs>
               </prefs>
     </emItem>
+<emItem  id="toolbar10985@findwide.com">
+                        <versionRange  minVersion="0" maxVersion="*" severity="1">
+                    </versionRange>
+                    <prefs>
+                  <pref>browser.startup.homepage</pref>
+                  <pref>browser.search.defaultenginename</pref>
+              </prefs>
+    </emItem>
+<emItem  id="idmsq@idmsq.com">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+<emItem  id="searchme@mybrowserbar.com">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+<emItem  id="{82AF8DCA-6DE9-405D-BD5E-43525BDAD38A}">
+                        <versionRange  minVersion="0" maxVersion="*" severity="1">
+                    </versionRange>
+                    <prefs>
+                  <pref>browser.startup.homepage</pref>
+                  <pref>browser.search.defaultenginename</pref>
+              </prefs>
+    </emItem>	
+<emItem  blockID="i6969" id="jid1-bKSXgRwy1UQeRA@jetpack">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+	<emItem   id="clone-it@8pecxstudios.com">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>	
+	<emItem   id="Restart-My-Fox@8pecxstudios.com">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>	
+	<emItem   id="langpack-ach@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-af@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-an@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ar@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-as@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ast@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-be@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-bg@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-bn-BD@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-bn-IN@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-br@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-bs@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ca@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-cs@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-csb@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-cy@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-da@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-de@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-el@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-en-GB@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-en-US@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-en-ZA@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-eo@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-es-AR@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-es-CL@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-es-ES@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-es-MX@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-et@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-eu@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-fa@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ff@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-fi@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-fr@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-fy-NL@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ga-IE@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-gd@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-gl@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-gu-IN@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-he@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-hi-IN@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-hr@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-hu@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-hy-AM@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-id@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-is@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-it@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ja@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-kk@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-km@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-kn@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ko@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ku@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-lij@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-lt@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-lv@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-mai@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-mk@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ml@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-mr@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ms@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-nb-NO@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-nl@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-nn-NO@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-or@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-pa-IN@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-pl@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-pt-BR@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-pt-PT@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-rm@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ro@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ru@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-si@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-sk@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-sl@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-son@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-sq@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-sr@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-sv-SE@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-ta@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-te@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-th@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-tr@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-uk@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-vi@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-xh@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-zh-CN@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-zh-TW@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
+		<emItem   id="langpack-zu@firefox.mozilla.org">
+                        <versionRange  minVersion="0" maxVersion="*" severity="3">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
     </emItems>
 
   <pluginItems>
@@ -2701,6 +3311,18 @@
       <pluginItem  blockID="p594">
                   <match name="filename" exp="npCiscoWebCommunicator\.dll" />                      <versionRange  minVersion="0" maxVersion="3.0.5.99999999999999" severity="0" vulnerabilitystatus="1"></versionRange>
                         </pluginItem>
+      <pluginItem  blockID="p794">
+                  <match name="filename" exp="(NPSWF32.*\.dll)|(Flash\ Player\.plugin)" />                      <versionRange  minVersion="10.3.183.66" maxVersion="13.0.0.258" severity="0" vulnerabilitystatus="1"></versionRange>
+                            <infoURL>https://get.adobe.com/flashplayer/</infoURL>
+          </pluginItem>
+      <pluginItem  blockID="p796">
+                  <match name="filename" exp="libflashplayer\.so" />                      <versionRange  minVersion="0" maxVersion="11.2.202.424" severity="0" vulnerabilitystatus="1"></versionRange>
+                            <infoURL>https://get.adobe.com/flashplayer/</infoURL>
+          </pluginItem>
+      <pluginItem  blockID="p798">
+                  <match name="filename" exp="(NPSWF32.*\.dll)|(Flash\ Player\.plugin)" />                      <versionRange  minVersion="14.0" maxVersion="15.0.0.242" severity="0" vulnerabilitystatus="1"></versionRange>
+                            <infoURL>https://get.adobe.com/flashplayer/</infoURL>
+          </pluginItem>
     </pluginItems>
 
   <gfxItems>

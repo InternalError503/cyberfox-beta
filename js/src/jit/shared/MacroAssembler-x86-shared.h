@@ -296,6 +296,9 @@ class MacroAssemblerX86Shared : public Assembler
     void jump(Label *label) {
         jmp(label);
     }
+    void jump(JitCode *code) {
+        jmp(code);
+    }
     void jump(RepatchLabel *label) {
         jmp(label);
     }
@@ -858,7 +861,7 @@ class MacroAssemblerX86Shared : public Assembler
         call(reg);
         append(desc, currentOffset(), framePushed_);
     }
-    void callIon(Register callee) {
+    void callJit(Register callee) {
         call(callee);
     }
     void callIonFromAsmJS(Register callee) {

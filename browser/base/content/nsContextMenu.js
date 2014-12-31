@@ -162,7 +162,13 @@ nsContextMenu.prototype = {
     var shouldShow = !(this.isContentSelected || this.onLink || this.onImage ||
                        this.onCanvas || this.onVideo || this.onAudio ||
                        this.onTextInput || this.onSocial);
-    this.showItem("context-navigation", shouldShow);
+	if (gPrefService.getBoolPref("browser.context.classic")){
+		this.showItem("context-navigation", false);	
+		this.showItem("context-navigation-classic", shouldShow);
+	}else{
+		this.showItem("context-navigation-classic", false);			
+		this.showItem("context-navigation", shouldShow);			
+	}
     this.showItem("context-sep-navigation", shouldShow);
 
     let stopped = XULBrowserWindow.stopCommand.getAttribute("disabled") == "true";
@@ -174,6 +180,7 @@ nsContextMenu.prototype = {
 
     this.showItem("context-reload", stopReloadItem == "reload");
     this.showItem("context-stop", stopReloadItem == "stop");
+    this.showItem("context-sep-stop", !!stopReloadItem);
 
     // XXX: Stop is determined in browser.js; the canStop broadcaster is broken
     //this.setItemAttrFromNode( "context-stop", "disabled", "canStop" );

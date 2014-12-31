@@ -2144,17 +2144,17 @@
 * above and to verify existence if necessary.
 *
 * Examples:
-* In:  C:\PROGRA~1\MOZILL~1\FIREFOX.EXE -flag "%1"
-* In:  C:\PROGRA~1\MOZILL~1\FIREFOX.EXE,0
-* In:  C:\PROGRA~1\MOZILL~1\FIREFOX.EXE
-* In:  "C:\PROGRA~1\MOZILL~1\FIREFOX.EXE"
-* In:  "C:\PROGRA~1\MOZILL~1\FIREFOX.EXE" -flag "%1"
-* Out: C:\PROGRA~1\MOZILL~1\FIREFOX.EXE
+* In:  C:\PROGRA~1\Cyber~1\Cyberfox.EXE -flag "%1"
+* In:  C:\PROGRA~1\Cyber~1\Cyberfox.EXE,0
+* In:  C:\PROGRA~1\Cyber~1\Cyberfox.EXE
+* In:  "C:\PROGRA~1\Cyber~1\Cyberfox.EXE"
+* In:  "C:\PROGRA~1\Cyber~1\Cyberfox.EXE" -flag "%1"
+* Out: C:\PROGRA~1\Cyber~1\Cyberfox.EXE
 *
-* In:  "C:\Program Files\Mozilla Firefox\firefox.exe" -flag "%1"
-* In:  C:\Program Files\Mozilla Firefox\firefox.exe,0
-* In:  "C:\Program Files\Mozilla Firefox\firefox.exe"
-* Out: C:\Program Files\Mozilla Firefox\firefox.exe
+* In:  "C:\Program Files\Cyberfox\Cyberfox.exe" -flag "%1"
+* In:  C:\Program Files\Cyberfox\Cyberfox.exe,0
+* In:  "C:\Program Files\Cyberfox\Cyberfox.exe"
+* Out: C:\Program Files\Cyberfox\Cyberfox.exe
 *
 * @param   _IN_PATH
 *          The string containing the path.

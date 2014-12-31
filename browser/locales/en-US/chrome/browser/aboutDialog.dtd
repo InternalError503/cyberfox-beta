@@ -33,10 +33,10 @@
 <!ENTITY community.start2           "&brandShortName; is designed by ">
 <!-- LOCALIZATION NOTE (community.mozillaLink): This is a link title that links to http://www.mozilla.org/. -->
 <!ENTITY community.mozillaLink      "&vendorShortName;">
-<!ENTITY community.middle2          ", a ">
+<!ENTITY community.middle2          ", Taking over where Mozilla left off, Working to make a fast and reliable, x64-bit web browser accessible to all.">
 <!-- LOCALIZATION NOTE (community.creditsLink): This is a link title that links to about:credits. -->
 <!ENTITY community.creditsLink      "global community">
-<!ENTITY community.end3             " working together to keep the Web open, public and accessible to all.">
+<!ENTITY community.end3             " &brandShortName; is powered by Mozilla Firefox source code.">
 
 <!ENTITY contribute.start           "Sound interesting? ">
 <!-- LOCALIZATION NOTE (contribute.getInvolvedLink): This is a link title that links to http://www.mozilla.org/contribute/. -->

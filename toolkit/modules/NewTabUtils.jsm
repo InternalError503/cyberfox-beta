@@ -44,7 +44,6 @@ XPCOMUtils.defineLazyGetter(this, "gUnicodeConverter", function () {
 
 // Boolean preferences that control newtab content
 const PREF_NEWTAB_ENABLED = "browser.newtabpage.enabled";
-const PREF_NEWTAB_ENHANCED = "browser.newtabpage.enhanced";
 
 // The preference that tells the number of rows of the newtab grid.
 const PREF_NEWTAB_ROWS = "browser.newtabpage.rows";
@@ -211,11 +210,6 @@ let AllPages = {
   _enabled: null,
 
   /**
-   * Cached value that tells whether the New Tab Page feature is enhanced.
-   */
-  _enhanced: null,
-
-  /**
    * Adds a page to the internal list of pages.
    * @param aPage The page to register.
    */
@@ -250,24 +244,6 @@ let AllPages = {
   set enabled(aEnabled) {
     if (this.enabled != aEnabled)
       Services.prefs.setBoolPref(PREF_NEWTAB_ENABLED, !!aEnabled);
-  },
-
-  /**
-   * Returns whether the history tiles are enhanced.
-   */
-  get enhanced() {
-    if (this._enhanced === null)
-      this._enhanced = Services.prefs.getBoolPref(PREF_NEWTAB_ENHANCED);
-
-    return this._enhanced;
-  },
-
-  /**
-   * Enables or disables the enhancement of history tiles feature.
-   */
-  set enhanced(aEnhanced) {
-    if (this.enhanced != aEnhanced)
-      Services.prefs.setBoolPref(PREF_NEWTAB_ENHANCED, !!aEnhanced);
   },
 
   /**
@@ -316,9 +292,6 @@ let AllPages = {
         case PREF_NEWTAB_ENABLED:
           this._enabled = null;
           break;
-        case PREF_NEWTAB_ENHANCED:
-          this._enhanced = null;
-          break;
       }
     }
     // and all notifications get forwarded to each page.
@@ -333,7 +306,6 @@ let AllPages = {
    */
   _addObserver: function AllPages_addObserver() {
     Services.prefs.addObserver(PREF_NEWTAB_ENABLED, this, true);
-    Services.prefs.addObserver(PREF_NEWTAB_ENHANCED, this, true);
     Services.obs.addObserver(this, "page-thumbnail:create", true);
     this._addObserver = function () {};
   },
@@ -1201,7 +1173,6 @@ this.NewTabUtils = {
     if (!this._initialized) {
       this._initialized = true;
       ExpirationFilter.init();
-      Telemetry.init();
       return true;
     }
     return false;

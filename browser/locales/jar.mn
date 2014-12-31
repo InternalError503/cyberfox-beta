@@ -130,6 +130,7 @@
     locale/browser/preferences/sync.dtd               (%chrome/browser/preferences/sync.dtd)
 #endif
     locale/browser/preferences/tabs.dtd               (%chrome/browser/preferences/tabs.dtd)
+    locale/browser/preferences/search.dtd             (%chrome/browser/preferences/search.dtd)
     locale/browser/preferences/translation.dtd        (%chrome/browser/preferences/translation.dtd)
 #ifdef MOZ_SERVICES_SYNC
     locale/browser/syncBrand.dtd                (%chrome/browser/syncBrand.dtd)
@@ -152,3 +153,8 @@
 % locale pdf.js @AB_CD@ %locale/pdfviewer/
     locale/pdfviewer/viewer.properties             (%pdfviewer/viewer.properties)
     locale/pdfviewer/chrome.properties             (%pdfviewer/chrome.properties)
+
+# Add Files For Cyberfox
+
+#Custom About Cyberfox Error Messages.
+  locale/browser/aboutDialog.properties                 (%chrome/browser/aboutDialog.properties)

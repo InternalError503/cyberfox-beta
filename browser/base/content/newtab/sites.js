@@ -120,9 +120,8 @@ Site.prototype = {
    * Renders the site's data (fills the HTML fragment).
    */
   _render: function Site_render() {
-    let enhanced = gAllPages.enhanced && DirectoryLinksProvider.getEnhancedLink(this.link);
     let url = this.url;
-    let title = enhanced && enhanced.title || this.title || url;
+    let title = this.title || url;
     let tooltip = (title == url ? title : title + "\n" + url);
 
     let link = this._querySelector(".newtab-link");
@@ -155,8 +154,7 @@ Site.prototype = {
    */
   refreshThumbnail: function Site_refreshThumbnail() {
     // Only enhance tiles if that feature is turned on
-    let link = gAllPages.enhanced && DirectoryLinksProvider.getEnhancedLink(this.link) ||
-               this.link;
+    let link = this.link;
 
     let thumbnail = this._querySelector(".newtab-thumbnail");
     if (link.bgColor) {
@@ -166,15 +164,6 @@ Site.prototype = {
     let uri = link.imageURI || PageThumbs.getThumbnailURL(this.url);
     thumbnail.style.backgroundImage = 'url("' + uri + '")';
 
-    if (link.enhancedImageURI) {
-      let enhanced = this._querySelector(".enhanced-content");
-      enhanced.style.backgroundImage = 'url("' + link.enhancedImageURI + '")';
-
-      if (this.link.type != link.type) {
-        this.node.setAttribute("type", "enhanced");
-        this.enhancedId = link.directoryId;
-      }
-    }
   },
 
   /**
@@ -185,15 +174,6 @@ Site.prototype = {
     this._node.addEventListener("dragstart", this, false);
     this._node.addEventListener("dragend", this, false);
     this._node.addEventListener("mouseover", this, false);
-
-    // Specially treat the sponsored icon to prevent regular hover effects
-    let sponsored = this._querySelector(".newtab-sponsored");
-    sponsored.addEventListener("mouseover", () => {
-      this.cell.node.setAttribute("ignorehover", "true");
-    });
-    sponsored.addEventListener("mouseout", () => {
-      this.cell.node.removeAttribute("ignorehover");
-    });
   },
 
   /**
@@ -206,48 +186,9 @@ Site.prototype = {
   },
 
   /**
-   * Record interaction with site using telemetry.
-   */
-  _recordSiteClicked: function Site_recordSiteClicked(aIndex) {
-    if (Services.prefs.prefHasUserValue("browser.newtabpage.rows") ||
-        Services.prefs.prefHasUserValue("browser.newtabpage.columns") ||
-        aIndex > 8) {
-      // We only want to get indices for the default configuration, everything
-      // else goes in the same bucket.
-      aIndex = 9;
-    }
-    Services.telemetry.getHistogramById("NEWTAB_PAGE_SITE_CLICKED")
-                      .add(aIndex);
-  },
-
-  _toggleSponsored: function() {
-    let button = this._querySelector(".newtab-sponsored");
-    if (button.hasAttribute("active")) {
-      let explain = this._querySelector(".sponsored-explain");
-      explain.parentNode.removeChild(explain);
-
-      button.removeAttribute("active");
-    }
-    else {
-      let explain = document.createElementNS(HTML_NAMESPACE, "div");
-      explain.className = "sponsored-explain";
-      this.node.appendChild(explain);
-
-      let link = '<a href="' + TILES_EXPLAIN_LINK + '">' +
-                 newTabString("learn.link") + "</a>";
-      let type = this.node.getAttribute("type");
-      let icon = '<input type="button" class="newtab-control newtab-' +
-                 (type == "sponsored" ? "control-block" : "customize") + '"/>';
-      explain.innerHTML = newTabString(type + ".explain", [icon, link]);
-
-      button.setAttribute("active", "true");
-    }
-  },
-
-  /**
    * Handles site click events.
    */
-  onClick: function Site_onClick(aEvent) {
+    onClick: function Site_onClick(aEvent) {
     let action;
     let pinned = this.isPinned();
     let tileIndex = this.cell.index;
@@ -258,38 +199,27 @@ Site.prototype = {
         target.parentElement.classList.contains("newtab-link")) {
       // Record for primary and middle clicks
       if (button == 0 || button == 1) {
-        this._recordSiteClicked(tileIndex);
         action = "click";
       }
     }
-    // Handle sponsored explanation link click
-    else if (target.parentElement.classList.contains("sponsored-explain")) {
-      action = "sponsored_link";
-    }
+
     // Only handle primary clicks for the remaining targets
     else if (button == 0) {
       aEvent.preventDefault();
       if (target.classList.contains("newtab-control-block")) {
         this.block();
         action = "block";
-      }
-      else if (target.classList.contains("sponsored-explain") ||
-               target.classList.contains("newtab-sponsored")) {
-        this._toggleSponsored();
-        action = "sponsored";
-      }
-      else if (pinned) {
-        this.unpin();
-        action = "unpin";
-      }
-      else {
-        this.pin();
-        action = "pin";
+      } 
+    
+    else if (pinned) {
+      this.unpin();
+      action = "unpin";
+   }
+    else {
+      this.pin();
+      action = "pin";
       }
     }
-
-    // Report all link click actions
-    DirectoryLinksProvider.reportSitesAction(gGrid.sites, action, tileIndex);
   },
 
   /**

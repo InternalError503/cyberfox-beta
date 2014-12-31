@@ -689,7 +689,7 @@ nsBrowserContentHandler.prototype = {
     if (urlFlagIdx > -1 && (osintFlagIdx > -1 ||
         cmdLine.state == nsICommandLine.STATE_REMOTE_EXPLICIT)) {
       var urlParam = cmdLine.getArgument(urlFlagIdx + 1);
-      if (cmdLine.length != urlFlagIdx + 2 || /firefoxurl:/.test(urlParam))
+      if (cmdLine.length != urlFlagIdx + 2 || /cyberfoxurl:/.test(urlParam))
         throw NS_ERROR_ABORT;
       cmdLine.handleFlag("osint", false)
     }

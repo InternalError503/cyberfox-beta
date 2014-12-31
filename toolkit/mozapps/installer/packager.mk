@@ -318,6 +318,7 @@ DIST_FILES += \
   greprefs.js \
   browserconfig.properties \
   blocklist.xml \
+  agents.json \
   chrome.manifest \
   update.locale \
   removed-files \

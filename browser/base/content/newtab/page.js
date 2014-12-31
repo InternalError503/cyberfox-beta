@@ -34,8 +34,6 @@ let gPage = {
     // Initialize customize controls.
     gCustomize.init();
 
-    // Initialize intro panel.
-    gIntro.init();
   },
 
   /**
@@ -47,11 +45,6 @@ let gPage = {
 
       let enabled = gAllPages.enabled;
       this._updateAttributes(enabled);
-
-      // Update thumbnails to the new enhanced setting
-      if (aData == "browser.newtabpage.enhanced") {
-        this.update();
-      }
 
       // Initialize the whole page if we haven't done that, yet.
       if (enabled) {
@@ -177,8 +170,6 @@ let gPage = {
   },
 
   onPageFirstVisible: function () {
-    // Record another page impression.
-    Services.telemetry.getHistogramById("NEWTAB_PAGE_SHOWN").add(true);
 
     for (let site of gGrid.sites) {
       if (site) {
@@ -196,9 +187,6 @@ let gPage = {
   onPageVisibleAndLoaded() {
     // Send the index of the last visible tile.
     this.reportLastVisibleTileIndex();
-
-    // Show the panel now that anchors are sized
-    gIntro.showIfNecessary();
   },
 
   reportLastVisibleTileIndex() {
@@ -220,7 +208,6 @@ let gPage = {
         }
       }
     }
-
-    DirectoryLinksProvider.reportSitesAction(sites, "view", lastIndex);
+  
   }
 };

@@ -74,6 +74,7 @@ var gContentPane = {
    * Displays the popup exceptions dialog where specific site popup preferences
    * can be set.
    */
+// Disable Javascript & Block Images Feature Dont Remove
   showPopupExceptions: function ()
   {
     var bundlePreferences = document.getElementById("bundlePreferences");
@@ -82,10 +83,60 @@ var gContentPane = {
     params.windowTitle = bundlePreferences.getString("popuppermissionstitle");
     params.introText = bundlePreferences.getString("popuppermissionstext");
 
-    gSubDialog.open("chrome://browser/content/preferences/permissions.xul",
+    gSubDialog.open("chrome://browser/content/preferences/permissions.xul", 
                     "resizable=yes", params);
   },
 
+  // IMAGES
+
+  /**
+   * Converts the value of the permissions.default.image preference into a
+   * Boolean value for use in determining the state of the "load images"
+   * checkbox, returning true if images should be loaded and false otherwise.
+   */
+  readLoadImages: function ()
+  {
+    var pref = document.getElementById("permissions.default.image");
+    return (pref.value == 1 || pref.value == 3);
+  },
+
+  /**
+   * Returns the "load images" preference value which maps to the state of the
+   * preferences UI.
+   */
+  writeLoadImages: function ()
+  { 
+    return (document.getElementById("loadImages").checked) ? 1 : 2;
+  },
+
+  /**
+   * Displays image exception preferences for which websites can and cannot
+   * load images.
+   */
+  showImageExceptions: function ()
+  {
+    var bundlePreferences = document.getElementById("bundlePreferences");
+    var params = { blockVisible: false, sessionVisible: false, allowVisible: true,
+                   prefilledHost: "", permissionType: "image" }
+    params.windowTitle = bundlePreferences.getString("imagepermissionstitle");
+    params.introText = bundlePreferences.getString("imagepermissionstext");
+
+    gSubDialog.open("chrome://browser/content/preferences/permissions.xul", 
+                    "resizable=yes", params);
+  },
+
+  // JAVASCRIPT
+
+  /**
+   * Displays the advanced JavaScript preferences for enabling or disabling
+   * various annoying behaviors.
+   */
+  showAdvancedJS: function ()
+  {
+    gSubDialog.open("chrome://browser/content/preferences/advanced-scripts.xul", 
+                    "resizable=no", null);  
+  },
+//End Disable Javascript & Block Images Feature Dont Remove
   // FONTS
 
   /**

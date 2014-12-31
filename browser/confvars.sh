@@ -3,21 +3,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-MOZ_APP_BASENAME=Firefox
-MOZ_APP_VENDOR=Mozilla
-MOZ_UPDATER=1
+MOZ_APP_BASENAME=Cyberfox
+MOZ_APP_VENDOR=8pecxstudios
+MOZ_UPDATER=
 MOZ_PHOENIX=1
 
 if test "$OS_ARCH" = "WINNT"; then
   MOZ_MAINTENANCE_SERVICE=1
-  MOZ_VERIFY_MAR_SIGNATURE=1
+  MOZ_VERIFY_MAR_SIGNATURE=0
   if ! test "$HAVE_64BIT_BUILD"; then
     if test "$MOZ_UPDATE_CHANNEL" = "nightly" -o \
             "$MOZ_UPDATE_CHANNEL" = "aurora" -o \
             "$MOZ_UPDATE_CHANNEL" = "beta" -o \
             "$MOZ_UPDATE_CHANNEL" = "release"; then
       if ! test "$MOZ_DEBUG"; then
-        MOZ_STUB_INSTALLER=1
+        MOZ_STUB_INSTALLER=0
       fi
     fi
   fi
@@ -28,7 +28,7 @@ MOZ_DISABLE_EXPORT_JS=1
 MOZ_SAFE_BROWSING=1
 MOZ_SERVICES_COMMON=1
 MOZ_SERVICES_CRYPTO=1
-MOZ_SERVICES_HEALTHREPORT=1
+MOZ_SERVICES_HEALTHREPORT=
 MOZ_SERVICES_METRICS=1
 MOZ_SERVICES_SYNC=1
 MOZ_SERVICES_CLOUDSYNC=1
@@ -48,16 +48,16 @@ MOZ_APP_ID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}
 # This should usually be the same as the value MAR_CHANNEL_ID.
 # If more than one ID is needed, then you should use a comma separated list
 # of values.
-ACCEPTED_MAR_CHANNEL_IDS=firefox-mozilla-beta,firefox-mozilla-release
+ACCEPTED_MAR_CHANNEL_IDS=Cyberfox-mozilla-release
 # The MAR_CHANNEL_ID must not contain the following 3 characters: ",\t "
-MAR_CHANNEL_ID=firefox-mozilla-beta
+MAR_CHANNEL_ID=Cyberfox-mozilla-release
 MOZ_PROFILE_MIGRATOR=1
 MOZ_APP_STATIC_INI=1
 MOZ_WEBAPP_RUNTIME=1
 MOZ_MEDIA_NAVIGATOR=1
 MOZ_WEBGL_CONFORMANT=1
 # Enable navigator.mozPay
-MOZ_PAY=1
+MOZ_PAY=0
 # Enable activities. These are used for FxOS developers currently.
 MOZ_ACTIVITIES=1
 MOZ_JSDOWNLOADS=1

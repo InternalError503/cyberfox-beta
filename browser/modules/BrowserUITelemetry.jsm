@@ -636,7 +636,7 @@ this.BrowserUITelemetry = {
     "reloadimage", "viewimage", "viewvideo", "copyimage-contents", "copyimage",
     "copyvideourl", "copyaudiourl", "saveimage", "shareimage", "sendimage",
     "setDesktopBackground", "viewimageinfo", "viewimagedesc", "savevideo",
-    "sharevideo", "saveaudio", "video-saveimage", "sendvideo", "sendaudio",
+    "sharevideo", "saveaudio", "video-saveimage", "sendvideo", "sendaudio", "sendLink",
     "ctp-play", "ctp-hide", "sharepage", "savepage", "markpageMenu",
     "viewbgimage", "undo", "cut", "copy", "paste", "delete", "selectall",
     "keywordfield", "searchselect", "shareselect", "frame", "showonlythisframe",

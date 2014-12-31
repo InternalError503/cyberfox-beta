@@ -21,6 +21,13 @@ var gAdvancedPane = {
     this._inited = true;
     var advancedPrefs = document.getElementById("advancedPrefs");
 
+	//Temp solution as the update system not active for beta so we don't want users trying just yet.
+	if(Services.prefs.getCharPref("app.update.channel.type") === "beta"){
+		document.getElementById("updateOptions").hidden = true;
+		document.getElementById("app.update.autocheck").hidden = true;
+		document.getElementById("app.update.check.enabled").hidden = true;
+	}	
+	
     var extraArgs = window.arguments[1];
     if (extraArgs && extraArgs["advancedTab"]){
       advancedPrefs.selectedTab = document.getElementById(extraArgs["advancedTab"]);
@@ -37,7 +44,9 @@ var gAdvancedPane = {
 #ifdef MOZ_CRASHREPORTER
     this.initSubmitCrashes();
 #endif
+#ifdef MOZ_TELEMETRY_REPORTING
     this.initTelemetry();
+#endif
 #ifdef MOZ_SERVICES_HEALTHREPORT
     this.initSubmitHealthReport();
 #endif
@@ -219,7 +228,7 @@ var gAdvancedPane = {
   /**
    * The preference/checkbox is configured in XUL.
    *
-   * In all cases, set up the Learn More link sanely
+   * In all cases, set up the Learn More link sanely.
    */
   initTelemetry: function ()
   {

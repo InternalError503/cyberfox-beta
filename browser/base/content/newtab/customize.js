@@ -9,7 +9,6 @@ let gCustomize = {
     "blank",
     "button",
     "classic",
-    "enhanced",
     "panel",
   ],
 
@@ -26,11 +25,6 @@ let gCustomize = {
     });
     this._nodes.classic.addEventListener("click", e => {
       gAllPages.enabled = true;
-      gAllPages.enhanced = false;
-    });
-    this._nodes.enhanced.addEventListener("click", e => {
-      gAllPages.enabled = true;
-      gAllPages.enhanced = true;
     });
 
     this.updateSelected();
@@ -59,9 +53,9 @@ let gCustomize = {
   },
 
   updateSelected: function() {
-    let {enabled, enhanced} = gAllPages;
-    let selected = enabled ? enhanced ? "enhanced" : "classic" : "blank";
-    ["enhanced", "classic", "blank"].forEach(id => {
+    let {enabled} = gAllPages;
+    let selected = enabled ? "classic" : "blank";
+    ["classic", "blank"].forEach(id => {
       let node = this._nodes[id];
       if (id == selected) {
         node.setAttribute("selected", true);

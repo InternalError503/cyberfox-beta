@@ -161,14 +161,12 @@ let gGrid = {
     site.innerHTML =
       '<a class="newtab-link">' +
       '  <span class="newtab-thumbnail"/>' +
-      '  <span class="newtab-thumbnail enhanced-content"/>' +
       '  <span class="newtab-title"/>' +
       '</a>' +
       '<input type="button" title="' + newTabString("pin") + '"' +
       '       class="newtab-control newtab-control-pin"/>' +
       '<input type="button" title="' + newTabString("block") + '"' +
-      '       class="newtab-control newtab-control-block"/>' +
-      '<span class="newtab-sponsored">' + newTabString("sponsored.button") + '</span>';
+      '       class="newtab-control newtab-control-block"/>';
 
     this._siteFragment = document.createDocumentFragment();
     this._siteFragment.appendChild(site);

@@ -93,7 +93,7 @@
     <command id="Browser:RestoreLastSession" oncommand="restoreLastSession();" disabled="true"/>
 
     <command id="Tools:Search" oncommand="BrowserSearch.webSearch();"/>
-    <command id="Tools:Downloads" oncommand="BrowserDownloadsUI();"/>
+    <command id="Tools:Downloads" oncommand="gCyberfoxCustom.toolsDownloads();"/>
     <command id="Tools:DevToolbox" oncommand="gDevToolsBrowser.toggleToolboxCommand(gBrowser);"/>
     <command id="Tools:DevToolbar" oncommand="DeveloperToolbar.toggle();" disabled="true" hidden="true"/>
     <command id="Tools:DevToolbarFocus" oncommand="DeveloperToolbar.focusToggle();" disabled="true"/>

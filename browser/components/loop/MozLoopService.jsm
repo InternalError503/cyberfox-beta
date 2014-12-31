@@ -76,6 +76,9 @@ XPCOMUtils.defineLazyModuleGetter(this, "roomsPushNotification",
 XPCOMUtils.defineLazyModuleGetter(this, "MozLoopPushHandler",
                                   "resource:///modules/loop/MozLoopPushHandler.jsm");
 
+XPCOMUtils.defineLazyModuleGetter(this, "UITour",
+                                  "resource:///modules/UITour.jsm");
+
 XPCOMUtils.defineLazyServiceGetter(this, "uuidgen",
                                    "@mozilla.org/uuid-generator;1",
                                    "nsIUUIDGenerator");
@@ -125,6 +128,8 @@ let gConversationWindowData = new Map();
  * and register with the Loop server.
  */
 let MozLoopServiceInternal = {
+  conversationContexts: new Map(),
+
   mocks: {
     pushHandler: undefined,
     webSocket: undefined,
@@ -243,7 +248,8 @@ let MozLoopServiceInternal = {
   notifyStatusChanged: function(aReason = null) {
     log.debug("notifyStatusChanged with reason:", aReason);
     let profile = MozLoopService.userProfile;
-    LoopStorage.switchDatabase(profile ? profile.uid : null);
+    LoopStorage.switchDatabase(profile && profile.uid);
+    LoopRooms.maybeRefresh(profile && profile.uid);
     Services.obs.notifyObservers(null, "loop-status-changed", aReason);
   },
 
@@ -454,6 +460,20 @@ let MozLoopServiceInternal = {
       // true = use a hex key, as required by the server (see bug 1032738).
       credentials = deriveHawkCredentials(sessionToken, "sessionToken",
                                           2 * 32, true);
+    }
+
+    if (payloadObj) {
+      // Note: we must copy the object rather than mutate it, to avoid
+      // mutating the values of the object passed in.
+      let newPayloadObj = {};
+      for (let property of Object.getOwnPropertyNames(payloadObj)) {
+        if (typeof payloadObj[property] == "string") {
+          newPayloadObj[property] = CommonUtils.encodeUTF8(payloadObj[property]);
+        } else {
+          newPayloadObj[property] = payloadObj[property];
+        }
+      };
+      payloadObj = newPayloadObj;
     }
 
     return gHawkClient.request(path, method, credentials, payloadObj).then((result) => {
@@ -813,6 +833,17 @@ let MozLoopServiceInternal = {
         chatbox.removeEventListener("DOMContentLoaded", loaded, true);
 
         let window = chatbox.contentWindow;
+
+        function socialFrameChanged(eventName) {
+          UITour.availableTargetsCache.clear();
+          UITour.notify(eventName);
+        }
+
+        window.addEventListener("socialFrameHide", socialFrameChanged.bind(null, "Loop:ChatWindowHidden"));
+        window.addEventListener("socialFrameShow", socialFrameChanged.bind(null, "Loop:ChatWindowShown"));
+        window.addEventListener("socialFrameDetached", socialFrameChanged.bind(null, "Loop:ChatWindowDetached"));
+        window.addEventListener("unload", socialFrameChanged.bind(null, "Loop:ChatWindowClosed"));
+
         injectLoopAPI(window);
 
         let ourID = window.QueryInterface(Ci.nsIInterfaceRequestor)
@@ -822,6 +853,22 @@ let MozLoopServiceInternal = {
           if (winID != ourID) {
             return;
           }
+
+          // Chat Window Id, this is different that the internal winId
+          let windowId = window.location.hash.slice(1);
+          var context = this.conversationContexts.get(windowId);
+          var exists = pc.id.match(/session=(\S+)/);
+          if (context && !exists) {
+            // Not ideal but insert our data amidst existing data like this:
+            // - 000 (id=00 url=http)
+            // + 000 (session=000 call=000 id=00 url=http)
+            var pair = pc.id.split("(");  //)
+            if (pair.length == 2) {
+              pc.id = pair[0] + "(session=" + context.sessionId +
+                  (context.callId? " call=" + context.callId : "") + " " + pair[1]; //)
+            }
+          }
+
           if (type == "iceconnectionstatechange") {
             switch(pc.iceConnectionState) {
               case "failed":
@@ -837,6 +884,8 @@ let MozLoopServiceInternal = {
 
         let pc_static = new window.mozRTCPeerConnectionStatic();
         pc_static.registerPeerConnectionLifecycleCallback(onPCLifecycleChange);
+
+        UITour.notify("Loop:ChatWindowOpened");
       }.bind(this), true);
     };
 
@@ -938,7 +987,7 @@ let MozLoopServiceInternal = {
       code: code,
       state: state,
     };
-    return this.hawkRequest(LOOP_SESSION_TYPE.FXA, "/fxa-oauth/token", "POST", payload).then(response => {
+    return this.hawkRequestInternal(LOOP_SESSION_TYPE.FXA, "/fxa-oauth/token", "POST", payload).then(response => {
       return JSON.parse(response.body);
     },
     error => {this._hawkRequestError(error);});
@@ -1027,12 +1076,14 @@ this.MozLoopService = {
 
     // The Loop toolbar button should change icon when the room participant count
     // changes from 0 to something.
-    const onRoomsChange = () => {
-      MozLoopServiceInternal.notifyStatusChanged();
+    const onRoomsChange = (e) => {
+      // Pass the event name as notification reason for better logging.
+      MozLoopServiceInternal.notifyStatusChanged("room-" + e);
     };
     LoopRooms.on("add", onRoomsChange);
     LoopRooms.on("update", onRoomsChange);
-    LoopRooms.on("joined", (e, roomToken, participant) => {
+    LoopRooms.on("delete", onRoomsChange);
+    LoopRooms.on("joined", (e, room, participant) => {
       // Don't alert if we're in the doNotDisturb mode, or the participant
       // is the owner - the content code deals with the rest of the sounds.
       if (MozLoopServiceInternal.doNotDisturb || participant.owner) {
@@ -1041,8 +1092,44 @@ this.MozLoopService = {
 
       let window = gWM.getMostRecentWindow("navigator:browser");
       if (window) {
-        window.LoopUI.playSound("room-joined");
+        window.LoopUI.showNotification({
+          sound: "room-joined",
+          title: room.roomName,
+          message: MozLoopServiceInternal.localizedStrings.get("rooms_room_joined_label"),
+          selectTab: "rooms"
+        });
       }
+    });
+
+    // Resume the tour (re-opening the tab, if necessary) if someone else joins
+    // a room of ours and it's currently open.
+    LoopRooms.on("joined", (e, room, participant) => {
+      let isOwnerInRoom = false;
+      let isOtherInRoom = false;
+
+      if (!this.getLoopPref("gettingStarted.resumeOnFirstJoin")) {
+        return;
+      }
+
+      if (!room.participants) {
+        return;
+      }
+
+      // The particpant that joined isn't necessarily included in room.participants (depending on
+      // when the broadcast happens) so concatenate.
+      for (let participant of room.participants.concat(participant)) {
+        if (participant.owner) {
+          isOwnerInRoom = true;
+        } else {
+          isOtherInRoom = true;
+        }
+      }
+
+      if (!isOwnerInRoom || !isOtherInRoom) {
+        return;
+      }
+
+      this.resumeTour("open");
     });
 
     // If expiresTime is not in the future and the user hasn't
@@ -1517,22 +1604,67 @@ this.MozLoopService = {
   }),
 
   /**
+   * Gets the tour URL.
+   *
+   * @param {String} aSrc A string representing the entry point to begin the tour, optional.
+   * @param {Object} aAdditionalParams An object with keys used as query parameter names
+   */
+  getTourURL: function(aSrc = null, aAdditionalParams = {}) {
+    let urlStr = this.getLoopPref("gettingStarted.url");
+    let url = new URL(Services.urlFormatter.formatURL(urlStr));
+    for (let paramName in aAdditionalParams) {
+      url.searchParams.append(paramName, aAdditionalParams[paramName]);
+    }
+    if (aSrc) {
+      url.searchParams.set("utm_source", "firefox-browser");
+      url.searchParams.set("utm_medium", "firefox-browser");
+      url.searchParams.set("utm_campaign", aSrc);
+    }
+    return url;
+  },
+
+  resumeTour: function(aIncomingConversationState) {
+    if (!this.getLoopPref("gettingStarted.resumeOnFirstJoin")) {
+      return;
+    }
+
+    let url = this.getTourURL("resume-with-conversation", {
+      incomingConversation: aIncomingConversationState,
+    });
+
+    let win = Services.wm.getMostRecentWindow("navigator:browser");
+
+    this.setLoopPref("gettingStarted.resumeOnFirstJoin", false);
+
+    // The query parameters of the url can vary but we always want to re-use a Loop tour tab that's
+    // already open so we ignore the fragment and query string.
+    let hadExistingTab = win.switchToTabHavingURI(url, true, {
+      ignoreFragment: true,
+      ignoreQueryString: true,
+    });
+
+    // If the tab was already open, send an event instead of using the query
+    // parameter above (that we don't replace on existing tabs to avoid a reload).
+    if (hadExistingTab) {
+      UITour.notify("Loop:IncomingConversation", {
+        conversationOpen: aIncomingConversationState === "open",
+      });
+    }
+  },
+
+  /**
    * Opens the Getting Started tour in the browser.
    *
-   * @param {String} aSrc
-   *   - The UI element that the user used to begin the tour, optional.
+   * @param {String} [aSrc] A string representing the entry point to begin the tour, optional.
    */
   openGettingStartedTour: Task.async(function(aSrc = null) {
     try {
-      let urlStr = Services.prefs.getCharPref("loop.gettingStarted.url");
-      let url = new URL(Services.urlFormatter.formatURL(urlStr));
-      if (aSrc) {
-        url.searchParams.set("utm_source", "firefox-browser");
-        url.searchParams.set("utm_medium", "firefox-browser");
-        url.searchParams.set("utm_campaign", aSrc);
-      }
+      let url = this.getTourURL(aSrc);
       let win = Services.wm.getMostRecentWindow("navigator:browser");
-      win.switchToTabHavingURI(url, true, {replaceQueryString: true});
+      win.switchToTabHavingURI(url, true, {
+        ignoreFragment: true,
+        replaceQueryString: true,
+      });
     } catch (ex) {
       log.error("Error opening Getting Started tour", ex);
     }
@@ -1576,5 +1708,13 @@ this.MozLoopService = {
 
     log.error("Window data was already fetched before. Possible race condition!");
     return null;
+  },
+
+  getConversationContext: function(winId) {
+    return MozLoopServiceInternal.conversationContexts.get(winId);
+  },
+
+  addConversationContext: function(windowId, context) {
+    MozLoopServiceInternal.conversationContexts.set(windowId, context);
   }
 };

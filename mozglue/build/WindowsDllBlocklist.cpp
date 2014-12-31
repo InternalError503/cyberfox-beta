@@ -61,105 +61,154 @@ struct DllBlockInfo {
 };
 
 static DllBlockInfo sWindowsDllBlocklist[] = {
-  // EXAMPLE:
-  // { "uxtheme.dll", ALL_VERSIONS },
-  // { "uxtheme.dll", 0x0000123400000000ULL },
-  // The DLL name must be in lowercase!
-  
-  // NPFFAddon - Known malware
-  { "npffaddon.dll", ALL_VERSIONS},
+	  // EXAMPLE:
+	  // { "uxtheme.dll", ALL_VERSIONS },
+	  // { "uxtheme.dll", 0x0000123400000000ULL },
+	  // The DLL name must be in lowercase!
+	  
+	  // NPFFAddon - Known malware
+	  { "npffaddon.dll", ALL_VERSIONS},
 
-  // AVG 8 - Antivirus vendor AVG, old version, plugin already blocklisted
-  {"avgrsstx.dll", MAKE_VERSION(8,5,0,401)},
-  
-  // calc.dll - Suspected malware
-  {"calc.dll", MAKE_VERSION(1,0,0,1)},
+	  // AVG 8 - Antivirus vendor AVG, old version, plugin already blocklisted
+	  {"avgrsstx.dll", MAKE_VERSION(8,5,0,401)},
+	  
+	  // calc.dll - Suspected malware
+	  {"calc.dll", MAKE_VERSION(1,0,0,1)},
 
-  // hook.dll - Suspected malware
-  {"hook.dll", ALL_VERSIONS},
-  
-  // GoogleDesktopNetwork3.dll - Extremely old, unversioned instances
-  // of this DLL cause crashes
-  {"googledesktopnetwork3.dll", UNVERSIONED},
+	  // hook.dll - Suspected malware
+	  {"hook.dll", ALL_VERSIONS},
+	  
+	  // GoogleDesktopNetwork3.dll - Extremely old, unversioned instances
+	  // of this DLL cause crashes
+	  {"googledesktopnetwork3.dll", UNVERSIONED},
 
-  // rdolib.dll - Suspected malware
-  {"rdolib.dll", MAKE_VERSION(6,0,88,4)},
+	  // rdolib.dll - Suspected malware
+	  {"rdolib.dll", MAKE_VERSION(6,0,88,4)},
 
-  // fgjk4wvb.dll - Suspected malware
-  {"fgjk4wvb.dll", MAKE_VERSION(8,8,8,8)},
-  
-  // radhslib.dll - Naomi internet filter - unmaintained since 2006
-  {"radhslib.dll", UNVERSIONED},
+	  // fgjk4wvb.dll - Suspected malware
+	  {"fgjk4wvb.dll", MAKE_VERSION(8,8,8,8)},
+	  
+	  // radhslib.dll - Naomi internet filter - unmaintained since 2006
+	  {"radhslib.dll", UNVERSIONED},
 
-  // Music download filter for vkontakte.ru - old instances
-  // of this DLL cause crashes
-  {"vksaver.dll", MAKE_VERSION(2,2,2,0)},
+	  // Music download filter for vkontakte.ru - old instances
+	  // of this DLL cause crashes
+	  {"vksaver.dll", MAKE_VERSION(2,2,2,0)},
 
-  // Topcrash in Firefox 4.0b1
-  {"rlxf.dll", MAKE_VERSION(1,2,323,1)},
+	  // Topcrash in Firefox 4.0b1
+	  {"rlxf.dll", MAKE_VERSION(1,2,323,1)},
 
-  // psicon.dll - Topcrashes in Thunderbird, and some crashes in Firefox
-  // Adobe photoshop library, now redundant in later installations
-  {"psicon.dll", ALL_VERSIONS},
+	  // psicon.dll - Topcrashes in Thunderbird, and some crashes in Firefox
+	  // Adobe photoshop library, now redundant in later installations
+	  {"psicon.dll", ALL_VERSIONS},
 
-  // Topcrash in Firefox 4 betas (bug 618899)
-  {"accelerator.dll", MAKE_VERSION(3,2,1,6)},
+	  // Topcrash in Firefox 4 betas (bug 618899)
+	  {"accelerator.dll", MAKE_VERSION(3,2,1,6)},
 
-  // Topcrash with Roboform in Firefox 8 (bug 699134)
-  {"rf-firefox.dll", MAKE_VERSION(7,6,1,0)},
-  {"roboform.dll", MAKE_VERSION(7,6,1,0)},
+	  // Topcrash with Roboform in Firefox 8 (bug 699134)
+	  {"rf-firefox.dll", MAKE_VERSION(7,6,1,0)},
+	  {"roboform.dll", MAKE_VERSION(7,6,1,0)},
 
-  // Topcrash with Babylon Toolbar on FF16+ (bug 721264)
-  {"babyfox.dll", ALL_VERSIONS},
+	  // Topcrash with Babylon Toolbar on FF16+ (bug 721264)
+	  {"babyfox.dll", ALL_VERSIONS},
 
-  // sprotector.dll crashes, bug 957258
-  {"sprotector.dll", ALL_VERSIONS},
+	  // sprotector.dll crashes, bug 957258
+	  {"sprotector.dll", ALL_VERSIONS},
 
-  // Topcrash with Websense Endpoint, bug 828184
-  {"qipcap.dll", MAKE_VERSION(7, 6, 815, 1)},
+	  // Topcrash with Websense Endpoint, bug 828184
+	  {"qipcap.dll", MAKE_VERSION(7, 6, 815, 1)},
 
-  // leave these two in always for tests
-  { "mozdllblockingtest.dll", ALL_VERSIONS },
-  { "mozdllblockingtest_versioned.dll", 0x0000000400000000ULL },
+	  // leave these two in always for tests
+	  { "mozdllblockingtest.dll", ALL_VERSIONS },
+	  { "mozdllblockingtest_versioned.dll", 0x0000000400000000ULL },
 
-  // Windows Media Foundation FLAC decoder and type sniffer (bug 839031).
-  { "mfflac.dll", ALL_VERSIONS },
+	  // Windows Media Foundation FLAC decoder and type sniffer (bug 839031).
+	  { "mfflac.dll", ALL_VERSIONS },
 
-  // Older Relevant Knowledge DLLs cause us to crash (bug 904001).
-  { "rlnx.dll", MAKE_VERSION(1, 3, 334, 9) },
-  { "pmnx.dll", MAKE_VERSION(1, 3, 334, 9) },
-  { "opnx.dll", MAKE_VERSION(1, 3, 334, 9) },
-  { "prnx.dll", MAKE_VERSION(1, 3, 334, 9) },
+	  // Older Relevant Knowledge DLLs cause us to crash (bug 904001).
+	  { "rlnx.dll", MAKE_VERSION(1, 3, 334, 9) },
+	  { "pmnx.dll", MAKE_VERSION(1, 3, 334, 9) },
+	  { "opnx.dll", MAKE_VERSION(1, 3, 334, 9) },
+	  { "prnx.dll", MAKE_VERSION(1, 3, 334, 9) },
 
-  // Older belgian ID card software causes Firefox to crash or hang on
-  // shutdown, bug 831285 and 918399.
-  { "beid35cardlayer.dll", MAKE_VERSION(3, 5, 6, 6968) },
+	  // Older belgian ID card software causes Firefox to crash or hang on
+	  // shutdown, bug 831285 and 918399.
+	  { "beid35cardlayer.dll", MAKE_VERSION(3, 5, 6, 6968) },
 
-  // bug 925459, bitguard crashes
-  { "bitguard.dll", ALL_VERSIONS },
+	  // bug 925459, bitguard crashes
+	  { "bitguard.dll", ALL_VERSIONS },
+	  
+	  // microsoft lync crashes Check-in
+	  //{ "npmeetingjoinpluginoc.dll", ALL_VERSIONS },
 
-  // bug 812683 - crashes in Windows library when Asus Gamer OSD is installed
-  // Software is discontinued/unsupported
-  { "atkdx11disp.dll", ALL_VERSIONS },
+	  // bug 812683 - crashes in Windows library when Asus Gamer OSD is installed
+	  // Software is discontinued/unsupported
+	  { "atkdx11disp.dll", ALL_VERSIONS },
 
-  // Topcrash with Conduit SearchProtect, bug 944542
-  { "spvc32.dll", ALL_VERSIONS },
+	  // Topcrash with Conduit SearchProtect, bug 944542
+	  { "spvc32.dll", ALL_VERSIONS },
+	  { "sprotector.dll", ALL_VERSIONS },
 
-  // XP topcrash with F-Secure, bug 970362
-  { "fs_ccf_ni_umh32.dll", MAKE_VERSION(1, 42, 101, 0), DllBlockInfo::BLOCK_XP_ONLY },
 
-  // Topcrash with V-bates, bug 1002748 and bug 1023239
-  { "libinject.dll", UNVERSIONED },
-  { "libinject2.dll", 0x537DDC93, DllBlockInfo::USE_TIMESTAMP },
-  { "libredir2.dll", 0x5385B7ED, DllBlockInfo::USE_TIMESTAMP },
+	  // XP topcrash with F-Secure, bug 970362
+	  { "fs_ccf_ni_umh32.dll", MAKE_VERSION(1, 42, 101, 0), DllBlockInfo::BLOCK_XP_ONLY },
 
-  // Crashes with RoboForm2Go written against old SDK, bug 988311
-  { "rf-firefox-22.dll", ALL_VERSIONS },
+	  // Topcrash with V-bates, bug 1002748 and bug 1023239
+	  { "libinject.dll", UNVERSIONED },
+	  { "libinject2.dll", 0x537DDC93, DllBlockInfo::USE_TIMESTAMP },
+	  { "libredir2.dll", 0x5385B7ED, DllBlockInfo::USE_TIMESTAMP },
 
-  // Crashes with DesktopTemperature, bug 1046382
-  { "dtwxsvc.dll", 0x53153234, DllBlockInfo::USE_TIMESTAMP },
+	  // Crashes with RoboForm2Go written against old SDK, bug 988311
+	  { "rf-firefox-22.dll", ALL_VERSIONS },
 
-  { nullptr, 0 }
+	  // Crashes with DesktopTemperature, bug 1046382
+	  { "dtwxsvc.dll", ALL_VERSIONS },
+
+	  //Must block www.aztecmedia.com browser malware & highjack1005563   
+	  { "systemk.dll", ALL_VERSIONS },
+	  { "syskldr.dll", ALL_VERSIONS },
+
+	  // bug: 979856 security hard-block truster shopper (adware)
+	  { "addinexpress.ie.dll", ALL_VERSIONS },
+	  { "adxloader.dll", ALL_VERSIONS },
+	  { "adxloader64.dll", ALL_VERSIONS },
+	  { "custominstaller.dll", ALL_VERSIONS }, 
+	  { "trustedshopper.dll", ALL_VERSIONS }, 
+	  
+	  // bug  - OSD displays on browser windows
+	  // Must block the OSD overlay DLL
+	  { "rtsshooks.dll", ALL_VERSIONS },
+	  { "rtui.dll", ALL_VERSIONS },
+	  { "rtmui.dll", ALL_VERSIONS },
+	  { "rtfc.dll", ALL_VERSIONS }, 
+	  { "libmfxsw32.dll", ALL_VERSIONS },
+	  { "qsv.dll", ALL_VERSIONS }, 
+	  { "rtvcvfw32.dll", ALL_VERSIONS }, 
+	  
+	  //Ask toolbar
+	  { "genericasktoolbar.dll", ALL_VERSIONS },
+	  { "asksbar.dll", ALL_VERSIONS }, 
+
+	  //Incredibar
+	  { "incredibar.dll", ALL_VERSIONS },   
+	  { "incredibarapp.dll", ALL_VERSIONS },   
+	  { "incredibareng.dll", ALL_VERSIONS }, 
+	  { "incredibartlbr.dll", ALL_VERSIONS },
+	  
+	  //Comfirmed can crash (This shouldn't be hooking the browser)
+	  { "oldnewexplorer64.dll", ALL_VERSIONS },
+	  
+	  //Applon plugin and addon.
+	  { "mediainfo.dll", ALL_VERSIONS },
+	  { "iceqliteutil.dll", ALL_VERSIONS },
+	  { "icehttpclass.dll", ALL_VERSIONS },	  
+	  
+	  //FindWide.com plugin bug 1076917
+	  //Regards less of Mozilla's choice we are hard blocking until resolved.
+	  { "nptnt2.dll", ALL_VERSIONS },
+	  { "nptnt2ghost.dll", ALL_VERSIONS },
+ 
+	  { nullptr, 0 }
 };
 
 #ifndef STATUS_DLL_NOT_FOUND

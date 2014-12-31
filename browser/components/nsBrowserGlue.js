@@ -22,9 +22,6 @@ XPCOMUtils.defineLazyModuleGetter(this, "AddonManager",
 XPCOMUtils.defineLazyModuleGetter(this, "ContentClick",
                                   "resource:///modules/ContentClick.jsm");
 
-XPCOMUtils.defineLazyModuleGetter(this, "DirectoryLinksProvider",
-                                  "resource:///modules/DirectoryLinksProvider.jsm");
-
 XPCOMUtils.defineLazyModuleGetter(this, "NetUtil",
                                   "resource://gre/modules/NetUtil.jsm");
 
@@ -521,8 +518,6 @@ BrowserGlue.prototype = {
     WebappManager.init();
     PageThumbs.init();
     NewTabUtils.init();
-    DirectoryLinksProvider.init();
-    NewTabUtils.links.addProvider(DirectoryLinksProvider);
 #ifdef NIGHTLY_BUILD
     if (Services.prefs.getBoolPref("dom.identity.enabled")) {
       SignInToWebsiteUX.init();
@@ -546,59 +541,7 @@ BrowserGlue.prototype = {
 
     Services.obs.notifyObservers(null, "browser-ui-startup-complete", "");
   },
-
-  _checkForOldBuildUpdates: function () {
-    // check for update if our build is old
-    if (Services.prefs.getBoolPref("app.update.enabled") &&
-        Services.prefs.getBoolPref("app.update.checkInstallTime")) {
-
-      let buildID = Services.appinfo.appBuildID;
-      let today = new Date().getTime();
-      let buildDate = new Date(buildID.slice(0,4),     // year
-                               buildID.slice(4,6) - 1, // months are zero-based.
-                               buildID.slice(6,8),     // day
-                               buildID.slice(8,10),    // hour
-                               buildID.slice(10,12),   // min
-                               buildID.slice(12,14))   // ms
-      .getTime();
-
-      const millisecondsIn24Hours = 86400000;
-      let acceptableAge = Services.prefs.getIntPref("app.update.checkInstallTime.days") * millisecondsIn24Hours;
-
-      if (buildDate + acceptableAge < today) {
-        Cc["@mozilla.org/updates/update-service;1"].getService(Ci.nsIApplicationUpdateService).checkForBackgroundUpdates();
-      }
-    }
-  },
-
-  _trackSlowStartup: function () {
-    if (Services.startup.interrupted ||
-        Services.prefs.getBoolPref("browser.slowStartup.notificationDisabled"))
-      return;
-
-    let currentTime = Date.now() - Services.startup.getStartupInfo().process;
-    let averageTime = 0;
-    let samples = 0;
-    try {
-      averageTime = Services.prefs.getIntPref("browser.slowStartup.averageTime");
-      samples = Services.prefs.getIntPref("browser.slowStartup.samples");
-    } catch (e) { }
-
-    let totalTime = (averageTime * samples) + currentTime;
-    samples++;
-    averageTime = totalTime / samples;
-
-    if (samples >= Services.prefs.getIntPref("browser.slowStartup.maxSamples")) {
-      if (averageTime > Services.prefs.getIntPref("browser.slowStartup.timeThreshold"))
-        this._showSlowStartupNotification();
-      averageTime = 0;
-      samples = 0;
-    }
-
-    Services.prefs.setIntPref("browser.slowStartup.averageTime", averageTime);
-    Services.prefs.setIntPref("browser.slowStartup.samples", samples);
-  },
-
+  
   _showSlowStartupNotification: function () {
     let win = this.getMostRecentBrowserWindow();
     if (!win)
@@ -667,22 +610,6 @@ BrowserGlue.prototype = {
                           nb.PRIORITY_INFO_LOW, buttons);
   },
 
-  _firstWindowTelemetry: function(aWindow) {
-#ifdef XP_WIN
-    let SCALING_PROBE_NAME = "DISPLAY_SCALING_MSWIN";
-#elifdef XP_MACOSX
-    let SCALING_PROBE_NAME = "DISPLAY_SCALING_OSX";
-#elifdef XP_LINUX
-    let SCALING_PROBE_NAME = "DISPLAY_SCALING_LINUX";
-#else
-    let SCALING_PROBE_NAME = "";
-#endif
-    if (SCALING_PROBE_NAME) {
-      let scaling = aWindow.devicePixelRatio * 100;
-      Services.telemetry.getHistogramById(SCALING_PROBE_NAME).add(scaling);
-    }
-  },
-
   // the first browser window has finished initializing
   _onFirstWindowLoaded: function BG__onFirstWindowLoaded(aWindow) {
     // Initialize PdfJs when running in-process and remote. This only
@@ -724,7 +651,6 @@ BrowserGlue.prototype = {
       }
     });
 
-    this._trackSlowStartup();
 
     // Offer to reset a user's profile if it hasn't been used for 60 days.
     const OFFER_PROFILE_RESET_INTERVAL_MS = 60 * 24 * 60 * 60 * 1000;
@@ -738,9 +664,7 @@ BrowserGlue.prototype = {
       this._resetUnusedProfileNotification();
     }
 
-    this._checkForOldBuildUpdates();
 
-    this._firstWindowTelemetry(aWindow);
   },
 
   /**
@@ -828,14 +752,6 @@ BrowserGlue.prototype = {
 
       // startup check, check all assoc
       let isDefault = ShellService.isDefaultBrowser(true, false);
-      try {
-        // Report default browser status on startup to telemetry
-        // so we can track whether we are the default.
-        Services.telemetry.getHistogramById("BROWSER_IS_USER_DEFAULT")
-                          .add(isDefault);
-      }
-      catch (ex) { /* Don't break the default prompt if telemetry is broken. */ }
-
       if (shouldCheck && !isDefault && !willRecoverSession) {
         Services.tm.mainThread.dispatch(function() {
           DefaultBrowserCheck.prompt(this.getMostRecentBrowserWindow(), shouldCheck);
@@ -1317,14 +1233,6 @@ BrowserGlue.prototype = {
           // available backup compared to that session.
           if (profileLastUse > lastBackupTime) {
             let backupAge = Math.round((profileLastUse - lastBackupTime) / 86400000);
-            // Report the age of the last available backup.
-            try {
-              Services.telemetry
-                      .getHistogramById("PLACES_BACKUPS_DAYSFROMLAST")
-                      .add(backupAge);
-            } catch (ex) {
-              Components.utils.reportError("Unable to report telemetry.");
-            }
 
             if (backupAge > BOOKMARKS_BACKUP_MAX_INTERVAL_DAYS)
               this._bookmarksBackupIdleTime /= 2;
@@ -1380,10 +1288,12 @@ BrowserGlue.prototype = {
     var buttonText = placesBundle.GetStringFromName("lockPromptInfoButton.label");
     var accessKey = placesBundle.GetStringFromName("lockPromptInfoButton.accessKey");
 
+    //Set Help Link For Places
+
     var helpTopic = "places-locked";
     var url = Cc["@mozilla.org/toolkit/URLFormatterService;1"].
               getService(Components.interfaces.nsIURLFormatter).
-              formatURLPref("app.support.baseURL");
+              formatURLPref("app.helpdoc.baseURI");
     url += helpTopic;
 
     var win = this.getMostRecentBrowserWindow();
@@ -2025,7 +1935,6 @@ ContentPermissionPrompt.prototype = {
   },
 
   _promptGeo : function(aRequest) {
-    var secHistogram = Services.telemetry.getHistogramById("SECURITY_UI");
     var browserBundle = Services.strings.createBundle("chrome://browser/locale/browser.properties");
     var requestingURI = aRequest.principal.URI;
 
@@ -2036,9 +1945,7 @@ ContentPermissionPrompt.prototype = {
       stringId: "geolocation.shareLocation",
       action: null,
       expireType: null,
-      callback: function() {
-        secHistogram.add(Ci.nsISecurityUITelemetry.WARNING_GEOLOCATION_REQUEST_SHARE_LOCATION);
-      },
+      callback: function() {},
     }];
 
     if (requestingURI.schemeIs("file")) {
@@ -2052,9 +1959,7 @@ ContentPermissionPrompt.prototype = {
         stringId: "geolocation.alwaysShareLocation",
         action: Ci.nsIPermissionManager.ALLOW_ACTION,
         expireType: null,
-        callback: function() {
-          secHistogram.add(Ci.nsISecurityUITelemetry.WARNING_GEOLOCATION_REQUEST_ALWAYS_SHARE);
-        },
+        callback: function() {},
       });
 
       // Never share location action.
@@ -2062,17 +1967,13 @@ ContentPermissionPrompt.prototype = {
         stringId: "geolocation.neverShareLocation",
         action: Ci.nsIPermissionManager.DENY_ACTION,
         expireType: null,
-        callback: function() {
-          secHistogram.add(Ci.nsISecurityUITelemetry.WARNING_GEOLOCATION_REQUEST_NEVER_SHARE);
-        },
+        callback: function() {},
       });
     }
 
     var options = {
                     learnMoreURL: Services.urlFormatter.formatURLPref("browser.geolocation.warning.infoURL"),
                   };
-
-    secHistogram.add(Ci.nsISecurityUITelemetry.WARNING_GEOLOCATION_REQUEST);
 
     this._showPrompt(aRequest, message, "geo", actions, "geolocation",
                      "geo-notification-icon", options);

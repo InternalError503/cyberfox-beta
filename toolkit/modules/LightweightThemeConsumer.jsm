@@ -20,12 +20,6 @@ this.LightweightThemeConsumer =
   this._doc = aDocument;
   this._win = aDocument.defaultView;
   this._footerId = aDocument.documentElement.getAttribute("lightweightthemesfooter");
-
-  if (PrivateBrowsingUtils.isWindowPrivate(this._win) &&
-      !PrivateBrowsingUtils.permanentPrivateBrowsing) {
-    return;
-  }
-
   let screen = this._win.screen;
   this._lastScreenWidth = screen.width;
   this._lastScreenHeight = screen.height;

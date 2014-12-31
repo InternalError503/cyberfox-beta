@@ -12,12 +12,15 @@ html {
 body {
   color: #424f59;
   font: message-box;
+  background-color: rgb(229,229,229);
+  background-image: url(chrome://browser/skin/newtab/noise.png),
+                    linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.2)); 
   font-size: 14px;
   height: 100%;
 }
 
 a {
-  color: #0095dd;
+  color: #00adee;
   cursor: pointer; /* Use the correct cursor for anchors without an href */
 }
 
@@ -36,6 +39,9 @@ a.no-underline {
 
 #stage {
   background:#fff;
+  background-color: rgb(245,245,245);
+  background-image: url(chrome://browser/skin/newtab/noise.png),
+                    linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.2));   
   border-radius: 5px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25);
   margin: 0 auto;
@@ -66,7 +72,7 @@ header h1
 
 .button-row button,
 .button-row a.button {
-  background: #0095dd;
+  background: #00adee;
   border: none;
   border-radius: 5px;
   color: #FFFFFF;

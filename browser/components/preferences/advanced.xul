@@ -12,6 +12,8 @@
 %advancedDTD;
 <!ENTITY % privacyDTD SYSTEM "chrome://browser/locale/preferences/privacy.dtd">
 %privacyDTD;
+<!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd">
+%browserDTD;
 ]>
 
 <overlay id="AdvancedPaneOverlay"
@@ -39,7 +41,50 @@
       <preference id="gfx.direct2d.disabled"           name="gfx.direct2d.disabled"           type="bool"   inverted="true"/>
 #endif
       <preference id="layout.spellcheckDefault"        name="layout.spellcheckDefault"        type="int"/>
-
+				<!-- Features Tab -->	     
+	  <preference id="browser.restart.enabled"
+				  name="browser.restart.enabled"
+				  type="bool"/>				  
+      <preference id="clean.ram.cache"
+				  name="clean.ram.cache"
+				  type="bool"/>	
+				  
+	  <preference id="browser.download.useToolkitUI"
+				  name="browser.download.useToolkitUI"
+				  type="bool"/>
+	  <preference id="browser.preferences.inContent"
+				  name="browser.preferences.inContent"
+				  type="bool"/>	
+	  <preference id="browser.restart.purgecache" 
+				  name="browser.restart.purgecache" 
+				  type="bool"/>          			  
+	  <preference id="browser.tabs.clonetab" 
+				  name="browser.tabs.clonetab" 
+				  type="bool"/>			  
+	  <preference id="app.update.autocheck" 
+				  name="app.update.autocheck" 
+				  type="bool"/>				  
+	  <preference id="browser.tabs.copyurl" 
+				  name="browser.tabs.copyurl" 
+				  type="bool"/>
+  	<preference id="browser.context.classic" 
+				  name="browser.context.classic" 
+				  type="bool"/> 
+ 	  <preference id="browser.context.emaillink" 
+				  name="browser.context.emaillink" 
+				  type="bool"/>
+  <preference id="browser.context.aboutconfig" 
+				name="browser.context.aboutconfig" 
+				type="bool"/>
+  <preference id="browser.menu.aboutconfig" 
+				name="browser.menu.aboutconfig" 
+				type="bool"/>
+  <preference id="browser.search.showOneOffButtons" 
+				name="browser.search.showOneOffButtons" 
+				type="bool"/>
+  <preference id="app.update.check.enabled" 
+				name="app.update.check.enabled" 
+				type="bool"/>	        				
       <!-- Data Choices tab -->
 
 #ifdef MOZ_TELEMETRY_REPORTING
@@ -107,13 +152,14 @@
             onselect="gAdvancedPane.tabSelectionChanged();">
 
       <tabs id="tabsElement">
-        <tab id="generalTab" label="&generalTab.label;" helpTopic="prefs-advanced-general"/>
+        <tab id="generalTab" label="&generalTab.label;"/>
 #ifdef MOZ_DATA_REPORTING
-        <tab id="dataChoicesTab" label="&dataChoicesTab.label;" helpTopic="prefs-advanced-data-choices"/>
+        <tab id="dataChoicesTab" label="&dataChoicesTab.label;" hidden="true"/>
 #endif
-        <tab id="networkTab" label="&networkTab.label;" helpTopic="prefs-advanced-network"/>
-        <tab id="updateTab" label="&updateTab.label;"  helpTopic="prefs-advanced-update"/>
-        <tab id="encryptionTab" label="&certificateTab.label;" helpTopic="prefs-advanced-encryption"/>
+        <tab id="networkTab" label="&networkTab.label;"/>
+        <tab id="updateTab" label="&updateTab.label;"/>
+        <tab id="encryptionTab" label="&certificateTab.label;"/>
+		    <tab id="features" label="&FeaturesTabLabel;"/>
       </tabs>
 
       <tabpanels flex="1">
@@ -241,7 +287,7 @@
             <caption label="&httpCache.label;"/>
 
             <hbox align="center">
-              <label id="actualDiskCacheSize" flex="1"/>
+              <label id="actualDiskCacheSize" flex="1" hidden="false"/>
               <button id="clearCacheButton" icon="clear"
                       label="&clearCacheNow.label;" accesskey="&clearCacheNow.accesskey;"
                       oncommand="gAdvancedPane.clearCache();"/>
@@ -409,7 +455,58 @@
                       preference="security.disable_button.openDeviceManager"/>
             </hbox>
         </tabpanel>
+		
+		<tabpanel id="features" orient="vertical">
+			
+			<groupbox id="alternateOptions" orient="vertical">
+				<caption label="&cyberfoxOptions.label;"/>				
+					<checkbox id="enableCleanRamCache" label="&turnOnCleanRam.label;"
+							preference="clean.ram.cache"/>	
+					<checkbox id="enableCloneIt" label="&turnonclone.label;"
+							preference="browser.tabs.clonetab"/>
+					<checkbox id="browser.tabs.copyurl" label="&copyTabURLOptions.label;"
+							preference="browser.tabs.copyurl"/>
+          <checkbox id="browser.context.emaillink" label="&turnoffemaillink.label;"
+							preference="browser.context.emaillink"/>
+ 					<checkbox id="browser.context.aboutconfig" label="&turnoffcontextabout.label;"
+							preference="browser.context.aboutconfig"/>
+					<checkbox id="browser.menu.aboutconfig" label="&turnoffmenuabout.label;"
+							preference="browser.menu.aboutconfig"/>             	              	
+					<checkbox id="browser.preferences.inContent" label="&incontent.label;"
+							preference="browser.preferences.inContent"/>
+ 					<checkbox id="browser.context.classic" label="&contextNavigationClassic.label;"
+							preference="browser.context.classic"/>
+ 					<checkbox id="browser.search.showOneOffButtons" label="&turnoffoneclicksearch.label;"
+							preference="browser.search.showOneOffButtons" />							
+			</groupbox>
+			
+			<groupbox id="alternateOptionsRestart" orient="vertical">
+				<caption label="&restartOptions.label;"/>
+					<checkbox id="enableRestartBrowser" label="&turnOnRestart.label;"
+							preference="browser.restart.enabled"/>
+					<checkbox id="browser.restart.purgecache" label="&cleanFastRestartCache.label;"
+							preference="browser.restart.purgecache"/>
+				</groupbox>			
 
+			<groupbox id="updateOptions" orient="vertical">
+				<caption label="&updateoptions.label;"/>
+					<checkbox id="app.update.autocheck" label="&updateautocheck.label;"
+							preference="app.update.autocheck"/>
+					<checkbox id="app.update.check.enabled" label="&updatecheckenabled.label;"
+							preference="app.update.check.enabled"/>								
+				</groupbox>
+			
+		    <groupbox id="browserDownload.useToolkitUI">
+				<caption label="&toolKitUi.title;"/>
+		  <row id="iBrowserDownload.useToolkitUI">
+				<vbox align="start">
+				 <checkbox id="browser.download.useToolkitUI" label="&toolKitUi.label;"                    
+						  preference="browser.download.useToolkitUI"/>
+				</vbox>
+		 </row>		
+			</groupbox> 	
+						
+			</tabpanel>
       </tabpanels>
     </tabbox>
   </prefpane>

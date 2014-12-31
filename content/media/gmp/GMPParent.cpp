@@ -30,6 +30,10 @@ using CrashReporter::AnnotationTable;
 using CrashReporter::GetIDFromMinidump;
 #endif
 
+#ifdef MOZ_TELEMETRY_REPORTING
+#include "mozilla/Telemetry.h"
+#endif
+
 namespace mozilla {
 
 #ifdef LOG
@@ -574,6 +578,10 @@ GMPParent::ActorDestroy(ActorDestroyReason aWhy)
   LOGD(("%s::%s: %p (%d)", __CLASS__, __FUNCTION__, this, (int) aWhy));
 #ifdef MOZ_CRASHREPORTER
   if (AbnormalShutdown == aWhy) {
+ #ifdef MOZ_TELEMETRY_REPORTING
+    Telemetry::Accumulate(Telemetry::SUBPROCESS_ABNORMAL_ABORT,
+                          NS_LITERAL_CSTRING("gmplugin"), 1);
+ #endif
     nsString dumpID;
     GetCrashID(dumpID);
     nsString id;

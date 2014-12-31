@@ -80,7 +80,23 @@
     browser.taskbar.previews.enable
     - true if tabs are to be shown in the Windows 7 taskbar    
     -->
-
+	
+	<!-- Cyberfeatures -->
+	<preference id="browser.tabs.animate" 				name="browser.tabs.animate" 					type="bool"/>	  
+	<preference id="browser.warnOnQuit"         			name="browser.warnOnQuit"         			type="bool"/>
+	<preference id="browser.newtabpage.enabled"      name="browser.newtabpage.enabled"         type="bool"/>
+	<preference id="browser.newtab.preload"         	name="browser.newtab.preload"         		type="bool"/>
+	<preference id="browser.newtab.url"         			name="browser.newtab.url"         				type="string"/>
+  <preference id="pref.browser.newtabpage.disable_button.restore_default"
+              name="pref.browser.newtabpage.disable_button.restore_default"
+              type="bool"/>	
+	<preference id="pref.browser.newtabpage.disable_button.bookmark_page"
+              name="pref.browser.newtabpage.disable_button.bookmark_page"
+              type="bool"/>	
+  <preference id="browser.newtab.search.enabled"         	name="browser.newtab.search.enabled"         		type="bool"/>
+	<preference id="browser.pagethumbnails.capturing_disabled"         	name="browser.pagethumbnails.capturing_disabled"         		type="bool"/>	  
+	  <!-- Cyberfeatures -->
+	  
     <preference id="browser.link.open_newwindow"
                 name="browser.link.open_newwindow"
                 type="int"/>
@@ -108,6 +124,7 @@
       class="header"
       hidden="true"
       data-category="paneGeneral">
+  <image class="header-icon"/>
   <label class="header-name">&paneGeneral.title;</label>
 </hbox>
 
@@ -137,13 +154,13 @@
   <vbox id="defaultBrowserBox">
     <hbox align="center">
       <checkbox id="alwaysCheckDefault" preference="browser.shell.checkDefaultBrowser"
-                label="&alwaysCheckDefault2.label;" accesskey="&alwaysCheckDefault2.accesskey;"/>
+                label="&alwaysCheckDefault.label;" accesskey="&alwaysCheckDefault2.accesskey;"/>
     </hbox>
     <deck id="setDefaultPane">
       <hbox align="center" class="indent">
         <label id="isNotDefaultLabel" flex="1">&isNotDefault.label;</label>
         <button id="setDefaultButton"
-                label="&setAsMyDefaultBrowser2.label;" accesskey="&setAsMyDefaultBrowser2.accesskey;"
+                label="&setAsMyDefaultBrowser.label;" accesskey="&setAsMyDefaultBrowser.accesskey;"
                 preference="pref.general.disable_button.default_browser"/>
       </hbox>
       <hbox align="center" class="indent">
@@ -258,7 +275,12 @@
     <checkbox id="warnCloseMultiple" label="&warnCloseMultipleTabs.label;"
               accesskey="&warnCloseMultipleTabs.accesskey;"
               preference="browser.tabs.warnOnClose"/>
-
+			  
+	  <!-- Cyberfeatures -->				
+      <checkbox id="warnOnQuit" label="&warnOnQuit.label;"
+                preference="browser.warnOnQuit"/>
+	  <!-- Cyberfeatures -->
+	  
     <checkbox id="warnOpenMany" label="&warnOpenManyTabs.label;"
               accesskey="&warnOpenManyTabs.accesskey;"
               preference="browser.tabs.warnOnOpen"/>
@@ -275,5 +297,47 @@
     <checkbox id="showTabsInTaskbar" label="&showTabsInTaskbar.label;"
               accesskey="&showTabsInTaskbar.accesskey;"
               preference="browser.taskbar.previews.enable"/>
-#endif
+#endif	
+	<!-- Cyberfeatures -->	
+	  <checkbox id="browser.tabs.animate" label="&tabsAnimation.label;"
+				preference="browser.tabs.animate"/>
+	<!-- Cyberfeatures -->			 
 </groupbox>
+<!-- Cyberfeatures -->
+	<groupbox flex="1" data-category="paneGeneral">
+		<caption label="&newtabsoptions.label;"/>
+		      <checkbox id="browser.newtabpage.enabled" label="&newtabenabled.label;"
+							   preference="browser.newtabpage.enabled"/>
+			  <checkbox id="browser.newtab.preload" label="&newtabpreload.label;"
+							   preference="browser.newtab.preload"/>	
+			  <checkbox id="browser.newtab.search.enabled" label="&newtabsearch.label;"
+							   preference="browser.newtab.search.enabled"/>
+			  <checkbox id="browser.pagethumbnails.capturing_disabled" label="&newtabthumbnail.label;"
+							   preference="browser.pagethumbnails.capturing_disabled"/>								   
+							   
+<hbox align="center">								   
+    <label value="&newtabpage.label;"
+           control="browserNewTabPage"/>
+    <textbox id="browserNewTabPage"
+             class="padded uri-element"
+             flex="1"
+             type="autocomplete"
+             autocompletesearch="history"
+             onsyncfrompreference="return gMainPane.syncFromNewTabPref();"
+             onsynctopreference="return gMainPane.syncToNewTabPref(this.value);"
+             placeholder="&aboutnewtab.pageTitle;"
+             preference="browser.newtab.url"/>
+</hbox>		
+ <hbox align="center" pack="end">
+     <button label="&chooseBookmark.label;"
+            accesskey="&chooseBookmark.accesskey;"
+            oncommand="gMainPane.setNewTabPageToBookmark();"
+            id="useBookmark"
+            preference="pref.browser.newtabpage.disable_button.bookmark_page"/>
+    <button label="&restoreDefault.label;"
+            oncommand="gMainPane.restoreDefaultNewTabPage();"
+            id="restoreDefaultNewTabPage"
+            preference="pref.browser.newtabpage.disable_button.restore_default"/>
+  </hbox>					   
+		</groupbox>
+		<!-- Cyberfeatures -->

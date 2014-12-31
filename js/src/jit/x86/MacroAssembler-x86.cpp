@@ -10,7 +10,7 @@
 
 #include "jit/Bailouts.h"
 #include "jit/BaselineFrame.h"
-#include "jit/IonFrames.h"
+#include "jit/JitFrames.h"
 #include "jit/MoveEmitter.h"
 
 #include "jsscriptinlines.h"
@@ -358,24 +358,17 @@ MacroAssemblerX86::callWithABI(Register fun, MoveOp::Type result)
 }
 
 void
-MacroAssemblerX86::handleFailureWithHandler(void *handler)
+MacroAssemblerX86::handleFailureWithHandlerTail(void *handler)
 {
     // Reserve space for exception information.
     subl(Imm32(sizeof(ResumeFromException)), esp);
     movl(esp, eax);
 
-    // Ask for an exception handler.
+    // Call the handler.
     setupUnalignedABICall(1, ecx);
     passABIArg(eax);
     callWithABI(handler);
 
-    JitCode *excTail = GetIonContext()->runtime->jitRuntime()->getExceptionTail();
-    jmp(excTail);
-}
-
-void
-MacroAssemblerX86::handleFailureWithHandlerTail()
-{
     Label entryFrame;
     Label catch_;
     Label finally;
@@ -503,7 +496,7 @@ MacroAssemblerX86::branchPtrInNurseryRange(Condition cond, Register ptr, Registe
     MOZ_ASSERT(ptr != temp);
     MOZ_ASSERT(temp != InvalidReg);  // A temp register is required for x86.
 
-    const Nursery &nursery = GetIonContext()->runtime->gcNursery();
+    const Nursery &nursery = GetJitContext()->runtime->gcNursery();
     movePtr(ImmWord(-ptrdiff_t(nursery.start())), temp);
     addPtr(ptr, temp);
     branchPtr(cond == Assembler::Equal ? Assembler::Below : Assembler::AboveOrEqual,

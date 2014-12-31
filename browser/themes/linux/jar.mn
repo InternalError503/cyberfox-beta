@@ -71,6 +71,7 @@ browser.jar:
   skin/classic/browser/search-indicator.png                 (../shared/search/search-indicator.png)
   skin/classic/browser/search-indicator-add-engine.png      (../shared/search/search-indicator-add-engine.png)
   skin/classic/browser/search-engine-placeholder.png        (../shared/search/search-engine-placeholder.png)
+  skin/classic/browser/search-history-icon.svg              (../shared/search/history-icon.svg)
   skin/classic/browser/badge-add-engine.png                 (../shared/search/badge-add-engine.png)
   skin/classic/browser/Secure.png
   skin/classic/browser/Security-broken.png
@@ -111,10 +112,10 @@ browser.jar:
 * skin/classic/browser/customizableui/panelUIOverlay.css (customizableui/panelUIOverlay.css)
   skin/classic/browser/customizableui/subView-arrow-back-inverted.png  (../shared/customizableui/subView-arrow-back-inverted.png)
   skin/classic/browser/customizableui/subView-arrow-back-inverted-rtl.png  (../shared/customizableui/subView-arrow-back-inverted-rtl.png)
-  skin/classic/browser/customizableui/whimsy.png  (../shared/customizableui/whimsy.png)
-  skin/classic/browser/customizableui/whimsy@2x.png  (../shared/customizableui/whimsy@2x.png)
-  skin/classic/browser/customizableui/whimsy-bw.png  (../shared/customizableui/whimsy-bw.png)
-  skin/classic/browser/customizableui/whimsy-bw@2x.png  (../shared/customizableui/whimsy-bw@2x.png)
+  skin/classic/browser/customizableui/8pecx.png  (../shared/customizableui/8pecx.png)
+  skin/classic/browser/customizableui/8pecx@2x.png  (../shared/customizableui/8pecx@2x.png)
+  skin/classic/browser/customizableui/8pecx-bw.png  (../shared/customizableui/8pecx-bw.png)
+  skin/classic/browser/customizableui/8pecx-bw@2x.png  (../shared/customizableui/8pecx-bw@2x.png)
   skin/classic/browser/downloads/allDownloadsViewOverlay.css   (downloads/allDownloadsViewOverlay.css)
   skin/classic/browser/downloads/buttons.png          (downloads/buttons.png)
   skin/classic/browser/downloads/contentAreaDownloadsView.css  (downloads/contentAreaDownloadsView.css)
@@ -166,8 +167,12 @@ browser.jar:
   skin/classic/browser/preferences/in-content/favicon.ico     (../shared/incontentprefs/favicon.ico)
   skin/classic/browser/preferences/in-content/icons.png       (../shared/incontentprefs/icons.png)
   skin/classic/browser/preferences/in-content/icons@2x.png    (../shared/incontentprefs/icons@2x.png)
+  skin/classic/browser/preferences/in-content/search.css      (../shared/incontentprefs/search.css)
+  skin/classic/browser/preferences/in-content/check.png       (../shared/incontentprefs/check.png)
+  skin/classic/browser/preferences/in-content/check@2x.png    (../shared/incontentprefs/check@2x.png)
   skin/classic/browser/preferences/applications.css   (preferences/applications.css)
   skin/classic/browser/preferences/aboutPermissions.css (preferences/aboutPermissions.css)
+  skin/classic/browser/preferences/search.css         (preferences/search.css)
   skin/classic/browser/social/services-16.png         (social/services-16.png)
   skin/classic/browser/social/services-64.png         (social/services-64.png)
   skin/classic/browser/social/share-button.png        (social/share-button.png)
@@ -401,3 +406,12 @@ browser.jar:
 #ifdef E10S_TESTING_ONLY
   skin/classic/browser/e10s-64@2x.png (../shared/e10s-64@2x.png)
 #endif
+
+# Add Files For Cyberfox
+
+#Browser Theme Core
+  skin/classic/browser/newtab/noise.png               (newtab/noise.png)
+#Browser Theme Core Menu
+  skin/classic/browser/appmenu-icons.png
+  skin/classic/browser/appmenu-icons-cf.png
+	skin/classic/browser/places/bookmark.png                     (places/bookmark.png)

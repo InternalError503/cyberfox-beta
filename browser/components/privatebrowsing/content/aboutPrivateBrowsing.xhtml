@@ -59,10 +59,10 @@
         // Set up the help link
         let learnMoreURL = Cc["@mozilla.org/toolkit/URLFormatterService;1"]
                            .getService(Ci.nsIURLFormatter)
-                           .formatURLPref("app.support.baseURL");
+                           .formatURLPref("app.learn.more.baseURI");
         let learnMore = document.getElementById("learnMore");
         if (learnMore) {
-          learnMore.setAttribute("href", learnMoreURL + "private-browsing");
+          learnMore.setAttribute("href", learnMoreURL);
         }
       }, false);
 

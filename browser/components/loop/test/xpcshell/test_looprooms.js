@@ -5,6 +5,7 @@
 Cu.import("resource://services-common/utils.js");
 Cu.import("resource:///modules/loop/LoopRooms.jsm");
 Cu.import("resource:///modules/Chat.jsm");
+Cu.import("resource://gre/modules/Promise.jsm");
 
 let openChatOrig = Chat.open;
 
@@ -83,6 +84,9 @@ const kRoomUpdates = {
       displayName: "Ruharb",
       roomConnectionId: "5de6281c-6568-455f-af08-c0b0a973100e"
     }]
+  },
+  "5": {
+    deleted: true
   }
 };
 
@@ -98,6 +102,9 @@ const kCreateRoomData = {
   roomUrl: "http://localhost:3000/rooms/_nxD4V4FflQ",
   expiresAt: 1405534180
 };
+
+const kChannelGuest = MozLoopService.channelIDs.roomsGuest;
+const kChannelFxA = MozLoopService.channelIDs.roomsFxA;
 
 const normalizeRoom = function(room) {
   delete room.currSize;
@@ -118,8 +125,10 @@ const compareRooms = function(room1, room2) {
 // LoopRooms emits various events. Test if they work as expected here.
 let gExpectedAdds = [];
 let gExpectedUpdates = [];
+let gExpectedDeletes = [];
 let gExpectedJoins = {};
 let gExpectedLeaves = {};
+let gExpectedRefresh = false;
 
 const onRoomAdded = function(e, room) {
   let expectedIds = gExpectedAdds.map(room => room.roomToken);
@@ -136,26 +145,37 @@ const onRoomUpdated = function(e, room) {
   gExpectedUpdates.splice(idx, 1);
 };
 
-const onRoomJoined = function(e, roomToken, participant) {
-  let participants = gExpectedJoins[roomToken];
+const onRoomDeleted = function(e, room) {
+  let idx = gExpectedDeletes.indexOf(room.roomToken);
+  Assert.ok(idx > -1, "Deleted room should be expected");
+  gExpectedDeletes.splice(idx, 1);
+};
+
+const onRoomJoined = function(e, room, participant) {
+  let participants = gExpectedJoins[room.roomToken];
   Assert.ok(participants, "Participant should be expected to join");
   let idx = participants.indexOf(participant.roomConnectionId);
   Assert.ok(idx > -1, "Participant should be expected to join");
   participants.splice(idx, 1);
   if (!participants.length) {
-    delete gExpectedJoins[roomToken];
+    delete gExpectedJoins[room.roomToken];
   }
 };
 
-const onRoomLeft = function(e, roomToken, participant) {
-  let participants = gExpectedLeaves[roomToken];
+const onRoomLeft = function(e, room, participant) {
+  let participants = gExpectedLeaves[room.roomToken];
   Assert.ok(participants, "Participant should be expected to leave");
   let idx = participants.indexOf(participant.roomConnectionId);
   Assert.ok(idx > -1, "Participant should be expected to leave");
   participants.splice(idx, 1);
   if (!participants.length) {
-    delete gExpectedLeaves[roomToken];
+    delete gExpectedLeaves[room.roomToken];
   }
+};
+
+const onRefresh = function(e) {
+  Assert.ok(gExpectedRefresh, "A refresh event should've been expected");
+  gExpectedRefresh = false;
 };
 
 const parseQueryString = function(qs) {
@@ -191,6 +211,7 @@ add_task(function* setup_server() {
         let qs = parseQueryString(req.queryString);
         let room = kRooms.get("_nxD4V4FflQ");
         room.participants = kRoomUpdates[qs.version].participants;
+        room.deleted = kRoomUpdates[qs.version].deleted;
         res.write(JSON.stringify([room]));
       } else {
         res.write(JSON.stringify([...kRooms.values()]));
@@ -280,15 +301,6 @@ add_task(function* test_createRoom() {
   compareRooms(room, kCreateRoomProps);
 });
 
-// Test if deleting a room works as expected.
-add_task(function* test_deleteRoom() {
-  let roomToken = "QzBbvGmIZWU";
-  let deletedRoom = yield LoopRooms.promise("delete", roomToken);
-  Assert.equal(deletedRoom.roomToken, roomToken);
-  let rooms = yield LoopRooms.promise("getAll");
-  Assert.ok(!rooms.some((room) => room.roomToken == roomToken));
-});
-
 // Test if opening a new room window works correctly.
 add_task(function* test_openRoom() {
   let openedUrl;
@@ -308,6 +320,34 @@ add_task(function* test_openRoom() {
   Assert.equal(windowData.roomToken, "fakeToken", "window data should have the roomToken");
 });
 
+// Test if the rooms cache is refreshed after FxA signin or signout.
+add_task(function* test_refresh() {
+  gExpectedAdds.push(...kRooms.values());
+  gExpectedRefresh = true;
+  // Make the switch.
+  MozLoopServiceInternal.fxAOAuthTokenData = { token_type: "bearer" };
+  MozLoopServiceInternal.fxAOAuthProfile = {
+    email: "fake@invalid.com",
+    uid: "fake"
+  };
+
+  yield waitForCondition(() => !gExpectedRefresh);
+  yield waitForCondition(() => gExpectedAdds.length === 0);
+
+  gExpectedAdds.push(...kRooms.values());
+  gExpectedRefresh = true;
+  // Simulate a logout.
+  MozLoopServiceInternal.fxAOAuthTokenData = null;
+  MozLoopServiceInternal.fxAOAuthProfile = null;
+
+  yield waitForCondition(() => !gExpectedRefresh);
+  yield waitForCondition(() => gExpectedAdds.length === 0);
+
+  // Simulating a logout again shouldn't yield a refresh event.
+  MozLoopServiceInternal.fxAOAuthTokenData = null;
+  MozLoopServiceInternal.fxAOAuthProfile = null;
+});
+
 // Test if push updates function as expected.
 add_task(function* test_roomUpdates() {
   gExpectedUpdates.push("_nxD4V4FflQ");
@@ -315,52 +355,73 @@ add_task(function* test_roomUpdates() {
     "2a1787a6-4a73-43b5-ae3e-906ec1e763cb",
     "781f012b-f1ea-4ce1-9105-7cfc36fb4ec7"
   ];
-  roomsPushNotification("1");
+  roomsPushNotification("1", kChannelGuest);
   yield waitForCondition(() => Object.getOwnPropertyNames(gExpectedLeaves).length === 0);
 
   gExpectedUpdates.push("_nxD4V4FflQ");
   gExpectedJoins["_nxD4V4FflQ"] = ["2a1787a6-4a73-43b5-ae3e-906ec1e763cb"];
-  roomsPushNotification("2");
+  roomsPushNotification("2", kChannelGuest);
   yield waitForCondition(() => Object.getOwnPropertyNames(gExpectedJoins).length === 0);
 
   gExpectedUpdates.push("_nxD4V4FflQ");
   gExpectedJoins["_nxD4V4FflQ"] = ["781f012b-f1ea-4ce1-9105-7cfc36fb4ec7"];
   gExpectedLeaves["_nxD4V4FflQ"] = ["2a1787a6-4a73-43b5-ae3e-906ec1e763cb"];
-  roomsPushNotification("3");
+  roomsPushNotification("3", kChannelGuest);
   yield waitForCondition(() => Object.getOwnPropertyNames(gExpectedLeaves).length === 0);
 
   gExpectedUpdates.push("_nxD4V4FflQ");
   gExpectedJoins["_nxD4V4FflQ"] = [
     "2a1787a6-4a73-43b5-ae3e-906ec1e763cb",
     "5de6281c-6568-455f-af08-c0b0a973100e"];
-  roomsPushNotification("4");
+  roomsPushNotification("4", kChannelGuest);
   yield waitForCondition(() => Object.getOwnPropertyNames(gExpectedJoins).length === 0);
 });
 
-// Test if joining a room works as expected.
+// Test if push updates' channelIDs are respected.
+add_task(function* () {
+  function badRoomJoin() {
+    Assert.ok(false, "Unexpected 'joined' event emitted!");
+  }
+  LoopRooms.on("join", onRoomLeft);
+  roomsPushNotification("4", kChannelFxA);
+  LoopRooms.off("join", badRoomJoin);
+
+  // Set the userProfile to look like we're logged into FxA.
+  MozLoopServiceInternal.fxAOAuthTokenData = { token_type: "bearer" };
+  MozLoopServiceInternal.fxAOAuthProfile = { email: "fake@invalid.com" };
+
+  gExpectedUpdates.push("_nxD4V4FflQ");
+  gExpectedLeaves["_nxD4V4FflQ"] = [
+    "2a1787a6-4a73-43b5-ae3e-906ec1e763cb",
+    "5de6281c-6568-455f-af08-c0b0a973100e"
+  ];
+  roomsPushNotification("3", kChannelFxA);
+  yield waitForCondition(() => Object.getOwnPropertyNames(gExpectedLeaves).length === 0);
+});
+
+// Test if joining a room as Guest works as expected.
 add_task(function* test_joinRoomGuest() {
-  // We need these set up for getting the email address.
+  MozLoopServiceInternal.fxAOAuthTokenData = null;
+  MozLoopServiceInternal.fxAOAuthProfile = null;
+
   let roomToken = "_nxD4V4FflQ";
   let joinedData = yield LoopRooms.promise("join", roomToken);
   Assert.equal(joinedData.action, "join");
 });
 
+// Test if joining a room as FxA user works as expected.
 add_task(function* test_joinRoom() {
   // We need these set up for getting the email address.
-  Services.prefs.setCharPref("loop.fxa_oauth.profile", JSON.stringify({
-    email: "fake@invalid.com"
-  }));
-  Services.prefs.setCharPref("loop.fxa_oauth.tokendata", JSON.stringify({
-    token_type: "bearer"
-  }));
+  MozLoopServiceInternal.fxAOAuthTokenData = { token_type: "bearer" };
+  MozLoopServiceInternal.fxAOAuthProfile = { email: "fake@invalid.com" };
 
   let roomToken = "_nxD4V4FflQ";
   let joinedData = yield LoopRooms.promise("join", roomToken);
   Assert.equal(joinedData.action, "join");
   Assert.equal(joinedData.displayName, "fake@invalid.com");
 
-  Services.prefs.clearUserPref("loop.fxa_oauth.profile");
-  Services.prefs.clearUserPref("loop.fxa_oauth.tokendata");
+  MozLoopServiceInternal.fxAOAuthTokenData = null;
+  MozLoopServiceInternal.fxAOAuthProfile = null;
 });
 
 // Test if refreshing a room works as expected.
@@ -387,10 +448,32 @@ add_task(function* test_renameRoom() {
   Assert.equal(renameData.roomName, "fakeName");
 });
 
+add_task(function* test_roomDeleteNotifications() {
+  gExpectedDeletes.push("_nxD4V4FflQ");
+  roomsPushNotification("5", kChannelGuest);
+  yield waitForCondition(() => gExpectedDeletes.length === 0);
+});
+
+// Test if deleting a room works as expected.
+add_task(function* test_deleteRoom() {
+  let roomToken = "QzBbvGmIZWU";
+  gExpectedDeletes.push(roomToken);
+  let deletedRoom = yield LoopRooms.promise("delete", roomToken);
+  Assert.equal(deletedRoom.roomToken, roomToken);
+  let rooms = yield LoopRooms.promise("getAll");
+  Assert.ok(!rooms.some((room) => room.roomToken == roomToken));
+});
+
 // Test if the event emitter implementation doesn't leak and is working as expected.
 add_task(function* () {
   Assert.strictEqual(gExpectedAdds.length, 0, "No room additions should be expected anymore");
   Assert.strictEqual(gExpectedUpdates.length, 0, "No room updates should be expected anymore");
+  Assert.strictEqual(gExpectedDeletes.length, 0, "No room deletes should be expected anymore");
+  Assert.strictEqual(Object.getOwnPropertyNames(gExpectedJoins).length, 0,
+                     "No room joins should be expected anymore");
+  Assert.strictEqual(Object.getOwnPropertyNames(gExpectedLeaves).length, 0,
+                     "No room leaves should be expected anymore");
+  Assert.ok(!gExpectedRefresh, "No refreshes should be expected anymore");
  });
 
 function run_test() {
@@ -398,20 +481,24 @@ function run_test() {
 
   LoopRooms.on("add", onRoomAdded);
   LoopRooms.on("update", onRoomUpdated);
+  LoopRooms.on("delete", onRoomDeleted);
   LoopRooms.on("joined", onRoomJoined);
   LoopRooms.on("left", onRoomLeft);
+  LoopRooms.on("refresh", onRefresh);
 
   do_register_cleanup(function () {
     // Revert original Chat.open implementation
     Chat.open = openChatOrig;
 
-    Services.prefs.clearUserPref("loop.fxa_oauth.profile");
-    Services.prefs.clearUserPref("loop.fxa_oauth.tokendata");
+    MozLoopServiceInternal.fxAOAuthTokenData = null;
+    MozLoopServiceInternal.fxAOAuthProfile = null;
 
     LoopRooms.off("add", onRoomAdded);
     LoopRooms.off("update", onRoomUpdated);
+    LoopRooms.off("delete", onRoomDeleted);
     LoopRooms.off("joined", onRoomJoined);
     LoopRooms.off("left", onRoomLeft);
+    LoopRooms.off("refresh", onRefresh);
   });
 
   run_next_test();

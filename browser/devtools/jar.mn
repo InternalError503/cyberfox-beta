@@ -128,3 +128,7 @@ browser.jar:
     content/browser/devtools/eyedropper/nocursor.css                   (eyedropper/nocursor.css)
     content/browser/devtools/timeline/timeline.xul                     (timeline/timeline.xul)
     content/browser/devtools/timeline/timeline.js                      (timeline/timeline.js)
+	
+# Add Files For Cyberfox
+#Devtools toolbox custom cyberfox options.
+    content/browser/devtools/framework/toolbox-options-cyberfox.js             (framework/toolbox-options-cyberfox.js)

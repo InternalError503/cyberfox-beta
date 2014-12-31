@@ -15,14 +15,12 @@
 <prefwindow id="FontsDialog" type="child"
             xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             title="&fontsDialog.title;"
-            dlgbuttons="accept,cancel,help"
-            ondialoghelp="openPrefsHelp()"
+            dlgbuttons="accept,cancel"
             style="">
 
   <script type="application/javascript" src="chrome://browser/content/utilityOverlay.js"/>
 
-  <prefpane id="FontsDialogPane"
-            helpTopic="prefs-fonts-and-colors">
+  <prefpane id="FontsDialogPane">
   
     <preferences id="fontPreferences">
       <preference id="font.language.group"  name="font.language.group"  type="wstring"/>

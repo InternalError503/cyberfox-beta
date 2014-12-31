@@ -158,6 +158,7 @@
 #endif
 #endif
 @BINPATH@/browser/blocklist.xml
+@BINPATH@/browser/agents.json
 #ifdef XP_UNIX
 #ifndef XP_MACOSX
 @BINPATH@/run-mozilla.sh
@@ -245,7 +246,9 @@
 #ifdef MOZ_GAMEPAD
 @BINPATH@/components/dom_gamepad.xpt
 #endif
+#ifdef MOZ_PAY
 @BINPATH@/components/dom_payment.xpt
+#endif
 @BINPATH@/components/downloads.xpt
 @BINPATH@/components/editor.xpt
 @BINPATH@/components/embed_base.xpt
@@ -534,8 +537,10 @@
 #endif
 @BINPATH@/components/servicesComponents.manifest
 @BINPATH@/components/cryptoComponents.manifest
+#ifdef MOZ_TELEMETRY_REPORTING
 @BINPATH@/components/TelemetryStartup.js
 @BINPATH@/components/TelemetryStartup.manifest
+#endif
 @BINPATH@/components/XULStore.js
 @BINPATH@/components/XULStore.manifest
 @BINPATH@/components/messageWakeupService.js
@@ -593,9 +598,11 @@
 @BINPATH@/components/ActivityMessageConfigurator.js
 #endif
 
+#ifdef MOZ_PAY
 @BINPATH@/components/Payment.js
 @BINPATH@/components/PaymentFlowInfo.js
 @BINPATH@/components/Payment.manifest
+#endif
 
 #ifdef MOZ_WEBRTC
 @BINPATH@/components/PeerConnection.js

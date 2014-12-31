@@ -68,6 +68,9 @@
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
 #include "mozilla/StaticPtr.h"
+#ifdef MOZ_TELEMETRY_REPORTING
+#include "mozilla/Telemetry.h"
+#endif
 #include "mozilla/unused.h"
 #include "nsAnonymousTemporaryFile.h"
 #include "nsAppRunner.h"
@@ -1663,6 +1666,11 @@ ContentParent::ActorDestroy(ActorDestroyReason why)
         props->SetPropertyAsUint64(NS_LITERAL_STRING("childID"), mChildID);
 
         if (AbnormalShutdown == why) {
+        #ifdef MOZ_TELEMETRY_REPORTING
+            Telemetry::Accumulate(Telemetry::SUBPROCESS_ABNORMAL_ABORT,
+                                  NS_LITERAL_CSTRING("content"), 1);
+
+        #endif
             props->SetPropertyAsBool(NS_LITERAL_STRING("abnormal"), true);
 
 #ifdef MOZ_CRASHREPORTER

@@ -276,6 +276,44 @@ var gMainPane = {
     // Otherwise, use the actual textbox value.
     return undefined;
   },
+  
+ 
+  /* 
+  * New Tab Change Url VIA Options Pane Feature.
+  */
+
+  syncFromNewTabPref: function ()
+  {
+    let newTabPref = document.getElementById("browser.newtab.url");
+
+    // If the pref is set to about:home, set the value to "" to show the
+    // placeholder text (about:newtab title).
+    if (newTabPref.value.toLowerCase() == "about:newtab")
+      return "";
+
+    // If the pref is actually "", show about:blank.  The actual newtab page
+    // loading code treats them the same, and we don't want the placeholder text
+    // to be shown.
+    if (newTabPref.value == "")
+      return "about:blank";
+
+    // Otherwise, show the actual pref value.
+    return undefined;
+  },
+
+  syncToNewTabPref: function (value)
+  {
+    // If the value is "", use about:newtab.
+    if (value == "")
+      return "about:newtab";
+
+    // Otherwise, use the actual textbox value.
+    return undefined;
+  },
+  
+  /* 
+  * End New Tab Change Url VIA Options Pane Feature.
+  */  
 
   /**
    * Sets the home page to the current displayed page (or frontmost tab, if the
@@ -293,6 +331,39 @@ var gMainPane = {
       homePage.value = tabs.map(getTabURI).join("|");
   },
 
+   /* 
+  * New Tab Change Url VIA Options Pane Feature.
+  */
+
+/**
+   * Displays a dialog in which the user can select a bookmark to use as new
+   * tab page.  If the user selects a bookmark, that bookmark's name is displayed in
+   * UI and the bookmark's address is stored to the newtab page preference.
+   */
+  setNewTabPageToBookmark: function ()
+  {
+    var rv = { urls: null, names: null };
+     var dialog = gSubDialog.open("chrome://browser/content/preferences/selectBookmark.xul",
+                                  "resizable=yes, modal=yes", rv,
+                                 this._setNewTabPageToBookmarkClosed.bind(this, rv)); 
+  },
+
+_setNewTabPageToBookmarkClosed: function(rv, aEvent) {
+    if (aEvent.detail.button != "accept")
+      return;
+    if (rv.urls && rv.names) {
+      var newTabPage = document.getElementById("browser.newtab.url");
+
+      // XXX still using dangerous "|" joiner!
+      newTabPage.value = rv.urls.join("|");
+    }
+  },
+    
+  
+  /* 
+  * End New Tab Change Url VIA Options Pane Feature.
+  */
+  
   /**
    * Displays a dialog in which the user can select a bookmark to use as home
    * page.  If the user selects a bookmark, that bookmark's name is displayed in
@@ -378,6 +449,21 @@ var gMainPane = {
     var homePage = document.getElementById("browser.startup.homepage");
     homePage.value = homePage.defaultValue;
   },
+  
+  /* 
+  * New Tab Change Url VIA Options Pane Feature.
+  *
+  * Restores the default NewTab page.
+  */
+  restoreDefaultNewTabPage: function ()
+  {
+    var NewTabPage = document.getElementById("browser.newtab.url");
+   NewTabPage.value = NewTabPage.defaultValue;
+  },
+
+  /* 
+  * End New Tab Change Url VIA Options Pane Feature.
+  */  
 
   // DOWNLOADS
 

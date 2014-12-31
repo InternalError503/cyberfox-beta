@@ -1,14 +1,9 @@
-%if 0
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-%endif
 
 html {
   font: message-box;
   font-size: 100%;
   background-color: hsl(0,0%,95%);
-  color: #000;
+  color: #333;
   height: 100%;
 }
 
@@ -18,6 +13,8 @@ body {
   -moz-box-orient: vertical;
   width: 100%;
   height: 100%;
+  background-color:#222;
+  background-image: url("chrome://browser/content/abouthome/noise.png");  
 }
 
 input,
@@ -35,30 +32,133 @@ a {
   -moz-box-flex: 1;
 }
 
+.headerbar {
+	min-height: 55px;
+	max-height:70px;
+	width: 100%;
+}
+#hmspace{
+height: 5px;
+background-color: #555555;
+box-shadow: 0 0 5px rgba(0, 0, 0, 0.4) inset, 1px 1px 1px rgba(255, 255, 255, 0.1);
+}
+.hmenubar  {
+	text-align: center;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+    background-color: rgb(35, 35, 37);
+    background-image: linear-gradient(rgb(57, 58, 60), rgb(37, 38, 40) 95%, rgb(25, 25, 25));
+    border-bottom: 1px solid rgb(22, 22, 22);
+    box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.3), 0px 6px 0px rgb(55, 53, 57) inset, 0px 7px 0px rgb(35, 35, 35) inset;
+	
+	font-size: 0px;
+	letter-spacing: 0px;
+	word-spacing: 0px;
+	/*background-color: #212121;*/
+}
+
+.hmenubar li  {
+	min-height:55px;
+	margin: 0;
+	padding: 0;
+	display: inline-block;
+	position: relative;
+	left:auto;
+	right:auto;
+}
+
+.hmenubar li a  {
+	display: block;
+	margin: 0;
+	padding-top: 15px;
+	padding-left:5px;
+	padding-right:5px;
+	padding-bottom: 20px;
+	line-height: 19px;
+	font-weight: bold;
+	text-decoration: none;
+	text-transform: none;
+	text-align: center;
+	width: auto;
+	min-width: 73px;
+	color: #efefef;
+	text-shadow: -1px -1px #111;
+	height: 55;
+	font-size: 14px;
+}
+
+.hmenubar li a:hover {
+  color: #00adee;
+    background-color: rgb(237, 237, 239);
+    background-image: linear-gradient(rgb(216, 216, 218), rgb(237, 237, 239) 30%, rgb(237, 238, 240));
+	background: url("chrome://browser/content/abouthome/menu-shadow.png") no-repeat scroll -28px -8px transparent;
+	border-top: 6px solid rgb(55, 55, 55); 
+	border-bottom: 1px solid rgb(55, 55, 55, .3);
+	  box-shadow: 1px 4px 4px hsla(0,0%,0%,.99) inset,
+              1px 4px 4px hsla(0,0%,0%,.99) inset;
+	padding-top: 9px;
+	padding-left:5px;
+	padding-right:5px;
+	padding-bottom: 20px;	
+	line-height: 19px;
+	font-weight: bold;
+	text-decoration: none;
+	text-transform: none;
+	text-align: center;
+	border-radius: 0px 0px 5px 5px;
+
+}
+
+.hmenubar li a:active {
+   color: #efefef;
+    background-color: rgb(37, 37, 39);
+    background-image: linear-gradient(rgb(16, 16, 18), rgb(37, 37, 39) 30%, rgb(37, 38, 40));
+	border-top: 6px solid rgb(35, 35, 35);
+    border-bottom: 1px solid rgb(55, 55, 55, .3);	
+	  box-shadow: 1px 4px 4px hsla(0,0%,0%,.90) inset,
+              1px 4px 4px hsla(0,0%,0%,.90) inset;
+	padding-top: 9px;
+	padding-left:5px;
+	padding-right:5px;
+	padding-bottom: 20px ;	
+	line-height: 19px;
+	font-weight: bold;
+	text-decoration: none;
+	text-transform: none;
+	text-align: center;
+	border-radius: 0px 0px 5px 5px;
+	
+}
+
+.hmenubar li a.clicked {
+	color: #efefef;
+	font-weight: bold;
+	background: #3a3b3c;
+	border-radius: 0px 0px 5px 5px;
+}
+
 #topSection {
   text-align: center;
 }
 
 #brandLogo {
-  height: 192px;
-  width: 192px;
+  height: 154px;
+  width: 154px;
   margin: 22px auto 31px;
   background-image: url("chrome://branding/content/about-logo.png");
-  background-size: 192px auto;
+  background-size: 154px auto;
   background-position: center center;
   background-repeat: no-repeat;
 }
 
-#searchForm,
-#snippets {
-  width: 470px;
-}
-
 #searchForm {
+width: 480px;
   display: -moz-box;
 }
 
 #searchLogoContainer {
+  z-index:-2000;
   display: -moz-box;
   -moz-box-align: center;
   padding-top: 2px;
@@ -81,7 +181,8 @@ a {
   -moz-margin-end: 5px;
   height: 38px;
   width: 38px;
-  background-image: url("chrome://browser/skin/magnifier.png");
+  background-image: url("chrome://browser/content/abouthome/magnifier.png");
+  background-color: transparent;
   background-size: 26px;
   background-position: center center;
   background-repeat: no-repeat;
@@ -89,8 +190,8 @@ a {
 
 #searchIcon[active],
 #searchIcon:hover {
-  background-color: #e9e9e9;
-  border: 1px solid rgb(226, 227, 229);
+  background-color: #222!important;
+  border: 1px solid #111;
   border-radius: 2.5px;
 }
 
@@ -109,20 +210,24 @@ html:not([searchUIConfiguration="oldsearchui"]) #searchLogoContainer {
 #searchText {
   -moz-box-flex: 1;
   padding: 6px 8px;
-  background: hsla(0,0%,100%,.9) padding-box;
-  border: 1px solid;
-  border-color: hsla(210,54%,20%,.15) hsla(210,54%,20%,.17) hsla(210,54%,20%,.2);
-  box-shadow: 0 1px 0 hsla(210,65%,9%,.02) inset,
+  color: #efefef;
+   background-color: #333;
+    background-image: 
+	-moz-linear-gradient(rgb(37, 38, 40), rgb(37, 38, 40) 95%, rgb(25, 25, 25));
+	  box-shadow: 1px 3px 3px hsla(0,0%,0%,.100) inset,
+              1px 3px 3px hsla(0,0%,0%,.100) inset;  
+ border:1px solid #111;
+ /* border-color: hsla(210,54%,20%,.15) hsla(210,54%,20%,.17) hsla(210,54%,20%,.2);*/
+  /*box-shadow: 0 1px 0 hsla(210,65%,9%,.02) inset,
               0 0 2px hsla(210,65%,9%,.1) inset,
-              0 1px 0 hsla(0,0%,100%,.2);
+              0 1px 0 hsla(0,0%,100%,.2);*/
   border-radius: 2.5px 0 0 2.5px;
-  color: inherit;
 }
 
 #searchText:-moz-dir(rtl) {
   border-radius: 0 2.5px 2.5px 0;
 }
-
+#searchSubmit,
 #searchText:focus,
 #searchText[autofocus] {
   border-color: hsla(206,100%,60%,.6) hsla(206,76%,52%,.6) hsla(204,100%,40%,.6);
@@ -130,15 +235,17 @@ html:not([searchUIConfiguration="oldsearchui"]) #searchLogoContainer {
 
 #searchSubmit {
   -moz-margin-start: -1px;
+  color: #efefef;
   background: linear-gradient(hsla(0,0%,100%,.8), hsla(0,0%,100%,.1)) padding-box;
   padding: 0 9px;
   border: 1px solid;
+  background-color: #333;
   border-color: hsla(210,54%,20%,.15) hsla(210,54%,20%,.17) hsla(210,54%,20%,.2);
-  -moz-border-start: 1px solid transparent;
+   background-image: url(chrome://browser/content/abouthome/noise.png), 
+	-moz-linear-gradient(rgb(37, 38, 40) 25%, rgb(37, 38, 40) 50%, rgb(25, 25, 25) 75%) !important;  
+  border: 1px solid #111;
   border-radius: 0 2.5px 2.5px 0;
-  box-shadow: 0 0 2px hsla(0,0%,100%,.5) inset,
-              0 1px 0 hsla(0,0%,100%,.2);
-  color: inherit;
+	box-shadow: 0pt 1px 0pt rgba(55, 55, 55, 0.1);
   cursor: pointer;
   transition-property: background-color, border-color, box-shadow;
   transition-duration: 150ms;
@@ -151,72 +258,34 @@ html:not([searchUIConfiguration="oldsearchui"]) #searchLogoContainer {
 #searchText:focus + #searchSubmit,
 #searchText + #searchSubmit:hover,
 #searchText[autofocus] + #searchSubmit {
-  border-color: #59b5fc #45a3e7 #3294d5;
+  border-color: -moz-linear-gradient(#4cb1ff, #1793e5);
+  background-image: url(chrome://browser/content/abouthome/noise.png);
   color: white;
 }
 
 #searchText:focus + #searchSubmit,
 #searchText[autofocus] + #searchSubmit {
-  background-image: linear-gradient(#4cb1ff, #1793e5);
-  box-shadow: 0 1px 0 hsla(0,0%,100%,.2) inset,
-              0 0 0 1px hsla(0,0%,100%,.1) inset,
-              0 1px 0 hsla(210,54%,20%,.03);
+  background-image: url(chrome://browser/content/abouthome/noise.png),
+					-moz-linear-gradient(#4cb1ff, #1793e5);
+ border: 1px solid ; 
+ border-color: hsla(206,100%,60%,.6) hsla(206,76%,52%,.6) hsla(204,100%,40%,.6);
 }
 
 #searchText + #searchSubmit:hover {
-  background-image: linear-gradient(#66bdff, #0d9eff);
-  box-shadow: 0 1px 0 hsla(0,0%,100%,.2) inset,
-              0 0 0 1px hsla(0,0%,100%,.1) inset,
-              0 1px 0 hsla(210,54%,20%,.03),
-              0 0 4px hsla(206,100%,20%,.2);
+   background-image:-moz-linear-gradient(rgb(37, 38, 40) 15%, rgb(37, 38, 40) 40%, rgb(25, 25, 25) 65%) !important;
+	color: #00adee;
+    -moz-transition: .1s ease-in;	
 }
 
 #searchText + #searchSubmit:hover:active {
-  box-shadow: 0 1px 1px hsla(211,79%,6%,.1) inset,
-              0 0 1px hsla(211,79%,6%,.2) inset;
-  transition-duration: 0ms;
-}
-
-#defaultSnippet1,
-#defaultSnippet2,
-#rightsSnippet {
-  display: block;
-  min-height: 38px;
-  background: 30px center no-repeat;
-  padding: 6px 0;
-  -moz-padding-start: 79px;
-}
-
-#rightsSnippet[hidden] {
-  display: none;
-}
-
-#defaultSnippet1:-moz-dir(rtl),
-#defaultSnippet2:-moz-dir(rtl),
-#rightsSnippet:-moz-dir(rtl) {
-  background-position: right 30px center;
-}
-
-#defaultSnippet1 {
-  background-image: url("chrome://browser/content/abouthome/snippet1.png");
-}
-
-#defaultSnippet2 {
-  background-image: url("chrome://browser/content/abouthome/snippet2.png");
-}
-
-#snippets {
-  display: inline-block;
-  text-align: start;
-  margin: 12px 0;
-  color: #3c3c3c;
-  font-size: 75%;
-  /* 12px is the computed font size, 15px the computed line height of the snippets
-     with Segoe UI on a default Windows 7 setup. The 15/12 multiplier approximately
-     converts em from units of font-size to units of line-height. The goal is to
-     preset the height of a three-line snippet to avoid visual moving/flickering as
-     the snippets load. */
-  min-height: calc(15/12 * 3em);
+  color: #00adee;
+  background-image: url(chrome://browser/content/abouthome/noise.png);
+  text-shadow: 0px 0px 3px #00adee;
+  box-shadow: 0pt 5px 0pt rgba(34, 35, 37, 0.1) inset,
+			  0 0 6.5px rgba(0,0,0,.4) inset,
+              0 0 5px rgba(0,0,0,.4) inset ;
+  -moz-transition: .1s ease-in;
+   border: 1px solid #111;
 }
 
 #launcher {
@@ -224,10 +293,10 @@ html:not([searchUIConfiguration="oldsearchui"]) #searchLogoContainer {
   -moz-box-align: center;
   -moz-box-pack: center;
   width: 100%;
-  background-color: hsla(0,0%,0%,.03);
-  border-top: 1px solid hsla(0,0%,0%,.03);
-  box-shadow: 0 1px 2px hsla(0,0%,0%,.02) inset,
-              0 -1px 0 hsla(0,0%,100%,.25);
+  background-color: rgb(45, 45, 47);
+  background-image: linear-gradient(rgb(47, 48, 50), rgb(37, 38, 40) 85%,  rgb(15, 15, 15));
+  border-top: 1px solid rgb(19, 19, 19);
+  box-shadow: 0px 1px 0px #333 inset;
 }
 
 #launcher:not([session]),
@@ -248,13 +317,14 @@ body[narrow] #launcher[session] {
   vertical-align: top;
   white-space: normal;
   background: transparent padding-box;
-  border: 1px solid transparent;
-  border-radius: 2.5px;
-  color: #525c66;
+  border: 1px solid #1a1a1a;
+  border-radius: 12px;
+  color: #efefef;
+  text-shadow: -1px -1px #111;  
   font-size: 75%;
   cursor: pointer;
   transition-property: background-color, border-color, box-shadow;
-  transition-duration: 150ms;
+  transition-duration: 50ms;
 }
 
 body[narrow] #launcher[session] > .launchButton {
@@ -262,16 +332,24 @@ body[narrow] #launcher[session] > .launchButton {
 }
 
 .launchButton:hover {
-  background-color: hsla(211,79%,6%,.03);
-  border-color: hsla(210,54%,20%,.15) hsla(210,54%,20%,.17) hsla(210,54%,20%,.2);
+    color: #00adee;
+    background-color: rgb(35, 35, 33);
+    background-image: linear-gradient(rgb(16, 16, 18), rgb(37, 37, 39) 60%, rgb(37, 38, 40));
+	border-bottom: 1px solid rgb(55, 55, 55, .3);
+	  box-shadow: 1px 4px 4px hsla(0,0%,0%,.99) inset,
+              1px 4px 4px hsla(0,0%,0%,.99) inset;
+    -moz-transition: .1s ease-in;
 }
 
 .launchButton:hover:active {
-  background-image: linear-gradient(hsla(211,79%,6%,.02), hsla(211,79%,6%,.05));
-  border-color: hsla(210,54%,20%,.2) hsla(210,54%,20%,.23) hsla(210,54%,20%,.25);
-  box-shadow: 0 1px 1px hsla(211,79%,6%,.05) inset,
-              0 0 1px hsla(211,79%,6%,.1) inset;
-  transition-duration: 0ms;
+    color: #efefef;
+    background-color: rgb(15, 15, 13);
+    background-image: linear-gradient(rgb(6, 6, 8), rgb(17, 17, 19) 30%, rgb(17, 18, 10));
+	
+	  box-shadow: 1px 4px 4px hsla(0,0%,0%,.95) inset,
+              1px 4px 4px hsla(0,0%,0%,.95) inset;
+border-bottom: 1px solid rgb(55, 55, 55, .3);
+    -moz-transition: .1s ease-out;
 }
 
 .launchButton[hidden],
@@ -367,7 +445,7 @@ body[narrow] #restorePreviousSession::before {
   width: 32px;
 }
 
-#aboutMozilla {
+#aboutCyberfox {
   display: block;
   position: relative; /* pin wordmark to edge of document, not of viewport */
   -moz-box-ordinal-group: 0;
@@ -375,12 +453,12 @@ body[narrow] #restorePreviousSession::before {
   transition: opacity 150ms;
 }
 
-#aboutMozilla:hover {
+#aboutCyberfox:hover {
   opacity: 1;
 }
 
-#aboutMozilla::before {
-  content: url("chrome://browser/content/abouthome/mozilla.png");
+#aboutCyberfox::before {
+  /*content: url("chrome://browser/content/abouthome/cyber.png");*/
   display: block;
   position: absolute;
   top: 12px;
@@ -399,21 +477,7 @@ body[narrow] #restorePreviousSession::before {
   }
 
   #searchIcon {
-    background-image: url("chrome://browser/skin/magnifier@2x.png");
-  }
-
-  #defaultSnippet1,
-  #defaultSnippet2,
-  #rightsSnippet {
-    background-size: 40px;
-  }
-
-  #defaultSnippet1 {
-    background-image: url("chrome://browser/content/abouthome/snippet1@2x.png");
-  }
-
-  #defaultSnippet2 {
-    background-image: url("chrome://browser/content/abouthome/snippet2@2x.png");
+    background-image: url("chrome://browser/content/abouthome/magnifier@2px.png");
   }
 
   .launchButton::before,
@@ -423,7 +487,7 @@ body[narrow] #restorePreviousSession::before {
   }
 
   .launchButton:-moz-dir(rtl)::before,
-  #aboutMozilla:-moz-dir(rtl)::before {
+  #aboutCyberfox:-moz-dir(rtl)::before {
     transform: scale(.5) translateX(32px);
   }
 
@@ -468,8 +532,8 @@ body[narrow] #restorePreviousSession::before {
     transform-origin: top center;
   }
 
-  #aboutMozilla::before {
-    content: url("chrome://browser/content/abouthome/mozilla@2x.png");
+  #aboutCyberfox::before {
+    /*content: url("chrome://browser/content/abouthome/cyber@2x.png");*/
   }
 }
 

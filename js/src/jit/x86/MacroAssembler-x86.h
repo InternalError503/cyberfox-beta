@@ -9,7 +9,7 @@
 
 #include "jscompartment.h"
 
-#include "jit/IonFrames.h"
+#include "jit/JitFrames.h"
 #include "jit/MoveResolver.h"
 #include "jit/shared/MacroAssembler-x86-shared.h"
 
@@ -1126,8 +1126,7 @@ class MacroAssemblerX86 : public MacroAssemblerX86Shared
     void callWithABI(Register fun, MoveOp::Type result = MoveOp::GENERAL);
 
     // Used from within an Exit frame to handle a pending exception.
-    void handleFailureWithHandler(void *handler);
-    void handleFailureWithHandlerTail();
+    void handleFailureWithHandlerTail(void *handler);
 
     void makeFrameDescriptor(Register frameSizeReg, FrameType type) {
         shll(Imm32(FRAMESIZE_SHIFT), frameSizeReg);

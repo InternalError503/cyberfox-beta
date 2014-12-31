@@ -24,6 +24,13 @@ var gAdvancedPane = {
     this._inited = true;
     var advancedPrefs = document.getElementById("advancedPrefs");
 
+	//Temp solution as the update system not active for beta so we don't want users trying just yet.
+	if(Services.prefs.getCharPref("app.update.channel.type") === "beta"){
+		document.getElementById("updateOptions").hidden = true;
+		document.getElementById("app.update.autocheck").hidden = true;
+		document.getElementById("app.update.check.enabled").hidden = true;
+	}	
+	
     var preference = document.getElementById("browser.preferences.advanced.selectedTabIndex");
     if (preference.value !== null)
         advancedPrefs.selectedIndex = preference.value;
@@ -35,7 +42,9 @@ var gAdvancedPane = {
 #ifdef MOZ_CRASHREPORTER
     this.initSubmitCrashes();
 #endif
+#ifdef MOZ_TELEMETRY_REPORTING
     this.initTelemetry();
+#endif	
 #ifdef MOZ_SERVICES_HEALTHREPORT
     this.initSubmitHealthReport();
 #endif

@@ -9,13 +9,12 @@
 }
 
 /* SCROLLBOX */
-#newtab-scrollbox:not([page-disabled]) {
-  color: rgb(0,0,0);
-  background-color: #f9f9f9;
-}
-
+#newtab-scrollbox:not([page-disabled]),
 #newtab-scrollbox:not([page-disabled]) #newtab-margin-bottom {
-  background: inherit;
+  background-color: rgb(229,229,229);
+  background-image: url(chrome://browser/skin/newtab/noise.png),
+                    linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.2));
+  background-attachment: fixed;
 }
 
 /* UNDO */
@@ -122,21 +121,12 @@
   transition: opacity 100ms ease-out;
 }
 
-.newtab-site:hover .newtab-thumbnail.enhanced-content {
-  opacity: 0;
-}
-
-.newtab-site[type=affiliate] .newtab-thumbnail,
-.newtab-site[type=enhanced] .newtab-thumbnail,
-.newtab-site[type=organic] .newtab-thumbnail,
-.newtab-site[type=sponsored] .newtab-thumbnail {
+.newtab-site[type=organic] .newtab-thumbnail {
   background-position: center center;
   background-size: auto;
 }
 
 /* TITLES */
-#newtab-intro-what,
-.newtab-sponsored,
 .newtab-title {
   color: #5c5c5c;
 }

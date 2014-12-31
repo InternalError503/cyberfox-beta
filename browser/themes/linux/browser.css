@@ -145,6 +145,8 @@ toolbarbutton.bookmark-item[open="true"] {
   display: -moz-box !important;
 }
 
+%include cyberfoxgonfig.inc
+
 .bookmark-item > .toolbarbutton-menu-dropmarker {
   display: none;
 }
@@ -2275,6 +2277,10 @@ chatbox {
 }
 
 %include ../shared/contextmenu.inc.css
+
+#context-navigation {
+  padding-top: 4px;
+}
 
 #context-navigation > .menuitem-iconic > .menu-iconic-left {
   visibility: visible;

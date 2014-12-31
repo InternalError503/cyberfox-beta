@@ -21,7 +21,7 @@
 
 pref("keyword.enabled", false);
 pref("general.useragent.locale", "chrome://global/locale/intl.properties");
-pref("general.useragent.compatMode.firefox", false);
+pref("general.useragent.compatMode.firefox", true);
 
 // This pref exists only for testing purposes. In order to disable all
 // overrides by default, don't initialize UserAgentOverrides.jsm.
@@ -127,6 +127,9 @@ pref("dom.workers.maxPerDomain", 20);
 
 // Whether or not Shared Web Workers are enabled.
 pref("dom.workers.sharedWorkers.enabled", true);
+
+// WebSocket in workers are enabled.
+pref("dom.workers.websocket.enabled", true);
 
 // Service workers
 pref("dom.serviceWorkers.enabled", false);
@@ -808,6 +811,7 @@ pref("application.use_ns_plugin_finder", false);
 pref("browser.fixup.alternate.enabled", true);
 pref("browser.fixup.alternate.prefix", "www.");
 pref("browser.fixup.alternate.suffix", ".com");
+pref("browser.fixup.dns_first_for_single_words", false);
 pref("browser.fixup.hide_user_pass", true);
 
 // Location Bar AutoComplete
@@ -1010,7 +1014,7 @@ pref("javascript.options.mem.gc_min_empty_chunk_count", 1);
 #else
 pref("javascript.options.mem.gc_min_empty_chunk_count", 0);
 #endif
-pref("javascript.options.mem.gc_max_empty_chunk_count", 30);
+pref("javascript.options.mem.gc_max_empty_chunk_count", 40);
 
 pref("javascript.options.showInConsole", false);
 
@@ -1293,9 +1297,6 @@ pref("network.ftp.data.qos", 0);
 pref("network.ftp.control.qos", 0);
 
 // </http>
-
-// <ws>: WebSocket
-pref("network.websocket.enabled", true);
 
 // 2147483647 == PR_INT32_MAX == ~2 GB
 pref("network.websocket.max-message-size", 2147483647);
@@ -1814,7 +1815,7 @@ pref("mousewheel.transaction.ignoremovedelay", 100);
 // acceleration can be turned off if pref is set to -1
 pref("mousewheel.acceleration.start", -1);
 // factor to be multiplied for constant acceleration
-pref("mousewheel.acceleration.factor", 10);
+pref("mousewheel.acceleration.factor", 29);
 
 // Prefs for override the system mouse wheel scrolling speed on the root
 // content of the web pages.  When
@@ -1878,7 +1879,7 @@ pref("mousewheel.with_win.delta_multiplier_z", 100);
 
 // If line-height is lower than this value (in device pixels), 1 line scroll
 // scrolls this height.
-pref("mousewheel.min_line_scroll_amount", 5);
+pref("mousewheel.min_line_scroll_amount", 14);
 
 // These define the smooth scroll behavior (min ms, max ms) for different triggers
 // Some triggers:
@@ -2210,8 +2211,8 @@ pref("editor.resizing.preserve_ratio",       true);
 pref("editor.positioning.offset",            0);
 
 pref("dom.use_watchdog", true);
-pref("dom.max_chrome_script_run_time", 20);
-pref("dom.max_script_run_time", 10);
+pref("dom.max_chrome_script_run_time", 25);
+pref("dom.max_script_run_time", 25);
 
 // If true, ArchiveReader will be enabled
 pref("dom.archivereader.enabled", false);
@@ -2288,6 +2289,8 @@ pref("dom.ipc.tabs.shutdownTimeoutSecs", 0);
 // process isolation which conflicts with our implementation.
 pref("dom.ipc.plugins.java.enabled", false);
 #endif
+
+pref("dom.ipc.plugins.flash.disable-protected-mode", false);
 
 pref("dom.ipc.plugins.flash.subprocess.crashreporter.enabled", true);
 pref("dom.ipc.plugins.reportCrashURL", true);

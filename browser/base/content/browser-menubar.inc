@@ -72,11 +72,13 @@
                           accesskey="&closeWindow.accesskey;"/>
                 <menuseparator/>
                 <menuitem id="menu_savePage"
+						              class="menuitem-iconic"
                           label="&savePageCmd.label;"
                           accesskey="&savePageCmd.accesskey;"
                           key="key_savePage"
                           command="Browser:SavePage"/>
                 <menuitem id="menu_sendLink"
+						              class="menuitem-iconic"				
                           label="&emailPageCmd.label;"
                           accesskey="&emailPageCmd.accesskey;"
                           command="Browser:SendLink"/>
@@ -90,11 +92,13 @@
 #ifndef XP_MACOSX
                 <menuitem id="menu_printPreview"
                           label="&printPreviewCmd.label;"
+                          class="menuitem-iconic"
                           accesskey="&printPreviewCmd.accesskey;"
                           command="cmd_printPreview"/>
 #endif
                 <menuitem id="menu_print"
                           label="&printCmd.label;"
+                          class="menuitem-iconic"
                           accesskey="&printCmd.accesskey;"
                           key="printKb"
                           command="cmd_print"/>
@@ -105,14 +109,19 @@
                           type="checkbox"
                           observes="workOfflineMenuitemState"
                           oncommand="BrowserOffline.toggleOfflineStatus();"/>
+ 				       <menuitem id="app_restartBrowser"
+						              label="&restartBrowser.label;"
+						              oncommand="gCyberfoxCustom.restartBrowser();"/>
                 <menuitem id="menu_FileQuitItem"
 #ifdef XP_WIN
+						              class="menuitem-iconic"	
                           label="&quitApplicationCmdWin.label;"
                           accesskey="&quitApplicationCmdWin.accesskey;"
 #else
 #ifdef XP_MACOSX
                           label="&quitApplicationCmdMac.label;"
 #else
+						              class="menuitem-iconic"
                           label="&quitApplicationCmd.label;"
                           accesskey="&quitApplicationCmd.accesskey;"
 #endif
@@ -130,44 +139,52 @@
                          onpopupshowing="updateEditUIVisibility()"
                          onpopuphidden="updateEditUIVisibility()">
                 <menuitem id="menu_undo"
+				                  class="menuitem-iconic"
                           label="&undoCmd.label;"
                           key="key_undo"
                           accesskey="&undoCmd.accesskey;"
                           command="cmd_undo"/>
                 <menuitem id="menu_redo"
+				                  class="menuitem-iconic"				
                           label="&redoCmd.label;"
                           key="key_redo"
                           accesskey="&redoCmd.accesskey;"
                           command="cmd_redo"/>
                 <menuseparator/>
                 <menuitem id="menu_cut"
+						              class="menuitem-iconic"
                           label="&cutCmd.label;"
                           key="key_cut"
                           accesskey="&cutCmd.accesskey;"
                           command="cmd_cut"/>
                 <menuitem id="menu_copy"
+						              class="menuitem-iconic"
                           label="&copyCmd.label;"
                           key="key_copy"
                           accesskey="&copyCmd.accesskey;"
                           command="cmd_copy"/>
                 <menuitem id="menu_paste"
+						              class="menuitem-iconic"
                           label="&pasteCmd.label;"
                           key="key_paste"
                           accesskey="&pasteCmd.accesskey;"
                           command="cmd_paste"/>
                 <menuitem id="menu_delete"
+				                  class="menuitem-iconic"				
                           label="&deleteCmd.label;"
                           key="key_delete"
                           accesskey="&deleteCmd.accesskey;"
                           command="cmd_delete"/>
                 <menuseparator/>
                 <menuitem id="menu_selectAll"
+				                  class="menuitem-iconic"				
                           label="&selectAllCmd.label;"
                           key="key_selectAll"
                           accesskey="&selectAllCmd.accesskey;"
                           command="cmd_selectAll"/>
                 <menuseparator/>
                 <menuitem id="menu_find"
+				                  class="menuitem-iconic"				
                           label="&findOnCmd.label;"
                           accesskey="&findOnCmd.accesskey;"
                           key="key_find"
@@ -206,6 +223,9 @@
                       accesskey="&viewToolbarsMenu.accesskey;">
                   <menupopup onpopupshowing="onViewToolbarsPopupShowing(event);">
                     <menuseparator/>
+			              <menuitem id="AboutConfigMenuItem"
+				                      label="About:Config"
+				                      oncommand="openUILinkIn('about:config', 'tab');"/>	
                     <menuitem id="menu_customizeToolbars"
                               label="&viewCustomizeToolbar.label;"
                               accesskey="&viewCustomizeToolbar.accesskey;"
@@ -399,6 +419,7 @@
                 key="manBookmarkKb"/>
       <menuseparator id="organizeBookmarksSeparator"/>
       <menuitem id="menu_bookmarkThisPage"
+      				  class="menuitem-iconic"	 
                 command="Browser:AddBookmarkAs"
                 observes="bookmarkThisPageBroadcaster"
                 key="addBookmarkAsKb"/>
@@ -546,6 +567,9 @@
                         key="key_viewInfo"
 #endif
                         command="View:PageInfo"/>
+				 <menuitem id="minimizeMemoryUsage"
+						            label="&minimizeMemoryCache.label;"
+						            oncommand="Cu.forceGC();"/>		  
 #ifndef XP_UNIX
               <menuseparator id="prefSep"/>
               <menuitem id="menu_preferences"

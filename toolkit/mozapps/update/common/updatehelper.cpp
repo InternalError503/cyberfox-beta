@@ -774,7 +774,7 @@ IsUnpromptedElevation(BOOL &isUnpromptedElevation)
       return false;
 
     memset(aIDBuffer, 0, (sizeof(WCHAR)*aCharLength));
-    static const WCHAR* kDefaultMetroBrowserIDPathKey = L"FirefoxURL";
+    static const WCHAR* kDefaultMetroBrowserIDPathKey = L"CyberfoxURL";
 
     HKEY key;
     if (RegOpenKeyExW(HKEY_CLASSES_ROOT, kDefaultMetroBrowserIDPathKey,

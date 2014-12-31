@@ -313,9 +313,7 @@ let gSyncPane = {
                   .wrappedJSObject;
 
     if (service.fxAccountsEnabled) {
-      this.openContentInBrowser("about:accounts?entrypoint=preferences", {
-        replaceQueryString: true
-      });
+      this.openContentInBrowser("about:accounts");
     } else {
       let win = Services.wm.getMostRecentWindow("Weave:AccountSetup");
       if (win)
@@ -352,21 +350,15 @@ let gSyncPane = {
   },
 
   signUp: function() {
-    this.openContentInBrowser("about:accounts?action=signup&entrypoint=preferences", {
-      replaceQueryString: true
-    });
+    this.openContentInBrowser("about:accounts?action=signup");
   },
 
   signIn: function() {
-    this.openContentInBrowser("about:accounts?action=signin&entrypoint=preferences", {
-      replaceQueryString: true
-    });
+    this.openContentInBrowser("about:accounts?action=signin");
   },
 
   reSignIn: function() {
-    this.openContentInBrowser("about:accounts?action=reauth&entrypoint=preferences", {
-      replaceQueryString: true
-    });
+    this.openContentInBrowser("about:accounts?action=reauth");
   },
 
   manageFirefoxAccount: function() {
@@ -394,9 +386,9 @@ let gSyncPane = {
       });
     });
   },
-
+  //Set Help Link For Old Sync
   openOldSyncSupportPage: function() {
-    let url = Services.urlFormatter.formatURLPref("app.support.baseURL") + "old-sync";
+    let url = Services.urlFormatter.formatURLPref('app.helpdoc.baseURI') + "old-sync";
     this.openContentInBrowser(url);
   },
 

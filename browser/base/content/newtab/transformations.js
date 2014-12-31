@@ -103,7 +103,7 @@ let gTransformation = {
 
     let style = aSite.node.style;
     let comp = getComputedStyle(aSite.node, null);
-    style.width = comp.getPropertyValue("width")
+    style.width = comp.getPropertyValue("width");
     style.height = comp.getPropertyValue("height");
 
     aSite.node.setAttribute("frozen", "true");
@@ -133,7 +133,7 @@ let gTransformation = {
    */
   slideSiteTo: function Transformation_slideSiteTo(aSite, aTarget, aOptions) {
     let currentPosition = this.getNodePosition(aSite.node);
-    let targetPosition = this.getNodePosition(aTarget.node)
+    let targetPosition = this.getNodePosition(aTarget.node);
     let callback = aOptions && aOptions.callback;
 
     let self = this;

@@ -8,8 +8,8 @@
 
 #include "jit/Bailouts.h"
 #include "jit/BaselineFrame.h"
-#include "jit/IonFrames.h"
 #include "jit/JitCompartment.h"
+#include "jit/JitFrames.h"
 #include "jit/MoveEmitter.h"
 
 using namespace js;
@@ -378,24 +378,17 @@ MacroAssemblerX64::callWithABI(Register fun, MoveOp::Type result)
 }
 
 void
-MacroAssemblerX64::handleFailureWithHandler(void *handler)
+MacroAssemblerX64::handleFailureWithHandlerTail(void *handler)
 {
     // Reserve space for exception information.
     subq(Imm32(sizeof(ResumeFromException)), rsp);
     movq(rsp, rax);
 
-    // Ask for an exception handler.
+    // Call the handler.
     setupUnalignedABICall(1, rcx);
     passABIArg(rax);
     callWithABI(handler);
 
-    JitCode *excTail = GetIonContext()->runtime->jitRuntime()->getExceptionTail();
-    jmp(excTail);
-}
-
-void
-MacroAssemblerX64::handleFailureWithHandlerTail()
-{
     Label entryFrame;
     Label catch_;
     Label finally;
@@ -506,7 +499,7 @@ MacroAssemblerX64::branchPtrInNurseryRange(Condition cond, Register ptr, Registe
     MOZ_ASSERT(ptr != temp);
     MOZ_ASSERT(ptr != ScratchReg);
 
-    const Nursery &nursery = GetIonContext()->runtime->gcNursery();
+    const Nursery &nursery = GetJitContext()->runtime->gcNursery();
     movePtr(ImmWord(-ptrdiff_t(nursery.start())), ScratchReg);
     addPtr(ptr, ScratchReg);
     branchPtr(cond == Assembler::Equal ? Assembler::Below : Assembler::AboveOrEqual,
@@ -520,7 +513,7 @@ MacroAssemblerX64::branchValueIsNurseryObject(Condition cond, ValueOperand value
     MOZ_ASSERT(cond == Assembler::Equal || cond == Assembler::NotEqual);
 
     // 'Value' representing the start of the nursery tagged as a JSObject
-    const Nursery &nursery = GetIonContext()->runtime->gcNursery();
+    const Nursery &nursery = GetJitContext()->runtime->gcNursery();
     Value start = ObjectValue(*reinterpret_cast<JSObject *>(nursery.start()));
 
     movePtr(ImmWord(-ptrdiff_t(start.asRawBits())), ScratchReg);

@@ -81,7 +81,7 @@ let gTests = [
 // Disabled on Linux for intermittent issues with FHR, see Bug 945667.
 {
   desc: "Check that performing a search fires a search event and records to " +
-        "Firefox Health Report.",
+        "Cyberfox Health Report.",
   setup: function () { },
   run: function* () {
     // Skip this test on Linux.

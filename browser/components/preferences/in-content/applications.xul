@@ -61,6 +61,7 @@
       class="header"
       hidden="true"
       data-category="paneApplications">
+  <image class="header-icon"/>
   <label class="header-name">&paneApplications.title;</label>
 </hbox>
 

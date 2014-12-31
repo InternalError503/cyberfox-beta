@@ -30,10 +30,10 @@
 // Total number of heartbeats we wait before giving up and shutting down.
 #define REQUEST_WAIT_TIMEOUT 30
 // Pulled from desktop browser's shell
-#define APP_REG_NAME L"Firefox"
+#define APP_REG_NAME L"Cyberfox"
 
-const WCHAR* kFirefoxExe = L"firefox.exe";
-static const WCHAR* kDefaultMetroBrowserIDPathKey = L"FirefoxURL";
+const WCHAR* kFirefoxExe = L"Cyberfox.exe";
+static const WCHAR* kDefaultMetroBrowserIDPathKey = L"CyberfoxURL";
 static const WCHAR* kMetroRestartCmdLine = L"--metro-restart";
 static const WCHAR* kMetroUpdateCmdLine = L"--metro-update";
 static const WCHAR* kDesktopRestartCmdLine = L"--desktop-restart";

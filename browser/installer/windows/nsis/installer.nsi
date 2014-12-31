@@ -381,17 +381,17 @@ Section "-Application" APP_IDX
   ; it doesn't cause problems always add them.
   ${SetUninstallKeys}
 
-  ; On install always add the FirefoxHTML and FirefoxURL keys.
-  ; An empty string is used for the 5th param because FirefoxHTML is not a
+  ; On install always add the CyberfoxHTML and CyberfoxURL keys.
+  ; An empty string is used for the 5th param because CyberfoxHTML is not a
   ; protocol handler.
   ${GetLongPath} "$INSTDIR\${FileMainEXE}" $8
   StrCpy $2 "$\"$8$\" -osint -url $\"%1$\""
 
-  ; In Win8, the delegate execute handler picks up the value in FirefoxURL and
-  ; FirefoxHTML to launch the desktop browser when it needs to.
-  ${AddDisabledDDEHandlerValues} "FirefoxHTML" "$2" "$8,1" \
+  ; In Win8, the delegate execute handler picks up the value in CyberfoxURL and
+  ; CyberfoxHTML to launch the desktop browser when it needs to.
+  ${AddDisabledDDEHandlerValues} "CyberfoxHTML" "$2" "$8,1" \
                                  "${AppRegName} Document" ""
-  ${AddDisabledDDEHandlerValues} "FirefoxURL" "$2" "$8,1" "${AppRegName} URL" \
+  ${AddDisabledDDEHandlerValues} "CyberfoxURL" "$2" "$8,1" "${AppRegName} URL" \
                                  "true"
 
   ; For pre win8, the following keys should only be set if we can write to HKLM.
@@ -430,20 +430,20 @@ Section "-Application" APP_IDX
     ${EndIf}
 !ifdef MOZ_METRO
     ${CleanupMetroBrowserHandlerValues} ${DELEGATE_EXECUTE_HANDLER_ID} \
-                                        "FirefoxURL" \
-                                        "FirefoxHTML"
+                                        "CyberfoxURL" \
+                                        "CyberfoxHTML"
     ${AddMetroBrowserHandlerValues} ${DELEGATE_EXECUTE_HANDLER_ID} \
                                     "$INSTDIR\CommandExecuteHandler.exe" \
                                     $AppUserModelID \
-                                    "FirefoxURL" \
-                                    "FirefoxHTML"
+                                    "CyberfoxURL" \
+                                    "CyberfoxHTML"
 !else
   ; The metro browser is not enabled by the mozconfig.
   ${If} ${AtLeastWin8}
     ${RemoveDEHRegistration} ${DELEGATE_EXECUTE_HANDLER_ID} \
                              $AppUserModelID \
-                             "FirefoxURL" \
-                             "FirefoxHTML"
+                             "CyberfoxURL" \
+                             "CyberfoxHTML"
   ${EndIf}
 !endif
   ${EndIf}
@@ -819,7 +819,7 @@ Function LaunchApp
     Pop $1
     ; Check for a last run type to see if metro was the last browser
     ; front end in use.
-    ReadRegDWORD $2 HKCU "Software\Mozilla\Firefox" "MetroLastAHE"
+    ReadRegDWORD $2 HKCU "Software\8pecxstudios\Cyberfox" "MetroLastAHE"
 !endif
     ${If} $1 == "1"
     ${AndIf} $2 == "1" ; 1 equals AHE_IMMERSIVE
@@ -854,7 +854,7 @@ Function LaunchAppFromElevatedProcess
   Pop $2
   ; Check for a last run type to see if metro was the last browser
   ; front end in use.
-  ReadRegDWORD $3 HKCU "Software\Mozilla\Firefox" "MetroLastAHE"
+  ReadRegDWORD $3 HKCU "Software\8pecxstudios\Cyberfox" "MetroLastAHE"
 !endif
   ${If} $2 == "1"
   ${AndIf} $3 == "1" ; 1 equals AHE_IMMERSIVE

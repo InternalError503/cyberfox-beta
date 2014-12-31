@@ -102,6 +102,7 @@
 @BINPATH@/application.ini
 @BINPATH@/platform.ini
 @BINPATH@/blocklist.xml
+@BINPATH@/agents.json
 #ifdef XP_UNIX
 @BINPATH@/run-mozilla.sh
 @BINPATH@/mozilla-xremote-client

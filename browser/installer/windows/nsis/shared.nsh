@@ -28,13 +28,13 @@ Function RegisterCEH
 !ifdef MOZ_METRO
   ${If} ${AtLeastWin8}
     ${CleanupMetroBrowserHandlerValues} ${DELEGATE_EXECUTE_HANDLER_ID} \
-                                        "FirefoxURL" \
-                                        "FirefoxHTML"
+                                        "CyberfoxURL" \
+                                        "CyberfoxHTML"
     ${AddMetroBrowserHandlerValues} ${DELEGATE_EXECUTE_HANDLER_ID} \
                                     "$INSTDIR\CommandExecuteHandler.exe" \
                                     $AppUserModelID \
-                                    "FirefoxURL" \
-                                    "FirefoxHTML"
+                                    "CyberfoxURL" \
+                                    "CyberfoxHTML"
   ${EndIf}
 !endif
 FunctionEnd
@@ -68,9 +68,9 @@ FunctionEnd
   ; start menu tile.  In case there are 2 Firefox installations, we only do
   ; this if the application being updated is the default.
   ReadRegStr $0 HKCU "Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice" "ProgId"
-  ${If} $0 == "FirefoxURL"
+  ${If} $0 == "CyberfoxURL"
   ${AndIf} $9 != 0 ; We're not running in session 0
-    ReadRegStr $0 HKCU "Software\Classes\FirefoxURL\shell\open\command" ""
+    ReadRegStr $0 HKCU "Software\Classes\CyberfoxURL\shell\open\command" ""
     ${GetPathFromString} "$0" $0
     ${GetParent} "$0" $0
     ${If} ${FileExists} "$0"
@@ -227,7 +227,7 @@ FunctionEnd
     ; and if the tile image is not already in cache.  Then Windows won't refresh
     ; the tile image on the start screen.  So wait before calling RegisterCEH.
     ; We only need to do this when the DEH doesn't already exist.
-    ReadRegStr $0 HKCU "Software\Classes\FirefoxURL\shell\open\command" "DelegateExecute"
+    ReadRegStr $0 HKCU "Software\Classes\CyberfoxURL\shell\open\command" "DelegateExecute"
     ${If} $0 != ${DELEGATE_EXECUTE_HANDLER_ID}
       Sleep 3000
     ${EndIf}
@@ -238,8 +238,8 @@ FunctionEnd
   ${If} ${AtLeastWin8}
     ${RemoveDEHRegistration} ${DELEGATE_EXECUTE_HANDLER_ID} \
                              $AppUserModelID \
-                             "FirefoxURL" \
-                             "FirefoxHTML"
+                             "CyberfoxURL" \
+                             "CyberfoxHTML"
   ${EndIf}
 !endif
 !macroend
@@ -400,7 +400,7 @@ FunctionEnd
   ClearErrors
   EnumRegKey $7 HKCR "${FILE_TYPE}" 0
   ${If} ${Errors}
-    WriteRegStr SHCTX "SOFTWARE\Classes\${FILE_TYPE}"  "" "FirefoxHTML"
+    WriteRegStr SHCTX "SOFTWARE\Classes\${FILE_TYPE}"  "" "CyberfoxHTML"
   ${EndIf}
 !macroend
 !define AddAssociationIfNoneExist "!insertmacro AddAssociationIfNoneExist"
@@ -413,30 +413,30 @@ FunctionEnd
   StrCpy $0 "SOFTWARE\Classes"
   StrCpy $2 "$\"$8$\" -osint -url $\"%1$\""
 
-  ; Associate the file handlers with FirefoxHTML
+  ; Associate the file handlers with CyberfoxHTML
   ReadRegStr $6 SHCTX "$0\.htm" ""
-  ${If} "$6" != "FirefoxHTML"
-    WriteRegStr SHCTX "$0\.htm"   "" "FirefoxHTML"
+  ${If} "$6" != "CyberfoxHTML"
+    WriteRegStr SHCTX "$0\.htm"   "" "CyberfoxHTML"
   ${EndIf}
 
   ReadRegStr $6 SHCTX "$0\.html" ""
-  ${If} "$6" != "FirefoxHTML"
-    WriteRegStr SHCTX "$0\.html"  "" "FirefoxHTML"
+  ${If} "$6" != "CyberfoxHTML"
+    WriteRegStr SHCTX "$0\.html"  "" "CyberfoxHTML"
   ${EndIf}
 
   ReadRegStr $6 SHCTX "$0\.shtml" ""
-  ${If} "$6" != "FirefoxHTML"
-    WriteRegStr SHCTX "$0\.shtml" "" "FirefoxHTML"
+  ${If} "$6" != "CyberfoxHTML"
+    WriteRegStr SHCTX "$0\.shtml" "" "CyberfoxHTML"
   ${EndIf}
 
   ReadRegStr $6 SHCTX "$0\.xht" ""
-  ${If} "$6" != "FirefoxHTML"
-    WriteRegStr SHCTX "$0\.xht"   "" "FirefoxHTML"
+  ${If} "$6" != "CyberfoxHTML"
+    WriteRegStr SHCTX "$0\.xht"   "" "CyberfoxHTML"
   ${EndIf}
 
   ReadRegStr $6 SHCTX "$0\.xhtml" ""
-  ${If} "$6" != "FirefoxHTML"
-    WriteRegStr SHCTX "$0\.xhtml" "" "FirefoxHTML"
+  ${If} "$6" != "CyberfoxHTML"
+    WriteRegStr SHCTX "$0\.xhtml" "" "CyberfoxHTML"
   ${EndIf}
 
   ${AddAssociationIfNoneExist} ".pdf"
@@ -446,12 +446,12 @@ FunctionEnd
   ${AddAssociationIfNoneExist} ".pdf"
   ${AddAssociationIfNoneExist} ".webm"
 
-  ; An empty string is used for the 5th param because FirefoxHTML is not a
+  ; An empty string is used for the 5th param because CyberfoxHTML is not a
   ; protocol handler
-  ${AddDisabledDDEHandlerValues} "FirefoxHTML" "$2" "$8,1" \
+  ${AddDisabledDDEHandlerValues} "CyberfoxHTML" "$2" "$8,1" \
                                  "${AppRegName} HTML Document" ""
 
-  ${AddDisabledDDEHandlerValues} "FirefoxURL" "$2" "$8,1" "${AppRegName} URL" \
+  ${AddDisabledDDEHandlerValues} "CyberfoxURL" "$2" "$8,1" "${AppRegName} URL" \
                                  "true"
   Call RegisterCEH
 
@@ -523,35 +523,35 @@ FunctionEnd
   WriteRegStr ${RegKey} "$0\Capabilities" "ApplicationIcon" "$8,0"
   WriteRegStr ${RegKey} "$0\Capabilities" "ApplicationName" "${BrandShortName}"
 
-  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".htm"   "FirefoxHTML"
-  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".html"  "FirefoxHTML"
-  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".shtml" "FirefoxHTML"
-  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".xht"   "FirefoxHTML"
-  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".xhtml" "FirefoxHTML"
+  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".htm"   "CyberfoxHTML"
+  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".html"  "CyberfoxHTML"
+  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".shtml" "CyberfoxHTML"
+  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".xht"   "CyberfoxHTML"
+  WriteRegStr ${RegKey} "$0\Capabilities\FileAssociations" ".xhtml" "CyberfoxHTML"
 
   WriteRegStr ${RegKey} "$0\Capabilities\StartMenu" "StartMenuInternet" "$R9"
 
-  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "ftp"    "FirefoxURL"
-  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "http"   "FirefoxURL"
-  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "https"  "FirefoxURL"
+  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "ftp"    "CyberfoxURL"
+  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "http"   "CyberfoxURL"
+  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "https"  "CyberfoxURL"
 
   ; Vista Registered Application
   WriteRegStr ${RegKey} "Software\RegisteredApplications" "${AppRegName}" "$0\Capabilities"
 !macroend
 !define SetStartMenuInternet "!insertmacro SetStartMenuInternet"
 
-; The IconHandler reference for FirefoxHTML can end up in an inconsistent state
+; The IconHandler reference for CyberfoxHTML can end up in an inconsistent state
 ; due to changes not being detected by the IconHandler for side by side
 ; installs (see bug 268512). The symptoms can be either an incorrect icon or no
 ; icon being displayed for files associated with Firefox (does not use SHCTX).
 !macro FixShellIconHandler RegKey
   ClearErrors
-  ReadRegStr $1 ${RegKey} "Software\Classes\FirefoxHTML\ShellEx\IconHandler" ""
+  ReadRegStr $1 ${RegKey} "Software\Classes\CyberfoxHTML\ShellEx\IconHandler" ""
   ${Unless} ${Errors}
-    ReadRegStr $1 ${RegKey} "Software\Classes\FirefoxHTML\DefaultIcon" ""
+    ReadRegStr $1 ${RegKey} "Software\Classes\CyberfoxHTML\DefaultIcon" ""
     ${GetLongPath} "$INSTDIR\${FileMainEXE}" $2
     ${If} "$1" != "$2,1"
-      WriteRegStr ${RegKey} "Software\Classes\FirefoxHTML\DefaultIcon" "" "$2,1"
+      WriteRegStr ${RegKey} "Software\Classes\CyberfoxHTML\DefaultIcon" "" "$2,1"
     ${EndIf}
   ${EndUnless}
 !macroend
@@ -695,16 +695,16 @@ FunctionEnd
   ReadRegStr $1 HKLM "Software\Classes\${FILE_TYPE}" ""
   ReadRegStr $2 HKCR "${FILE_TYPE}\PersistentHandler" ""
   ${If} "$2" != ""
-    ; Since there is a persistent handler remove FirefoxHTML as the default
-    ; value from both HKCU and HKLM if it set to FirefoxHTML.
-    ${If} "$0" == "FirefoxHTML"
+    ; Since there is a persistent handler remove CyberfoxHTML as the default
+    ; value from both HKCU and HKLM if it set to CyberfoxHTML.
+    ${If} "$0" == "CyberfoxHTML"
       DeleteRegValue HKCU "Software\Classes\${FILE_TYPE}" ""
     ${EndIf}
-    ${If} "$1" == "FirefoxHTML"
+    ${If} "$1" == "CyberfoxHTML"
       DeleteRegValue HKLM "Software\Classes\${FILE_TYPE}" ""
     ${EndIf}
-  ${ElseIf} "$0" == "FirefoxHTML"
-    ; Since KHCU is set to FirefoxHTML remove FirefoxHTML as the default value
+  ${ElseIf} "$0" == "CyberfoxHTML"
+    ; Since KHCU is set to CyberfoxHTML remove CyberfoxHTML as the default value
     ; from HKCU if HKLM is set to a value other than an empty string.
     ${If} "$1" != ""
       DeleteRegValue HKCU "Software\Classes\${FILE_TYPE}" ""
@@ -760,17 +760,17 @@ FunctionEnd
   ; Only set the file and protocol handlers if the existing one under HKCR is
   ; for this install location.
 
-  ${IsHandlerForInstallDir} "FirefoxHTML" $R9
+  ${IsHandlerForInstallDir} "CyberfoxHTML" $R9
   ${If} "$R9" == "true"
-    ; An empty string is used for the 5th param because FirefoxHTML is not a
+    ; An empty string is used for the 5th param because CyberfoxHTML is not a
     ; protocol handler.
-    ${AddDisabledDDEHandlerValues} "FirefoxHTML" "$2" "$8,1" \
+    ${AddDisabledDDEHandlerValues} "CyberfoxHTML" "$2" "$8,1" \
                                    "${AppRegName} HTML Document" ""
   ${EndIf}
 
-  ${IsHandlerForInstallDir} "FirefoxURL" $R9
+  ${IsHandlerForInstallDir} "CyberfoxURL" $R9
   ${If} "$R9" == "true"
-    ${AddDisabledDDEHandlerValues} "FirefoxURL" "$2" "$8,1" \
+    ${AddDisabledDDEHandlerValues} "CyberfoxURL" "$2" "$8,1" \
                                    "${AppRegName} URL" "true"
   ${EndIf}
 
@@ -851,10 +851,10 @@ FunctionEnd
     DeleteRegValue HKLM "$0\Capabilities\URLAssociations" "gopher"
   ${EndUnless}
 
-  ; Delete gopher from the user's UrlAssociations if it points to FirefoxURL.
+  ; Delete gopher from the user's UrlAssociations if it points to CyberfoxURL.
   StrCpy $0 "Software\Microsoft\Windows\Shell\Associations\UrlAssociations\gopher"
   ReadRegStr $2 HKCU "$0\UserChoice" "Progid"
-  ${If} "$2" == "FirefoxURL"
+  ${If} "$2" == "CyberfoxURL"
     DeleteRegKey HKCU "$0"
   ${EndIf}
 !macroend
@@ -864,14 +864,14 @@ FunctionEnd
 ; fresh install and on uninstall.
 !macro ResetWin8PromptKeys KEY PREFIX
   ${If} ${AtLeastWin8}
-    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "FirefoxHTML_.htm"
-    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "FirefoxHTML_.html"
-    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "FirefoxHTML_.xht"
-    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "FirefoxHTML_.xhtml"
-    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "FirefoxHTML_.shtml"
-    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "FirefoxURL_ftp"
-    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "FirefoxURL_http"
-    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "FirefoxURL_https"
+    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "CyberfoxHTML_.htm"
+    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "CyberfoxHTML_.html"
+    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "CyberfoxHTML_.xht"
+    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "CyberfoxHTML_.xhtml"
+    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "CyberfoxHTML_.shtml"
+    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "CyberfoxURL_ftp"
+    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "CyberfoxURL_http"
+    DeleteRegValue ${KEY} "${PREFIX}Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts" "CyberfoxURL_https"
   ${EndIf}
 !macroend
 !define ResetWin8PromptKeys "!insertmacro ResetWin8PromptKeys"

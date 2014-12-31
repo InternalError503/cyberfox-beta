@@ -175,3 +175,19 @@ browser.jar:
 #endif
 
 % override chrome://global/content/netError.xhtml chrome://browser/content/aboutNetError.xhtml
+
+# Add Files For Cyberfox
+
+#About:Home
+		content/browser/abouthome/8pecx-bg.png     	  (content/abouthome/8pecx-bg.png)
+		content/browser/abouthome/cyber.png     	    (content/abouthome/cyber.png)
+    content/browser/abouthome/noise.png           (content/abouthome/noise.png)		
+#Browser Core
+    content/browser/browser-cyberfox.js           (content/browser-cyberfox.js)
+    content/browser/browser-cyberfox.xul          (content/browser-cyberfox.xul)
+    content/browser/browser-cyberfox.css          (content/browser-cyberfox.css)		
+    content/browser/downloadUI.xul                (content/downloadUI.xul)
+#Preferences
+    content/browser/fonts/ClearSans-Regular.woff  (content/fonts/ClearSans-Regular.woff)
+    content/browser/fonts/FiraSans-Regular.woff   (content/fonts/FiraSans-Regular.woff)
+    content/browser/fonts/FiraSans-Light.woff     (content/fonts/FiraSans-Light.woff)

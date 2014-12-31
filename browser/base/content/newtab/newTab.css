@@ -22,14 +22,22 @@ input[type=button] {
 
 #newtab-scrollbox:not([page-disabled]) {
   overflow: auto;
+  background-color: rgb(229,229,229);
+  background-image: url(chrome://browser/skin/newtab/noise.png),
+                    linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,.2));
+  background-attachment: fixed;     
 }
 
 /* UNDO */
 #newtab-undo-container {
   transition: opacity 100ms ease-out;
   display: -moz-box;
+  margin-bottom: 26px; /* 32 - 6 search form top "padding" */
   -moz-box-align: center;
   -moz-box-pack: center;
+  border-color: rgba(8,22,37,.12) rgba(8,22,37,.14) rgba(8,22,37,.16);
+  background-color: rgba(255,255,255,.4);
+  color: #525e69;    
 }
 
 #newtab-undo-container[undo-disabled] {
@@ -47,49 +55,6 @@ input[type=button] {
 #newtab-customize-button:-moz-locale-dir(rtl) {
   left: 6px;
   right: auto;
-}
-
-#newtab-intro-what {
-  cursor: pointer;
-  position: absolute;
-  right: 55px;
-  top: 15px;
-}
-
-#newtab-intro-what:-moz-locale-dir(rtl) {
-  left: 55px;
-  right: auto;
-}
-
-#newtab-scrollbox[page-disabled] #newtab-intro-what {
-  display: none;
-}
-
-#newtab-intro-panel {
-  color: #6a7b86;
-  font-size: 15px;
-  line-height: 19px;
-  width: 520px;
-}
-
-#newtab-intro-panel h1 {
-  color: #343f48;
-  font-family: Open Sans, sans-serif;
-  font-size: 30px;
-  margin: 20px;
-}
-
-#newtab-intro-panel p {
-  margin: 10px 20px;
-}
-
-#newtab-intro-panel p:last-child {
-  margin-bottom: 30px;
-}
-
-#newtab-intro-what:hover,
-#newtab-intro-panel a {
-  color: #4a90e2;
 }
 
 /* MARGINS */
@@ -192,7 +157,6 @@ input[type=button] {
 }
 
 /* TITLES */
-.newtab-sponsored,
 .newtab-title {
   bottom: -26px;
   overflow: hidden;
@@ -207,60 +171,6 @@ input[type=button] {
   left: 0;
   padding-top: 14px;
   text-overflow: ellipsis;
-}
-
-.newtab-sponsored {
-  border: 1px solid #dcdcdc;
-  border-radius: 2px;
-  cursor: pointer;
-  display: none;
-  font-family: Arial;
-  font-size: 10px;
-  height: 17px;
-  line-height: 17px;
-  margin-bottom: -1px;
-  padding: 0 4px;
-}
-
-.newtab-sponsored:-moz-any(:hover, [active]) {
-  background-color: #3a72b1;
-  border: 0;
-  color: white;
-}
-
-.newtab-sponsored:-moz-locale-dir(rtl) {
-  left: 0;
-  right: auto;
-}
-
-.newtab-site:-moz-any([type=enhanced], [type=sponsored]) .newtab-sponsored {
-  display: block;
-}
-
-.sponsored-explain,
-.sponsored-explain a {
-  color: white;
-}
-
-.sponsored-explain {
-  background-color: rgba(51, 51, 51, 0.95);
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
-  bottom: 0px;
-  line-height: 20px;
-  padding: 15px 10px;
-  position: absolute;
-  text-align: start;
-}
-
-#newtab-intro-panel input,
-.sponsored-explain input {
-  background-size: 18px;
-  height: 18px;
-  opacity: 1;
-  pointer-events: none;
-  position: static;
-  width: 18px;
 }
 
 /* CONTROLS */
@@ -353,7 +263,7 @@ input[type=button] {
 }
 
 @media not all and (max-resolution: 1dppx) {
-  #newtab-search-icon.magnifier {
+  #newtab-search-logo.magnifier {
     background-image: url("chrome://browser/skin/magnifier@2x.png");
   }
 }
@@ -454,27 +364,20 @@ input[type=button] {
   transition-duration: 0ms;
 }
 
-#newtab-customize-panel .panel-arrowcontent,
-#newtab-search-panel .panel-arrowcontent {
-  -moz-padding-start: 0;
-  -moz-padding-end: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  background: rgb(248, 250, 251);
+#newtab-customize-panel > .panel-arrowcontainer > .panel-arrowcontent,
+#newtab-search-panel > .panel-arrowcontainer > .panel-arrowcontent {
+  padding: 0;
 }
 
 .newtab-customize-panel-item,
-.newtab-search-panel-engine {
-  -moz-box-align: center;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  -moz-padding-start: 24px;
-  -moz-padding-end: 24px;
+.newtab-search-panel-engine,
+#newtab-search-manage {
+  padding: 4px 24px;
 }
 
 .newtab-customize-panel-item:not(:last-child),
-.newtab-search-panel-engine:not(:last-child) {
-  border-bottom: 1px solid #ccc;
+.newtab-search-panel-engine {
+  border-bottom: 1px solid threedshadow;
 }
 
 .newtab-search-panel-engine > image {
@@ -485,10 +388,10 @@ input[type=button] {
 }
 
 .newtab-customize-panel-item > label,
-.newtab-search-panel-engine > label {
-  -moz-padding-start: 0;
-  -moz-margin-start: 0;
-  color: rgb(130, 132, 133);
+.newtab-search-panel-engine > label,
+#newtab-search-manage > label {
+  padding: 0;
+  margin: 0;
 }
 
 .newtab-customize-panel-item[selected],

@@ -39,7 +39,7 @@ function test() {
     name: "Bing",
     alias: null,
     description: "Bing. Search by Microsoft.",
-    searchForm: "http://www.bing.com/search?q=&pc=MOZI",
+    searchForm: "http://www.bing.com/search",
     type: Ci.nsISearchEngine.TYPE_MOZSEARCH,
     hidden: false,
     wrappedJSObject: {

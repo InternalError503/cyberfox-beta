@@ -921,12 +921,24 @@
             this.closePopup();
             controller.handleEscape();
 
-            // Fill in the search bar's value
-            searchBar.value = search;
-
             // open the search results according to the clicking subtlety
             var where = whereToOpenLink(aEvent, false, true);
+
+            // But open ctrl/cmd clicks on autocomplete items in a new background tab.
+            if (where == "tab" && (aEvent instanceof MouseEvent) &&
+                (aEvent.button == 1 ||
+#ifdef XP_MACOSX
+                 aEvent.metaKey))
+#else
+                 aEvent.ctrlKey))
+#endif
+              where = "tab-background";
+
             searchBar.doSearch(search, where);
+            if (where == "tab-background")
+              searchBar.focus();
+            else
+              searchBar.value = search;
           }
         ]]></body>
       </method>
@@ -942,7 +954,8 @@
       <xul:hbox xbl:inherits="collapsed=showonlysettings" anonid="searchbar-engine"
                 class="search-panel-header search-panel-current-engine">
         <xul:image class="searchbar-engine-image" xbl:inherits="src"/>
-        <xul:label anonid="searchbar-engine-name" flex="1" crop="end"/>
+        <xul:label anonid="searchbar-engine-name" flex="1" crop="end"
+                   role="presentation"/>
       </xul:hbox>
       <xul:tree anonid="tree" flex="1"
                 class="autocomplete-tree plain search-panel-tree"
@@ -955,9 +968,9 @@
       <xul:hbox anonid="search-panel-one-offs-header"
                 class="search-panel-header search-panel-current-input"
                 xbl:inherits="hidden=showonlysettings">
-        <xul:label anonid="searchbar-oneoffheader-before" value="Search for "/>
+        <xul:label anonid="searchbar-oneoffheader-before" value="&searchFor.label;"/>
         <xul:label anonid="searchbar-oneoffheader-searchtext" flex="1" crop="end" class="search-panel-input-value"/>
-        <xul:label anonid="searchbar-oneoffheader-after" flex="10000" value=" with:"/>
+        <xul:label anonid="searchbar-oneoffheader-after" flex="10000" value="&searchWith.label;"/>
       </xul:hbox>
       <xul:description anonid="search-panel-one-offs"
                        class="search-panel-one-offs"
@@ -967,7 +980,7 @@
                   xbl:inherits="showonlysettings"
                   oncommand="openPreferences('paneSearch')"
                   class="search-setting-button search-panel-header"
-                  label="Change Search Settings"/>
+                  label="&changeSearchSettings.button;"/>
     </content>
     <handlers>
       <handler event="popupshowing"><![CDATA[
@@ -1002,8 +1015,15 @@
           // avoid showing the icon of the previous default provider.
           this.removeAttribute("src");
         }
+
+        const kBundleURI = "chrome://browser/locale/search.properties";
+        let bundle = Services.strings.createBundle(kBundleURI);
+        let headerText = bundle.formatStringFromName("searchHeader",
+                                                     [currentEngine.name], 1);
         document.getAnonymousElementByAttribute(this, "anonid", "searchbar-engine-name")
-                .setAttribute("value", currentEngine.name + " Search");
+                .setAttribute("value", headerText);
+        document.getAnonymousElementByAttribute(this, "anonid", "searchbar-engine")
+                .engine = currentEngine;
 
         // Update the 'Search for <keywords> with:" header.
         let headerSearchText =
@@ -1036,8 +1056,6 @@
 
         let addEngines = getBrowser().mCurrentBrowser.engines;
         if (addEngines && addEngines.length > 0) {
-          const kBundleURI = "chrome://browser/locale/search.properties";
-          let bundle = Services.strings.createBundle(kBundleURI);
           for (let engine of addEngines) {
             let button = document.createElementNS(kXULNS, "button");
             let label = bundle.formatStringFromName("cmd_addFoundEngine",
@@ -1084,16 +1102,22 @@
         if (!engines.length)
           return;
 
-        let panel = document.getElementById("PopupSearchAutoComplete");
-        let minWidth = parseInt(panel.width) + 23;
-        panel.setAttribute("style", "min-width: " + minWidth + "px");
-
         // 49px is the min-width of each search engine button,
         // adapt this const when changing the css.
         // It's actually 48px + 1px of right border.
-        // The + 1 is because the last button doesn't have a right border.
+        const ENGINE_WIDTH = 49;
+
+        let panel = document.getElementById("PopupSearchAutoComplete");
+        // The + 23 is because the panel width only spans to the textbox
+        // size, but we also want it to include the magnifier icon's width.
+        let minWidth = parseInt(panel.width) + 23;
+        // Ensure the panel is wide enough to fit at least 3 engines.
+        minWidth = Math.max(minWidth, ENGINE_WIDTH * 3);
+        panel.setAttribute("style", "min-width: " + minWidth + "px");
+
         let panelWidth = parseInt(panel.clientWidth);
-        let enginesPerRow = Math.floor((panelWidth + 1) / 49);
+        // The + 1 is because the last button doesn't have a right border.
+        let enginesPerRow = Math.floor((panelWidth + 1) / ENGINE_WIDTH);
         let buttonWidth = Math.floor(panelWidth / enginesPerRow);
         // There will be an emtpy area of:
         //   panelWidth - enginesPerRow * buttonWidth  px
@@ -1164,11 +1188,13 @@
           return; // ignore right clicks.
 
         let button = event.originalTarget;
-        if (button.localName != "button" || !button.engine)
+        let engine = button.engine || button.parentNode.engine;
+
+        if (!engine)
           return;
 
         let searchbar = document.getElementById("searchbar");
-        searchbar.handleSearchCommand(event, button.engine);
+        searchbar.handleSearchCommand(event, engine);
       ]]></handler>
 
       <handler event="command"><![CDATA[
@@ -2063,7 +2089,7 @@
           _mixedContent.hidden = false;
           _mixedContentUnblock.hidden = false;
           _mixedContentHelpLink.href =
-            Services.urlFormatter.formatURLPref("app.support.baseURL")
+            Services.urlFormatter.formatURLPref("app.helpdoc.baseURI")
               + "mixed-content";
         }
         if (this.notification.options.state &
@@ -2072,7 +2098,7 @@
           _mixedContent.hidden = false;
           _mixedContentBlock.hidden = false;
           _mixedContentHelpLink.href =
-            Services.urlFormatter.formatURLPref("app.support.baseURL")
+            Services.urlFormatter.formatURLPref("app.helpdoc.baseURI")
               + "mixed-content";
         }
         if (this.notification.options.state &
@@ -2083,7 +2109,7 @@
           _trackingContent.hidden = false;
           _trackingContentUnblock.hidden = false;
           _trackingContentHelpLink.href =
-            Services.urlFormatter.formatURLPref("app.support.baseURL")
+            Services.urlFormatter.formatURLPref("app.helpdoc.baseURI")
               + "tracking-protection";
         }
         if (this.notification.options.state &
@@ -2092,7 +2118,7 @@
           _trackingContent.hidden = false;
           _trackingContentBlock.hidden = false;
           _trackingContentHelpLink.href =
-            Services.urlFormatter.formatURLPref("app.support.baseURL")
+            Services.urlFormatter.formatURLPref("app.helpdoc.baseURI")
               + "tracking-protection";
         }
       ]]></constructor>

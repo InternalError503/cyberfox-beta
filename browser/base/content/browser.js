@@ -417,9 +417,7 @@ const gGatherTelemetryObserver = {
     } else {
       name = "UNDEFINED";
     }
-
-    let engines = Services.telemetry.getKeyedHistogramById("SEARCH_DEFAULT_ENGINE");
-    engines.add(name, true)
+     
   },
 };
 
@@ -1171,8 +1169,6 @@ var gBrowserInit = {
       TabCrashReporter.init();
 #endif
 
-    Services.telemetry.getHistogramById("E10S_WINDOW").add(gMultiProcessBrowser);
-
     if (mustLoadSidebar) {
       let sidebar = document.getElementById("sidebar");
       let sidebarBox = document.getElementById("sidebar-box");
@@ -1350,29 +1346,18 @@ var gBrowserInit = {
         if (window.closed) {
           return;
         }
-        let secmodDB = Cc["@mozilla.org/security/pkcs11moduledb;1"]
-                       .getService(Ci.nsIPKCS11ModuleDB);
-        let slot = secmodDB.findSlotByName("");
-        let mpEnabled = slot &&
-                        slot.status != Ci.nsIPKCS11Slot.SLOT_UNINITIALIZED &&
-                        slot.status != Ci.nsIPKCS11Slot.SLOT_READY;
-        if (mpEnabled) {
-          Services.telemetry.getHistogramById("MASTER_PASSWORD_ENABLED").add(mpEnabled);
-        }
       }, 5000);
 
       // Telemetry for tracking protection.
       let tpEnabled = gPrefService
                       .getBoolPref("privacy.trackingprotection.enabled");
-      Services.telemetry.getHistogramById("TRACKING_PROTECTION_ENABLED")
-        .add(tpEnabled);
 
       PanicButtonNotifier.init();
     });
     this.delayedStartupFinished = true;
 
     Services.obs.notifyObservers(window, "browser-delayed-startup-finished", "");
-    TelemetryTimestamps.add("delayedStartupFinished");
+
   },
 
   // Returns the URI(s) to load at startup.
@@ -1697,7 +1682,7 @@ function HandleAppCommandEvent(evt) {
     gFindBar.onFindCommand();
     break;
   case "Help":
-    openHelpLink('firefox-help');
+    openHelpLink('Cyberfox-help');
     break;
   case "Open":
     BrowserOpenFileWindow();
@@ -2589,13 +2574,9 @@ let BrowserOnClick = {
   },
 
   onAboutCertError: function (browser, elementId, isTopFrame, location, sslStatusAsString) {
-    let secHistogram = Services.telemetry.getHistogramById("SECURITY_UI");
 
     switch (elementId) {
       case "exceptionDialogButton":
-        if (isTopFrame) {
-          secHistogram.add(Ci.nsISecurityUITelemetry.WARNING_BAD_CERT_TOP_CLICK_ADD_EXCEPTION);
-        }
 
         let serhelper = Cc["@mozilla.org/network/serialization-helper;1"]
                            .getService(Ci.nsISerializationHelper);
@@ -2625,22 +2606,15 @@ let BrowserOnClick = {
         break;
 
       case "getMeOutOfHereButton":
-        if (isTopFrame) {
-          secHistogram.add(Ci.nsISecurityUITelemetry.WARNING_BAD_CERT_TOP_GET_ME_OUT_OF_HERE);
-        }
         getMeOutOfHere();
         break;
 
       case "technicalContent":
-        if (isTopFrame) {
-          secHistogram.add(Ci.nsISecurityUITelemetry.WARNING_BAD_CERT_TOP_TECHNICAL_DETAILS);
-        }
+          //Some cool stuff goes here
         break;
 
       case "expertContent":
-        if (isTopFrame) {
-          secHistogram.add(Ci.nsISecurityUITelemetry.WARNING_BAD_CERT_TOP_UNDERSTAND_RISKS);
-        }
+         //Some cool stuff goes here
         break;
 
     }
@@ -2650,12 +2624,11 @@ let BrowserOnClick = {
     // Depending on what page we are displaying here (malware/phishing)
     // use the right strings and links for each.
     let bucketName = isMalware ? "WARNING_MALWARE_PAGE_":"WARNING_PHISHING_PAGE_";
-    let secHistogram = Services.telemetry.getHistogramById("SECURITY_UI");
+
     let nsISecTel = Ci.nsISecurityUITelemetry;
     bucketName += isTopFrame ? "TOP_" : "FRAME_";
     switch (elementId) {
       case "getMeOutButton":
-        secHistogram.add(nsISecTel[bucketName + "GET_ME_OUT_OF_HERE"]);
         getMeOutOfHere();
         break;
 
@@ -2666,7 +2639,6 @@ let BrowserOnClick = {
 
         // We log even if malware/phishing info URL couldn't be found:
         // the measurement is for how many users clicked the WHY BLOCKED button
-        secHistogram.add(nsISecTel[bucketName + "WHY_BLOCKED"]);
 
         if (isMalware) {
           // Get the stop badware "why is this blocked" report url,
@@ -2679,13 +2651,15 @@ let BrowserOnClick = {
             Components.utils.reportError("Couldn't get malware report URL: " + e);
           }
         }
+        //Set help link for SafeBrowsing
         else { // It's a phishing site, not malware
-          openHelpLink("phishing-malware", false, "current");
+        let infoURL = formatURL("browser.safebrowsing.warning.infoURL", true);
+            infoURL += "phishing-malware"; 
+        openHelpLink(infoURL, false, "current");
         }
         break;
 
       case "ignoreWarningButton":
-        secHistogram.add(nsISecTel[bucketName + "IGNORE_WARNING"]);
         this.ignoreWarningButton(isMalware);
         break;
     }
@@ -3315,7 +3289,9 @@ const BrowserSearch = {
   loadSearchFromContext: function (terms) {
     let engine = BrowserSearch._loadSearch(terms, true, "contextmenu");
     if (engine) {
+#ifdef MOZ_SERVICES_HEALTHREPORT
       BrowserSearch.recordSearchInHealthReport(engine, "contextmenu");
+#endif
     }
   },
 
@@ -3333,6 +3309,7 @@ const BrowserSearch = {
     openUILinkIn(searchEnginesURL, where);
   },
 
+#ifdef MOZ_SERVICES_HEALTHREPORT
   /**
    * Helper to record a search with Firefox Health Report.
    *
@@ -3351,7 +3328,7 @@ const BrowserSearch = {
   recordSearchInHealthReport: function (engine, source, selection) {
     BrowserUITelemetry.countSearchEvent(source, null, selection);
     this.recordSearchInTelemetry(engine, source);
-#ifdef MOZ_SERVICES_HEALTHREPORT
+
     let reporter = Cc["@mozilla.org/datareporting/service;1"]
                      .getService()
                      .wrappedJSObject
@@ -3370,8 +3347,9 @@ const BrowserSearch = {
         Cu.reportError(ex);
       }
     });
-#endif
+
   },
+#endif
 
   _getSearchEngineId: function (engine) {
     if (!engine) {
@@ -3383,27 +3361,7 @@ const BrowserSearch = {
     }
 
     return "other-" + engine.name;
-  },
-
-  recordSearchInTelemetry: function (engine, source) {
-    const SOURCES = [
-      "abouthome",
-      "contextmenu",
-      "newtab",
-      "searchbar",
-      "urlbar",
-    ];
-
-    if (SOURCES.indexOf(source) == -1) {
-      Cu.reportError("Unknown source for search: " + source);
-      return;
-    }
-
-    let countId = this._getSearchEngineId(engine) + "." + source;
-
-    let count = Services.telemetry.getKeyedHistogramById("SEARCH_COUNTS");
-    count.add(countId);
-  },
+  }
 };
 
 const SearchHighlight = {
@@ -4408,14 +4366,10 @@ var TabsProgressListener = {
     if (aWebProgress.isTopLevel) {
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_IS_WINDOW) {
         if (aStateFlags & Ci.nsIWebProgressListener.STATE_START) {
-          TelemetryStopwatch.start("FX_PAGE_LOAD_MS", aBrowser);
-          Services.telemetry.getHistogramById("FX_TOTAL_TOP_VISITS").add(true);
         } else if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP) {
-          TelemetryStopwatch.finish("FX_PAGE_LOAD_MS", aBrowser);
         }
       } else if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
                  aStatus == Cr.NS_BINDING_ABORTED) {
-        TelemetryStopwatch.cancel("FX_PAGE_LOAD_MS", aBrowser);
       }
     }
 
@@ -6758,7 +6712,9 @@ var gIdentityHandler = {
    * Handler for commands on the help button in the "identity-popup" panel.
    */
   handleHelpCommand : function(event) {
-    openHelpLink("secure-connection");
+  //Set Help Link For Secure Connection Information.
+	let url = Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "secure-connection";
+    openUILinkIn(url, "tab");
     this._identityPopup.hidePopup();
   },
 
@@ -6831,7 +6787,7 @@ var gIdentityHandler = {
 
     // Chrome URIs however get special treatment. Some chrome URIs are
     // whitelisted to provide a positive security signal to the user.
-    let whitelist = /^about:(accounts|addons|app-manager|config|crashes|customizing|healthreport|home|newaddon|permissions|preferences|privatebrowsing|sessionrestore|support|welcomeback)/i;
+    let whitelist = /^about:(accounts|addons|app-manager|config|customizing|home|newaddon|permissions|preferences|privatebrowsing|sessionrestore|support|welcomeback)/i;
     let isChromeUI = uri.schemeIs("about") && whitelist.test(uri.spec);
     if (isChromeUI) {
       this.setMode(this.IDENTITY_MODE_CHROMEUI);
@@ -6868,8 +6824,6 @@ var gIdentityHandler = {
       this.showBadContentDoorhanger(state);
     } else {
       // We didn't show the shield
-      Services.telemetry.getHistogramById("TRACKING_PROTECTION_SHIELD")
-        .add(0);
     }
   },
 
@@ -6892,17 +6846,12 @@ var gIdentityHandler = {
     let iconState = "bad-content-blocked-notification-icon";
 
     // Telemetry for whether the shield was due to tracking protection or not
-    let histogram = Services.telemetry.getHistogramById
-                      ("TRACKING_PROTECTION_SHIELD");
     if (state & Ci.nsIWebProgressListener.STATE_LOADED_TRACKING_CONTENT) {
-      histogram.add(1);
     } else if (state &
                Ci.nsIWebProgressListener.STATE_BLOCKED_TRACKING_CONTENT) {
-      histogram.add(2);
     } else {
       // The shield is due to mixed content, just keep a count so we can
       // normalize later.
-      histogram.add(3);
     }
     if (state &
         (Ci.nsIWebProgressListener.STATE_LOADED_MIXED_ACTIVE_CONTENT |
@@ -7318,8 +7267,10 @@ let gRemoteTabsUI = {
  *        This object also allows:
  *        - 'ignoreFragment' property to be set to true to exclude fragment-portion
  *        matching when comparing URIs.
+ *        - 'ignoreQueryString' property to be set to true to exclude query string
+ *        matching when comparing URIs.
  *        - 'replaceQueryString' property to be set to true to exclude query string
- *        matching when comparing URIs and ovewrite the initial query string with
+ *        matching when comparing URIs and overwrite the initial query string with
  *        the one from the new URI.
  * @return True if an existing tab was found, false otherwise
  */
@@ -7331,11 +7282,13 @@ function switchToTabHavingURI(aURI, aOpenNew, aOpenParams={}) {
   ]);
 
   let ignoreFragment = aOpenParams.ignoreFragment;
+  let ignoreQueryString = aOpenParams.ignoreQueryString;
   let replaceQueryString = aOpenParams.replaceQueryString;
 
-  // This property is only used by switchToTabHavingURI and should
+  // These properties are only used by switchToTabHavingURI and should
   // not be used as a parameter for the new load.
   delete aOpenParams.ignoreFragment;
+  delete aOpenParams.ignoreQueryString;
 
   // This will switch to the tab in aWindow having aURI, if present.
   function switchIfURIInWindow(aWindow) {
@@ -7364,12 +7317,14 @@ function switchToTabHavingURI(aURI, aOpenNew, aOpenParams={}) {
         }
         return true;
       }
-      if (replaceQueryString) {
+      if (ignoreQueryString || replaceQueryString) {
         if (browser.currentURI.spec.split("?")[0] == aURI.spec.split("?")[0]) {
           // Focus the matching window & tab
           aWindow.focus();
           aWindow.gBrowser.tabContainer.selectedIndex = i;
-          browser.loadURI(aURI.spec);
+          if (replaceQueryString) {
+            browser.loadURI(aURI.spec);
+          }
           return true;
         }
       }

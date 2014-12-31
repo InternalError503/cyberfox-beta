@@ -8,8 +8,10 @@
 <!DOCTYPE overlay [
 <!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd">
 <!ENTITY % privacyDTD SYSTEM "chrome://browser/locale/preferences/privacy.dtd">
+<!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd">
 %brandDTD;
 %privacyDTD;
+%browserDTD;
 ]>
 
 <overlay id="PrivacyPaneOverlay"
@@ -17,8 +19,7 @@
          xmlns:html="http://www.w3.org/1999/xhtml">
 
   <prefpane id="panePrivacy"
-            onpaneload="gPrivacyPane.init();"
-            helpTopic="prefs-privacy">
+            onpaneload="gPrivacyPane.init();">
 
     <preferences id="privacyPreferences">
   
@@ -29,7 +30,16 @@
       <preference id="privacy.donottrackheader.value"
                   name="privacy.donottrackheader.value"
                   type="int"/>
-
+     <!-- Tracking Geo Location -->
+     <preference id="geo.enabled"
+                  name="geo.enabled"
+                  type="bool"/>	
+				  
+   <!-- sendRefererHeader -->
+   <preference id="network.http.sendRefererHeader"
+               name="network.http.sendRefererHeader"
+               type="int"/>	
+			   
       <!-- XXX button prefs -->
       <preference id="pref.privacy.disable_button.cookie_exceptions"
                   name="pref.privacy.disable_button.cookie_exceptions"
@@ -84,22 +94,54 @@
     <!-- Tracking -->
     <groupbox id="trackingGroup" align="start">
       <caption label="&tracking.label;"/>
-      <radiogroup id="doNotTrackSelection" orient="vertical"
+<hbox align="center">
+        <label id="historyModeLabel"
+               control="historyMode">&historyHeader.pre.label;</label>
+		<menulist id="doNotTrackSelection"
                   preference="privacy.donottrackheader.value"
                   onsynctopreference="return gPrivacyPane.setTrackingPrefs()"
                   onsyncfrompreference="return gPrivacyPane.getTrackingPrefs()">
-        <radio id="dntnotrack" value="1" label="&dntTrackingNotOkay.label2;"
+		 <menupopup>		  
+        <menuitem id="dntnotrack" value="1" label="&dntTrackingNotOkay.label2;"
                 accesskey="&dntTrackingNotOkay.accesskey;" />
-        <radio id="dntdotrack" value="0" label="&dntTrackingOkay.label2;"
+        <menuitem id="dntdotrack" value="0" label="&dntTrackingOkay.label2;"
                 accesskey="&dntTrackingOkay.accesskey;" />
-        <radio id="dntnopref" value="-1" label="&dntTrackingNopref.label2;"
+        <menuitem id="dntnopref" value="-1" label="&dntTrackingNopref.label2;"
                 accesskey="&dntTrackingNopref.accesskey;" />
-      </radiogroup>
-      <label class="text-link" id="doNotTrackInfo"
-             href="https://www.mozilla.org/dnt"
-             value="&doNotTrackInfo.label;"/>
+
+
+		 </menupopup>		
+      </menulist>
+	  </hbox>
 
     </groupbox>
+	<hbox flex="1">
+	<!-- Tracking Geo Location -->
+	  <groupbox id="geoLocationEnabled"  flex="1">
+	  <caption label="&geographicalLocation.label;"/>
+		  <vbox align="start">
+              <checkbox id="isGeoEnabled" label="&disableGeolocation.label;"
+                      preference="geo.enabled"/>
+		</vbox>
+		</groupbox>	
+		
+	<!-- sendRefererHeader -->
+	  <groupbox id="sendRefererHeader">
+	  <caption label="&sendRefererHeader.label;"/>		
+		<vbox>
+		        <label id="historyModeLabel"
+               control="historyMode">&historyHeader.pre.label;</label>
+<menulist id="doNotsendSecureXSiteReferrer"
+                  preference="network.http.sendRefererHeader">
+		 <menupopup>		  
+        <menuitem id="srhno" value="0" label="&sendRefererHeaderopt0.label;" />
+        <menuitem id="srhyes" value="1" label="&sendRefererHeaderopt1.label;" />
+        <menuitem  id="srhdef" value="2" label="&sendRefererHeaderopt2.label;"/>
+		 </menupopup>		
+      </menulist>
+		</vbox>
+		</groupbox>		
+</hbox>			
 
     <!-- History -->
     <groupbox id="historyGroup">

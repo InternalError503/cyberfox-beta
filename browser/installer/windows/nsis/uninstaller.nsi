@@ -287,8 +287,8 @@ Section "Uninstall"
 !ifdef MOZ_METRO
   ${If} ${AtLeastWin8}
     ${un.CleanupMetroBrowserHandlerValues} ${DELEGATE_EXECUTE_HANDLER_ID} \
-                                           "FirefoxURL" \
-                                           "FirefoxHTML"
+                                           "CyberfoxURL" \
+                                           "CyberfoxHTML"
   ${EndIf}
   ${ResetWin8PromptKeys} "HKCU" ""
   ${ResetWin8MetroSplash}
@@ -302,27 +302,27 @@ Section "Uninstall"
   ${EndIf}
 !endif
 
-  ${un.RegCleanAppHandler} "FirefoxURL"
-  ${un.RegCleanAppHandler} "FirefoxHTML"
+  ${un.RegCleanAppHandler} "CyberfoxURL"
+  ${un.RegCleanAppHandler} "CyberfoxHTML"
   ${un.RegCleanProtocolHandler} "ftp"
   ${un.RegCleanProtocolHandler} "http"
   ${un.RegCleanProtocolHandler} "https"
 
   ClearErrors
-  ReadRegStr $R9 HKCR "FirefoxHTML" ""
-  ; Don't clean up the file handlers if the FirefoxHTML key still exists since
+  ReadRegStr $R9 HKCR "CyberfoxHTML" ""
+  ; Don't clean up the file handlers if the CyberfoxHTML key still exists since
   ; there should be a second installation that may be the default file handler
   ${If} ${Errors}
-    ${un.RegCleanFileHandler}  ".htm"   "FirefoxHTML"
-    ${un.RegCleanFileHandler}  ".html"  "FirefoxHTML"
-    ${un.RegCleanFileHandler}  ".shtml" "FirefoxHTML"
-    ${un.RegCleanFileHandler}  ".xht"   "FirefoxHTML"
-    ${un.RegCleanFileHandler}  ".xhtml" "FirefoxHTML"
-    ${un.RegCleanFileHandler}  ".oga"  "FirefoxHTML"
-    ${un.RegCleanFileHandler}  ".ogg"  "FirefoxHTML"
-    ${un.RegCleanFileHandler}  ".ogv"  "FirefoxHTML"
-    ${un.RegCleanFileHandler}  ".pdf"  "FirefoxHTML"
-    ${un.RegCleanFileHandler}  ".webm"  "FirefoxHTML"
+    ${un.RegCleanFileHandler}  ".htm"   "CyberfoxHTML"
+    ${un.RegCleanFileHandler}  ".html"  "CyberfoxHTML"
+    ${un.RegCleanFileHandler}  ".shtml" "CyberfoxHTML"
+    ${un.RegCleanFileHandler}  ".xht"   "CyberfoxHTML"
+    ${un.RegCleanFileHandler}  ".xhtml" "CyberfoxHTML"
+    ${un.RegCleanFileHandler}  ".oga"  "CyberfoxHTML"
+    ${un.RegCleanFileHandler}  ".ogg"  "CyberfoxHTML"
+    ${un.RegCleanFileHandler}  ".ogv"  "CyberfoxHTML"
+    ${un.RegCleanFileHandler}  ".pdf"  "CyberfoxHTML"
+    ${un.RegCleanFileHandler}  ".webm"  "CyberfoxHTML"
   ${EndIf}
 
   SetShellVarContext all  ; Set SHCTX to HKLM

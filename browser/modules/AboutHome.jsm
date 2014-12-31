@@ -20,14 +20,8 @@ XPCOMUtils.defineLazyModuleGetter(this, "fxAccounts",
 XPCOMUtils.defineLazyModuleGetter(this, "Promise",
   "resource://gre/modules/Promise.jsm");
 
-// Url to fetch snippets, in the urlFormatter service format.
-const SNIPPETS_URL_PREF = "browser.aboutHomeSnippets.updateUrl";
-
-// Should be bumped up if the snippets content format changes.
-const STARTPAGE_VERSION = 4;
-
 this.AboutHomeUtils = {
-  get snippetsVersion() STARTPAGE_VERSION,
+
 
   /*
    * showKnowYourRights - Determines if the user should be shown the
@@ -48,10 +42,11 @@ this.AboutHomeUtils = {
       return !Services.prefs.getBoolPref("browser.EULA.override");
     } catch (e) { }
 
-#ifndef MOZILLA_OFFICIAL
+
     // Non-official builds shouldn't show the notification.
+	//In cyberfox builds we don't show this regardless.
     return false;
-#endif
+
 
     // Look to see if the user has seen the current version or not.
     var currentVersion = Services.prefs.getIntPref("browser.rights.version");
@@ -69,16 +64,6 @@ this.AboutHomeUtils = {
     return true;
   }
 };
-
-/**
- * Returns the URL to fetch snippets from, in the urlFormatter service format.
- */
-XPCOMUtils.defineLazyGetter(AboutHomeUtils, "snippetsURL", function() {
-  let updateURL = Services.prefs
-                          .getCharPref(SNIPPETS_URL_PREF)
-                          .replace("%STARTPAGE_VERSION%", STARTPAGE_VERSION);
-  return Services.urlFormatter.formatURL(updateURL);
-});
 
 /**
  * This code provides services to the about:home page. Whenever
@@ -131,7 +116,16 @@ let AboutHome = {
         break;
 
       case "AboutHome:Downloads":
-        window.BrowserDownloadsUI();
+				var DownloadsWindow;
+				if ( Services.prefs.getBoolPref("browser.download.useToolkitUI")){
+						if(DownloadsWindow == null || DownloadsWindow.closed){
+								window.open("chrome://browser/content/downloadUI.xul","Downloads","resizable,chrome,centerscreen");
+						}else{
+								DownloadsWindow.focus();
+							}
+				}else{	  
+						window.BrowserDownloadsUI();
+				}
         break;
 
       case "AboutHome:Bookmarks":
@@ -160,7 +154,7 @@ let AboutHome = {
             if (userData) {
               window.openPreferences("paneSync");
             } else {
-              window.loadURI("about:accounts?entrypoint=abouthome");
+              window.loadURI("about:accounts");
             }
           });
         } else {
@@ -242,9 +236,6 @@ let AboutHome = {
     }).then(function(engineName) {
       let data = {
         showRestoreLastSession: ss.canRestoreLastSession,
-        snippetsURL: AboutHomeUtils.snippetsURL,
-        showKnowYourRights: AboutHomeUtils.showKnowYourRights,
-        snippetsVersion: AboutHomeUtils.snippetsVersion,
         defaultEngineName: engineName
       };
 

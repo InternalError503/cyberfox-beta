@@ -6,7 +6,7 @@
         name="plugin-hang-ui"
         type="win32"
 />
-<description>Firefox Plugin Hang User Interface</description>
+<description>Cyberfox Plugin Hang User Interface</description>
 <dependency>
         <dependentAssembly>
                 <assemblyIdentity

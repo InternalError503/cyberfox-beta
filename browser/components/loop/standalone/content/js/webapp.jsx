@@ -39,18 +39,14 @@ loop.webapp = (function($, _, OT, mozL10n) {
    */
   var UnsupportedBrowserView = React.createClass({
     render: function() {
-      var useLatestFF = mozL10n.get("use_latest_firefox", {
-        "firefoxBrandNameLink": React.renderComponentToStaticMarkup(
-          <a target="_blank" href={loop.config.brandWebsiteUrl}>
-            {mozL10n.get("brandShortname")}
-          </a>
-        )
-      });
       return (
-        <div>
-          <h2>{mozL10n.get("incompatible_browser")}</h2>
-          <p>{mozL10n.get("powered_by_webrtc", {clientShortname: mozL10n.get("clientShortname2")})}</p>
-          <p dangerouslySetInnerHTML={{__html: useLatestFF}}></p>
+        <div className="expired-url-info">
+          <div className="info-panel">
+            <div className="firefox-logo" />
+            <h1>{mozL10n.get("incompatible_browser_heading")}</h1>
+            <h4>{mozL10n.get("incompatible_browser_message")}</h4>
+          </div>
+          <PromoteFirefoxView helper={this.props.helper} />
         </div>
       );
     }
@@ -261,7 +257,7 @@ loop.webapp = (function($, _, OT, mozL10n) {
                                   {vendorShortname: mozL10n.get("vendorShortname")})}
                className="footer-logo"></div>
           <div className="footer-external-links">
-            <a target="_blank" href={loop.config.guestSupportUrl}>
+            <a target="_blank" href={loop.config.generalSupportUrl}>
               {mozL10n.get("support_link")}
             </a>
           </div>
@@ -412,7 +408,7 @@ loop.webapp = (function($, _, OT, mozL10n) {
         <div className="standalone-btn-chevron-menu-group">
           <div className="btn-group-chevron">
             <div className="btn-group">
-              <button className="btn btn-large btn-accept"
+              <button className="btn btn-constrained btn-large btn-accept"
                       onClick={this.props.startCall("audio-video")}
                       disabled={this.props.disabled}
                       title={mozL10n.get("initiate_audio_video_call_tooltip2")}>
@@ -679,9 +675,10 @@ loop.webapp = (function($, _, OT, mozL10n) {
       return nextState.callStatus !== this.state.callStatus;
     },
 
-    callStatusSwitcher: function(status) {
+    resetCallStatus: function() {
+      this.props.feedbackStore.dispatchAction(new sharedActions.FeedbackComplete());
       return function() {
-        this.setState({callStatus: status});
+        this.setState({callStatus: "start"});
       }.bind(this);
     },
 
@@ -730,7 +727,7 @@ loop.webapp = (function($, _, OT, mozL10n) {
               sdk={this.props.sdk}
               conversation={this.props.conversation}
               feedbackStore={this.props.feedbackStore}
-              onAfterFeedbackReceived={this.callStatusSwitcher("start")}
+              onAfterFeedbackReceived={this.resetCallStatus()}
             />
           );
         }
@@ -978,7 +975,7 @@ loop.webapp = (function($, _, OT, mozL10n) {
           return <UnsupportedDeviceView />;
         }
         case "unsupportedBrowser": {
-          return <UnsupportedBrowserView />;
+          return <UnsupportedBrowserView helper={this.props.helper}/>;
         }
         case "outgoing": {
           return (
@@ -996,6 +993,7 @@ loop.webapp = (function($, _, OT, mozL10n) {
           return (
             <loop.standaloneRoomViews.StandaloneRoomView
               activeRoomStore={this.props.activeRoomStore}
+              feedbackStore={this.props.feedbackStore}
               dispatcher={this.props.dispatcher}
               helper={this.props.helper}
             />

@@ -255,6 +255,7 @@ pref("lightweightThemes.recommendedThemes", "[{\"id\":\"recommended-1\",\"homepa
 
 // UI tour experience.
 pref("browser.uitour.enabled", true);
+pref("browser.uitour.loglevel", "Error");
 pref("browser.uitour.requireSecure", true);
 pref("browser.uitour.themeOrigin", "https://addons.mozilla.org/%LOCALE%/firefox/themes/");
 pref("browser.uitour.pinnedTabUrl", "https://support.mozilla.org/%LOCALE%/kb/pinned-tabs-keep-favorite-websites-open");
@@ -286,7 +287,7 @@ pref("browser.startup.page",                1);
 pref("browser.startup.homepage",            "chrome://branding/locale/browserconfig.properties");
 
 pref("browser.slowStartup.notificationDisabled", false);
-pref("browser.slowStartup.timeThreshold", 40000);
+pref("browser.slowStartup.timeThreshold", 60000);
 pref("browser.slowStartup.maxSamples", 5);
 
 // This url, if changed, MUST continue to point to an https url. Pulling arbitrary content to inject into
@@ -401,11 +402,6 @@ pref("browser.search.log", false);
 pref("browser.search.order.1",                "chrome://browser-region/locale/region.properties");
 pref("browser.search.order.2",                "chrome://browser-region/locale/region.properties");
 pref("browser.search.order.3",                "chrome://browser-region/locale/region.properties");
-
-pref("browser.search.defaultenginename.US",      "data:text/plain,browser.search.defaultenginename.US=Yahoo");
-pref("browser.search.order.US.1",                "data:text/plain,browser.search.order.US.1=Yahoo");
-pref("browser.search.order.US.2",                "data:text/plain,browser.search.order.US.2=Google");
-pref("browser.search.order.US.3",                "data:text/plain,browser.search.order.US.3=Bing");
 
 // search bar results always open in a new tab
 pref("browser.search.openintab", false);
@@ -641,9 +637,9 @@ pref("network.manage-offline-status", false);
 
 // We want to make sure mail URLs are handled externally...
 pref("network.protocol-handler.external.mailto", true); // for mail
-pref("network.protocol-handler.external.news", true);   // for news
-pref("network.protocol-handler.external.snews", true);  // for secure news
-pref("network.protocol-handler.external.nntp", true);   // also news
+pref("network.protocol-handler.external.news", true); // for news
+pref("network.protocol-handler.external.snews", true); // for secure news
+pref("network.protocol-handler.external.nntp", true); // also news
 #ifdef XP_WIN
 pref("network.protocol-handler.external.ms-windows-store", true);
 #endif
@@ -675,7 +671,7 @@ pref("accessibility.typeaheadfind.flashBar", 1);
 // plugin finder service url
 pref("pfs.datasource.url", "https://pfs.mozilla.org/plugins/PluginFinderService.php?mimetype=%PLUGIN_MIMETYPE%&appID=%APP_ID%&appVersion=%APP_VERSION%&clientOS=%CLIENT_OS%&chromeLocale=%CHROME_LOCALE%&appRelease=%APP_RELEASE%");
 
-pref("plugins.update.url", "https://www.mozilla.org/%LOCALE%/plugincheck/?utm_source=firefox-browser&utm_medium=firefox-browser&utm_campaign=plugincheck-update");
+pref("plugins.update.url", "https://www.mozilla.org/%LOCALE%/plugincheck/");
 pref("plugins.update.notifyUser", false);
 
 pref("plugins.click_to_play", true);
@@ -874,7 +870,7 @@ pref("plugin.state.iprint", 2);
 #ifdef XP_MACOSX
 pref("browser.preferences.animateFadeIn", true);
 #else
-pref("browser.preferences.animateFadeIn", false);
+pref("browser.preferences.animateFadeIn", true);
 #endif
 
 // Toggles between the two Preferences implementations, pop-up window and in-content
@@ -1001,9 +997,9 @@ pref("browser.safebrowsing.downloads.remote.enabled", true);
 pref("browser.safebrowsing.downloads.remote.enabled", false);
 #endif
 pref("browser.safebrowsing.debug", false);
-
-pref("browser.safebrowsing.updateURL", "https://safebrowsing.google.com/safebrowsing/downloads?client=SAFEBROWSING_ID&appver=%VERSION%&pver=2.2&key=%GOOGLE_API_KEY%");
-pref("browser.safebrowsing.gethashURL", "https://safebrowsing.google.com/safebrowsing/gethash?client=SAFEBROWSING_ID&appver=%VERSION%&pver=2.2");
+//Hacky method to enable googles safebrowsing in cyberfox, can't send cyberfox in post params
+pref("browser.safebrowsing.updateURL", "https://safebrowsing.google.com/safebrowsing/downloads?client=Firefox&appver=%VERSION%&pver=2.2&key=%GOOGLE_API_KEY%");
+pref("browser.safebrowsing.gethashURL", "https://safebrowsing.google.com/safebrowsing/gethash?client=Firefox&appver=%VERSION%&pver=2.2");
 pref("browser.safebrowsing.reportURL", "https://safebrowsing.google.com/safebrowsing/report?");
 pref("browser.safebrowsing.reportGenericURL", "http://%LOCALE%.phish-generic.mozilla.com/?hl=%LOCALE%");
 pref("browser.safebrowsing.reportErrorURL", "http://%LOCALE%.phish-error.mozilla.com/?hl=%LOCALE%");
@@ -1161,17 +1157,6 @@ pref("breakpad.reportURL", "https://crash-stats.mozilla.com/report/index/");
 pref("toolkit.crashreporter.infoURL",
      "https://www.mozilla.org/legal/privacy/firefox.html#crash-reporter");
 
-// base URL for web-based support pages
-pref("app.support.baseURL", "https://support.mozilla.org/1/firefox/%VERSION%/%OS%/%LOCALE%/");
-
-// base url for web-based feedback pages
-#ifdef MOZ_DEV_EDITION
-pref("app.feedback.baseURL", "https://input.mozilla.org/%LOCALE%/feedback/firefoxdev/%VERSION%/");
-#else
-pref("app.feedback.baseURL", "https://input.mozilla.org/%LOCALE%/feedback/%APP%/%VERSION%/");
-#endif
-
-
 // Name of alternate about: page for certificate errors (when undefined, defaults to about:neterror)
 pref("security.alternate_certificate_error_page", "certerror");
 
@@ -1261,6 +1246,7 @@ pref("services.sync.prefs.sync.browser.link.open_newwindow", true);
 pref("services.sync.prefs.sync.browser.offline-apps.notify", true);
 pref("services.sync.prefs.sync.browser.safebrowsing.enabled", true);
 pref("services.sync.prefs.sync.browser.safebrowsing.malware.enabled", true);
+pref("services.sync.prefs.sync.browser.search.selectedEngine", true);
 pref("services.sync.prefs.sync.browser.search.update", true);
 pref("services.sync.prefs.sync.browser.sessionstore.restore_on_demand", true);
 pref("services.sync.prefs.sync.browser.startup.homepage", true);
@@ -1597,10 +1583,10 @@ pref("browser.newtabpage.rows", 3);
 
 // number of columns of newtab grid
 pref("browser.newtabpage.columns", 5);
-
+//Note: Checkout
 // directory tiles download URL
 pref("browser.newtabpage.directory.source", "https://tiles.services.mozilla.com/v2/links/fetch/%LOCALE%");
-
+//Note: Checkout
 // endpoint to send newtab click and view pings
 pref("browser.newtabpage.directory.ping", "https://tiles.services.mozilla.com/v2/links/");
 
@@ -1637,8 +1623,12 @@ pref("shumway.disabled", true);
 // The maximum amount of decoded image data we'll willingly keep around (we
 // might keep around more than this, but we'll try to get down to this value).
 // (This is intentionally on the high side; see bug 746055.)
+//Make sure not to have to large decode size allocated to x86
+#ifndef HAVE_64BIT_BUILD
 pref("image.mem.max_decoded_image_kb", 256000);
-
+#else
+pref("image.mem.max_decoded_image_kb", 512000);
+#endif
 // Enable by default development builds up until early beta
 #ifdef EARLY_BETA_OR_EARLIER
 pref("loop.enabled", true);
@@ -1654,9 +1644,10 @@ pref("loop.server", "https://loop.services.mozilla.com/v0");
 pref("loop.seenToS", "unseen");
 pref("loop.gettingStarted.seen", false);
 pref("loop.gettingStarted.url", "https://www.mozilla.org/%LOCALE%/firefox/%VERSION%/hello/start");
+pref("loop.gettingStarted.resumeOnFirstJoin", false);
 pref("loop.learnMoreUrl", "https://www.firefox.com/hello/");
-pref("loop.legal.ToS_url", "https://hello.firefox.com/legal/terms/");
-pref("loop.legal.privacy_url", "https://www.mozilla.org/privacy/");
+pref("loop.legal.ToS_url", "https://www.mozilla.org/about/legal/terms/firefox-hello/");
+pref("loop.legal.privacy_url", "https://www.mozilla.org/privacy/firefox-hello/");
 pref("loop.do_not_disturb", false);
 pref("loop.ringtone", "chrome://browser/content/loop/shared/sounds/ringtone.ogg");
 pref("loop.retry_delay.start", 60000);
@@ -1708,7 +1699,6 @@ pref("plain_text.wrap_long_lines", true);
 // before content.
 pref("dom.debug.propagate_gesture_events_through_content", false);
 
-// The request URL of the GeoLocation backend.
 pref("geo.wifi.uri", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_API_KEY%");
 
 // Necko IPC security checks only needed for app isolation for cookies/cache/etc:
@@ -1812,3 +1802,104 @@ pref("experiments.supported", true);
 pref("media.gmp-gmpopenh264.provider.enabled", true);
 
 pref("browser.apps.URL", "https://marketplace.firefox.com/discovery/");
+
+//Minimize ram useage on browser minimizes to taskbar
+pref("config.trim_on_minimize", true);
+
+//set page paint delay set to 0 for best results
+pref("nglayout.initialpaint.delay", 30);
+
+//set bool pref for clone tabs enabled
+
+pref("browser.tabs.clonetab", true);
+
+//set bool pref for restart browser enabled
+
+pref("browser.restart.enabled", true);
+
+//set bool pref for restart browser purgecache enabled ----New Cyberfox 29 + with new cache system------
+
+pref("browser.restart.purgecache", false);
+
+//set bool pref for restart browser enabled
+
+pref("clean.ram.cache", true);
+
+//Old Download Manager Don't Remove//
+// This allows disabling the Downloads Panel in favor of the old interface.
+pref("browser.download.useToolkitUI", false);
+//End Old Download Manager Don't Remove//
+
+//
+// network.http.sendRefererHeader:
+// value = 0, Disabled.
+// value = 1, Enabled but set document.referrer for the page your going too.
+// value = 2, (Default) Enabled maximum compatibility.
+//
+
+pref("network.http.sendRefererHeader", 2);
+
+//Force Compatibility mode.
+// Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:29.0) Gecko/20100101 Cyberfox/29.0
+// Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:29.0) Gecko/20100101 Firefox/29.0 Cyberfox/29.0
+pref("general.useragent.compatMode.firefox", true);
+
+//Add Support URL Prefix.
+pref("app.support.baseURL", "https://8pecxstudios.com/Forums");
+
+//Add Help Doc Base URL.
+
+pref("app.helpdoc.baseURI", "https://support.mozilla.org/1/%APP%/%VERSION%/%OS%/%LOCALE%/");
+
+//Add PrivateBrowsing Informational URL.
+pref("app.learn.more.baseURI", "https://support.mozilla.org/%LOCALE%/kb/private-browsing-browse-web-without-saving-info");
+
+// base url for web-based feedback pages
+#ifdef MOZ_DEV_EDITION
+pref("app.feedback.baseURL", "https://input.mozilla.org/%LOCALE%/feedback/firefoxdev/%VERSION%/");
+#else
+pref("app.feedback.baseURL", "https://8pecxstudios.com/Forums/viewforum.php?f=9");
+#endif
+
+//Add SafeBrowsing Warning URL.
+pref("browser.safebrowsing.warning.infoURL", "https://www.mozilla.org/%LOCALE%/%APP%/phishing-protection/");
+
+//Add information Url for click to play
+pref("plugins.clickToActivateInfo.url", "https://support.mozilla.org/1/%APP%/%VERSION%/%OS%/%LOCALE%/clicktoplay"); 
+
+//NewTab page search feature
+pref("browser.newtab.search.enabled", true);
+
+// Tab Close Button feature
+// Where to show tab close buttons:
+// 0  on active tab only
+// 1  on all tabs until tabClipWidth is reached, then active tab only
+// 2  no close buttons at all
+// 3  at the end of the tabstrip
+pref("browser.tabs.closeButtons", 1);
+
+//New tab toggle thumbnail capture
+// State true no thumbnails will be captured
+// State false default state thumbnails will be captured and added to new tab
+pref("browser.pagethumbnails.capturing_disabled", false);
+
+//Auto check browser version
+pref("app.update.autocheck", true);
+
+//Update check browser version
+pref("app.update.check.enabled", true);
+
+//set bool pref for copy tab url enabled
+pref("browser.tabs.copyurl", true);
+
+//set Bool pref for classic context menu
+pref("browser.context.classic", true);
+
+//Set Bool pref for email link
+pref("browser.context.emaillink", true);
+
+//Set Bool pref for about:config context menu item
+pref("browser.context.aboutconfig", true);
+
+//Set Bool pref for about:config menu item
+pref("browser.menu.aboutconfig", true);

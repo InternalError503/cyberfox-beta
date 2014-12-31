@@ -265,8 +265,10 @@ function onClickContent(event) {
           Components.utils.reportError("Couldn't get malware report URL: " + e);
         }
       } else {
+
+      //Set Help Link phishing-malware
         // It's a phishing site, just link to the generic information page
-        let url = Services.urlFormatter.formatURLPref("app.support.baseURL");
+        let url = Services.urlFormatter.formatURLPref("app.helpdoc.baseURI");
         openURL(url + "phishing-malware");
       }
     } else if (target == errorDoc.getElementById('ignoreWarningButton')) {
