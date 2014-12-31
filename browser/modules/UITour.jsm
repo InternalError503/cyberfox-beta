@@ -145,13 +145,21 @@ this.UITour = {
       },
     }],
     ["loop-selectedRoomButtons", {
-      infoPanelPosition: "leftcenter bottomright",
+      infoPanelOffsetY: -20,
+      infoPanelPosition: "start_after",
       query: (aDocument) => {
         let chatbox = aDocument.querySelector("chatbox[src^='about\:loopconversation'][selected]");
-        if (!chatbox || !chatbox.contentDocument) {
+
+        // Check that the real target actually exists
+        if (!chatbox || !chatbox.contentDocument ||
+            !chatbox.contentDocument.querySelector(".call-action-group")) {
           return null;
         }
-        return chatbox.contentDocument.querySelector(".call-action-group");
+
+        // But anchor on the <browser> in the chatbox so the panel doesn't jump to undefined
+        // positions when the copy/email buttons disappear e.g. when the feedback form opens or
+        // somebody else joins the room.
+        return chatbox.content;
       },
     }],
     ["loop-signInUpLink", {
@@ -166,6 +174,7 @@ this.UITour = {
     ["privateWindow",  {query: "#privatebrowsing-button"}],
     ["quit",        {query: "#PanelUI-quit"}],
     ["search",      {
+      infoPanelOffsetX: 18,
       infoPanelPosition: "after_start",
       query: "#searchbar",
       widgetName: "search-container",
@@ -959,6 +968,8 @@ this.UITour = {
 
       deferred.resolve({
         addTargetListener: targetObject.addTargetListener,
+        infoPanelOffsetX: targetObject.infoPanelOffsetX,
+        infoPanelOffsetY: targetObject.infoPanelOffsetY,
         infoPanelPosition: targetObject.infoPanelPosition,
         node: node,
         removeTargetListener: targetObject.removeTargetListener,
@@ -1298,12 +1309,10 @@ this.UITour = {
         alignment = aAnchor.infoPanelPosition;
       }
 
-      let xOffset = 0, yOffset = 0;
-      if (aAnchor.targetName == "search") {
-        xOffset = 18;
-      }
+      let { infoPanelOffsetX: xOffset, infoPanelOffsetY: yOffset } = aAnchor;
+
       this._addAnnotationPanelMutationObserver(tooltip);
-      tooltip.openPopup(aAnchorEl, alignment, xOffset, yOffset);
+      tooltip.openPopup(aAnchorEl, alignment, xOffset || 0, yOffset || 0);
       if (tooltip.state == "closed") {
         document.defaultView.addEventListener("endmodalstate", function endModalStateHandler() {
           document.defaultView.removeEventListener("endmodalstate", endModalStateHandler);
@@ -1605,15 +1614,15 @@ this.UITour = {
 
   addNavBarWidget: function (aTarget, aContentDocument, aCallbackID) {
     if (aTarget.node) {
-      log.error("UITour: can't add a widget already present: " + data.target);
+      log.error("addNavBarWidget: can't add a widget already present:", aTarget);
       return;
     }
     if (!aTarget.allowAdd) {
-      log.error("UITour: not allowed to add this widget: " + data.target);
+      log.error("addNavBarWidget: not allowed to add this widget:", aTarget);
       return;
     }
     if (!aTarget.widgetName) {
-      log.error("UITour: can't add a widget without a widgetName property: " + data.target);
+      log.error("addNavBarWidget: can't add a widget without a widgetName property:", aTarget);
       return;
     }
 
