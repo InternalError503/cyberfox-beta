@@ -111,7 +111,7 @@
 	    <menuitem id="context_CopyCurrentTabUrl" 
 					        label="&copyTabURL.label;" 
 					        oncommand="gCyberfoxCustom.CopyCurrentTabUrl();"/>		  
-		<menuitem id="context_CloneCurrentTab" 
+		  <menuitem id="context_CloneCurrentTab" 
 					        label="&cloneCurrentTab.label;" 
 					        oncommand="gCyberfoxCustom.CloneCurrent('tab');"/>					
 	    <menuitem id="context_CloneCurrentTabNewWindow" 

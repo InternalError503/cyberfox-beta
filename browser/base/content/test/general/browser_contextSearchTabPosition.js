@@ -52,12 +52,7 @@ function test() {
       let now = new Date();
       ok(data.days.hasDay(now), "Have data for today.");
       let day = data.days.getDay(now);
-	  
-	  //Leave this as google
-	  //Watch https://bugzilla.mozilla.org/show_bug.cgi?id=1102416
-	  //let defaultProviderID = "yahoo";
-    //let field = defaultProviderID + ".contextmenu";
-	 
+
     // Will need to be changed if Google isn't the default search engine.
 	  let defaultProviderID = "google";
       let field = defaultProviderID + ".contextmenu";

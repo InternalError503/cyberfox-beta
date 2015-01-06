@@ -30,11 +30,11 @@ let gSearch = {
  }else{
  
  try{
-	  let rmvEle = document.getElementById("newtab-search-form");
-	  let rmvXulEle = document.getElementById("newtab-search-panel");
-			if (rmvEle === null){return;}
-				rmvEle.parentNode.removeChild(rmvEle);
-			rmvXulEle.parentNode.removeChild(rmvXulEle);
+	  let searchFormElement = document.getElementById("newtab-search-form");
+	  let searchPanelElement = document.getElementById("newtab-search-panel");
+			if (searchFormElement === null){return;}
+					searchFormElement.parentNode.removeChild(searchFormElement);
+					searchPanelElement.parentNode.removeChild(searchPanelElement);
 		}catch (e){
 		//Catch any nasty errors and output to dialogue and console
 		alert("Were sorry but something has gone wrong with 'browser.newtab.search.enabled' " + e);
