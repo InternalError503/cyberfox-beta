@@ -8,8 +8,10 @@
 <!DOCTYPE overlay [
   <!ENTITY % brandDTD SYSTEM "chrome://branding/locale/brand.dtd">
   <!ENTITY % securityDTD SYSTEM "chrome://browser/locale/preferences/security.dtd">
+  <!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd">
   %brandDTD;
   %securityDTD;
+  %browserDTD;    
 ]>
 
 <overlay id="SecurityPaneOverlay"
@@ -37,7 +39,11 @@
       <preference id="browser.safebrowsing.enabled"
                   name="browser.safebrowsing.enabled"
                   type="bool"/>
-
+				  
+      <preference id="dom.ipc.plugins.flash.disable-protected-mode"
+                  name="dom.ipc.plugins.flash.disable-protected-mode"
+                  type="bool"/>
+				  
       <!-- Passwords -->
       <preference id="signon.rememberSignons" name="signon.rememberSignons" type="bool"/>
 
