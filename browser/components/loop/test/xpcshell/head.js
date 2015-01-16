@@ -8,6 +8,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/Http.jsm");
 Cu.import("resource://testing-common/httpd.js");
 Cu.import("resource:///modules/loop/MozLoopService.jsm");
+Cu.import("resource://gre/modules/Promise.jsm");
 Cu.import("resource:///modules/loop/LoopCalls.jsm");
 Cu.import("resource:///modules/loop/LoopRooms.jsm");
 const { MozLoopServiceInternal } = Cu.import("resource:///modules/loop/MozLoopService.jsm", {});
@@ -28,7 +29,6 @@ var loopServer;
 
 // Ensure loop is always enabled for tests
 Services.prefs.setBoolPref("loop.enabled", true);
-Services.prefs.setBoolPref("loop.throttled2", false);
 
 // Cleanup function for all tests
 do_register_cleanup(() => {

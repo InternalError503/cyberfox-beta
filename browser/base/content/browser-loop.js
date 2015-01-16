@@ -15,7 +15,7 @@ XPCOMUtils.defineLazyModuleGetter(this, "PanelFrame", "resource:///modules/Panel
   LoopUI = {
     get toolbarButton() {
       delete this.toolbarButton;
-      return this.toolbarButton = CustomizableUI.getWidget("loop-button-throttled").forWindow(window);
+      return this.toolbarButton = CustomizableUI.getWidget("loop-button").forWindow(window);
     },
 
     /**

@@ -183,7 +183,7 @@ pref("app.update.metro.enabled", true);
 pref("app.update.silent", false);
 
 // If set to true, the hamburger button will show badges for update events.
-#ifdef MOZ_DEV_EDITION
+#ifndef RELEASE_BUILD
 pref("app.update.badge", true);
 #else
 pref("app.update.badge", false);
@@ -322,7 +322,7 @@ pref("browser.urlbar.doubleClickSelectsAll", false);
 pref("browser.urlbar.autoFill", true);
 pref("browser.urlbar.autoFill.typed", true);
 
-// Whether to use the new unifiedComplete component
+// Use the new unifiedComplete component
 pref("browser.urlbar.unifiedcomplete", false);
 
 // 0: Match anywhere (e.g., middle of words)
@@ -351,13 +351,14 @@ pref("browser.urlbar.match.title", "#");
 pref("browser.urlbar.match.url", "@");
 
 // The default behavior for the urlbar can be configured to use any combination
-// of the restrict or match filters with each additional filter restricting
-// more (intersection). Add the following values to set the behavior as the
-// default: 1: history, 2: bookmark, 4: tag, 8: title, 16: url, 32: typed,
-//          64: javascript, 128: tabs
-// E.g., 0 = show all results (no filtering), 1 = only visited pages in history,
-// 2 = only bookmarks, 3 = visited bookmarks, 1+16 = history matching in the url
-pref("browser.urlbar.default.behavior", 0);
+// of the match filters with each additional filter adding more results (union).
+pref("browser.urlbar.suggest.history",              true);
+pref("browser.urlbar.suggest.bookmark",             true);
+pref("browser.urlbar.suggest.openpage",             true);
+
+// Restrictions to current suggestions can also be applied (intersection).
+// Typed suggestion works only if history is set to true.
+pref("browser.urlbar.suggest.history.onlyTyped",    false);
 
 pref("browser.urlbar.formatting.enabled", true);
 pref("browser.urlbar.trimURLs", true);
@@ -1174,6 +1175,9 @@ pref("toolbar.customization.usesheet", true);
 pref("toolbar.customization.usesheet", false);
 #endif
 
+// Disable Flash protected mode to reduce hang/crash rates.
+pref("dom.ipc.plugins.flash.disable-protected-mode", true);
+
 #ifdef XP_MACOSX
 // On mac, the default pref is per-architecture
 pref("dom.ipc.plugins.enabled.i386", true);
@@ -1243,6 +1247,9 @@ pref("services.sync.prefs.sync.addons.ignoreUserEnabledChanges", true);
 pref("services.sync.prefs.sync.app.update.mode", true);
 pref("services.sync.prefs.sync.browser.formfill.enable", true);
 pref("services.sync.prefs.sync.browser.link.open_newwindow", true);
+pref("services.sync.prefs.sync.browser.newtabpage.enabled", true);
+pref("services.sync.prefs.sync.browser.newtabpage.enhanced", true);
+pref("services.sync.prefs.sync.browser.newtabpage.pinned", true);
 pref("services.sync.prefs.sync.browser.offline-apps.notify", true);
 pref("services.sync.prefs.sync.browser.safebrowsing.enabled", true);
 pref("services.sync.prefs.sync.browser.safebrowsing.malware.enabled", true);
@@ -1407,6 +1414,15 @@ pref("devtools.timeline.enabled", true);
 #else
 pref("devtools.timeline.enabled", false);
 #endif
+
+// Enable perftools via build command
+#ifdef MOZ_DEVTOOLS_PERFTOOLS
+  pref("devtools.performance_dev.enabled", true);
+#else
+  pref("devtools.performance_dev.enabled", false);
+#endif
+
+pref("devtools.performance.ui.show-timeline-memory", false);
 
 // The default Profiler UI settings
 pref("devtools.profiler.ui.show-platform-data", false);
@@ -1623,17 +1639,7 @@ pref("image.mem.max_decoded_image_kb", 256000);
 #else
 pref("image.mem.max_decoded_image_kb", 512000);
 #endif
-// Enable by default development builds up until early beta
-#ifdef EARLY_BETA_OR_EARLIER
-pref("loop.enabled", true);
-pref("loop.throttled2", false);
-#else
-pref("loop.enabled", true);
-pref("loop.throttled2", true);
-pref("loop.soft_start_ticket_number", -1);
-pref("loop.soft_start_hostname", "soft-start.loop.services.mozilla.com");
-#endif
-
+pref("loop.enabled", false);
 pref("loop.server", "https://loop.services.mozilla.com/v0");
 pref("loop.seenToS", "unseen");
 pref("loop.gettingStarted.seen", false);
@@ -1693,7 +1699,11 @@ pref("plain_text.wrap_long_lines", true);
 // before content.
 pref("dom.debug.propagate_gesture_events_through_content", false);
 
-pref("geo.wifi.uri", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_API_KEY%");
+// The request URL of the GeoLocation backend.
+// Since Mozilla can't share there Google API key and for this feature to work we need to supply a key
+// Just need to beaware of service limitations for requests (Temporary).
+// Unfortunatly we have to expose the public key here due to key conflicts when building --with-google-api-keyfile=
+pref("geo.wifi.uri", "https://www.googleapis.com/geolocation/v1/geolocate?key=AIzaSyD-s-mXL4mBzF7KMRkhTCIbG2RKnRGXzJc");
 
 // Necko IPC security checks only needed for app isolation for cookies/cache/etc:
 // currently irrelevant for desktop e10s
@@ -1734,7 +1744,11 @@ pref("ui.key.menuAccessKeyFocuses", true);
 #endif
 
 // Encrypted media extensions.
+#ifdef RELEASE_BUILD
 pref("media.eme.enabled", false);
+#else
+pref("media.eme.enabled", true);
+#endif
 
 // GMPInstallManager prefs
 
@@ -1797,6 +1811,29 @@ pref("media.gmp-gmpopenh264.provider.enabled", true);
 
 pref("browser.apps.URL", "https://marketplace.firefox.com/discovery/");
 
+#ifdef NIGHTLY_BUILD
+pref("browser.polaris.enabled", false);
+pref("privacy.trackingprotection.ui.enabled", false);
+#endif
+
+#ifdef NIGHTLY_BUILD
+pref("browser.tabs.remote.autostart.1", false);
+#endif
+
+// Temporary pref to allow printing in e10s windows on some platforms.
+#ifdef UNIX_BUT_NOT_MAC
+pref("print.enable_e10s_testing", false);
+#else
+pref("print.enable_e10s_testing", true);
+#endif
+
+#ifdef NIGHTLY_BUILD
+// Enable e10s add-on interposition by default.
+pref("extensions.interposition.enabled", true);
+#endif
+
+pref("browser.defaultbrowser.notificationbar", false);
+
 //Minimize ram useage on browser minimizes to taskbar
 pref("config.trim_on_minimize", true);
 
@@ -1843,7 +1880,7 @@ pref("app.support.baseURL", "https://8pecxstudios.com/Forums");
 
 //Add Help Doc Base URL.
 
-pref("app.helpdoc.baseURI", "https://support.mozilla.org/1/%APP%/%VERSION%/%OS%/%LOCALE%/");
+pref("app.helpdoc.baseURI", "https://support.mozilla.org/1/Firefox/%VERSION%/%OS%/%LOCALE%/");
 
 //Add PrivateBrowsing Informational URL.
 pref("app.learn.more.baseURI", "https://support.mozilla.org/%LOCALE%/kb/private-browsing-browse-web-without-saving-info");
@@ -1856,10 +1893,10 @@ pref("app.feedback.baseURL", "https://8pecxstudios.com/Forums/viewforum.php?f=9"
 #endif
 
 //Add SafeBrowsing Warning URL.
-pref("browser.safebrowsing.warning.infoURL", "https://www.mozilla.org/%LOCALE%/%APP%/phishing-protection/");
+pref("browser.safebrowsing.warning.infoURL", "https://www.mozilla.org/%LOCALE%/Firefox/phishing-protection/");
 
 //Add information Url for click to play
-pref("plugins.clickToActivateInfo.url", "https://support.mozilla.org/1/%APP%/%VERSION%/%OS%/%LOCALE%/clicktoplay"); 
+pref("plugins.clickToActivateInfo.url", "https://support.mozilla.org/1/Firefox/%VERSION%/%OS%/%LOCALE%/clicktoplay"); 
 
 //NewTab page search feature
 pref("browser.newtab.search.enabled", true);

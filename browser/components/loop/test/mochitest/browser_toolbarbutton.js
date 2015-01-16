@@ -7,6 +7,7 @@
 
 "use strict";
 
+Components.utils.import("resource://gre/modules/Promise.jsm", this);
 const {LoopRoomsInternal} = Components.utils.import("resource:///modules/loop/LoopRooms.jsm", {});
 Services.prefs.setBoolPref("loop.gettingStarted.seen", true);
 

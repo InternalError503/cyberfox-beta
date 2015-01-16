@@ -9,11 +9,11 @@ Cu.import("resource://gre/modules/Task.jsm");
 const SINGLE_TRY_TIMEOUT = 100;
 const NUMBER_OF_TRIES = 30;
 
-function waitForConditionPromise(condition, timeoutMsg) {
+function waitForConditionPromise(condition, timeoutMsg, tryCount=NUMBER_OF_TRIES) {
   let defer = Promise.defer();
   let tries = 0;
   function checkCondition() {
-    if (tries >= NUMBER_OF_TRIES) {
+    if (tries >= tryCount) {
       defer.reject(timeoutMsg);
     }
     var conditionPassed;
@@ -34,7 +34,7 @@ function waitForConditionPromise(condition, timeoutMsg) {
 
 function waitForCondition(condition, nextTest, errorMsg) {
   waitForConditionPromise(condition, errorMsg).then(nextTest, (reason) => {
-    ok(false, reason + (reason.stack ? "\n" + reason.stack : ""));
+    ok(false, reason + (reason.stack ? "\n" + e.stack : ""));
   });
 }
 
