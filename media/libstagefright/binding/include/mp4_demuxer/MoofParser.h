@@ -5,6 +5,7 @@
 #ifndef MOOF_PARSER_H_
 #define MOOF_PARSER_H_
 
+#include "mp4_demuxer/AtomType.h"
 #include "mp4_demuxer/mp4_demuxer.h"
 #include "MediaResource.h"
 
@@ -12,6 +13,7 @@ namespace mp4_demuxer {
 
 class Stream;
 class Box;
+class BoxContext;
 class Moof;
 
 class Tkhd
@@ -44,7 +46,7 @@ public:
   }
   explicit Mdhd(Box& aBox);
 
-  Microseconds ToMicroseconds(uint64_t aTimescaleUnits)
+  Microseconds ToMicroseconds(int64_t aTimescaleUnits)
   {
     return aTimescaleUnits * 1000000ll / mTimescale;
   }
@@ -96,17 +98,61 @@ public:
   uint64_t mBaseMediaDecodeTime;
 };
 
+class Edts
+{
+public:
+  Edts() : mMediaStart(0) {}
+  explicit Edts(Box& aBox);
+
+  int64_t mMediaStart;
+};
+
 struct Sample
 {
   mozilla::MediaByteRange mByteRange;
+  mozilla::MediaByteRange mCencRange;
+  Microseconds mDecodeTime;
   Interval<Microseconds> mCompositionRange;
   bool mSync;
+};
+
+class Saiz
+{
+public:
+  explicit Saiz(Box& aBox);
+
+  AtomType mAuxInfoType;
+  uint32_t mAuxInfoTypeParameter;
+  nsTArray<uint8_t> mSampleInfoSize;
+};
+
+class Saio
+{
+public:
+  explicit Saio(Box& aBox);
+
+  AtomType mAuxInfoType;
+  uint32_t mAuxInfoTypeParameter;
+  nsTArray<uint64_t> mOffsets;
+};
+
+class AuxInfo {
+public:
+  AuxInfo(int64_t aMoofOffset, Saiz& aSaiz, Saio& aSaio);
+  bool GetByteRanges(nsTArray<MediaByteRange>* aByteRanges);
+
+private:
+
+  int64_t mMoofOffset;
+  Saiz& mSaiz;
+  Saio& mSaio;
 };
 
 class Moof
 {
 public:
-  Moof(Box& aBox, Trex& aTrex, Mdhd& aMdhd);
+  Moof(Box& aBox, Trex& aTrex, Mdhd& aMdhd, Edts& aEdts, Microseconds aTimestampOffset);
+  bool GetAuxInfo(AtomType aType, nsTArray<MediaByteRange>* aByteRanges);
   void FixRounding(const Moof& aMoof);
 
   mozilla::MediaByteRange mRange;
@@ -114,23 +160,33 @@ public:
   Interval<Microseconds> mTimeRange;
   nsTArray<Sample> mIndex;
 
+  nsTArray<Saiz> mSaizs;
+  nsTArray<Saio> mSaios;
+
 private:
-  void ParseTraf(Box& aBox, Trex& aTrex, Mdhd& aMdhd);
-  void ParseTrun(Box& aBox, Tfhd& aTfhd, Tfdt& aTfdt, Mdhd& aMdhd);
+  void ParseTraf(Box& aBox, Trex& aTrex, Mdhd& aMdhd, Edts& aEdts);
+  void ParseTrun(Box& aBox, Tfhd& aTfhd, Tfdt& aTfdt, Mdhd& aMdhd, Edts& aEdts);
+  void ParseSaiz(Box& aBox);
+  void ParseSaio(Box& aBox);
+  bool ProcessCenc();
+  Microseconds mTimestampOffset;
   uint64_t mMaxRoundingError;
 };
 
 class MoofParser
 {
 public:
-  MoofParser(Stream* aSource, uint32_t aTrackId)
-    : mSource(aSource), mOffset(0), mTrex(aTrackId)
+  MoofParser(Stream* aSource, uint32_t aTrackId,
+             Microseconds aTimestampOffset, Monitor* aMonitor)
+    : mSource(aSource), mOffset(0), mTimestampOffset(aTimestampOffset),
+      mTrex(aTrackId), mMonitor(aMonitor)
   {
     // Setting the mTrex.mTrackId to 0 is a nasty work around for calculating
     // the composition range for MSE. We need an array of tracks.
   }
   void RebuildFragmentedIndex(
     const nsTArray<mozilla::MediaByteRange>& aByteRanges);
+  void RebuildFragmentedIndex(BoxContext& aContext);
   Interval<Microseconds> GetCompositionRange(
     const nsTArray<mozilla::MediaByteRange>& aByteRanges);
   bool ReachedEnd();
@@ -139,13 +195,20 @@ public:
   void ParseMdia(Box& aBox, Tkhd& aTkhd);
   void ParseMvex(Box& aBox);
 
+  bool BlockingReadNextMoof();
+
   mozilla::MediaByteRange mInitRange;
   nsRefPtr<Stream> mSource;
   uint64_t mOffset;
+  Microseconds mTimestampOffset;
   nsTArray<uint64_t> mMoofOffsets;
   Mdhd mMdhd;
   Trex mTrex;
   Tfdt mTfdt;
+  Edts mEdts;
+  Monitor* mMonitor;
+  nsTArray<Moof>& Moofs() { mMonitor->AssertCurrentThreadOwns(); return mMoofs; }
+private:
   nsTArray<Moof> mMoofs;
 };
 }

@@ -9,7 +9,6 @@
 #include "ClientTiledPaintedLayer.h"     // for ClientTiledPaintedLayer
 #include "GeckoProfiler.h"              // for PROFILER_LABEL
 #include "ClientLayerManager.h"         // for ClientLayerManager
-#include "CompositorChild.h"            // for CompositorChild
 #include "gfxContext.h"                 // for gfxContext, etc
 #include "gfxPlatform.h"                // for gfxPlatform
 #include "gfxPrefs.h"                   // for gfxPrefs
@@ -19,6 +18,7 @@
 #include "mozilla/gfx/Rect.h"           // for Rect
 #include "mozilla/gfx/Tools.h"          // for BytesPerPixel
 #include "mozilla/layers/CompositableForwarder.h"
+#include "mozilla/layers/CompositorChild.h" // for CompositorChild
 #include "mozilla/layers/LayerMetricsWrapper.h"
 #include "mozilla/layers/ShadowLayers.h"  // for ShadowLayerForwarder
 #include "TextureClientPool.h"
@@ -106,6 +106,7 @@ TiledContentClient::TiledContentClient(ClientTiledPaintedLayer* aPaintedLayer,
 void
 TiledContentClient::ClearCachedResources()
 {
+  CompositableClient::ClearCachedResources();
   mTiledBuffer.DiscardBuffers();
   mLowPrecisionTiledBuffer.DiscardBuffers();
 }
@@ -150,11 +151,10 @@ ComputeViewTransform(const FrameMetrics& aContentMetrics, const FrameMetrics& aC
   // but with aContentMetrics used in place of mLastContentPaintMetrics, because they
   // should be equivalent, modulo race conditions while transactions are inflight.
 
-  ParentLayerToScreenScale scale = aCompositorMetrics.GetZoom()
-                     / aContentMetrics.mDevPixelsPerCSSPixel
-                     / aCompositorMetrics.GetParentResolution();
-  ScreenPoint translation = (aCompositorMetrics.GetScrollOffset() - aContentMetrics.GetScrollOffset())
-                         * aCompositorMetrics.GetZoom();
+  LayerToParentLayerScale scale(aCompositorMetrics.mPresShellResolution
+                                * aCompositorMetrics.GetAsyncZoom().scale);
+  ParentLayerPoint translation = (aCompositorMetrics.GetScrollOffset() - aContentMetrics.GetScrollOffset())
+                               * aCompositorMetrics.GetZoom();
   return ViewTransform(scale, -translation);
 }
 
@@ -1038,6 +1038,9 @@ ClientTiledLayerBuffer::PostValidate(const nsIntRegion& aPaintRegion)
 {
   if (gfxPrefs::TiledDrawTargetEnabled() && mMoz2DTiles.size() > 0) {
     gfx::TileSet tileset;
+    for (size_t i = 0; i < mMoz2DTiles.size(); ++i) {
+      mMoz2DTiles[i].mTileOrigin -= mTilingOrigin;
+    }
     tileset.mTiles = &mMoz2DTiles[0];
     tileset.mTileCount = mMoz2DTiles.size();
     RefPtr<DrawTarget> drawTarget = gfx::Factory::CreateTiledDrawTarget(tileset);
@@ -1045,10 +1048,13 @@ ClientTiledLayerBuffer::PostValidate(const nsIntRegion& aPaintRegion)
 
     RefPtr<gfxContext> ctx = new gfxContext(drawTarget);
     ctx->SetMatrix(
-      ctx->CurrentMatrix().Scale(mResolution, mResolution));
+      ctx->CurrentMatrix().Scale(mResolution, mResolution).Translate(ThebesPoint(-mTilingOrigin)));
 
     mCallback(mPaintedLayer, ctx, aPaintRegion, DrawRegionClip::DRAW, nsIntRegion(), mCallbackData);
     mMoz2DTiles.clear();
+    // Reset:
+    mTilingOrigin = IntPoint(std::numeric_limits<int32_t>::max(),
+                             std::numeric_limits<int32_t>::max());
   }
 }
 
@@ -1170,6 +1176,8 @@ ClientTiledLayerBuffer::ValidateTile(TileClient aTile,
     }
 
     mMoz2DTiles.push_back(moz2DTile);
+    mTilingOrigin.x = std::min(mTilingOrigin.x, moz2DTile.mTileOrigin.x);
+    mTilingOrigin.y = std::min(mTilingOrigin.y, moz2DTile.mTileOrigin.y);
 
     nsIntRegionRectIterator it(aDirtyRegion);
     for (const nsIntRect* dirtyRect = it.Next(); dirtyRect != nullptr; dirtyRect = it.Next()) {
@@ -1311,7 +1319,7 @@ ClientTiledLayerBuffer::ValidateTile(TileClient aTile,
 
 #ifdef GFX_TILEDLAYER_DEBUG_OVERLAY
   DrawDebugOverlay(drawTarget, aTileOrigin.x * mResolution,
-                   aTileOrigin.y * mResolution, GetTileLength(), GetTileLength());
+                   aTileOrigin.y * mPresShellResolution, GetTileLength(), GetTileLength());
 #endif
 
   ctxt = nullptr;
@@ -1367,8 +1375,8 @@ GetCompositorSideCompositionBounds(const LayerMetricsWrapper& aScrollAncestor,
                                    const ViewTransform& aAPZTransform)
 {
   Matrix4x4 nonTransientAPZUntransform = Matrix4x4::Scaling(
-    aScrollAncestor.Metrics().mResolution.scale,
-    aScrollAncestor.Metrics().mResolution.scale,
+    aScrollAncestor.Metrics().mPresShellResolution,
+    aScrollAncestor.Metrics().mPresShellResolution,
     1.f);
   nonTransientAPZUntransform.Invert();
 

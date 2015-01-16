@@ -397,6 +397,9 @@ protected:
         pJmp32 = nBytes;
         // jmp 32bit offset
         nBytes += 5;
+      } else if (origBytes[nBytes] == 0xff && origBytes[nBytes + 1] == 0x25) {
+        // jmp [disp32]
+        nBytes += 6;
       } else {
         //printf ("Unknown x86 instruction byte 0x%02x, aborting trampoline\n", origBytes[nBytes]);
         return;
@@ -432,8 +435,9 @@ protected:
         } else {
           return;
         }
-      } else if (origBytes[nBytes] == 0x41) {
-        // REX.B
+      } else if (origBytes[nBytes] == 0x40 ||
+                 origBytes[nBytes] == 0x41) {
+        // Plain REX or REX.B
         nBytes++;
 
         if ((origBytes[nBytes] & 0xf0) == 0x50) {

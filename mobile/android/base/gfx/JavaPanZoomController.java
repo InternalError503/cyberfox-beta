@@ -123,8 +123,8 @@ class JavaPanZoomController
     private float mAutonavZoomDelta;
     /* The user selected panning mode */
     private AxisLockMode mMode;
-    /* A medium-length tap/press is happening */
-    private boolean mMediumPress;
+    /* Whether or not to wait for a double-tap before dispatching a single-tap */
+    private boolean mWaitForDoubleTap;
     /* Used to change the scrollY direction */
     private boolean mNegateWheelScrollY;
     /* Whether the current event has been default-prevented. */
@@ -396,7 +396,7 @@ class JavaPanZoomController
         mSubscroller.cancel();
         if (waitingForTouchListeners && (event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_DOWN) {
             // this is the first touch point going down, so we enter the pending state
-            // seting the state will kill any animations in progress, possibly leaving
+            // setting the state will kill any animations in progress, possibly leaving
             // the page in overscroll
             setState(PanZoomState.WAITING_LISTENERS);
         }
@@ -1199,7 +1199,7 @@ class JavaPanZoomController
             mLastZoomFocus.set(detector.getFocusX(), detector.getFocusY());
             ImmutableViewportMetrics target = getMetrics().scaleTo(zoomFactor, mLastZoomFocus);
 
-            // If overscroll is diabled, prevent zooming outside the normal document pans.
+            // If overscroll is disabled, prevent zooming outside the normal document pans.
             if (mX.getOverScrollMode() == View.OVER_SCROLL_NEVER || mY.getOverScrollMode() == View.OVER_SCROLL_NEVER) {
                 target = getValidViewportMetrics(target);
             }
@@ -1333,7 +1333,7 @@ class JavaPanZoomController
 
     @Override
     public boolean onDown(MotionEvent motionEvent) {
-        mMediumPress = false;
+        mWaitForDoubleTap = mTarget.getZoomConstraints().getAllowDoubleTapZoom();
         return false;
     }
 
@@ -1345,7 +1345,7 @@ class JavaPanZoomController
         // does not). In the former case, we want to make sure it is
         // treated as a click. (Note that if this is called, we will
         // not get a call to onDoubleTap).
-        mMediumPress = true;
+        mWaitForDoubleTap = false;
     }
 
     @Override
@@ -1354,17 +1354,11 @@ class JavaPanZoomController
         GeckoAppShell.sendEventToGecko(e);
     }
 
-    private boolean waitForDoubleTap() {
-        return !mMediumPress && mTarget.getZoomConstraints().getAllowDoubleTapZoom();
-    }
-
     @Override
     public boolean onSingleTapUp(MotionEvent motionEvent) {
         // When double-tapping is allowed, we have to wait to see if this is
         // going to be a double-tap.
-        // However, if mMediumPress is true then we know there will be no
-        // double-tap so we treat this as a click.
-        if (!waitForDoubleTap()) {
+        if (!mWaitForDoubleTap) {
             sendPointToGecko("Gesture:SingleTap", motionEvent);
         }
         // return false because we still want to get the ACTION_UP event that triggers this
@@ -1374,7 +1368,7 @@ class JavaPanZoomController
     @Override
     public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
         // In cases where we don't wait for double-tap, we handle this in onSingleTapUp.
-        if (waitForDoubleTap()) {
+        if (mWaitForDoubleTap) {
             sendPointToGecko("Gesture:SingleTap", motionEvent);
         }
         return true;
