@@ -10,8 +10,8 @@ prefpane,
 prefwindow,
 .windowDialog {
   -moz-appearance: none;
-  background-color: #fbfbfb;
-  color: #424e5a;
+  background-image: linear-gradient(#FFFFFF, #EDEDED 100px);
+  color: #424E5A;
   margin: 0;
   padding: 0;
 }

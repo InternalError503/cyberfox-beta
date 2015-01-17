@@ -10,17 +10,7 @@
   src: url("chrome://browser/content/fonts/ClearSans-Regular.woff") format('woff');
 }
 
-#dialogBox,
-dialog,
-window,
-prefwindow,
-.windowDialog {
-  -moz-appearance: none;
-  background-image: linear-gradient(#FFFFFF, #EDEDED 100px);
-  color: #424E5A;
-}
-
-prefpane {
+#mainPrefPane {
   max-width: 800px;
   padding: 0;
   font-family: "Clear Sans", sans-serif;

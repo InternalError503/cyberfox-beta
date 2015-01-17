@@ -189,7 +189,7 @@ xul|button[type="menu"] > xul|*.button-box > xul|*.button-menu-dropmarker {
   height: 16px;
   border: none;
   background-color: transparent;
-  list-style-image: url("chrome://global/skin/in-content/dropdown.svg#dropdown");
+  list-style-image: url("chrome://global/skin/in-content/dropdown.png");
 }
 
 xul|*.help-button {
@@ -270,16 +270,28 @@ xul|menulist:not([editable="true"]) > xul|*.menulist-dropmarker {
   padding: 0;
   border: none;
   background-color: transparent;
-  list-style-image: url("chrome://global/skin/in-content/dropdown.svg#dropdown");
-}
-
-xul|menulist:not([editable="true"]) > xul|*.menulist-dropmarker > xul|*.dropmarker-icon {
-  width: 18px;
-  height: 18px;
+  list-style-image: url("chrome://global/skin/in-content/dropdown.png");
 }
 
 xul|menulist[disabled="true"]:not([editable="true"]) > xul|*.menulist-dropmarker {
-  list-style-image: url("chrome://global/skin/in-content/dropdown.svg#dropdown-disabled")
+  list-style-image: url("chrome://global/skin/in-content/dropdown-disabled.png")
+}
+
+@media (min-resolution: 2dppx) {
+  xul|menulist:not([editable="true"]) > xul|*.menulist-dropmarker,
+  xul|button[type="menu"] > xul|*.button-box > xul|*.button-menu-dropmarker {
+    list-style-image: url("chrome://global/skin/in-content/dropdown@2x.png");
+  }
+
+  xul|menulist[disabled="true"]:not([editable="true"]) > xul|*.menulist-dropmarker {
+    list-style-image: url("chrome://global/skin/in-content/dropdown-disabled@2x.png")
+  }
+
+  xul|menulist:not([editable="true"]) > xul|*.menulist-dropmarker > xul|*.dropmarker-icon,
+  xul|button[type="menu"] > xul|*.button-box > xul|*.button-menu-dropmarker > xul|*.dropmarker-icon {
+    width: 10px;
+    height: 16px;
+  }
 }
 
 xul|menulist > xul|menupopup,
