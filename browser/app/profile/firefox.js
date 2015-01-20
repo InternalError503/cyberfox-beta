@@ -1937,3 +1937,6 @@ pref("browser.context.aboutconfig", true);
 
 //Set Bool pref for about:config menu item
 pref("browser.menu.aboutconfig", true);
+
+//Set Bool pref for toogle javascript menu item
+pref("browser.context.togglejavascript", false);

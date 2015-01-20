@@ -135,6 +135,32 @@ var gCyberfoxCustom = {
 				console.log("Were sorry but something has gone wrong with '_ElementState' " + e);
 		}			 
   },
+  
+  toggleTabJavascript : function(){
+	try{	
+	
+			if(gBrowser.docShell.allowJavascript){		
+				gBrowser.docShell.allowJavascript = false;	
+				
+				var delayedTrigger = setTimeout(function(){
+					gBrowser.reload();
+				},10);
+			
+			}else{		
+				gBrowser.docShell.allowJavascript = true;	
+				
+				var delayedTrigger = setTimeout(function(){
+					gBrowser.reload();
+				},10);
+			
+			}
+			
+		}catch (e){
+				//Catch any nasty errors and output to console
+				console.log("Were sorry but something has gone wrong with 'toggleTabJavascript' " + e);
+		}		
+  
+  },
 
 customPrefSettings: function(e){
 		
@@ -184,10 +210,17 @@ document.getElementById("contentAreaContextMenu")
 		}else{
 				gCyberfoxCustom._ElementState("context-sendLink", true);
 		}
+		//Toggle JS
+		if (Services.prefs.getBoolPref("browser.context.togglejavascript")){		
+				gCyberfoxCustom._ElementState("context-javascript", false);
+		}else{
+				gCyberfoxCustom._ElementState("context-javascript", true);
+		}		
+		
 		
 	}catch (e){
 		//Catch any nasty errors and output to console
-		console.log("Were sorry but something has gone wrong with 'browser.context.emaillink' " + e);
+		console.log("Were sorry but something has gone wrong with 'browser.context.emaillink' | 'browser.context.togglejavascript' " + e);
 	}
 	
   

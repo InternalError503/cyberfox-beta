@@ -1002,6 +1002,9 @@ just addresses the organization to follow, e.g. "This site is run by " -->
 <!ENTITY disableflashprotectgroup.label "Adobe Flash Player">
 <!ENTITY disableflashprotect.label "Disable flash player protection mode">
 
+<!-- Toggle JavaScript in tab feature -->
+<!ENTITY togglescriptintab.label "Toggle JavaScript">
+
 <!-- about:home localization Tweak -->
 <!ENTITY abouthome.google.label "Google">
 <!ENTITY abouthome.google.url "https://www.google.com/">
