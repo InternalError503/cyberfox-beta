@@ -25,10 +25,16 @@ XPCOMUtils.defineLazyModuleGetter(this, "Deprecated",
   "resource://gre/modules/Deprecated.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "SearchStaticData",
   "resource://gre/modules/SearchStaticData.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "setTimeout",
+  "resource://gre/modules/Timer.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "clearTimeout",
+  "resource://gre/modules/Timer.jsm");
 
 XPCOMUtils.defineLazyServiceGetter(this, "gTextToSubURI",
                                    "@mozilla.org/intl/texttosuburi;1",
                                    "nsITextToSubURI");
+
+Cu.importGlobalProperties(["XMLHttpRequest"]);
 
 // A text encoder to UTF8, used whenever we commit the
 // engine metadata to disk.
@@ -2968,6 +2974,11 @@ SearchService.prototype = {
   _asyncInit: function SRCH_SVC__asyncInit() {
     return Task.spawn(function() {
       LOG("_asyncInit start");
+      try {
+        yield checkForSyncCompletion(ensureKnownCountryCode());
+      } catch (ex if ex.result != Cr.NS_ERROR_ALREADY_INITIALIZED) {
+        LOG("_asyncInit: failure determining country code: " + ex);
+      }
       try {
         yield checkForSyncCompletion(this._asyncLoadEngines());
       } catch (ex if ex.result != Cr.NS_ERROR_ALREADY_INITIALIZED) {

@@ -31,6 +31,7 @@
 #include "nsString.h"
 #include "nsThreadUtils.h"
 #include "prlog.h"
+#include "nsServiceManagerUtils.h"
 
 struct JSContext;
 class JSObject;
@@ -178,7 +179,7 @@ void
 MediaSource::SetDuration(double aDuration, ErrorResult& aRv)
 {
   MOZ_ASSERT(NS_IsMainThread());
-  MSE_API("MediaSource(%p)::SetDuration(aDuration=%f)", this, aDuration);
+  MSE_API("MediaSource(%p)::SetDuration(aDuration=%f, ErrorResult)", this, aDuration);
   if (aDuration < 0 || IsNaN(aDuration)) {
     aRv.Throw(NS_ERROR_DOM_INVALID_ACCESS_ERR);
     return;
@@ -188,7 +189,15 @@ MediaSource::SetDuration(double aDuration, ErrorResult& aRv)
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return;
   }
-  mDecoder->SetMediaSourceDuration(aDuration);
+  SetDuration(aDuration, MSRangeRemovalAction::RUN);
+}
+
+void
+MediaSource::SetDuration(double aDuration, MSRangeRemovalAction aAction)
+{
+  MOZ_ASSERT(NS_IsMainThread());
+  MSE_API("MediaSource(%p)::SetDuration(aDuration=%f)", this, aDuration);
+  mDecoder->SetMediaSourceDuration(aDuration, aAction);
 }
 
 already_AddRefed<SourceBuffer>
@@ -276,7 +285,8 @@ MediaSource::EndOfStream(const Optional<MediaSourceEndOfStreamError>& aError, Er
   mSourceBuffers->Ended();
   mDecoder->Ended();
   if (!aError.WasPassed()) {
-    mDecoder->SetMediaSourceDuration(mSourceBuffers->GetHighestBufferedEndTime());
+    mDecoder->SetMediaSourceDuration(mSourceBuffers->GetHighestBufferedEndTime(),
+                                     MSRangeRemovalAction::SKIP);
     if (aRv.Failed()) {
       return;
     }

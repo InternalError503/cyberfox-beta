@@ -456,8 +456,8 @@ struct MainThreadWorkerStructuredCloneCallbacks
       File* blob = nullptr;
       if (NS_SUCCEEDED(UNWRAP_OBJECT(Blob, aObj, blob))) {
         FileImpl* blobImpl = blob->Impl();
-        if (blobImpl->IsCCed()) {
-          NS_WARNING("Cycle collected blob objects are not supported!");
+        if (!blobImpl->MayBeClonedToOtherThreads()) {
+          NS_WARNING("Not all the blob implementations can be sent between threads.");
         } else if (NS_SUCCEEDED(blobImpl->SetMutable(false)) &&
                    JS_WriteUint32Pair(aWriter, DOMWORKER_SCTAG_BLOB, 0) &&
                    JS_WriteBytes(aWriter, &blobImpl, sizeof(blobImpl))) {
@@ -1912,6 +1912,12 @@ public:
     {
       MutexAutoLock lock(mMutex);
 
+      if (!mWorkerPrivate ||
+          !mWorkerPrivate->BlockAndCollectRuntimeStats(&rtStats, aAnonymize)) {
+        // Returning NS_OK here will effectively report 0 memory.
+        return NS_OK;
+      }
+
       path.AppendLiteral("explicit/workers/workers(");
       if (aAnonymize && !mWorkerPrivate->Domain().IsEmpty()) {
         path.AppendLiteral("<anonymized-domain>)/worker(<anonymized-url>");
@@ -1931,12 +1937,6 @@ public:
       path.AppendPrintf(", 0x%p)/", static_cast<void*>(mWorkerPrivate));
 
       TryToMapAddon(path);
-
-      if (!mWorkerPrivate ||
-          !mWorkerPrivate->BlockAndCollectRuntimeStats(&rtStats, aAnonymize)) {
-        // Returning NS_OK here will effectively report 0 memory.
-        return NS_OK;
-      }
     }
 
     return xpc::ReportJSRuntimeExplicitTreeStats(rtStats, path,

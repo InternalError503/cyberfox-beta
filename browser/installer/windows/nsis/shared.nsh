@@ -935,7 +935,7 @@ FunctionEnd
 !macroend
 !define MountRegistryIntoHKU "!insertmacro MountRegistryIntoHKU"
 !define un.MountRegistryIntoHKU "!insertmacro MountRegistryIntoHKU"
-;
+
 ; Unmounts all user ntuser.dat files into the registry as a subkey of HKU
 !macro UnmountRegistryIntoHKU
   ; $0 is used as an index for HKEY_USERS enumeration
