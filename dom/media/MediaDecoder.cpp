@@ -131,7 +131,6 @@ void MediaDecoder::SetDormantIfNecessary(bool aDormant)
 
   if(aDormant) {
     // enter dormant state
-    DestroyDecodedStream();
     mDecoderStateMachine->SetDormant(true);
 
     int64_t timeUsecs = 0;
@@ -270,6 +269,10 @@ void MediaDecoder::DestroyDecodedStream()
 {
   MOZ_ASSERT(NS_IsMainThread());
   GetReentrantMonitor().AssertCurrentThreadIn();
+
+  if (GetDecodedStream()) {
+    GetStateMachine()->ResyncMediaStreamClock();
+  }
 
   // All streams are having their SourceMediaStream disconnected, so they
   // need to be explicitly blocked again.
@@ -1235,7 +1238,7 @@ void MediaDecoder::DurationChanged()
 
   if (mOwner && oldDuration != mDuration && !IsInfinite()) {
     DECODER_LOG("Duration changed to %lld", mDuration);
-    mOwner->DispatchEvent(NS_LITERAL_STRING("durationchange"));
+    mOwner->DispatchAsyncEvent(NS_LITERAL_STRING("durationchange"));
   }
 }
 

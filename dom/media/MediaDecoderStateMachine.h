@@ -343,6 +343,11 @@ public:
   // call this while we're not playing (while the MediaStream is blocked). Can
   // be called on any thread with the decoder monitor held.
   void SetSyncPointForMediaStream();
+
+  // Called when the decoded stream is destroyed. |mPlayStartTime| and
+  // |mPlayDuration| are updated to provide a good base for calculating video
+  // stream time using the system clock.
+  void ResyncMediaStreamClock();
   int64_t GetCurrentTimeViaMediaStreamSync() const;
 
   // Copy queued audio/video data in the reader to any output MediaStreams that
@@ -805,7 +810,8 @@ protected:
   // The amount of time we've spent playing already the media. The current
   // playback position is therefore |Now() - mPlayStartTime +
   // mPlayDuration|, which must be adjusted by mStartTime if used with media
-  // timestamps.  Accessed only via the state machine thread.
+  // timestamps. Accessed on state machine and main threads. Access controlled
+  // by decoder monitor.
   int64_t mPlayDuration;
 
   // Time that buffering started. Used for buffering timeout and only
@@ -935,6 +941,10 @@ protected:
   // Note that we don't ever reset this threshold, it only ever grows as
   // we detect that the decode can't keep up with rendering.
   int64_t mAmpleAudioThresholdUsecs;
+
+  // If we're quick buffering, we'll remain in buffering mode while we have less than
+  // QUICK_BUFFERING_LOW_DATA_USECS of decoded data available.
+  int64_t mQuickBufferingLowDataThresholdUsecs;
 
   // At the start of decoding we want to "preroll" the decode until we've
   // got a few frames decoded before we consider whether decode is falling

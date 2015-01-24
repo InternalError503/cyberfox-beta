@@ -1624,7 +1624,7 @@ pref("image.mem.max_decoded_image_kb", 256000);
 #else
 pref("image.mem.max_decoded_image_kb", 512000);
 #endif
-pref("loop.enabled", false);
+pref("loop.enabled", true);
 pref("loop.server", "https://loop.services.mozilla.com/v0");
 pref("loop.seenToS", "unseen");
 pref("loop.gettingStarted.seen", false);
