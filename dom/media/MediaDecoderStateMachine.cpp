@@ -357,6 +357,8 @@ void MediaDecoderStateMachine::SendStreamAudio(AudioData* aAudio,
   if (offset >= aAudio->mFrames)
     return;
 
+  size_t framesToWrite = aAudio->mFrames - offset;
+
   aAudio->EnsureAudioBuffer();
   nsRefPtr<SharedBuffer> buffer = aAudio->mAudioBuffer;
   AudioDataValue* bufferData = static_cast<AudioDataValue*>(buffer->Data());
@@ -364,10 +366,11 @@ void MediaDecoderStateMachine::SendStreamAudio(AudioData* aAudio,
   for (uint32_t i = 0; i < aAudio->mChannels; ++i) {
     channels.AppendElement(bufferData + i*aAudio->mFrames + offset);
   }
-  aOutput->AppendFrames(buffer.forget(), channels, aAudio->mFrames);
-  VERBOSE_LOG("writing %d frames of data to MediaStream for AudioData at %lld",
-              aAudio->mFrames - int32_t(offset), aAudio->mTime);
-  aStream->mAudioFramesWritten += aAudio->mFrames - int32_t(offset);
+  aOutput->AppendFrames(buffer.forget(), channels, framesToWrite);
+  VERBOSE_LOG("writing %u frames of data to MediaStream for AudioData at %lld",
+              static_cast<unsigned>(framesToWrite),
+              aAudio->mTime);
+  aStream->mAudioFramesWritten += framesToWrite;
   aOutput->ApplyVolume(mVolume);
 }
 
@@ -2927,12 +2930,6 @@ MediaDecoderStateMachine::FlushDecoding()
     ReentrantMonitorAutoExit exitMon(mDecoder->GetReentrantMonitor());
     DecodeTaskQueue()->FlushAndDispatch(task);
   }
-
-  // These flags will be reset when the decoded data returned in OnAudioDecoded()
-  // and OnVideoDecoded(). Because the decode tasks are flushed, these flags need
-  // to be reset here.
-  mAudioRequestStatus = RequestStatus::Idle;
-  mVideoRequestStatus = RequestStatus::Idle;
 
   // We must reset playback so that all references to frames queued
   // in the state machine are dropped, else subsequent calls to Shutdown()

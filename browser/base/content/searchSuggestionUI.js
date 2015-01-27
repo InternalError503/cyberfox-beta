@@ -145,6 +145,10 @@ SearchSuggestionUIController.prototype = {
   },
 
   _onInput: function () {
+    if (this._ignoreInputEvent) {
+      this._ignoreInputEvent = false;
+      return;
+    }
     if (this.input.value) {
       this._getSuggestions();
     }
