@@ -108,9 +108,6 @@ LightweightThemeConsumer.prototype = {
     if (active) {
       root.style.color = aData.textcolor || "black";
       root.style.backgroundColor = aData.accentcolor || "white";
-      let [r, g, b] = _parseRGB(this._doc.defaultView.getComputedStyle(root, "").color);
-      let luminance = 0.2125 * r + 0.7154 * g + 0.0721 * b;
-      root.setAttribute("lwthemetextcolor", luminance <= 110 ? "dark" : "bright");
       root.setAttribute("lwtheme", "true");
     } else {
       root.style.color = "";
@@ -163,10 +160,4 @@ LightweightThemeConsumer.prototype = {
 function _setImage(aElement, aActive, aURL) {
   aElement.style.backgroundImage =
     (aActive && aURL) ? 'url("' + aURL.replace(/"/g, '\\"') + '")' : "";
-}
-
-function _parseRGB(aColorString) {
-  var rgb = aColorString.match(/^rgba?\((\d+), (\d+), (\d+)/);
-  rgb.shift();
-  return rgb.map(function (x) parseInt(x));
 }
