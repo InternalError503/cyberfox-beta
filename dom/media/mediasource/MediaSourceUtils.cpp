@@ -10,8 +10,8 @@
 #include "nsPrintfCString.h"
 
 namespace mozilla {
-
-#if defined(PR_LOGGING)
+//breaks build see bug 1128161 & Bug 1112424
+//#if defined(PR_LOGGING)
 nsCString
 DumpTimeRanges(dom::TimeRanges* aRanges)
 {
@@ -31,6 +31,6 @@ DumpTimeRanges(dom::TimeRanges* aRanges)
 
   return dump;
 }
-#endif
+//#endif
 
 } // namespace mozilla
