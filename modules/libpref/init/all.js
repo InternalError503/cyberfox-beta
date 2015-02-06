@@ -255,6 +255,11 @@ pref("media.wakelock_timeout", 2000);
 // opened as top-level documents, as opposed to inside a media element.
 pref("media.play-stand-alone", true);
 
+#if defined(XP_WIN)
+pref("media.decoder.heuristic.dormant.enabled", true);
+pref("media.decoder.heuristic.dormant.timeout", 60000);
+#endif
+
 #ifdef MOZ_WMF
 pref("media.windows-media-foundation.enabled", true);
 pref("media.windows-media-foundation.use-dxva", true);
@@ -405,10 +410,10 @@ pref("media.getusermedia.screensharing.enabled", true);
 #endif
 
 #ifdef RELEASE_BUILD
-pref("media.getusermedia.screensharing.allowed_domains", "webex.com,*.webex.com,collaborate.com,*.collaborate.com,projectsquared.com,*.projectsquared.com,*.room.co,room.co,beta.talky.io,talky.io,*.clearslide.com,example.com");
+pref("media.getusermedia.screensharing.allowed_domains", "webex.com,*.webex.com,collaborate.com,*.collaborate.com,projectsquared.com,*.projectsquared.com,*.room.co,room.co,beta.talky.io,talky.io,*.clearslide.com,appear.in,*.appear.in,example.com");
 #else
  // temporary value, not intended for release - bug 1049087
-pref("media.getusermedia.screensharing.allowed_domains", "mozilla.github.io,webex.com,*.webex.com,collaborate.com,*.collaborate.com,projectsquared.com,*.projectsquared.com,*.room.co,room.co,beta.talky.io,talky.io,*.clearslide.com,example.com");
+pref("media.getusermedia.screensharing.allowed_domains", "mozilla.github.io,webex.com,*.webex.com,collaborate.com,*.collaborate.com,projectsquared.com,*.projectsquared.com,*.room.co,room.co,beta.talky.io,talky.io,*.clearslide.com,appear.in,*.appear.in,example.com");
 #endif
 // OS/X 10.6 and XP have screen/window sharing off by default due to various issues - Caveat emptor
 pref("media.getusermedia.screensharing.allow_on_old_platforms", false);
@@ -420,16 +425,17 @@ pref("media.webvtt.regions.enabled", false);
 // AudioTrack and VideoTrack support
 pref("media.track.enabled", false);
 
-// Whether to enable MediaSource support.  We want to enable on non-release
-// builds and on release windows, but on release builds restrict to YouTube.  We
-// don't enable for YouTube on non-Windows for now because the MP4 code for
-// those platforms isn't ready yet.
-#if defined(XP_WIN) || !defined(RELEASE_BUILD)
+// Whether to enable MediaSource support.
+// We want to enable on non-release builds only until it's more stable.
+#if !defined(RELEASE_BUILD)
 pref("media.mediasource.enabled", true);
 #else
 pref("media.mediasource.enabled", false);
 #endif
 
+// If MediaSource is enabled for release builds, restrict it to
+// specific domains. We prefer not to expose a parial implementation
+// of the specification to the world wide web.
 #ifdef RELEASE_BUILD
 pref("media.mediasource.youtubeonly", true);
 #else

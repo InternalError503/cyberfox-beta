@@ -228,7 +228,6 @@ public:
                                        nsISupports* aContext,
                                        nsresult aStatus,
                                        bool aLastPart) MOZ_OVERRIDE;
-  virtual nsresult OnNewSourceData() MOZ_OVERRIDE;
 
   static already_AddRefed<nsIEventTarget> GetEventTarget();
 
@@ -334,6 +333,13 @@ private:
   // that case we use our animation consumers count as a proxy for lock count.
   bool IsUnlocked() { return (mLockCount == 0 || (mAnim && mAnimationConsumers == 0)); }
 
+  /**
+   * In catastrophic circumstances like a GPU driver crash, we may lose our
+   * frames even if they're locked. RecoverFromLossOfFrames discards all
+   * existing frames and redecodes.
+   */
+  void RecoverFromLossOfFrames();
+
 private: // data
   nsIntSize                  mSize;
   Orientation                mOrientation;
@@ -350,9 +356,6 @@ private: // data
 
   //! All the frames of the image.
   Maybe<FrameBlender>       mFrameBlender;
-
-  //! The last frame we decoded for multipart images.
-  DrawableFrameRef          mMultipartDecodedFrame;
 
   nsCOMPtr<nsIProperties>   mProperties;
 
@@ -408,7 +411,7 @@ private: // data
   // Boolean flags (clustered together to conserve space):
   bool                       mHasSize:1;       // Has SetSize() been called?
   bool                       mDecodeOnDraw:1;  // Decoding on draw?
-  bool                       mMultipart:1;     // Multipart?
+  bool                       mTransient:1;     // Is the image short-lived?
   bool                       mDiscardable:1;   // Is container discardable?
   bool                       mHasSourceData:1; // Do we have source data?
 

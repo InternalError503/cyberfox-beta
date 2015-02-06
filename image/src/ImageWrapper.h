@@ -45,7 +45,6 @@ public:
                                        nsISupports* aContext,
                                        nsresult aStatus,
                                        bool aLastPart) MOZ_OVERRIDE;
-  virtual nsresult OnNewSourceData() MOZ_OVERRIDE;
 
   virtual void OnSurfaceDiscarded() MOZ_OVERRIDE;
 
@@ -61,7 +60,7 @@ protected:
   explicit ImageWrapper(Image* aInnerImage)
     : mInnerImage(aInnerImage)
   {
-    NS_ABORT_IF_FALSE(aInnerImage, "Cannot wrap a null image");
+    MOZ_ASSERT(aInnerImage, "Need an image to wrap");
   }
 
   virtual ~ImageWrapper() { }
@@ -69,7 +68,13 @@ protected:
   /**
    * Returns a weak reference to the inner image wrapped by this ImageWrapper.
    */
-  Image* InnerImage() { return mInnerImage.get(); }
+  Image* InnerImage() const { return mInnerImage.get(); }
+
+  void SetInnerImage(Image* aInnerImage)
+  {
+    MOZ_ASSERT(aInnerImage, "Need an image to wrap");
+    mInnerImage = aInnerImage;
+  }
 
 private:
   nsRefPtr<Image> mInnerImage;

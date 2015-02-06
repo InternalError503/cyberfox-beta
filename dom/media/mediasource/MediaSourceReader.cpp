@@ -399,6 +399,13 @@ MediaSourceReader::ContinueShutdown()
   mVideoTrack = nullptr;
   mVideoReader = nullptr;
 
+#ifdef MOZ_FMP4
+  if (mSharedDecoderManager) {
+    mSharedDecoderManager->Shutdown();
+    mSharedDecoderManager = nullptr;
+  }
+#endif
+
   MOZ_ASSERT(mAudioPromise.IsEmpty());
   MOZ_ASSERT(mVideoPromise.IsEmpty());
 
