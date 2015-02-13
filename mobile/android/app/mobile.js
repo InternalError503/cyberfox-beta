@@ -258,6 +258,13 @@ pref("browser.search.order.1", "chrome://browser/locale/region.properties");
 pref("browser.search.order.2", "chrome://browser/locale/region.properties");
 pref("browser.search.order.3", "chrome://browser/locale/region.properties");
 
+// Market-specific search defaults (US market only) //
+pref("browser.search.geoSpecificDefaults", false);
+pref("browser.search.defaultenginename.US", "chrome://browser/locale/region.properties");
+pref("browser.search.order.US.1", "chrome://browser/locale/region.properties");
+pref("browser.search.order.US.2", "chrome://browser/locale/region.properties");
+pref("browser.search.order.US.3", "chrome://browser/locale/region.properties");
+
 // disable updating
 pref("browser.search.update", false);
 pref("browser.search.update.log", false);
@@ -858,6 +865,3 @@ pref("device.storage.enabled", true);
 
 // Enable meta-viewport support for font inflation code
 pref("dom.meta-viewport.enabled", true);
-
-// disable the search service geoIP check
-pref("browser.search.geoip.url", "");

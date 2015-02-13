@@ -377,6 +377,16 @@ private:
 };
 
 namespace {
+void clock_add(cubeb_stream * stm, LONG64 value)
+{
+  InterlockedExchangeAdd64(&stm->clock, value);
+}
+
+LONG64 clock_get(cubeb_stream * stm)
+{
+  return InterlockedExchangeAdd64(&stm->clock, 0);
+}
+
 bool should_upmix(cubeb_stream * stream)
 {
   return stream->mix_params.channels > stream->stream_params.channels;
@@ -468,7 +478,7 @@ refill(cubeb_stream * stm, float * data, long frames_needed)
 
   long out_frames = cubeb_resampler_fill(stm->resampler, dest, frames_needed);
 
-  stm->clock = InterlockedAdd64(&stm->clock, frames_needed * stream_to_mix_samplerate_ratio(stm));
+  clock_add(stm, frames_needed * stream_to_mix_samplerate_ratio(stm));
 
   /* XXX: Handle this error. */
   if (out_frames < 0) {
@@ -934,6 +944,7 @@ int setup_wasapi_stream(cubeb_stream * stm)
   hr = get_default_endpoint(&device);
   if (FAILED(hr)) {
     LOG("Could not get default endpoint, error: %x", hr);
+    auto_unlock unlock(stm->stream_reset_lock);
     wasapi_stream_destroy(stm);
     return CUBEB_ERROR;
   }
@@ -946,6 +957,7 @@ int setup_wasapi_stream(cubeb_stream * stm)
   SafeRelease(device);
   if (FAILED(hr)) {
     LOG("Could not activate the device to get an audio client: error: %x", hr);
+    auto_unlock unlock(stm->stream_reset_lock);
     wasapi_stream_destroy(stm);
     return CUBEB_ERROR;
   }
@@ -955,6 +967,7 @@ int setup_wasapi_stream(cubeb_stream * stm)
   hr = stm->client->GetMixFormat(&mix_format);
   if (FAILED(hr)) {
     LOG("Could not fetch current mix format from the audio client: error: %x", hr);
+    auto_unlock unlock(stm->stream_reset_lock);
     wasapi_stream_destroy(stm);
     return CUBEB_ERROR;
   }
@@ -979,6 +992,7 @@ int setup_wasapi_stream(cubeb_stream * stm)
 
   if (FAILED(hr)) {
     LOG("Unable to initialize audio client: %x.", hr);
+    auto_unlock unlock(stm->stream_reset_lock);
     wasapi_stream_destroy(stm);
     return CUBEB_ERROR;
   }
@@ -986,6 +1000,7 @@ int setup_wasapi_stream(cubeb_stream * stm)
   hr = stm->client->GetBufferSize(&stm->buffer_frame_count);
   if (FAILED(hr)) {
     LOG("Could not get the buffer size from the client %x.", hr);
+    auto_unlock unlock(stm->stream_reset_lock);
     wasapi_stream_destroy(stm);
     return CUBEB_ERROR;
   }
@@ -997,6 +1012,7 @@ int setup_wasapi_stream(cubeb_stream * stm)
   hr = stm->client->SetEventHandle(stm->refill_event);
   if (FAILED(hr)) {
     LOG("Could set the event handle for the client %x.", hr);
+    auto_unlock unlock(stm->stream_reset_lock);
     wasapi_stream_destroy(stm);
     return CUBEB_ERROR;
   }
@@ -1005,6 +1021,7 @@ int setup_wasapi_stream(cubeb_stream * stm)
       (void **)&stm->render_client);
   if (FAILED(hr)) {
     LOG("Could not get the render client %x.", hr);
+    auto_unlock unlock(stm->stream_reset_lock);
     wasapi_stream_destroy(stm);
     return CUBEB_ERROR;
   }
@@ -1013,6 +1030,7 @@ int setup_wasapi_stream(cubeb_stream * stm)
       (void **)&stm->audio_stream_volume);
   if (FAILED(hr)) {
     LOG("Could not get the IAudioStreamVolume %x.", hr);
+    auto_unlock unlock(stm->stream_reset_lock);
     wasapi_stream_destroy(stm);
     return CUBEB_ERROR;
   }
@@ -1028,6 +1046,7 @@ int setup_wasapi_stream(cubeb_stream * stm)
       stm->user_ptr,
       CUBEB_RESAMPLER_QUALITY_DESKTOP);
   if (!stm->resampler) {
+    auto_unlock unlock(stm->stream_reset_lock);
     LOG("Could not get a resampler");
     wasapi_stream_destroy(stm);
     return CUBEB_ERROR;
@@ -1211,7 +1230,7 @@ int wasapi_stream_get_position(cubeb_stream * stm, uint64_t * position)
 {
   assert(stm && position);
 
-  *position = InterlockedAdd64(&stm->clock, 0);
+  *position = clock_get(stm);
 
   return CUBEB_OK;
 }
