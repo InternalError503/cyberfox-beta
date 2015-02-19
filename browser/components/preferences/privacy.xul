@@ -161,7 +161,7 @@
 </hbox>
 
 	<!-- WebRTC peer2peer -->	
-	<hbox flex="1">
+	<hbox flex="1" id="webrtcp2p">
 	  <groupbox id="webrtcp2penabled"  flex="1">
 	  <caption label="&webrtcp2group.description;"/>	
 		  <vbox align="start">
