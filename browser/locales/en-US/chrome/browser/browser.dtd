@@ -1007,7 +1007,7 @@ just addresses the organization to follow, e.g. "This site is run by " -->
 
 <!-- Toggle WebRTC P2P Connection (See:#959893) feature -->
 <!ENTITY webrtcp2group.description "WebRTC peer connection">
-<!ENTITY webrtcp2preference.label "Disable WebRTC peer connection">
+<!ENTITY webrtcp2preference.label "Enable WebRTC peer connection">
 
 <!-- about:home localization Tweak -->
 <!ENTITY abouthome.google.label "Google">
