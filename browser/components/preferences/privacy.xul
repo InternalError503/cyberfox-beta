@@ -40,6 +40,11 @@
                name="network.http.sendRefererHeader"
                type="int"/>	
 			   
+	<!-- WebRTC peer2peer -->		   
+    <preference id="media.peerconnection.enabled"
+               name="media.peerconnection.enabled"
+               type="bool"/>			   
+			   
       <!-- XXX button prefs -->
       <preference id="pref.privacy.disable_button.cookie_exceptions"
                   name="pref.privacy.disable_button.cookie_exceptions"
@@ -153,7 +158,19 @@
       </menulist>
 		</vbox>
 		</groupbox>		
-</hbox>			
+</hbox>
+
+	<!-- WebRTC peer2peer -->	
+	<hbox flex="1">
+	  <groupbox id="webrtcp2penabled"  flex="1">
+	  <caption label="&webrtcp2group.description;"/>	
+		  <vbox align="start">
+              <checkbox id="media.peerconnection.enabled" label="&webrtcp2preference.label;"
+                      preference="media.peerconnection.enabled"/>
+		</vbox>
+		<label class="text-link" href="https://bugzilla.mozilla.org/show_bug.cgi?id=959893" value="&doNotTrackInfo.label;"/>		
+		</groupbox>		
+	</hbox>			
 
     <!-- History -->
     <groupbox id="historyGroup">
