@@ -1,0 +1,295 @@
+<!-- LOCALIZATION NOTE (<!ENTITY % brandDTD) must not be edited as it  
+	   controls the use of (&brandShortName;) this gets replaced at run time
+	   with the browsers name so in cyberfox (&brandShortName;) says cyberfox
+	   in firefox (&brandShortName;) says firefox, This item can not be edited or
+	   errors may occur.
+-->
+<!-- Do not edit -->
+<!ENTITY % brandDTD
+    SYSTEM "chrome://branding/locale/brand.dtd">
+  %brandDTD;
+<!-- Do not edit above this message-->  
+  
+<!ENTITY Ctr_title			"Customize &brandShortName;">
+
+<!ENTITY Ctr_addonbar		"Barra de Complementos">
+<!ENTITY Ctr_statusbar		"Barra de Status">
+<!ENTITY Ctr_flexspace		"Espaço flexível">
+<!ENTITY Ctr_space			"Espaço">
+<!ENTITY Ctr_separator		"Separador">
+<!ENTITY Ctr_puibseparator	"Separador do Botão do Painel da Interface do Usuário">
+<!ENTITY Ctr_navthrobber	"Indicador de Atividade">
+<!ENTITY Ctr_sidebarbutton	"Barra Lateral">
+<!ENTITY Ctr_windowcontrols	"Mínimo/Máximo/Fechar (Tela Cheia)">
+<!ENTITY Ctr_rr				"Reinicie o &brandShortName;!">
+
+<!ENTITY Ctr_cuibuttons		"Botões">
+<!ENTITY Ctr_cuibutnormal	"Normais">
+<!ENTITY Ctr_cuibutsmall	"Pequenos">
+<!ENTITY Ctr_cuimode		"Modo">
+<!ENTITY Ctr_cuiico			"Ícones">
+<!ENTITY Ctr_cuiicotxt		"Ícones + Texto">
+<!ENTITY Ctr_cuitxt			"Texto">
+<!ENTITY Ctr_cuitabsnontop	"Abas Embaixo">
+
+<!ENTITY Ctr_tnot			"(Abas Embaixo)">
+
+<!ENTITY Ctr_tabcolors_t	"Cores Personalizadas">
+
+<!ENTITY Ctr_tabs			"Abas">
+<!ENTITY Ctr_tabs0			"Abas Arredondadas (Padrão Australis)">
+<!ENTITY Ctr_tabs1			"Abas 'Quadradas' (Clássicas)">
+<!ENTITY Ctr_tabs1m			"Abas 'Quadradas' (Australizadas)">
+<!ENTITY Ctr_tabs2			"Abas Arredondadas (Alternativas)">
+<!ENTITY Ctr_tabs3			"Abas Arredondadas (Alternativas Aero)">
+<!ENTITY Ctr_tabforminfo	"A Aparência da Aba é controlada pelo Tema atual.">
+<!ENTITY Ctr_tabsontop0		"Abas no Topo (Padrão)">
+<!ENTITY Ctr_tabsontop1		"Abas no Topo --- Definida [tabsontop=true]">
+<!ENTITY Ctr_tabsontop2		"Abas Embaixo (v1) --- Definida [tabsontop=false]">
+<!ENTITY Ctr_tabsontop3		"Abas Embaixo (v2) --- Definida [tabsontop=false]">
+<!ENTITY Ctr_tabsontopW1	"v2 é Só para Alguns Complementos e Temas Completos!">
+<!ENTITY Ctr_tabsontopI1	"Adicionar Atributos [tabsontop=true/false] para">
+<!ENTITY Ctr_tabsintitlebar	"Barra de Título do &brandShortName; (about:config)">
+<!ENTITY Ctr_tabwidthdef	"(Padrão)">
+<!ENTITY Ctr_tabwidthcla	"(Clássica)">
+<!ENTITY Ctr_tabminheight	"Altura:">
+<!ENTITY Ctr_tabheightinfo	"Baixos Valores Causarão Falhas no Modo Maximizado!">
+<!ENTITY Ctr_tabmaxwidth	"Largura Máxima:">
+<!ENTITY Ctr_tabminwidth	"Largura Mínima:">
+<!ENTITY Ctr_tabwidthinfo	"Larguras Mínimas e Máximas são Controladas Pelo TabMixPlus">
+<!ENTITY Ctr_tabwidthinfo2	"Larguras Mínimas e Máximas são Controladas Pelo TabUtilities">
+<!ENTITY Ctr_tabwidthinfo3	"Valores Abaixo de 48px Causarão Falhas na Maioria dos Casos!">
+<!ENTITY Ctr_tabinsertion	"Inserir a Aba Relacionada Depois da Aba Atual (about:config)">
+<!ENTITY Ctr_emptyfavicon	"Restaurar o Favicon Vazio (Se um Site Não Oferecer Um)">
+<!ENTITY Ctr_noemptypticon	"Remover o Favicon Vazio da Aba Fixa">
+<!ENTITY Ctr_e10stab_notd	"Abas E10s: Remover o Sublinhado">
+<!ENTITY Ctr_closetab_0		"Fechar a Aba">
+<!ENTITY Ctr_closetab_1		"Só na Aba Ativa">
+<!ENTITY Ctr_closetab_2		"Em Nenhuma">
+<!ENTITY Ctr_closetab_3		"No Final das Barras de Abas">
+<!ENTITY Ctr_closetab_4		"No Início das Barras de Abas">
+<!ENTITY Ctr_closetab_5		"Em Todas as Abas (Forçada)">
+<!ENTITY Ctr_closetab_hfot	"Ocultar com uma Aba Visível">
+<!ENTITY Ctr_closealt		"Ícone Alternativo">
+<!ENTITY Ctr_closeonleft	"Posição Alternativa na Aba">
+<!ENTITY Ctr_close_wwltab	"Fechar a Janela com a Última Aba Visível (about:config)">
+
+<!ENTITY Ctr_appbutton		"Botão do Aplicativo">
+<!ENTITY Ctr_appbutton0		"Botão Desativado">
+<!ENTITY Ctr_appbutton1		"Botão na Barra de Ferramentas">
+<!ENTITY Ctr_appbutton1wt	"Botão na Barra de Ferramentas (Só o Texto)">
+<!ENTITY Ctr_appbutton2		"Botão na Barra de Título [&brandShortName;]">
+<!ENTITY Ctr_appbutton2h	"Botão na Barra de Título [&brandShortName;] (Oculto)">
+<!ENTITY Ctr_appbutton2io	"Botão na Barra de Título [&brandShortName;] (Só o Ícone)">
+<!ENTITY Ctr_paneluibtweak	"Botão do Menu do Painel na Barra de Abas na Cor Laranja">
+<!ENTITY Ctr_appbuttonc_o	"Botão Laranja (Padrão)">
+<!ENTITY Ctr_appbuttonc_a	"Botão Azul (Aurora)">
+<!ENTITY Ctr_appbuttonc_n	"Botão Preto (Nightly)">
+<!ENTITY Ctr_appbuttonc_t	"Botão Transparente">
+<!ENTITY Ctr_appbuttonc_d	"Cyebrfox (Default)">
+<!ENTITY Ctr_appbuttonc_r	"Botão Vermelho">
+<!ENTITY Ctr_appbuttonc_s	"Salmon button color">
+<!ENTITY Ctr_appbuttonc_g	"Botão Verde">
+<!ENTITY Ctr_appbuttonc_gr	"Botão Cinza">
+<!ENTITY Ctr_appbuttonc_pu	"Botão Roxo">
+<!ENTITY Ctr_appbuttonc_wh	"Botão Branco">
+<!ENTITY Ctr_appbuttonc_cu	"Cor do Botão Personalizada">
+<!ENTITY Ctr_appbuttonI1	"Recomenda-se Reiniciar">
+<!ENTITY Ctr_appbuttonI1e	"Invisível na Barra de Título do Sistema Operacional">
+<!ENTITY Ctr_appbuttonI2	"Colorido só nas Barras de Título e de Abas!">
+<!ENTITY Ctr_alttbappb		"Ícones Alternativos">
+<!ENTITY Ctr_appbutmhi		"Posição No Topo (Se na Barra de Abas)">
+<!ENTITY Ctr_appbutbdl		"Ocultar as Bordas e Cores do Fundo">
+<!ENTITY Ctr_dblclclosefx	"Clicar Duas Vezes para Fechar a Janela Atual">
+<!ENTITY Ctr_appbclmmenus	"Menus Clicáveis Dentro do Menu do Botão (Nova Aba, Imprimir...)">
+<!ENTITY Ctr_appbutonclab	"Título">
+<!ENTITY Ctr_appbutonclab2	"Adicione um Título ou Deixe em Branco">
+
+<!ENTITY Ctr_ui				"Interface do Usuário Geral">
+<!ENTITY Ctr_nbiconsize0	"Definir os Atributos da Barra de Navegação">
+<!ENTITY Ctr_smallnavbut	"Botões Pequenos na Barra de Navegação">
+<!ENTITY Ctr_bfurlbarfix	"Corrigir a Borda-Alcance das Barras de URLs">
+<!ENTITY Ctr_backforward	"Botão Móvel Voltar-Avançar">
+<!ENTITY Ctr_nbcompact		"Reduzir a Altura das Barras de Ferramentas de Navegação">
+<!ENTITY Ctr_hide_bf_popup	"Ocultar o Menu Histórico ao Pressionar o Mouse">
+<!ENTITY Ctr_bf_space		"Reduzir o Espaço Entre os Botões (Se Possível)">
+<!ENTITY Ctr_noconicons		"Substituir os Ícones do Menu de Contexto da Página por Rótulos (Voltar, Avançar, Parar, Recarregar, Página de Favoritos)">
+<!ENTITY Ctr_svgfilters		"Cores SVG para os Ícones dos Botões da Barra de Ferramentas Padrão">
+<!ENTITY Ctr_wincontrols	"Controles Móveis da Janela em Tela Cheia">
+<!ENTITY Ctr_emptyfavicon2	"Substituir o Favicon Genérico (Vazio e Pontilhado) Pelo Favicon de Folha">
+<!ENTITY Ctr_mstatusbar		"Painel da Barra de Status Móvel">
+<!ENTITY Ctr_mstatusbars4e	"O Painel da Barra de Status é Controlado Pelo 'Status-4-Evar'">
+<!ENTITY Ctr_mstatusbartpp	"O Painel da Barra de Status é Controlado Pelo 'ThePuzzlePiece'">
+<!ENTITY Ctr_mstatusbarpzt	"O Painel da Barra de Status é Controlado Pelo 'Puzzle Toolbars'">
+<!ENTITY Ctr_mstatusbarabr	"O Painel da Barra de Status é Controlado Pelo 'The Addon Bar (Restaurado)'">
+<!ENTITY Ctr_combrelstop	"Combinar os Botões Parar e Recarregar">
+<!ENTITY Ctr_stoprel1		"Barra de Ferramentas: Colocar o Botão Recarregar Depois do Botão Parar!">
+<!ENTITY Ctr_panelmenucol	"Menus do Painel: Cor do Fundo Alternativa">
+<!ENTITY Ctr_hideprivmask	"Navegação Particular: Ocultar o Indicador da Máscara">
+<!ENTITY Ctr_nbisizedelay	"Atraso (em msegs.) na Execução (1000 msegs. = 1 seg.)">
+<!ENTITY Ctr_findbar		"Barra de Pesquisas">
+<!ENTITY Ctr_findbar_def	"Posição Padrão">
+<!ENTITY Ctr_findbar_top	"Posição no Topo">
+<!ENTITY Ctr_findbar_topa	"Posição no Topo - Alternativa">
+<!ENTITY Ctr_findbar_bota	"Posição Inferior - Alternativa">
+<!ENTITY Ctr_nav_txt_ico0	"Exibir Só Ícones (Padrão)">
+<!ENTITY Ctr_nav_txt_ico1	"Exibir Ícones Grandes">
+<!ENTITY Ctr_nav_txt_ico2	"Exibir Ícones e Texto">
+<!ENTITY Ctr_nav_txt_ico3	"Exibir Só Texto">
+<!ENTITY Ctr_nav_txt_exp	"Atributos Experimentais:">
+<!ENTITY Ctr_iat_notf_vt	"Excluir Barras de Ferramentas Verticais">
+<!ENTITY Ctr_cpanelmenus	"Menus do Painel Compacto (Favoritos, Histórico, etc.)">
+<!ENTITY Ctr_hidezoomres	"Controles de Ampliação na Barra de Ferramentas: Ocultar o Botão Redefinir Ampliação">
+<!ENTITY Ctr_alt_newtabp	"Página Nova Aba: Aparência Alternativa">
+<!ENTITY Ctr_noresizerxp	"Ocultar o Redimensionamento (Windows XP)">
+<!ENTITY Ctr_pmhidelabels	"Menu do Painel: Ocultar Rótulos do Botão">
+<!ENTITY Ctr_menupopupscr	"Pop-ups do Menu: Exibir Barras de Rolagem em vez das Setas de Rolagem">
+
+<!ENTITY Ctr_fxmockup		"Modelo do &brandShortName;">
+<!ENTITY Ctr_tabmokcolor	"Botões da Aba na Cor Branca (Fechar, Nova, Grupos, Listar Tudo)">
+<!ENTITY Ctr_tabmokcolor2	"Texto na Cor Branca e Sombra Escura nas Abas Inativas">
+<!ENTITY Ctr_tabmokcolor3	"Separadores para as Abas na Cor Branca">
+<!ENTITY Ctr_tabmokcolor4	"Cor Branca para o Favicon Vazio da Aba Pontilhada">
+
+<!ENTITY Ctr_navthrobber1	"Clicar no Indicador de Atividade Abre a URL Especificada:">
+<!ENTITY Ctr_navthrobber2	"Adicione uma URL ou Deixe em Branco">
+
+<!ENTITY Ctr_tab_tf_info1	"Nomes de Cores, Códigos hex., Valores rgb(a) e hsl(a) são Suportados.">
+<!ENTITY Ctr_tab_tf_info2	"As Entradas Não Serão Validadas!">
+<!ENTITY Ctr_tabact_t		"Ativa">
+<!ENTITY Ctr_tabhov_t		"Flutuante">
+<!ENTITY Ctr_tabnor_t		"Padrão">
+<!ENTITY Ctr_tabpen_t		"Não Carregada">
+<!ENTITY Ctr_tabunr_t		"Não Lida">
+<!ENTITY Ctr_ntab_t			"Nova Aba">
+<!ENTITY Ctr_customsqtab1	"Fundo">
+<!ENTITY Ctr_ctext			"Texto">
+<!ENTITY Ctr_ctextsh		"Sombra do Texto">
+<!ENTITY Ctr_tabnor			"Aba (Padrão)">
+<!ENTITY Ctr_tabhov			"Aba (Flutuante)">
+<!ENTITY Ctr_tabact			"Aba (Ativa)">
+<!ENTITY Ctr_tabpen			"Aba (Não Carregada)">
+<!ENTITY Ctr_tabunr			"Aba (Não Lida)">
+<!ENTITY Ctr_ntabnor		"Nova Aba (Padrão)">
+<!ENTITY Ctr_ntabhov		"Nova Aba (Flutuante)">
+<!ENTITY Ctr_bold			"Negrito">
+<!ENTITY Ctr_italic			"Itálico">
+<!ENTITY Ctr_notabhov		"As Configurações Habilitadas Substituirão as Configurações 'Flutuantes'">
+<!ENTITY Ctr_tabc_act_tb	"Cor de Fundo nas Barras de Ferramentas">
+
+<!ENTITY Ctr_urlbar			"Barra de URLs">
+<!ENTITY Ctr_starinurl		"Botão de Favoritos">
+<!ENTITY Ctr_feedinurl		"Botão Feed">
+<!ENTITY Ctr_hideurelstop	"Ocultar os Botões Parar e Recarregar">
+<!ENTITY Ctr_urlbardropm	"Mover o dropmarker para o Final das Barras de URL">
+<!ENTITY Ctr_hideprbutton	"Ocultar o Ícone de Notificação Quando um Pop-up Ficar Bloqueado">
+<!ENTITY Ctr_urlbar_ib		"Botão de Identidade do Site (Caixa de Identidade)">
+<!ENTITY Ctr_verifiedcolors	"Caixa de identidade para os Sites Verificados na Cor Verde/Azul">
+<!ENTITY Ctr_faviconurl		"Favicon">
+<!ENTITY Ctr_padlock_hid	"Cadeado (Oculto)">
+<!ENTITY Ctr_padlock_def	"Cadeado (Padrão)">
+<!ENTITY Ctr_padlock_cla	"Cadeado (Clássico)">
+<!ENTITY Ctr_padlock_mod	"Cadeado (Moderno)">
+<!ENTITY Ctr_padlock_ext	"Ícones de Segurança">
+<!ENTITY Ctr_icopageinfo	"Clicar no Ícone Abre a Janela 'Infs. da Página'">
+
+<!ENTITY Ctr_menubar_items	"Posição dos Ítens do Menu">
+<!ENTITY Ctr_extrabar		"Barras de Ferramentas Adicionais">
+<!ENTITY Ctr_extrabar0		"Barra(s) de Ferramenta(s) Adicional(is)">
+<!ENTITY Ctr_extrabar1		"Barra de Ferramentas Adicional">
+<!ENTITY Ctr_extrabarinfo	"Alternar Entre os Modos 'Abas no Topo' e 'Abas Embaixo', Alterará Aleatoriamente a Ordem das Barras de Ferramentas Adicionais. O &brandShortName; Precisa ser Reiniciado para Resolver este Problema.">
+
+<!ENTITY Ctr_invicons		"Ícones Invertidos">
+<!ENTITY Ctr_menubar		"Barra de Menus">
+<!ENTITY Ctr_tabstoolbar	"Barra de Abas">
+<!ENTITY Ctr_navbar			"Barra de Navegação">
+<!ENTITY Ctr_bookbar		"Barra de Favoritos">
+<!ENTITY Ctr_notoolbar		"Ocultar (Não Exibir os Itens do Menu)">
+
+<!ENTITY Ctr_mbarforceleft	"First element">
+<!ENTITY Ctr_mbarforceright	"Last element">
+
+<!ENTITY Ctr_toolbars		"Barras de Ferramentas">
+<!ENTITY Ctr_dblclnewtab	"Clicar Duas Vezes para Abrir a 'Nova' Aba (Usando navegador.novaguia.URL)">
+<!ENTITY Ctr_hidetbwot		"Ocultar as Barras de Abas com uma Aba">
+<!ENTITY Ctr_hidetbwote		"Reduzir o Atraso ao Ocultar na Inicialização">
+<!ENTITY Ctr_notabfog		"Remover a Névoa do Fundo (Windows AeroGlass/Win8)">
+<!ENTITY Ctr_notabbg		"Remover a Cor do Fundo (Windows AeroGlass/Win8)">
+<!ENTITY Ctr_hightabpos		"Reduzir o Espaço Acima da Barra (Se Possível)">
+<!ENTITY Ctr_alttabstb		"Cor do Fundo Alternativa">
+<!ENTITY Ctr_alttabstb2		"No Modo Maximizado (Abas No Topo)">
+
+<!ENTITY Ctr_altmenubar		"Adicionar Cor do Fundo (Barra de Título do Sistema Operacional)">
+<!ENTITY Ctr_altmenubarpos	"Posição Alternativa (Abaixo da Barra de Título)">
+<!ENTITY Ctr_menubarnofog	"Remover a Cor/Névoa do Fundo (Windows AeroGlass/Win8)">
+
+<!ENTITY Ctr_aerocolors		"Cores Azul Aero para Barras de Ferramentas Principais e Abas">
+<!ENTITY Ctr_hidenavbar		"Ocultar a Barra de Navegação">
+<!ENTITY Ctr_nobookbarbg	"Barra de Favoritos: Remover a Cor do Fundo">
+<!ENTITY Ctr_nonavbarbg		"Barra de Navegação: Remover a Cor do Fundo">
+<!ENTITY Ctr_nonavbarbg1	"Estas Barras de Ferramentas Adicionais de Complementos e Outras Barras de Ferramentas Localizadas No Topo são Afetadas.">
+<!ENTITY Ctr_nonavbarbg2	"Todas as Barras de Ferramentas em 'A Raposa, Só Que Melhor' no Slim Chrome dos Complementos, são Afetadas.">
+<!ENTITY Ctr_nonavborder	"Barra de Favoritos: Adicionar Borda no Topo da Barra">
+<!ENTITY Ctr_nonavtbborder	"Barras superiores: Remover Bordas da Barra">
+<!ENTITY Ctr_hidesbclose	"Barras laterais: Ocultar o Botão Fechar da Barra Lateral">
+<!ENTITY Ctr_chevronfix		"Barra de Ferramentas Navegação: Ocultar a Seta Dupla ('chevron') no Final das Barras de Ferramentas">
+
+<!ENTITY Ctr_closeabarbut	"Ocultar o Botão Fechar">
+<!ENTITY Ctr_highaddonsbar	"Aumentar a Altura">
+<!ENTITY Ctr_addonbarfs		"No Modo de Tela Cheia">
+
+<!ENTITY Ctr_animation		"Animações">
+<!ENTITY Ctr_throbberalt	"Aba Alternativa 'throbber' ao Carregar a Animação">
+<!ENTITY Ctr_bmanimation	"Usar Animação ao Usar os Favoritos">
+<!ENTITY Ctr_pananimation	"Usar Animação ao Abrir o Painel">
+<!ENTITY Ctr_tabanimation	"Usar Animação ao Fechar/Abrir a Aba (about:config)">
+<!ENTITY Ctr_dlanimation	"Usar Animação ao 'Notificar Download' (about:config)">
+
+<!ENTITY Ctr_toolsitem		"Item do Menu no Menu Ferramentas">
+<!ENTITY Ctr_appmenuitem	"Item do Menu no Menu Botões do Aplicativo">
+<!ENTITY Ctr_contextitem	"Item do Menu no Menu de Contexto das Barras de Ferramentas">
+<!ENTITY Ctr_puictrbutton	"Botão no Menu Painel Principal">
+
+<!ENTITY Ctr_otherctroptns	"Outras Configurações">
+<!ENTITY Ctr_cuibotbuttons	"Botões Extra no Modo 'Personalização'">
+<!ENTITY Ctr_bookmarkoinpw	"Entrada 'Abrir em uma Nova Janela Particular' no Menu de Contexto dos Favoritos">
+<!ENTITY Ctr_nodevtheme		"Evitar Habilitar o 'Tema do Desenvolvedor'">
+
+<!ENTITY Ctr_experttweaks	"Avançado">
+<!ENTITY Ctr_fx33layers		"O Gecko 33+ Introduziu 'Novos Recursos de Renderização', Atualmente Responsáveis por 'Suspender Abas' em Alguns Sistemas. Desmarque esta Opção para Resolver este Problema.">
+<!ENTITY Ctr_fx34search		"O Gecko 34+ Introduziu uma 'Nova Interface de Usuário de Pesquisa'. Desmarque esta Opção para Retornar à 'Antiga Interface de Usuário de Pesquisa'.">
+<!ENTITY Ctr_fx34loop		"O Gecko 34+ Introduziu Recursos de 'Chamada e Conversação'. Desmarque esta Opção para Removê-los.">
+<!ENTITY Ctr_fx35devtheme	"O Gecko 35+ Introduziu um Novo 'Tema do Desenvolvedor'. Desmarque estas Opções para Desabilitar o 'Tema do Desenvolvedor' e o seu Botão em Modo de Personalização.">
+<!ENTITY Ctr_fx36prefs		"O Gecko 36+ Introduziu as Preferências em uma Nova Aba. Desmarque esta Opção para Retornar à Antiga Janela de Preferências.">
+
+
+<!ENTITY Ctr_pw_settings	"Configurações">
+<!ENTITY Ctr_pw_set_reset	"Restaurar aos Padrões">
+<!ENTITY Ctr_pw_set_predef	"Pré-configurações Clássicas">
+<!ENTITY Ctr_pw_set_export	"Exportar as Preferências">
+<!ENTITY Ctr_pw_set_import	"Importar as Preferências">
+
+<!ENTITY Ctr_special_font	"As Configurações da Cor do Fundo são Só para o Tema Padrão!">
+<!ENTITY Ctr_special_info	"Algumas Opções Podem Oferecer Alterações Visuais Só em Certos Casos!">
+<!ENTITY Ctr_special_info2	"As Configurações são Feitas para o Tema Padrão do &brandShortName;, e Podem Não Funcionar com Temas de Terceiros!">
+<!ENTITY Ctr_support		"Forum de Suporte">
+<!ENTITY Ctr_newversion		"Há uma Nova Versão?">
+
+<!ENTITY Ctr_addon-bar.accesskey	"A">
+<!ENTITY Ctr_openInPrivateWindow	"Abrir em uma Nova Janela Particular">
+<!ENTITY Ctr_openInPrivateWindow.accesskey	"P">
+<!ENTITY appMenuGettingStarted.label	"Guia Rápido">
+
+<!-- Extra CyberCTR Additions -->
+<!ENTITY Ctr_classic_elements		"Classic Elements">
+<!ENTITY Ctr_pw_set_preaust		"Australis Pre-set">
+<!ENTITY ctr_Support_forums	"Support Forum">
+<!ENTITY ctr_help_features	"Features &amp; Information">
+<!ENTITY ctr_tabtitleintitlebar	"Add tab title to title-bar">
+
+<!ENTITY ctr_applyCTRPrefFile.label	"Apply Changes">
+<!ENTITY ctr_restoreCTRPrefFile.label	"Restore Backup">
+
+<!ENTITY ctr_personanoshadow	"Remove text shadow on persona themes">
+<!ENTITY ctr_appbuttoncusttextcolor	"AppButton text color.">
+<!ENTITY ctr_appbuttoncusttextshadow	"Remove AppButton text shadow">

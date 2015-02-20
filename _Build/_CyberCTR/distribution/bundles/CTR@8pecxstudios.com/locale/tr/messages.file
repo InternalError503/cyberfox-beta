@@ -1,0 +1,10 @@
+popup.title=Klasik Arayüz Getirici
+popup.msg.restart=Değişikliklerin geçerli olması için Cyberfox yeniden başlatılmalı.\nYeniden başlatılsın mı?
+import.error=ERROR: Yanlış ve ya değiştirilmiş bir dosya bulundu!\nHiçbirşey aktarılamadı!
+import.errorJSON=Were sorry but something has gone wrong while trying to import CTRpreferences.json (json is not valid!)
+ctr_extrabar=Ek Araç Çubuğu
+ctr_actthrobber=Etkinlik Göstergesi
+notification_msg_firstrun=CTR trcihlerinde değişiklikler bulundu uygulamak için yeniden başlatın
+notification_button_firstrun=Yeniden Başlat
+notification_msg_change=Önceden tanımlı CTRpreferences ayarlarınız değiştirildi
+notification_button_change=Ayarlar
