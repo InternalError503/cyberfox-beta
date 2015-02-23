@@ -138,9 +138,6 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
 	  // bug 925459, bitguard crashes
 	  { "bitguard.dll", ALL_VERSIONS },
 	  
-	  // microsoft lync crashes Check-in
-	  //{ "npmeetingjoinpluginoc.dll", ALL_VERSIONS },
-
 	  // bug 812683 - crashes in Windows library when Asus Gamer OSD is installed
 	  // Software is discontinued/unsupported
 	  { "atkdx11disp.dll", ALL_VERSIONS },
