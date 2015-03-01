@@ -102,17 +102,17 @@ MediaKeySystemAccess::IsKeySystemSupported(const nsAString& aKeySystem)
   if (aKeySystem.EqualsLiteral("org.w3.clearkey") &&
       HaveGMPFor(mps,
                  NS_LITERAL_CSTRING("org.w3.clearkey"),
-                 NS_LITERAL_CSTRING("eme-decrypt"))) {
+                 NS_LITERAL_CSTRING(GMP_API_DECRYPTOR))) {
     return true;
   }
 
 #ifdef XP_WIN
   if (aKeySystem.EqualsLiteral("com.adobe.access") &&
-      Preferences::GetBool("media.eme.adobe-access.enabled", false) &&
+      Preferences::GetBool("media.gmp-eme-adobe.enabled", false) &&
       IsVistaOrLater() && // Win Vista and later only.
       HaveGMPFor(mps,
                  NS_LITERAL_CSTRING("com.adobe.access"),
-                 NS_LITERAL_CSTRING("eme-decrypt"))) {
+                 NS_LITERAL_CSTRING(GMP_API_DECRYPTOR))) {
       return true;
   }
 #endif
@@ -156,11 +156,11 @@ IsPlayableWithGMP(mozIGeckoMediaPluginService* aGMPS,
   }
   return (!hasAAC || !HaveGMPFor(aGMPS,
                                  NS_ConvertUTF16toUTF8(aKeySystem),
-                                 NS_LITERAL_CSTRING("eme-decrypt"),
+                                 NS_LITERAL_CSTRING(GMP_API_DECRYPTOR),
                                  NS_LITERAL_CSTRING("aac"))) &&
          (!hasH264 || !HaveGMPFor(aGMPS,
                                   NS_ConvertUTF16toUTF8(aKeySystem),
-                                  NS_LITERAL_CSTRING("eme-decrypt"),
+                                  NS_LITERAL_CSTRING(GMP_API_DECRYPTOR),
                                   NS_LITERAL_CSTRING("h264")));
 #else
   return false;

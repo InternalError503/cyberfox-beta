@@ -21,33 +21,7 @@ loop.store.ActiveRoomStore = (function() {
     ROOM_FULL: 202
   };
 
-  var ROOM_STATES = loop.store.ROOM_STATES = {
-    // The initial state of the room
-    INIT: "room-init",
-    // The store is gathering the room data
-    GATHER: "room-gather",
-    // The store has got the room data
-    READY: "room-ready",
-    // Obtaining media from the user
-    MEDIA_WAIT: "room-media-wait",
-    // Joining the room is taking place
-    JOINING: "room-joining",
-    // The room is known to be joined on the loop-server
-    JOINED: "room-joined",
-    // The room is connected to the sdk server.
-    SESSION_CONNECTED: "room-session-connected",
-    // There are participants in the room.
-    HAS_PARTICIPANTS: "room-has-participants",
-    // There was an issue with the room
-    FAILED: "room-failed",
-    // The room is full
-    FULL: "room-full",
-    // The room conversation has ended
-    ENDED: "room-ended",
-    // The window is closing
-    CLOSING: "room-closing"
-  };
-
+  var ROOM_STATES = loop.store.ROOM_STATES;
   /**
    * Active room store.
    *
@@ -229,6 +203,11 @@ loop.store.ActiveRoomStore = (function() {
      * @param {sharedActions.SetupRoomInfo} actionData
      */
     setupRoomInfo: function(actionData) {
+      if (this._onUpdateListener) {
+        console.error("Room info already set up!");
+        return;
+      }
+
       this.setStoreState({
         roomName: actionData.roomName,
         roomOwner: actionData.roomOwner,
@@ -237,10 +216,11 @@ loop.store.ActiveRoomStore = (function() {
         roomUrl: actionData.roomUrl
       });
 
-      this._mozLoop.rooms.on("update:" + actionData.roomToken,
-        this._handleRoomUpdate.bind(this));
-      this._mozLoop.rooms.on("delete:" + actionData.roomToken,
-        this._handleRoomDelete.bind(this));
+      this._onUpdateListener = this._handleRoomUpdate.bind(this);
+      this._onDeleteListener = this._handleRoomDelete.bind(this);
+
+      this._mozLoop.rooms.on("update:" + actionData.roomToken, this._onUpdateListener);
+      this._mozLoop.rooms.on("delete:" + actionData.roomToken, this._onDeleteListener);
     },
 
     /**
@@ -418,10 +398,16 @@ loop.store.ActiveRoomStore = (function() {
     windowUnload: function() {
       this._leaveRoom(ROOM_STATES.CLOSING);
 
+      if (!this._onUpdateListener) {
+        return;
+      }
+
       // If we're closing the window, we can stop listening to updates.
       var roomToken = this.getStoreState().roomToken;
-      this._mozLoop.rooms.off("update:" + roomToken);
-      this._mozLoop.rooms.off("delete:" + roomToken);
+      this._mozLoop.rooms.off("update:" + roomToken, this._onUpdateListener);
+      this._mozLoop.rooms.off("delete:" + roomToken, this._onDeleteListener);
+      delete this._onUpdateListener;
+      delete this._onDeleteListener;
     },
 
     /**

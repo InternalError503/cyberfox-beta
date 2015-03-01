@@ -107,13 +107,13 @@
                       preference="pref.advanced.javascript.disable_button.advanced"/>
             </vbox>
           </row>
-		  <!--<row id="pluginsclick_to_playRow">
+		  <row id="pluginsclick_to_playRow">
 		  <vbox align="start">
               <checkbox id="pluginsclick_to_play" label="&enableClickToPlay.label;"
                       oncommand="plugins.click_to_play.toggle();"
                       preference="plugins.click_to_play"/>
             </vbox>
-			</row>	-->	  
+			</row>  
 <!-- End Disable Javascript & Block Images Feature Dont Remove -->
         </rows>
       </grid>

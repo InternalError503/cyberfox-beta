@@ -283,6 +283,11 @@ public:
 
   void NotifyMediaTrackEnabled(MediaTrack* aTrack);
 
+  /**
+   * Called when tracks become available to the source media stream.
+   */
+  void NotifyMediaStreamTracksAvailable(DOMMediaStream* aStream);
+
   virtual bool IsNodeOfType(uint32_t aFlags) const MOZ_OVERRIDE;
 
   /**
@@ -540,7 +545,7 @@ public:
   void SetOnencrypted(mozilla::dom::EventHandlerNonNull* listener);
 
   void DispatchEncrypted(const nsTArray<uint8_t>& aInitData,
-                         const nsAString& aInitDataType);
+                         const nsAString& aInitDataType) MOZ_OVERRIDE;
 
 
   bool IsEventAttributeName(nsIAtom* aName) MOZ_OVERRIDE;
@@ -611,10 +616,16 @@ public:
     return FinishDecoderSetup(aDecoder, aStream, nullptr, nullptr);
   }
 
+  // Returns true if the media element is being destroyed. Used in
+  // dormancy checks to prevent dormant processing for an element
+  // that will soon be gone.
+  bool IsBeingDestroyed();
+
 protected:
   virtual ~HTMLMediaElement();
 
   class MediaLoadListener;
+  class MediaStreamTracksAvailableCallback;
   class StreamListener;
 
   virtual void GetItemValueText(nsAString& text) MOZ_OVERRIDE;
@@ -953,6 +964,8 @@ protected:
     return isPaused;
   }
 
+  void ReportMSETelemetry();
+
   // Check the permissions for audiochannel.
   bool CheckAudioChannelPermissions(const nsAString& aType);
 
@@ -1043,6 +1056,9 @@ protected:
   //   http://www.whatwg.org/specs/web-apps/current-work/#video)
   nsMediaNetworkState mNetworkState;
   nsMediaReadyState mReadyState;
+
+  // Last value passed from codec or stream source to UpdateReadyStateForData.
+  NextFrameStatus mLastNextFrameStatus;
 
   enum LoadAlgorithmState {
     // No load algorithm instance is waiting for a source to be added to the

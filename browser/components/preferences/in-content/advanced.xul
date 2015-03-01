@@ -7,7 +7,7 @@
 <script type="application/javascript"
         src="chrome://browser/content/preferences/in-content/advanced.js"/>
 
-<preferences id="advancedPreferences">
+<preferences id="advancedPreferences" hidden="true" data-category="paneAdvanced">
   <preference id="browser.preferences.advanced.selectedTabIndex"
               name="browser.preferences.advanced.selectedTabIndex"
               type="int"/>
@@ -189,7 +189,7 @@
   <tabs id="tabsElement">
     <tab id="generalTab" label="&generalTab.label;"/>
 #ifdef MOZ_DATA_REPORTING
-    <tab id="dataChoicesTab" label="&dataChoicesTab.label;" hidden="true"/>
+    <tab id="dataChoicesTab" label="&dataChoicesTab.label;"/>
 #endif
     <tab id="networkTab" label="&networkTab.label;"/>
     <tab id="updateTab" label="&updateTab.label;"/>

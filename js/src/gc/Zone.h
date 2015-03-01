@@ -62,6 +62,7 @@ class ZoneHeapThreshold
 
     double gcHeapGrowthFactor() const { return gcHeapGrowthFactor_; }
     size_t gcTriggerBytes() const { return gcTriggerBytes_; }
+    bool isCloseToAllocTrigger(const js::gc::HeapUsage& usage, bool highFrequencyGC) const;
 
     void updateAfterGC(size_t lastBytes, JSGCInvocationKind gckind,
                        const GCSchedulingTunables &tunables, const GCSchedulingState &state);
@@ -322,7 +323,8 @@ struct Zone : public JS::shadow::Zone,
     friend class js::gc::ZoneList;
     static Zone * const NotOnList;
     Zone *listNext_;
-    bool isOnList();
+    bool isOnList() const;
+    Zone *nextZone() const;
 
     friend bool js::CurrentThreadCanAccessZone(Zone *zone);
     friend class js::gc::GCRuntime;

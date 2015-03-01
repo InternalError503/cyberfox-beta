@@ -206,14 +206,13 @@ MP4Reader::Init(MediaDecoderReader* aCloneDonor)
   MOZ_ASSERT(NS_IsMainThread(), "Must be on main thread.");
   PlatformDecoderModule::Init();
   mStream = new MP4Stream(mDecoder->GetResource());
-  mTimestampOffset = GetDecoder()->GetTimestampOffset();
 
   InitLayersBackendType();
 
-  mAudio.mTaskQueue = new MediaTaskQueue(GetMediaDecodeThreadPool());
+  mAudio.mTaskQueue = new FlushableMediaTaskQueue(GetMediaDecodeThreadPool());
   NS_ENSURE_TRUE(mAudio.mTaskQueue, NS_ERROR_FAILURE);
 
-  mVideo.mTaskQueue = new MediaTaskQueue(GetMediaDecodeThreadPool());
+  mVideo.mTaskQueue = new FlushableMediaTaskQueue(GetMediaDecodeThreadPool());
   NS_ENSURE_TRUE(mVideo.mTaskQueue, NS_ERROR_FAILURE);
 
   static bool sSetupPrefCache = false;
@@ -342,7 +341,7 @@ MP4Reader::PreReadMetadata()
 bool
 MP4Reader::InitDemuxer()
 {
-  mDemuxer = new MP4Demuxer(mStream, mTimestampOffset, &mDemuxerMonitor);
+  mDemuxer = new MP4Demuxer(mStream, &mDemuxerMonitor);
   return mDemuxer->Init();
 }
 
@@ -411,8 +410,7 @@ MP4Reader::ReadMetadata(MediaInfo* aInfo,
 
     mPlatform = PlatformDecoderModule::CreateCDMWrapper(proxy,
                                                         HasAudio(),
-                                                        HasVideo(),
-                                                        GetTaskQueue());
+                                                        HasVideo());
     NS_ENSURE_TRUE(mPlatform, NS_ERROR_FAILURE);
 #else
     // EME not supported.
@@ -465,6 +463,7 @@ MP4Reader::ReadMetadata(MediaInfo* aInfo,
     NS_ENSURE_TRUE(mVideo.mDecoder != nullptr, NS_ERROR_FAILURE);
     nsresult rv = mVideo.mDecoder->Init();
     NS_ENSURE_SUCCESS(rv, rv);
+    mInfo.mVideo.mIsHardwareAccelerated = mVideo.mDecoder->IsHardwareAccelerated();
   }
 
   // Get the duration, and report it to the decoder if we have it.
@@ -556,10 +555,7 @@ MP4Reader::RequestVideoData(bool aSkipToNextKeyframe,
 
   if (mShutdown) {
     NS_WARNING("RequestVideoData on shutdown MP4Reader!");
-    MonitorAutoLock lock(mVideo.mMonitor);
-    nsRefPtr<VideoDataPromise> p = mVideo.mPromise.Ensure(__func__);
-    p->Reject(CANCELED, __func__);
-    return p;
+    return VideoDataPromise::CreateAndReject(CANCELED, __func__);
   }
 
   MOZ_ASSERT(HasVideo() && mPlatform && mVideo.mDecoder);
@@ -590,14 +586,14 @@ MP4Reader::RequestAudioData()
 {
   MOZ_ASSERT(GetTaskQueue()->IsCurrentThreadIn());
   VLOG("RequestAudioData");
+  if (mShutdown) {
+    NS_WARNING("RequestAudioData on shutdown MP4Reader!");
+    return AudioDataPromise::CreateAndReject(CANCELED, __func__);
+  }
+
   MonitorAutoLock lock(mAudio.mMonitor);
   nsRefPtr<AudioDataPromise> p = mAudio.mPromise.Ensure(__func__);
-  if (!mShutdown) {
-    ScheduleUpdate(kAudio);
-  } else {
-    NS_WARNING("RequestAudioData on shutdown MP4Reader!");
-    p->Reject(CANCELED, __func__);
-  }
+  ScheduleUpdate(kAudio);
   return p;
 }
 

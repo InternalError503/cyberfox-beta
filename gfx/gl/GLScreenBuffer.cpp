@@ -49,7 +49,7 @@ GLScreenBuffer::Create(GLContext* gl,
         XRE_GetProcessType() != GeckoProcessType_Default)
     {
         layers::TextureFlags flags = layers::TextureFlags::DEALLOCATE_CLIENT |
-                                     layers::TextureFlags::NEEDS_Y_FLIP;
+                                     layers::TextureFlags::ORIGIN_BOTTOM_LEFT;
         if (!caps.premultAlpha) {
             flags |= layers::TextureFlags::NON_PREMULTIPLIED;
         }
@@ -525,11 +525,18 @@ GLScreenBuffer::Readback(SharedSurface* src, gfx::DataSourceSurface* dest)
   }
 
   {
+      // Even though we're reading. We're doing it on
+      // the producer side. So we call ProducerAcquire
+      // instead of ConsumerAcquire.
+      src->ProducerAcquire();
+
       UniquePtr<ReadBuffer> buffer = CreateRead(src);
       MOZ_ASSERT(buffer);
 
       ScopedBindFramebuffer autoFB(mGL, buffer->mFB);
       ReadPixelsIntoDataSurface(mGL, dest);
+
+      src->ProducerRelease();
   }
 
   if (needsSwap) {

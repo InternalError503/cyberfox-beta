@@ -30,6 +30,10 @@ NS_INTERFACE_MAP_END_INHERITING(DOMEventTargetHelper)
 NS_IMPL_ADDREF_INHERITED(MediaKeySession, DOMEventTargetHelper)
 NS_IMPL_RELEASE_INHERITED(MediaKeySession, DOMEventTargetHelper)
 
+// Count of number of instances. Used to give each instance a
+// unique token.
+static uint32_t sMediaKeySessionNum = 0;
+
 MediaKeySession::MediaKeySession(nsPIDOMWindow* aParent,
                                  MediaKeys* aKeys,
                                  const nsAString& aKeySystem,
@@ -39,6 +43,7 @@ MediaKeySession::MediaKeySession(nsPIDOMWindow* aParent,
   , mKeys(aKeys)
   , mKeySystem(aKeySystem)
   , mSessionType(aSessionType)
+  , mToken(sMediaKeySessionNum++)
   , mIsClosed(false)
   , mUninitialized(true)
 {
@@ -46,9 +51,13 @@ MediaKeySession::MediaKeySession(nsPIDOMWindow* aParent,
   mClosed = mKeys->MakePromise(aRv);
 }
 
-void MediaKeySession::Init(const nsAString& aSessionId)
+void MediaKeySession::SetSessionId(const nsAString& aSessionId)
 {
+  if (NS_WARN_IF(!mSessionId.IsEmpty())) {
+    return;
+  }
   mSessionId = aSessionId;
+  mKeys->OnSessionIdReady(this);
 }
 
 MediaKeySession::~MediaKeySession()
@@ -122,9 +131,8 @@ MediaKeySession::GenerateRequest(const nsAString& aInitDataType,
   }
 
   PromiseId pid = mKeys->StorePromise(promise);
-  mKeys->OnSessionPending(pid, this);
-
-  mKeys->GetCDMProxy()->CreateSession(mSessionType,
+  mKeys->GetCDMProxy()->CreateSession(Token(),
+                                      mSessionType,
                                       pid,
                                       aInitDataType, data);
 
@@ -152,11 +160,15 @@ MediaKeySession::Load(const nsAString& aSessionId, ErrorResult& aRv)
 
   mUninitialized = false;
 
-  Init(aSessionId);
-  auto pid = mKeys->StorePromise(promise);
-  mKeys->OnSessionPending(pid, this);
+  // We now know the sessionId being loaded into this session. Remove the
+  // session from its owning MediaKey's set of sessions awaiting a sessionId.
+  nsRefPtr<MediaKeySession> session(mKeys->GetPendingSession(Token()));
+  MOZ_ASSERT(session == this, "Session should be awaiting id on its own token");
 
-  mKeys->GetCDMProxy()->LoadSession(pid, aSessionId);
+  // Associate with the known sessionId.
+  SetSessionId(aSessionId);
+
+  mKeys->GetCDMProxy()->LoadSession(mKeys->StorePromise(promise), aSessionId);
 
   return promise.forget();
 }
@@ -204,7 +216,6 @@ MediaKeySession::OnClosed()
     return;
   }
   mIsClosed = true;
-  // TODO: reset usableKeyIds
   mKeys->OnSessionClosed(this);
   mKeys = nullptr;
   mClosed->MaybeResolve(JS::UndefinedHandleValue);
@@ -291,17 +302,15 @@ MediaKeySession::DispatchKeysChange()
   if (IsClosed()) {
     return;
   }
-  DebugOnly<nsresult> rv =
-    nsContentUtils::DispatchTrustedEvent(mKeys->GetOwnerDoc(),
-                                         this,
-                                         NS_LITERAL_STRING("keyschange"),
-                                         false,
-                                         false);
-#ifdef DEBUG
-  if (NS_FAILED(rv)) {
-    NS_WARNING("Failed to dispatch keyschange event");
-  }
-#endif
+  nsRefPtr<AsyncEventDispatcher> asyncDispatcher =
+    new AsyncEventDispatcher(this, NS_LITERAL_STRING("keyschange"), false);
+  asyncDispatcher->PostDOMEvent();
+}
+
+uint32_t
+MediaKeySession::Token() const
+{
+  return mToken;
 }
 
 } // namespace dom

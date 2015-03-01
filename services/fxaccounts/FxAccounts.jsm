@@ -859,10 +859,20 @@ FxAccountsInternal.prototype = {
     }, timeoutMs);
   },
 
+  _requireHttps: function() {
+    let allowHttp = false;
+    try {
+      allowHttp = Services.prefs.getBoolPref("identity.fxaccounts.allowHttp");
+    } catch(e) {
+      // Pref doesn't exist
+    }
+    return allowHttp !== true;
+  },
+
   // Return the URI of the remote UI flows.
   getAccountsSignUpURI: function() {
     let url = Services.urlFormatter.formatURLPref("identity.fxaccounts.remote.signup.uri");
-    if (!/^https:/.test(url)) { // Comment to un-break emacs js-mode highlighting
+    if (this._requireHttps() && !/^https:/.test(url)) { // Comment to un-break emacs js-mode highlighting
       throw new Error("Firefox Accounts server must use HTTPS");
     }
     return url;
@@ -871,7 +881,7 @@ FxAccountsInternal.prototype = {
   // Return the URI of the remote UI flows.
   getAccountsSignInURI: function() {
     let url = Services.urlFormatter.formatURLPref("identity.fxaccounts.remote.signin.uri");
-    if (!/^https:/.test(url)) { // Comment to un-break emacs js-mode highlighting
+    if (this._requireHttps() && !/^https:/.test(url)) { // Comment to un-break emacs js-mode highlighting
       throw new Error("Firefox Accounts server must use HTTPS");
     }
     return url;
@@ -881,7 +891,7 @@ FxAccountsInternal.prototype = {
   // of the current account.
   promiseAccountsForceSigninURI: function() {
     let url = Services.urlFormatter.formatURLPref("identity.fxaccounts.remote.force_auth.uri");
-    if (!/^https:/.test(url)) { // Comment to un-break emacs js-mode highlighting
+    if (this._requireHttps() && !/^https:/.test(url)) { // Comment to un-break emacs js-mode highlighting
       throw new Error("Firefox Accounts server must use HTTPS");
     }
     let currentState = this.currentAccountState;

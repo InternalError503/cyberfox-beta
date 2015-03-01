@@ -27,10 +27,12 @@ namespace mozilla {
 namespace gmp {
 
 GMPDecryptorChild::GMPDecryptorChild(GMPChild* aPlugin,
-                                     const nsTArray<uint8_t>& aPluginVoucher)
+                                     const nsTArray<uint8_t>& aPluginVoucher,
+                                     const nsTArray<uint8_t>& aSandboxVoucher)
   : mSession(nullptr)
   , mPlugin(aPlugin)
   , mPluginVoucher(aPluginVoucher)
+  , mSandboxVoucher(aSandboxVoucher)
 {
   MOZ_ASSERT(mPlugin);
 }
@@ -47,12 +49,12 @@ GMPDecryptorChild::Init(GMPDecryptor* aSession)
 }
 
 void
-GMPDecryptorChild::ResolveNewSessionPromise(uint32_t aPromiseId,
-                                            const char* aSessionId,
-                                            uint32_t aSessionIdLength)
+GMPDecryptorChild::SetSessionId(uint32_t aCreateSessionToken,
+                                const char* aSessionId,
+                                uint32_t aSessionIdLength)
 {
-  CALL_ON_GMP_THREAD(SendResolveNewSessionPromise,
-                     aPromiseId, nsAutoCString(aSessionId, aSessionIdLength));
+  CALL_ON_GMP_THREAD(SendSetSessionId,
+                     aCreateSessionToken, nsAutoCString(aSessionId, aSessionIdLength));
 }
 
 void
@@ -181,9 +183,8 @@ GMPDecryptorChild::GetSandboxVoucher(const uint8_t** aVoucher,
   if (!aVoucher || !aVoucherLength) {
     return;
   }
-  const char* voucher = "placeholder_sandbox_voucher.";
-  *aVoucher = (uint8_t*)voucher;
-  *aVoucherLength = strlen(voucher);
+  *aVoucher = mSandboxVoucher.Elements();
+  *aVoucherLength = mSandboxVoucher.Length();
 }
 
 void
@@ -208,7 +209,8 @@ GMPDecryptorChild::RecvInit()
 }
 
 bool
-GMPDecryptorChild::RecvCreateSession(const uint32_t& aPromiseId,
+GMPDecryptorChild::RecvCreateSession(const uint32_t& aCreateSessionToken,
+                                     const uint32_t& aPromiseId,
                                      const nsCString& aInitDataType,
                                      const nsTArray<uint8_t>& aInitData,
                                      const GMPSessionType& aSessionType)
@@ -217,7 +219,8 @@ GMPDecryptorChild::RecvCreateSession(const uint32_t& aPromiseId,
     return false;
   }
 
-  mSession->CreateSession(aPromiseId,
+  mSession->CreateSession(aCreateSessionToken,
+                          aPromiseId,
                           aInitDataType.get(),
                           aInitDataType.Length(),
                           aInitData.Elements(),
@@ -343,3 +346,7 @@ GMPDecryptorChild::RecvDecryptingComplete()
 
 } // namespace gmp
 } // namespace mozilla
+
+// avoid redefined macro in unified build
+#undef ON_GMP_THREAD
+#undef CALL_ON_GMP_THREAD

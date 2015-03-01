@@ -4,7 +4,7 @@
 
 <!-- Content panel -->
 
-<preferences id="contentPreferences">
+<preferences id="contentPreferences" hidden="true" data-category="paneContent">
 <!-- Disable Javascript & Block Images Feature Dont Remove -->
   <!-- Popups, images, and JavaScript -->
   <preference id="dom.disable_open_during_load"

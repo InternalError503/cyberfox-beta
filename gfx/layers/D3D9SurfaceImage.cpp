@@ -6,6 +6,8 @@
 #include "D3D9SurfaceImage.h"
 #include "gfx2DGlue.h"
 #include "mozilla/layers/TextureD3D9.h"
+#include "mozilla/layers/CompositableClient.h"
+#include "mozilla/layers/CompositableForwarder.h"
 #include "mozilla/gfx/Types.h"
 
 namespace mozilla {
@@ -17,7 +19,64 @@ D3D9SurfaceImage::D3D9SurfaceImage()
   , mSize(0, 0)
 {}
 
-D3D9SurfaceImage::~D3D9SurfaceImage() {}
+D3D9SurfaceImage::~D3D9SurfaceImage()
+{
+  if (mTexture) {
+    gfxWindowsPlatform::sD3D9SurfaceImageUsed -= mSize.width * mSize.height * 4;
+  }
+}
+
+static const GUID sD3D9TextureUsage =
+{ 0x631e1338, 0xdc22, 0x497f, { 0xa1, 0xa8, 0xb4, 0xfe, 0x3a, 0xf4, 0x13, 0x4d } };
+
+/* This class get's it's lifetime tied to a D3D texture
+ * and increments memory usage on construction and decrements
+ * on destruction */
+class TextureMemoryMeasurer9 : public IUnknown
+{
+public:
+  TextureMemoryMeasurer9(size_t aMemoryUsed)
+  {
+    mMemoryUsed = aMemoryUsed;
+    gfxWindowsPlatform::sD3D9MemoryUsed += mMemoryUsed;
+    mRefCnt = 0;
+  }
+  ~TextureMemoryMeasurer9()
+  {
+    gfxWindowsPlatform::sD3D9MemoryUsed -= mMemoryUsed;
+  }
+  STDMETHODIMP_(ULONG) AddRef() {
+    mRefCnt++;
+    return mRefCnt;
+  }
+  STDMETHODIMP QueryInterface(REFIID riid,
+                              void **ppvObject)
+  {
+    IUnknown *punk = nullptr;
+    if (riid == IID_IUnknown) {
+      punk = this;
+    }
+    *ppvObject = punk;
+    if (punk) {
+      punk->AddRef();
+      return S_OK;
+    } else {
+      return E_NOINTERFACE;
+    }
+  }
+
+  STDMETHODIMP_(ULONG) Release() {
+    int refCnt = --mRefCnt;
+    if (refCnt == 0) {
+      delete this;
+    }
+    return refCnt;
+  }
+private:
+  int mRefCnt;
+  int mMemoryUsed;
+};
+
 
 HRESULT
 D3D9SurfaceImage::SetData(const Data& aData)
@@ -59,6 +118,11 @@ D3D9SurfaceImage::SetData(const Data& aData)
                              byRef(texture),
                              &shareHandle);
   NS_ENSURE_TRUE(SUCCEEDED(hr) && shareHandle, hr);
+
+  // Track the lifetime of this memory
+  texture->SetPrivateData(sD3D9TextureUsage, new TextureMemoryMeasurer9(region.width * region.height * 4), sizeof(IUnknown *), D3DSPD_IUNKNOWN);
+
+  gfxWindowsPlatform::sD3D9SurfaceImageUsed += region.width * region.height * 4;
 
   // Copy the image onto the texture, preforming YUV -> RGB conversion if necessary.
   RefPtr<IDirect3DSurface9> textureSurface;
@@ -132,7 +196,9 @@ D3D9SurfaceImage::GetTextureClient(CompositableClient* aClient)
   EnsureSynchronized();
   if (!mTextureClient) {
     RefPtr<SharedTextureClientD3D9> textureClient =
-      new SharedTextureClientD3D9(gfx::SurfaceFormat::B8G8R8X8, TextureFlags::DEFAULT);
+      new SharedTextureClientD3D9(aClient->GetForwarder(),
+                                  gfx::SurfaceFormat::B8G8R8X8,
+                                  TextureFlags::DEFAULT);
     textureClient->InitWith(mTexture, mShareHandle, mDesc);
     mTextureClient = textureClient;
   }

@@ -3,9 +3,12 @@ const KEYSYSTEM_TYPE = "org.w3.clearkey";
 function bail(message)
 {
   return function(err) {
+    if (err) {
+      message +=  "; " + String(err)
+    }
     ok(false, message);
     if (err) {
-      info(err);
+      info(String(err));
     }
     SimpleTest.finish();
   }
@@ -70,13 +73,13 @@ function Log(token, msg) {
   info(TimeStamp(token) + " " + msg);
 }
 
-function UpdateSessionFunc(test, token) {
+function UpdateSessionFunc(test, token, sessionType, resolve, reject) {
   return function(ev) {
     var msgStr = ArrayBufferToString(ev.message);
     var msg = JSON.parse(msgStr);
 
     Log(token, "got message from CDM: " + msgStr);
-    is(msg.type, test.sessionType, TimeStamp(token) + " key session type should match");
+    is(msg.type, sessionType, TimeStamp(token) + " key session type should match");
     ok(msg.kids, TimeStamp(token) + " message event should contain key ID array");
 
     var outKeys = [];
@@ -107,7 +110,11 @@ function UpdateSessionFunc(test, token) {
 
     ev.target.update(StringToArrayBuffer(update)).then(function() {
       Log(token, "MediaKeySession update ok!");
-    }, bail(token + " MediaKeySession update failed"));
+      resolve(ev.target);
+    }).catch(function(reason) {
+      bail(token + " MediaKeySession update failed")(reason);
+      reject();
+    });
   }
 }
 
@@ -207,31 +214,57 @@ function SetupEME(test, token, params)
         videoType: test.type,
       }
     ];
-    navigator.requestMediaKeySystemAccess(KEYSYSTEM_TYPE, options)
-      .then(function(keySystemAccess) {
-        return keySystemAccess.createMediaKeys();
-      }, bail(token + " Failed to request key system access."))
-      
-      .then(function(mediaKeys) {
-        Log(token, "created MediaKeys object ok");
-        mediaKeys.sessions = [];
-        return v.setMediaKeys(mediaKeys);
-      }, bail("failed to create MediaKeys object"))
-      
-      .then(function() {
-        Log(token, "set MediaKeys on <video> element ok");
 
-        var session = v.mediaKeys.createSession(test.sessionType);
-        if (params && params.onsessioncreated) {
-          params.onsessioncreated(session);
-        }
-        session.addEventListener("message", UpdateSessionFunc(test, token));
-        return session.generateRequest(ev.initDataType, ev.initData);
-      }, onSetKeysFail)
-      
-      .then(function() {
-        Log(token, "generated request");
-      }, bail(token + " Failed to request key system access2."));
+    function chain(promise, onReject) {
+      return promise.then(function(value) {
+        return Promise.resolve(value);
+      }).catch(function(reason) {
+        onReject(reason);
+        return Promise.reject();
+      })
+    }
+
+    var p = navigator.requestMediaKeySystemAccess(KEYSYSTEM_TYPE, options);
+    var r = bail(token + " Failed to request key system access.");
+    chain(p, r)
+    .then(function(keySystemAccess) {
+      var p = keySystemAccess.createMediaKeys();
+      var r = bail(token +  " Failed to create MediaKeys object");
+      return chain(p, r);
+    })
+
+    .then(function(mediaKeys) {
+      Log(token, "created MediaKeys object ok");
+      mediaKeys.sessions = [];
+      var p = v.setMediaKeys(mediaKeys);
+      return chain(p, onSetKeysFail);
+    })
+
+    .then(function() {
+      Log(token, "set MediaKeys on <video> element ok");
+      var sessionType = (params && params.sessionType) ? params.sessionType : "temporary";
+      var session = v.mediaKeys.createSession(sessionType);
+      if (params && params.onsessioncreated) {
+        params.onsessioncreated(session);
+      }
+
+      return new Promise(function (resolve, reject) {
+        session.addEventListener("message", UpdateSessionFunc(test, token, sessionType, resolve, reject));
+        session.generateRequest(ev.initDataType, ev.initData).catch(function(reason) {
+          // Reject the promise if generateRequest() failed. Otherwise it will
+          // be resolve in UpdateSessionFunc().
+          bail(token + ": session.generateRequest failed")(reason);
+          reject();
+        });
+      });
+    })
+
+    .then(function(session) {
+      Log(token, ": session.generateRequest succeeded");
+      if (params && params.onsessionupdated) {
+        params.onsessionupdated(session);
+      }
+    });
   });
   return v;
 }

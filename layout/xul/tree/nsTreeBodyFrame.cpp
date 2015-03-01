@@ -101,7 +101,7 @@ CancelImageRequest(const nsAString& aKey,
 nsIFrame*
 NS_NewTreeBodyFrame(nsIPresShell* aPresShell, nsStyleContext* aContext)
 {
-  return new (aPresShell) nsTreeBodyFrame(aPresShell, aContext);
+  return new (aPresShell) nsTreeBodyFrame(aContext);
 }
 
 NS_IMPL_FRAMEARENA_HELPERS(nsTreeBodyFrame)
@@ -112,8 +112,8 @@ NS_QUERYFRAME_HEAD(nsTreeBodyFrame)
 NS_QUERYFRAME_TAIL_INHERITING(nsLeafBoxFrame)
 
 // Constructor
-nsTreeBodyFrame::nsTreeBodyFrame(nsIPresShell* aPresShell, nsStyleContext* aContext)
-:nsLeafBoxFrame(aPresShell, aContext),
+nsTreeBodyFrame::nsTreeBodyFrame(nsStyleContext* aContext)
+:nsLeafBoxFrame(aContext),
  mSlots(nullptr),
  mImageCache(),
  mTopRowIndex(0),
@@ -1319,15 +1319,16 @@ nsTreeBodyFrame::AdjustForCellText(nsAutoString& aText,
 {
   NS_PRECONDITION(aColumn && aColumn->GetFrame(), "invalid column passed");
 
-  nscoord width = nsLayoutUtils::AppUnitWidthOfStringBidi(aText, this,
-                                                          aFontMetrics,
-                                                          aRenderingContext);
   nscoord maxWidth = aTextRect.width;
+  bool widthIsGreater = nsLayoutUtils::StringWidthIsGreaterThan(aText,
+                                                                aFontMetrics,
+                                                                aRenderingContext,
+                                                                maxWidth);
 
   if (aColumn->Overflow()) {
     DebugOnly<nsresult> rv;
     nsTreeColumn* nextColumn = aColumn->GetNext();
-    while (nextColumn && width > maxWidth) {
+    while (nextColumn && widthIsGreater) {
       while (nextColumn) {
         nscoord width;
         rv = nextColumn->GetWidthInTwips(this, &width);
@@ -1351,6 +1352,10 @@ nsTreeBodyFrame::AdjustForCellText(nsAutoString& aText,
           NS_ASSERTION(NS_SUCCEEDED(rv), "nextColumn is invalid");
 
           maxWidth += width;
+          widthIsGreater = nsLayoutUtils::StringWidthIsGreaterThan(aText,
+                                                                   aFontMetrics,
+                                                                   aRenderingContext,
+                                                                   maxWidth);
 
           nextColumn = nextColumn->GetNext();
         }
@@ -1361,7 +1366,8 @@ nsTreeBodyFrame::AdjustForCellText(nsAutoString& aText,
     }
   }
 
-  if (width > maxWidth) {
+  nscoord width;
+  if (widthIsGreater) {
     // See if the width is even smaller than the ellipsis
     // If so, clear the text completely.
     const nsDependentString& kEllipsis = nsContentUtils::GetLocalizedEllipsis();
@@ -1458,10 +1464,10 @@ nsTreeBodyFrame::AdjustForCellText(nsAutoString& aText,
         break;
       }
     }
-
-    width = nsLayoutUtils::AppUnitWidthOfStringBidi(aText, this, aFontMetrics,
-                                                    aRenderingContext);
   }
+
+  width = nsLayoutUtils::AppUnitWidthOfStringBidi(aText, this, aFontMetrics,
+                                                  aRenderingContext);
 
   switch (aColumn->GetTextAlignment()) {
     case NS_STYLE_TEXT_ALIGN_RIGHT: {
@@ -3220,10 +3226,10 @@ nsTreeBodyFrame::PaintCell(int32_t              aRowIndex,
           srcX = currX + remainingWidth - (srcX - cellRect.x);
           destX = currX + remainingWidth - (destX - cellRect.x);
         }
-        Point p1(pc->CSSPixelsToDevPixels(srcX),
-                 pc->CSSPixelsToDevPixels(lineY + mRowHeight / 2));
-        Point p2(pc->CSSPixelsToDevPixels(destX),
-                 pc->CSSPixelsToDevPixels(lineY + mRowHeight / 2));
+        Point p1(pc->AppUnitsToGfxUnits(srcX),
+                 pc->AppUnitsToGfxUnits(lineY + mRowHeight / 2));
+        Point p2(pc->AppUnitsToGfxUnits(destX),
+                 pc->AppUnitsToGfxUnits(lineY + mRowHeight / 2));
         SnapLineToDevicePixelsForStroking(p1, p2, *drawTarget);
         drawTarget->StrokeLine(p1, p2, colorPatt, strokeOptions);
       }
@@ -3234,15 +3240,15 @@ nsTreeBodyFrame::PaintCell(int32_t              aRowIndex,
           // Paint full vertical line only if we have next sibling.
           bool hasNextSibling;
           mView->HasNextSibling(currentParent, aRowIndex, &hasNextSibling);
-          Point p1(pc->CSSPixelsToDevPixels(srcX),
-                   pc->CSSPixelsToDevPixels(lineY));
+          Point p1(pc->AppUnitsToGfxUnits(srcX),
+                   pc->AppUnitsToGfxUnits(lineY));
           Point p2;
-          p2.x = pc->CSSPixelsToDevPixels(srcX);
+          p2.x = pc->AppUnitsToGfxUnits(srcX);
 
           if (hasNextSibling)
-            p2.y = pc->CSSPixelsToDevPixels(lineY + mRowHeight);
+            p2.y = pc->AppUnitsToGfxUnits(lineY + mRowHeight);
           else if (i == level)
-            p2.y = pc->CSSPixelsToDevPixels(lineY + mRowHeight / 2);
+            p2.y = pc->AppUnitsToGfxUnits(lineY + mRowHeight / 2);
 
           SnapLineToDevicePixelsForStroking(p1, p2, *drawTarget);
           drawTarget->StrokeLine(p1, p2, colorPatt, strokeOptions);

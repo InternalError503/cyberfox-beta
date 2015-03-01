@@ -55,7 +55,7 @@ GMPVideoEncoderParent::GMPVideoEncoderParent(GMPParent *aPlugin)
   mShuttingDown(false),
   mPlugin(aPlugin),
   mCallback(nullptr),
-  mVideoHost(MOZ_THIS_IN_INITIALIZER_LIST())
+  mVideoHost(this)
 {
   MOZ_ASSERT(mPlugin);
 
@@ -91,7 +91,7 @@ GMPVideoEncoderParent::Close()
 
   // In case this is the last reference
   nsRefPtr<GMPVideoEncoderParent> kungfudeathgrip(this);
-  NS_RELEASE(kungfudeathgrip);
+  Release();
   Shutdown();
 }
 

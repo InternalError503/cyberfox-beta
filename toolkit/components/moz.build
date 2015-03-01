@@ -41,6 +41,7 @@ DIRS += [
     'promiseworker',
     'prompts',
     'protobuf',
+    'reader',
     'reflect',
     'sqlite',
     'startup',
