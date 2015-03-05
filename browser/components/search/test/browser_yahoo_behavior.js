@@ -48,6 +48,15 @@ function test() {
       }
     },
     {
+      name: "keyword search with alias",
+      searchURL: base,
+      run: function () {
+        gURLBar.value = "y foo";
+        gURLBar.focus();
+        EventUtils.synthesizeKey("VK_RETURN", {});
+      }
+    },
+    {
       name: "search bar search",
       searchURL: base,
       run: function () {

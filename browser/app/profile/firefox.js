@@ -1301,7 +1301,7 @@ pref("browser.devedition.theme.showCustomizeButton", false);
 
 // Developer edition promo preferences
 pref("devtools.devedition.promo.shown", false);
-pref("devtools.devedition.promo.url", "https://mozilla.org/firefox/developer");
+pref("devtools.devedition.promo.url", "https://www.mozilla.org/firefox/developer");
 
 // Only potentially show in beta release
 #if MOZ_UPDATE_CHANNEL == beta
@@ -1899,3 +1899,5 @@ pref("browser.context.togglejavascript", false);
 
 // Disable Flash protected mode to reduce hang/crash rates.
 pref("dom.ipc.plugins.flash.disable-protected-mode", true);
+
+pref("browser.selfsupport.url", "http://self-repair.mozilla.org/%LOCALE%/repair");

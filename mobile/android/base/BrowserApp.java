@@ -74,6 +74,7 @@ import org.mozilla.gecko.toolbar.AutocompleteHandler;
 import org.mozilla.gecko.toolbar.BrowserToolbar;
 import org.mozilla.gecko.toolbar.BrowserToolbar.TabEditingState;
 import org.mozilla.gecko.toolbar.ToolbarProgressView;
+import org.mozilla.gecko.util.ActivityUtils;
 import org.mozilla.gecko.util.Clipboard;
 import org.mozilla.gecko.util.EventCallback;
 import org.mozilla.gecko.util.GamepadUtils;
@@ -134,14 +135,11 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.ViewTreeObserver;
 import android.view.Window;
-import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
-
-import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 public class BrowserApp extends GeckoApp
                         implements TabsPanel.TabsLayoutChangeListener,
@@ -178,6 +176,8 @@ public class BrowserApp extends GeckoApp
     public ViewFlipper mActionBarFlipper;
     public ActionModeCompatView mActionBar;
     private BrowserToolbar mBrowserToolbar;
+    // We can't name the TabStrip class because it's not included on API 9.
+    private Refreshable mTabStrip;
     private ToolbarProgressView mProgressView;
     private HomePager mHomePager;
     private TabsPanel mTabsPanel;
@@ -241,8 +241,6 @@ public class BrowserApp extends GeckoApp
     private BrowserHealthReporter mBrowserHealthReporter;
 
     private ReadingListHelper mReadingListHelper;
-
-    private SystemBarTintManager mTintManager;
 
     // The tab to be selected on editing mode exit.
     private Integer mTargetTabForEditingMode;
@@ -511,8 +509,6 @@ public class BrowserApp extends GeckoApp
 
         final Context appContext = getApplicationContext();
 
-        setupSystemUITinting();
-
         mBrowserChrome = (ViewGroup) findViewById(R.id.browser_chrome);
         mActionBarFlipper = (ViewFlipper) findViewById(R.id.browser_actionbar);
         mActionBar = (ActionModeCompatView) findViewById(R.id.actionbar);
@@ -549,7 +545,7 @@ public class BrowserApp extends GeckoApp
         }
 
         if (NewTabletUI.isEnabled(this)) {
-            findViewById(R.id.new_tablet_tab_strip).setVisibility(View.VISIBLE);
+            mTabStrip = (Refreshable) (((ViewStub) findViewById(R.id.new_tablet_tab_strip)).inflate());
         }
 
         ((GeckoApp.MainLayout) mMainLayout).setTouchEventInterceptor(new HideOnTouchListener());
@@ -651,31 +647,6 @@ public class BrowserApp extends GeckoApp
 
         // Set the maximum bits-per-pixel the favicon system cares about.
         IconDirectoryEntry.setMaxBPP(GeckoAppShell.getScreenDepth());
-    }
-
-    private void setupSystemUITinting() {
-        if (!Versions.feature19Plus) {
-            return;
-        }
-
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-
-        mTintManager = new SystemBarTintManager(this);
-        mTintManager.setTintColor(getResources().getColor(R.color.background_tabs));
-        updateSystemUITinting(mRootLayout.getSystemUiVisibility());
-
-        mRootLayout.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-            @Override
-            public void onSystemUiVisibilityChange(int visibility) {
-                updateSystemUITinting(visibility);
-            }
-        });
-    }
-
-    private void updateSystemUITinting(int visibility) {
-        final boolean shouldTint = (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0 &&
-                                   (visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0;
-        mTintManager.setStatusBarTintEnabled(shouldTint);
     }
 
     /**
@@ -1345,6 +1316,10 @@ public class BrowserApp extends GeckoApp
         if (mTabsPanel != null) {
             updateSideBarState();
             mTabsPanel.refresh();
+        }
+
+        if (mTabStrip != null) {
+            mTabStrip.refresh();
         }
 
         mBrowserToolbar.refresh();
@@ -2379,11 +2354,6 @@ public class BrowserApp extends GeckoApp
                 view.getHitRect(mTempRect);
                 mTempRect.offset(-view.getScrollX(), -view.getScrollY());
 
-                if (mTintManager != null) {
-                    SystemBarTintManager.SystemBarConfig config = mTintManager.getConfig();
-                    mTempRect.offset(0, -config.getPixelInsetTop(false));
-                }
-
                 int[] viewCoords = new int[2];
                 view.getLocationOnScreen(viewCoords);
 
@@ -2613,6 +2583,10 @@ public class BrowserApp extends GeckoApp
         // Disable menu access (for hardware buttons) when the software menu button is inaccessible.
         // Note that the software button is always accessible on new tablet.
         if (mBrowserToolbar.isEditing() && !NewTabletUI.isEnabled(this)) {
+            return;
+        }
+
+        if (ActivityUtils.isFullScreen(this)) {
             return;
         }
 
@@ -3339,5 +3313,9 @@ public class BrowserApp extends GeckoApp
                                          osLocale,
                                          appLocale,
                                          previousSession);
+    }
+
+    public static interface Refreshable {
+        public void refresh();
     }
 }
