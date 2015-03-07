@@ -33,6 +33,11 @@
 									  tooltiptext="&copyTabURL.label;"  
 									  label="&copyTabURL.label;" 
 									  oncommand="gCyberfoxCustom.CopyCurrentTabUrl();"/>
+			<toolbarbutton id="tbar-copyalltaburl" 
+									  class="toolbarbutton-1 chromeclass-toolbar-additional"	
+									  tooltiptext="&copyAllTabUrls.label;"  
+									  label="&copyAllTabUrls.label;" 
+									  oncommand="gCyberfoxCustom.CopyAllTabUrls();"/>									  
 			<toolbarbutton id="tbar_browserconsole" 
 									  class="toolbarbutton-1 chromeclass-toolbar-additional"							  
 									  tooltiptext="&browserConsoleCmd.label;"  
