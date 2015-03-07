@@ -485,6 +485,8 @@ nsContextMenu.prototype = {
     var statsShowing = this.onVideo && this.target.mozMediaStatisticsShowing;
     this.showItem("context-video-showstats", this.onVideo && this.target.controls && !statsShowing);
     this.showItem("context-video-hidestats", this.onVideo && this.target.controls && statsShowing);
+    this.showItem("context-media-eme-learnmore", this.onDRMMedia);
+    this.showItem("context-media-eme-separator", this.onDRMMedia);
 
     // Disable them when there isn't a valid media source loaded.
     if (onMedia) {
@@ -506,7 +508,7 @@ nsContextMenu.prototype = {
       this.setItemAttr("context-media-showcontrols", "disabled", hasError);
       this.setItemAttr("context-media-hidecontrols", "disabled", hasError);
       if (this.onVideo) {
-        let canSaveSnapshot = this.target.readyState >= this.target.HAVE_CURRENT_DATA;
+        let canSaveSnapshot = !this.onDRMMedia && this.target.readyState >= this.target.HAVE_CURRENT_DATA;
         this.setItemAttr("context-video-saveimage",  "disabled", !canSaveSnapshot);
         this.setItemAttr("context-video-fullscreen", "disabled", hasError);
         this.setItemAttr("context-video-showstats", "disabled", hasError);
@@ -569,6 +571,7 @@ nsContextMenu.prototype = {
     this.onCanvas          = false;
     this.onVideo           = false;
     this.onAudio           = false;
+    this.onDRMMedia        = false;
     this.onTextInput       = false;
     this.onKeywordField    = false;
     this.mediaURL          = "";
@@ -644,6 +647,9 @@ nsContextMenu.prototype = {
         if (this.isMediaURLReusable(mediaURL)) {
           this.mediaURL = mediaURL;
         }
+        if (this.target.isEncrypted) {
+          this.onDRMMedia = true;
+        }
         // Firefox always creates a HTMLVideoElement when loading an ogg file
         // directly. If the media is actually audio, be smarter and provide a
         // context menu with audio operations.
@@ -659,6 +665,9 @@ nsContextMenu.prototype = {
         let mediaURL = this.target.currentSrc || this.target.src;
         if (this.isMediaURLReusable(mediaURL)) {
           this.mediaURL = mediaURL;
+        }
+        if (this.target.isEncrypted) {
+          this.onDRMMedia = true;
         }
       }
       else if (editFlags & (SpellCheckHelper.INPUT | SpellCheckHelper.TEXTAREA)) {

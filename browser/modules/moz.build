@@ -14,6 +14,7 @@ EXTRA_JS_MODULES += [
     'CastingApps.jsm',
     'Chat.jsm',
     'ContentLinkHandler.jsm',
+    'ContentObservers.jsm',
     'ContentWebRTC.jsm',
     'CustomizationTabPreloader.jsm',
     'E10SUtils.jsm',

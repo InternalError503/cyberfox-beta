@@ -275,6 +275,7 @@ pref("media.directshow.enabled", true);
 #ifdef MOZ_FMP4
 pref("media.fragmented-mp4.enabled", true);
 pref("media.fragmented-mp4.ffmpeg.enabled", false);
+pref("media.fragmented-mp4.gmp.enabled", false);
 #if defined(XP_WIN) && defined(MOZ_WMF) || defined(XP_MACOSX) || defined(MOZ_WIDGET_GONK)
 // Denotes that the fragmented MP4 parser can be created by <video> elements.
 pref("media.fragmented-mp4.exposed", true);
@@ -1553,7 +1554,7 @@ pref("network.dnsCacheEntries", 400);
 pref("network.dnsCacheExpiration", 60);
 
 // Get TTL; not supported on all platforms; nop on the unsupported ones.
-pref("network.dns.get-ttl", true);
+pref("network.dns.get-ttl", false);
 
 // The grace period allows the DNS cache to use expired entries, while kicking off
 // a revalidation in the background.

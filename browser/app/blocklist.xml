@@ -1034,6 +1034,12 @@
                     <prefs>
               </prefs>
     </emItem>
+      <emItem  blockID="i91" id="crossriderapp4926@crossrider.com">
+                        <versionRange  minVersion="0" maxVersion="0.81.43" severity="1">
+                    </versionRange>
+                    <prefs>
+              </prefs>
+    </emItem>
       <emItem  blockID="i700" id="2bbadf1f-a5af-499f-9642-9942fcdb7c76@f05a14cc-8842-4eee-be17-744677a917ed.com">
                         <versionRange  minVersion="0" maxVersion="*" severity="1">
                     </versionRange>
