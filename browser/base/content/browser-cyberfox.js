@@ -323,7 +323,42 @@ document.getElementById("menu_FilePopup")
 			Services.prefs.setBoolPref("layers.acceleration.disabled", true);
 			Services.prefs.setBoolPref("gfx.direct2d.force-enabled", false);
 		}	
-	}  
+	}
+  
+  //Restart browser panel UI		
+  document.getElementById("PanelUI-popup").addEventListener("popupshowing", function (e) {
+	try{		
+				  
+		if (!Services.prefs.getBoolPref("browser.restart.showpanelmenubtn")){					
+			document.getElementById("panelUI_menu_restartBrowser").hidden = true;	
+		}else{
+			document.getElementById("panelUI_menu_restartBrowser").hidden = false;		
+		}
+		if(Services.prefs.getBoolPref("browser.restart.smallpanelmenubtn")){
+			document.getElementById("panelUI_menu_restartBrowser").className = "rb_panelUI_menu_small_icon";
+		}else{
+			document.getElementById("panelUI_menu_restartBrowser").removeAttribute('class');
+		}
+		
+		}catch (e){
+			//Catch any nasty errors and output to console
+			console.log("Were sorry but something has gone wrong with 'browser.restart.showpanelmenubtn' | 'browser.restart.smallpanelmenubtn' " + e);
+		}	
+	
+	});
+				
+	window.addEventListener("beforecustomization", function (e) {
+	try{
+		document.getElementById("panelUI_menu_restartBrowser").setAttribute('disabled', true);
+	}catch (e){}		
+	}, false);
+					
+	window.addEventListener("aftercustomization", function (e) {
+	try{
+		document.getElementById("panelUI_menu_restartBrowser").removeAttribute('disabled');
+	}catch (e){}	
+	}, false);
+
 },	
 
 

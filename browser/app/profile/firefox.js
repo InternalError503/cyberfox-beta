@@ -1813,6 +1813,10 @@ pref("browser.restart.enabled", true);
 
 pref("browser.restart.purgecache", false);
 
+//Set bool pref for restart browser panelUI button ---New Cyberfox 37.0 ---
+pref("browser.restart.showpanelmenubtn", false);
+pref("browser.restart.smallpanelmenubtn", false);
+
 //set bool pref for restart browser enabled
 
 pref("clean.ram.cache", true);
