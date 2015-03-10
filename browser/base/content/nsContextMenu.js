@@ -1719,6 +1719,17 @@ nsContextMenu.prototype = {
     clipboard.copyString(this.mediaURL, document);
   },
 
+  drmLearnMore: function(aEvent) {
+    let drmInfoURL = Services.urlFormatter.formatURLPref("app.support.baseURL") + "drm-content";
+    let dest = whereToOpenLink(aEvent);
+    // Don't ever want this to open in the same tab as it'll unload the
+    // DRM'd video, which is going to be a bad idea in most cases.
+    if (dest == "current") {
+      dest = "tab";
+    }
+    openUILinkIn(drmInfoURL, dest);
+  },
+
   get imageURL() {
     if (this.onImage)
       return this.mediaURL;

@@ -374,8 +374,7 @@ bool MediaOmxReader::DecodeVideoFrame(bool &aKeyframeSkip,
 
   // Record number of frames decoded and parsed. Automatically update the
   // stats counters using the AutoNotifyDecoded stack-based class.
-  uint32_t parsed = 0, decoded = 0;
-  AbstractMediaDecoder::AutoNotifyDecoded autoNotify(mDecoder, parsed, decoded);
+  AbstractMediaDecoder::AutoNotifyDecoded a(mDecoder);
 
   bool doSeek = mVideoSeekTimeUs != -1;
   if (doSeek) {
@@ -400,7 +399,7 @@ bool MediaOmxReader::DecodeVideoFrame(bool &aKeyframeSkip,
       continue;
     }
 
-    parsed++;
+    a.mParsed++;
     if (frame.mShouldSkip && mSkipCount < MAX_DROPPED_FRAMES) {
       mSkipCount++;
       continue;
@@ -477,8 +476,8 @@ bool MediaOmxReader::DecodeVideoFrame(bool &aKeyframeSkip,
       return false;
     }
 
-    decoded++;
-    NS_ASSERTION(decoded <= parsed, "Expect to decode fewer frames than parsed in OMX decoder...");
+    a.mDecoded++;
+    NS_ASSERTION(a.mDecoded <= a.mParsed, "Expect to decode fewer frames than parsed in OMX decoder...");
 
     mVideoQueue.Push(v);
 
