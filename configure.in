@@ -4120,6 +4120,29 @@ elif test "$EARLY_BETA_OR_EARLIER"; then
 fi
 AC_SUBST(EARLY_BETA_OR_EARLIER)
 
+# Set our custom identity branding, If not set it should default.
+#Cyberfox Beta
+if test -n "$IDENTITY_BRANDING_BETA"; then
+    AC_DEFINE(IDENTITY_BRANDING_BETA)
+fi
+AC_SUBST(IDENTITY_BRANDING_BETA)
+#Cyberfox AMD
+if test -n "$IDENTITY_BRANDING_AMD"; then
+    AC_DEFINE(IDENTITY_BRANDING_AMD)
+fi
+AC_SUBST(IDENTITY_BRANDING_AMD)
+#Cyberfox Linux
+if test -n "$IDENTITY_BRANDING_LINUX"; then
+    AC_DEFINE(IDENTITY_BRANDING_LINUX)
+fi
+AC_SUBST(IDENTITY_BRANDING_LINUX)
+#Cyberfox Intel
+if test -n "$IDENTITY_BRANDING_INTEL"; then
+    AC_DEFINE(IDENTITY_BRANDING_INTEL)
+fi
+AC_SUBST(IDENTITY_BRANDING_INTEL)
+
+
 # Allow the application to provide a subconfigure script
 if test -f "${srcdir}/${MOZ_BUILD_APP}/configure.in" ; then
   do_output_subdirs() {
