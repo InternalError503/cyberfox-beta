@@ -23,9 +23,9 @@ var gCyberfoxCustom = {
             if (Services.prefs.getBoolPref("browser.restart.purgecache")) {
 
                 Services.appinfo.invalidateCachesOnRestart();
-                Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup).quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);
+                Services.startup.quit(Services.startup.eRestart | Services.startup.eAttemptQuit);
             } else {
-                Cc["@mozilla.org/toolkit/app-startup;1"].getService(Ci.nsIAppStartup).quit(Ci.nsIAppStartup.eRestart | Ci.nsIAppStartup.eAttemptQuit);;
+                Services.startup.quit(Services.startup.eRestart | Services.startup.eAttemptQuit);
             }
         } catch (e) {
             //Catch any nasty errors and output to console
