@@ -745,7 +745,7 @@ BufferTextureClient::AllocateForSurface(gfx::IntSize aSize, TextureAllocationFla
   }
 
   uint32_t bufSize = ImageDataSerializer::ComputeMinBufferSize(aSize, mFormat);
-  if (!Allocate(bufSize)) {
+  if (!bufSize || !Allocate(bufSize)) {
     return false;
   }
 
@@ -860,7 +860,7 @@ BufferTextureClient::AllocateForYCbCr(gfx::IntSize aYSize,
 
   size_t bufSize = YCbCrImageDataSerializer::ComputeMinBufferSize(aYSize,
                                                                   aCbCrSize);
-  if (!Allocate(bufSize)) {
+  if (!bufSize || !Allocate(bufSize)) {
     return false;
   }
   YCbCrImageDataSerializer serializer(GetBuffer(), GetBufferSize());

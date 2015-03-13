@@ -9,15 +9,15 @@ MOZ_UPDATER=
 MOZ_PHOENIX=1
 
 if test "$OS_ARCH" = "WINNT"; then
-  MOZ_MAINTENANCE_SERVICE=0
-  MOZ_VERIFY_MAR_SIGNATURE=0
+  MOZ_MAINTENANCE_SERVICE=
+  MOZ_VERIFY_MAR_SIGNATURE=
   if ! test "$HAVE_64BIT_BUILD"; then
     if test "$MOZ_UPDATE_CHANNEL" = "nightly" -o \
             "$MOZ_UPDATE_CHANNEL" = "aurora" -o \
             "$MOZ_UPDATE_CHANNEL" = "beta" -o \
             "$MOZ_UPDATE_CHANNEL" = "release"; then
       if ! test "$MOZ_DEBUG"; then
-        MOZ_STUB_INSTALLER=0
+        MOZ_STUB_INSTALLER=
       fi
     fi
   fi
@@ -57,7 +57,7 @@ MOZ_WEBAPP_RUNTIME=1
 MOZ_MEDIA_NAVIGATOR=1
 MOZ_WEBGL_CONFORMANT=1
 # Enable navigator.mozPay
-MOZ_PAY=0
+MOZ_PAY=
 # Enable activities. These are used for FxOS developers currently.
 MOZ_ACTIVITIES=1
 MOZ_JSDOWNLOADS=1
