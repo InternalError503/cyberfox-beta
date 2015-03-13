@@ -83,8 +83,8 @@ var gCyberfoxCustom = {
                 }
             }
             //Send list to clipboard.				
-            const gClipboardHelper = Components.classes["@mozilla.org/widget/clipboardhelper;1"]
-                .getService(Components.interfaces.nsIClipboardHelper);
+            var gClipboardHelper = Cc["@mozilla.org/widget/clipboardhelper;1"]
+                .getService(Ci.nsIClipboardHelper);
             gClipboardHelper.copyString(urlList.trim());
 
             //Reset the array.
