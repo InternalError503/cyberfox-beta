@@ -321,7 +321,7 @@ var gCyberfoxCustom = {
             }, false);
 
         //If windows vista x64 disable Hardware acceleration.
-        var osWin = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS == "WINNT"
+        var osWin = Services.appinfo.OS == "WINNT";
         if (osWin) {
             if (/6.0; Win64/.test(window.navigator.oscpu)) {
                 Services.prefs.setBoolPref("gfx.direct2d.disabled", true);
