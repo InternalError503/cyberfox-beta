@@ -4,11 +4,9 @@
 
 // Services = object with smart getters for common XPCOM services
 Components.utils.import("resource://gre/modules/Services.jsm");
-//Setup Prompts Service.
-var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"].getService(Components.interfaces.nsIPromptService);
+
 //Setup Localised Messages.
-var localisedMessages = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService);
-let _locMSG = localisedMessages.createBundle("chrome://browser/locale/aboutDialog.properties");
+let _locMSG = Services.strings.createBundle("chrome://browser/locale/aboutDialog.properties");
 
 const PREF_EM_HOTFIX_ID = "extensions.hotfix.id";
 
@@ -184,7 +182,7 @@ function init(aEvent) {
 
                         //Prompt return failed check message for request time-out!
                         console.log(_locMSG.GetStringFromName("updateCheckErrorTitle") + " " + _locMSG.GetStringFromName("updateCheckError"));
-                        prompts.alert(window, _locMSG.GetStringFromName("updateCheckErrorTitle"), _locMSG.GetStringFromName("updateCheckError"));
+                        Services.prompt.alert(window, _locMSG.GetStringFromName("updateCheckErrorTitle"), _locMSG.GetStringFromName("updateCheckError"));
                         ElementState("update-button-checkNow", true);
                         ElementState("update-button-checking-throbber", true);
                         ElementState("update-button-checking", true);
@@ -200,7 +198,7 @@ function init(aEvent) {
                             case 0:
                                 //Prompt return failed request message for status 0 unsent
                                 console.log(_locMSG.GetStringFromName("updateCheckErrorTitle") + " " + _locMSG.GetStringFromName("updateRequestError"));
-                                prompts.alert(window, _locMSG.GetStringFromName("updateCheckErrorTitle"), _locMSG.GetStringFromName("updateRequestError"));
+                                Services.prompt.alert(window, _locMSG.GetStringFromName("updateCheckErrorTitle"), _locMSG.GetStringFromName("updateRequestError"));
                                 break;
 
                             case 1:
