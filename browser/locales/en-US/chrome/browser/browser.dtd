@@ -888,8 +888,13 @@ just addresses the organization to follow, e.g. "This site is run by " -->
 <!ENTITY turnOnRestart.label "Turn on restart browser menu item.">
 <!ENTITY cleanFastRestartCache.label "Clear fast restart cache on browser restart.">
 <!ENTITY restartOptions.label "Restart Options">
-<!ENTITY cyberfoxOptions.label "Cyberfox Features">
+<!ENTITY restart_paneluibtn.label "Add button to PanelUI">
+<!ENTITY restart_panelbtnsmall.label "Use small button on panel UI.">
 <!-- End Restart Browser Tweak -->
+
+<!ENTITY FeaturesTabLabel "Features">
+<!ENTITY cyberfoxOptions.label "Cyberfox Features">
+<!ENTITY menuFeaturesTab.label "Context \ Menus">
 
 <!-- Clone Current Tab Tweak -->
 <!ENTITY turnonclone.label "Turn on clone tab feature.">
@@ -899,7 +904,6 @@ just addresses the organization to follow, e.g. "This site is run by " -->
 
 <!-- Features Tab Tweak -->
 <!ENTITY warnOnQuit.label "Warn me when quitting window">
-<!ENTITY FeaturesTabLabel "Features">
 <!ENTITY newtabsoptions.label "New tab options">
 <!ENTITY newtabenabled.label "Enable newtab page.">
 <!ENTITY newtabpreload.label "Enable preload newtab.">
