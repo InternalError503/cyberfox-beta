@@ -102,7 +102,9 @@
 @BINPATH@/application.ini
 @BINPATH@/platform.ini
 @BINPATH@/blocklist.xml
+#if MOZ_AGENTS
 @BINPATH@/agents.json
+#endif
 #ifdef XP_UNIX
 @BINPATH@/run-mozilla.sh
 #endif

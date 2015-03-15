@@ -148,7 +148,9 @@
 #endif
 #endif
 @RESPATH@/browser/blocklist.xml
+#if MOZ_AGENTS
 @RESPATH@/browser/agents.json
+#endif
 #ifdef XP_UNIX
 #ifndef XP_MACOSX
 @RESPATH@/run-mozilla.sh

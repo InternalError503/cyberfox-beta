@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This Source Code Form is subject to the terms of the Mozilla Public
-   - License, v. 2.0. If a copy of the MPL was not distributed with this
-   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
+# -*- Mode: Java; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 <!DOCTYPE window [
 <!ENTITY % toolboxDTD SYSTEM "chrome://browser/locale/devtools/toolbox.dtd" >
 <!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
@@ -14,9 +17,11 @@
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script type="application/javascript;version=1.8"
-          src="chrome://browser/content/devtools/theme-switching.js"/>		  
+          src="chrome://browser/content/devtools/theme-switching.js"/>	
+#if MOZ_AGENTS		  
   <script type="application/javascript;version=1.8"
           src="chrome://browser/content/devtools/framework/toolbox-options-cyberfox.js"/>
+#endif		  
   <hbox id="options-panel-container" flex="1">
     <hbox id="options-panel" class="theme-body" flex="1">
       <vbox id="tools-box" class="options-vertical-pane" flex="1">
@@ -164,7 +169,8 @@
           </hbox>
           <label class="options-citation-label theme-comment"
           >&options.context.triggersPageRefresh;</label>
-        </vbox>		
+        </vbox>
+#if MOZ_AGENTS		
 	<label value="&userAgentOverride.label;"/>
 	<button label="&showOptionsAgentOverride.label;"  
 				  popup="thegentoverridepanel"				  
@@ -211,6 +217,7 @@
 			</vbox>
 		  </hbox>
 		</panel>
+#endif		
       </vbox>
     </hbox>
   </hbox>
