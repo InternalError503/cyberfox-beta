@@ -37,6 +37,13 @@ public:
   bool SupportsVideoMimeType(const char* aMimeType) MOZ_OVERRIDE;
   bool SupportsAudioMimeType(const char* aMimeType) MOZ_OVERRIDE;
 
+  virtual void DisableHardwareAcceleration() MOZ_OVERRIDE
+  {
+    sDXVAEnabled = false;
+  }
+
+  virtual bool SupportsSharedDecoders(const mp4_demuxer::VideoDecoderConfig& aConfig) const MOZ_OVERRIDE;
+
   // Accessors that report whether we have the required MFTs available
   // on the system to play various codecs. Windows Vista doesn't have the
   // H.264/AAC decoders if the "Platform Update Supplement for Windows Vista"
@@ -47,6 +54,8 @@ public:
   // Called on main thread.
   static void Init();
 private:
+  bool ShouldUseDXVA(const mp4_demuxer::VideoDecoderConfig& aConfig) const;
+
   static bool sIsWMFEnabled;
   static bool sDXVAEnabled;
 };

@@ -81,6 +81,8 @@ public:
 
   virtual bool IsAsync() const MOZ_OVERRIDE { return true; }
 
+  virtual void DisableHardwareAcceleration() MOZ_OVERRIDE;
+
 private:
 
   bool InitDemuxer();
@@ -259,6 +261,11 @@ private:
 
   // True if we've read the streams' metadata.
   bool mDemuxerInitialized;
+
+#ifdef MOZ_TELEMETRY_REPORTING
+  // True if we've gathered telemetry from an SPS.
+  bool mFoundSPSForTelemetry;
+#endif
 
   // Synchronized by decoder monitor.
   bool mIsEncrypted;
