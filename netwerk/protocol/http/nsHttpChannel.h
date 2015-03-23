@@ -366,6 +366,7 @@ private:
     nsresult MaybeSetupByteRangeRequest(int64_t partialLen, int64_t contentLength,
                                         bool ignoreMissingPartialLen = false);
     nsresult SetupByteRangeRequest(int64_t partialLen);
+    void UntieByteRangeRequest();	
     nsresult OpenCacheInputStream(nsICacheEntry* cacheEntry, bool startBuffering,
                                   bool checkingAppCacheEntry);
 
