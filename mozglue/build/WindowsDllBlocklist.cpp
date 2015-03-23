@@ -211,6 +211,10 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
   { "activedetect64.dll", UNVERSIONED },
   { "windowsapihookdll32.dll", UNVERSIONED },
   { "windowsapihookdll64.dll", UNVERSIONED },
+  
+  // Flash crashes with RealNetworks RealDownloader, bug 1132663
+  { "rndlnpshimswf.dll", ALL_VERSIONS },
+  { "rndlmainbrowserrecordplugin.dll", ALL_VERSIONS },
  
 	  { nullptr, 0 }
 };
