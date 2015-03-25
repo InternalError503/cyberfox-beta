@@ -7,9 +7,13 @@
 
 <!DOCTYPE window [
 <!ENTITY % toolboxDTD SYSTEM "chrome://browser/locale/devtools/toolbox.dtd" >
+#if MOZ_AGENTS
 <!ENTITY % browserDTD SYSTEM "chrome://browser/locale/browser.dtd" >
+#endif
  %toolboxDTD;
+#if MOZ_AGENTS
  %browserDTD;
+#endif
 ]>
 <?xml-stylesheet href="chrome://browser/skin/" type="text/css"?>
 <?xml-stylesheet rel="stylesheet" href="chrome://browser/content/devtools/framework/options-panel.css" type="text/css"?>
