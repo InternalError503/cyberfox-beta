@@ -62,8 +62,8 @@ VIAddVersionKey InternalName "${PORTABLEAPPNAME}"
 !else
 	VIAddVersionKey LegalTrademarks "Firefox source code is a Registered Trademark of The Mozilla Foundation.  ${APPNAME} Portable (x86) is designed and developed by ${VENDOR}."
 !endif
-VIAddVersionKey OriginalFilename "${NAME}.exe"
-	
+VIAddVersionKey OriginalFilename "${DEFAULTEXE}"
+
 ;=== Runtime Switches
 CRCCheck On
 WindowIcon Off
@@ -242,7 +242,11 @@ Section "Main"
 	;CheckIfRunning:
 		;=== Check if running
 		StrCmp $ALLOWMULTIPLEINSTANCES "true" ProfileWork
-		FindProcDLL::FindProc "${DEFAULTEXE}"
+!ifdef ISWIN64		
+		FindProcDLL64::FindProc "${DEFAULTEXE}"
+!else
+		FindProcDLL86::FindProc "${DEFAULTEXE}"
+!endif		
 		StrCmp $R0 "1" "" CheckForCrashReports
 			;=== Already running, check if it is using the portable profile
 			IfFileExists "$PROFILEDIRECTORY\parent.lock" "" WarnAnotherInstance
@@ -297,14 +301,20 @@ Section "Main"
 		${If} $R0 != ""
 			${registry::Write} "HKCU\Software\${VENDOR}\${APPNAME}\Crash Reporter" "SubmitCrashReport" "$R0" "REG_DWORD" $R1
 		${EndIf}
-		${If} ${FileExists} "$EXEDIR\LupoApp.ini"
+		
+		${ReadINIStrWithDefault} $R0 "$EXEDIR\App\AppInfo\appinfo.ini" "Installer" "Run" "true"
+		
+		${If} $R0 == "false"
+		${OrIf} ${FileExists} "$EXEDIR\LupoApp.ini"
 			;Upgrade or install sans the PortableApps.com Installer which can cause compatibility issues
 			${ReadINIStrWithDefault} $0 "$EXEDIR\App\AppInfo\appinfo.ini" "Version" "PackageVersion" "0.0.0.0"
 			${ReadINIStrWithDefault} $1 "$SETTINGSDIRECTORY\${NAME}Settings.ini" "${NAME}Settings" "InvalidPackageWarningShown" "0.0.0.0"
 			${VersionCompare} $0 $1 $2
 			${If} $2 == 1
+			${OrIf} $R0 == "false"
 				MessageBox MB_OK|MB_ICONEXCLAMATION `Warning: ${PORTABLEAPPNAME} was installed or upgraded without using the official PortableApps.com Installer which can cause compatibility issues and may be a violation of the application's license. You may encounter issues while using this application. Please visit PortableApps.com to obtain the official release of this application to install or upgrade.`
 				WriteINIStr "$SETTINGSDIRECTORY\${NAME}Settings.ini" "${NAME}Settings" "InvalidPackageWarningShown" $0
+				DeleteINISec "$EXEDIR\App\AppInfo\appinfo.ini" "Installer"
 			${EndIf}
 		${EndIf}
 	
@@ -529,7 +539,11 @@ Section "Main"
 	CheckRunning:
 		Sleep 2000
 		StrCmp $ALLOWMULTIPLEINSTANCES "true" CheckIfRemoveLocalFiles
-		FindProcDLL::FindProc "${DEFAULTEXE}"                  
+!ifdef ISWIN64		
+		FindProcDLL64::FindProc "${DEFAULTEXE}"
+!else
+		FindProcDLL86::FindProc "${DEFAULTEXE}"
+!endif               
 		StrCmp $R0 "1" CheckRunning CleanupRunLocally
 	
 	StartProgramAndExit:
@@ -542,7 +556,11 @@ Section "Main"
 		RMDir /r "$TEMP\${NAME}\"
 
 	CheckIfRemoveLocalFiles:
-		FindProcDLL::FindProc "${APPNAME}.exe"
+!ifdef ISWIN64		
+		FindProcDLL64::FindProc "${DEFAULTEXE}"
+!else
+		FindProcDLL86::FindProc "${DEFAULTEXE}"
+!endif	
 		Pop $R0
 		StrCmp $R0 "1" TheEnd RemoveLocalFiles
 
