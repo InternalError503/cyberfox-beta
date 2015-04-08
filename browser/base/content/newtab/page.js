@@ -37,11 +37,6 @@ let gPage = {
     // Initialize customize controls.
     gCustomize.init();
 
-  _updateCogMenuStringsForEnUS: function() {
-    if (DirectoryLinksProvider.locale == "en-US") {
-      document.querySelector("#newtab-customize-classic label").innerHTML = "Show your top sites";
-      document.querySelector("#newtab-customize-blank label").innerHTML = "Show blank page";
-    }
   },
 
   /**
@@ -142,7 +137,6 @@ let gPage = {
    * @param aValue Whether the New Tab Page is enabled or not.
    */
   _updateAttributes: function Page_updateAttributes(aValue) {
-    this._updateCogMenuStringsForEnUS();
 
     // Set the nodes' states.
     let nodeSelector = "#newtab-scrollbox, #newtab-grid, #newtab-search-container";
