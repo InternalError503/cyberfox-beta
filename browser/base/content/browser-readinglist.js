@@ -17,6 +17,7 @@ let ReadingListUI = {
   MESSAGES: [
     "ReadingList:GetVisibility",
     "ReadingList:ToggleVisibility",
+    "ReadingList:ShowIntro",
   ],
 
   /**
@@ -103,6 +104,7 @@ let ReadingListUI = {
     }
 
     document.getElementById(READINGLIST_COMMAND_ID).setAttribute("hidden", !enabled);
+    document.getElementById(READINGLIST_COMMAND_ID).setAttribute("disabled", !enabled);
   },
 
   /**

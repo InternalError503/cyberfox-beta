@@ -197,18 +197,17 @@ body {
 .content p > a:only-child > img:only-child,
 .content .wp-caption img,
 .content figure img {
-  max-width: none !important;
-  height: auto !important;
-  display: block !important;
-  margin-top: 0px !important;
-  margin-bottom: 32px !important;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* If image is place inside one of these blocks
-   there's no need to add margin at the bottom */
-.content .wp-caption img,
-.content figure img {
-  margin-bottom: 0px !important;
+/* Account for body padding to make image full width */
+.content img[moz-reader-full-width] {
+  width: calc(100% + 40px);
+  margin-left: -20px;
+  margin-right: -20px;
+  max-width: none !important;
 }
 
 /* Image caption text */
@@ -269,7 +268,7 @@ body {
 
 .content ul {
   -moz-padding-start: 30px !important;
-  list-style: disk !important;
+  list-style: disc !important;
 }
 
 .content ol {
@@ -399,8 +398,8 @@ body {
   flex: 0;
   font-size: 24px;
   color: #000000;
-  margin-left: -20px;
-  margin-right: -20px;
+  margin-left: 40px;
+  margin-right: 40px;
 }
 
 .serif-button {
@@ -419,10 +418,12 @@ body {
 
 .minus-button {
   background-size: 24px 6px;
+  margin-left: 60px;
 }
 
 .plus-button {
   background-size: 24px 24px;
+  margin-right: 60px;
 }
 
 #color-scheme-buttons > button {
@@ -458,7 +459,8 @@ body {
 
 /* desktop-only controls */
 .close-button,
-.list-button {
+.list-button,
+.footer {
   display: none;
 }
 

@@ -42,7 +42,7 @@ var gContentPane = {
       gContentPane.showTranslationExceptions);
 
     let drmInfoURL =
-      Services.urlFormatter.formatURLPref("app.support.baseURL") + "drm-content";
+      Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "drm-content";
     document.getElementById("playDRMContentLink").setAttribute("href", drmInfoURL);
     if (!Services.prefs.getBoolPref("browser.eme.ui.enabled")) {
       // Don't want to rely on .hidden for the toplevel groupbox because

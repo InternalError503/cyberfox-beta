@@ -37,6 +37,11 @@ let gPage = {
     // Initialize customize controls.
     gCustomize.init();
 
+  _updateCogMenuStringsForEnUS: function() {
+    if (DirectoryLinksProvider.locale == "en-US") {
+      document.querySelector("#newtab-customize-classic label").innerHTML = "Show your top sites";
+      document.querySelector("#newtab-customize-blank label").innerHTML = "Show blank page";
+    }
   },
 
   /**
@@ -137,6 +142,8 @@ let gPage = {
    * @param aValue Whether the New Tab Page is enabled or not.
    */
   _updateAttributes: function Page_updateAttributes(aValue) {
+    this._updateCogMenuStringsForEnUS();
+
     // Set the nodes' states.
     let nodeSelector = "#newtab-scrollbox, #newtab-grid, #newtab-search-container";
     for (let node of document.querySelectorAll(nodeSelector)) {
@@ -149,7 +156,7 @@ let gPage = {
     // Enables/disables the control and link elements.
     let inputSelector = ".newtab-control, .newtab-link";
     for (let input of document.querySelectorAll(inputSelector)) {
-      if (aValue) 
+      if (aValue)
         input.removeAttribute("tabindex");
       else
         input.setAttribute("tabindex", "-1");
