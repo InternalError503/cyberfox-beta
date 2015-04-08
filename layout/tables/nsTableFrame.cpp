@@ -262,13 +262,6 @@ nsTableFrame::PageBreakAfter(nsIFrame* aSourceFrame,
 typedef nsTArray<nsIFrame*> FrameTArray;
 
 /* static */ void
-nsTableFrame::DestroyPositionedTablePartArray(void* aPropertyValue)
-{
-  auto positionedObjs = static_cast<FrameTArray*>(aPropertyValue);
-  delete positionedObjs;
-}
-
-/* static */ void
 nsTableFrame::RegisterPositionedTablePart(nsIFrame* aFrame)
 {
   // Supporting relative positioning for table parts other than table cells has
@@ -1115,12 +1108,12 @@ public:
   }
 #endif
 
-  virtual nsDisplayItemGeometry* AllocateGeometry(nsDisplayListBuilder* aBuilder) MOZ_OVERRIDE;
+  virtual nsDisplayItemGeometry* AllocateGeometry(nsDisplayListBuilder* aBuilder) override;
   virtual void ComputeInvalidationRegion(nsDisplayListBuilder* aBuilder,
                                          const nsDisplayItemGeometry* aGeometry,
-                                         nsRegion *aInvalidRegion) MOZ_OVERRIDE;
+                                         nsRegion *aInvalidRegion) override;
   virtual void Paint(nsDisplayListBuilder* aBuilder,
-                     nsRenderingContext* aCtx) MOZ_OVERRIDE;
+                     nsRenderingContext* aCtx) override;
   NS_DISPLAY_DECL_NAME("TableBorderBackground", TYPE_TABLE_BORDER_BACKGROUND)
 };
 
@@ -1958,14 +1951,21 @@ nsTableFrame::FixupPositionedTableParts(nsPresContext*           aPresContext,
     // FIXME: Unconditionally using NS_UNCONSTRAINEDSIZE for the height and
     // ignoring any change to the reflow status aren't correct. We'll never
     // paginate absolutely positioned frames.
-    overflowTracker.AddFrame(positionedPart,
-      OverflowChangedTracker::CHILDREN_AND_PARENT_CHANGED);
     nsFrame* positionedFrame = static_cast<nsFrame*>(positionedPart);
     positionedFrame->FinishReflowWithAbsoluteFrames(PresContext(),
                                                     desiredSize,
                                                     reflowState,
                                                     reflowStatus,
                                                     true);
+
+    // FinishReflowWithAbsoluteFrames has updated overflow on
+    // |positionedPart|.  We need to make sure that update propagates
+    // through the intermediate frames between it and this frame.
+    nsIFrame* positionedFrameParent = positionedPart->GetParent();
+    if (positionedFrameParent != this) {
+      overflowTracker.AddFrame(positionedFrameParent,
+        OverflowChangedTracker::CHILDREN_CHANGED);
+    }
   }
 
   // Propagate updated overflow areas up the tree.
@@ -2540,14 +2540,7 @@ nsTableFrame::GetUsedMargin() const
   return nsMargin(0, 0, 0, 0);
 }
 
-// Destructor function for BCPropertyData properties
-static void
-DestroyBCProperty(void* aPropertyValue)
-{
-  delete static_cast<BCPropertyData*>(aPropertyValue);
-}
-
-NS_DECLARE_FRAME_PROPERTY(TableBCProperty, DestroyBCProperty)
+NS_DECLARE_FRAME_PROPERTY(TableBCProperty, DeleteValue<BCPropertyData>)
 
 BCPropertyData*
 nsTableFrame::GetBCProperty(bool aCreateIfNecessary) const
@@ -4756,7 +4749,7 @@ public:
   explicit nsDelayedCalcBCBorders(nsIFrame* aFrame) :
     mFrame(aFrame) {}
 
-  NS_IMETHOD Run() MOZ_OVERRIDE {
+  NS_IMETHOD Run() override {
     if (mFrame) {
       nsTableFrame* tableFrame = static_cast <nsTableFrame*>(mFrame.GetFrame());
       if (tableFrame->NeedToCalcBCBorders()) {

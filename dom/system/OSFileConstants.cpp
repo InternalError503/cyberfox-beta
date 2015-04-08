@@ -208,7 +208,7 @@ nsresult GetPathToSpecialDir(const char *aKey, nsString& aOutPath)
  * For this purpose, we register an observer to set |gPaths->profileDir|
  * and |gPaths->localProfileDir| once the profile is setup.
  */
-class DelayedPathSetter MOZ_FINAL: public nsIObserver
+class DelayedPathSetter final: public nsIObserver
 {
   ~DelayedPathSetter() {}
 
@@ -804,8 +804,7 @@ JSObject *GetOrCreateObjectProperty(JSContext *cx, JS::Handle<JSObject*> aObject
       JSMSG_UNEXPECTED_TYPE, aProperty, "not an object");
     return nullptr;
   }
-  return JS_DefineObject(cx, aObject, aProperty, nullptr, JS::NullPtr(),
-                         JSPROP_ENUMERATE);
+  return JS_DefineObject(cx, aObject, aProperty, nullptr, JSPROP_ENUMERATE);
 }
 
 /**

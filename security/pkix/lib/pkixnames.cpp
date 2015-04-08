@@ -34,7 +34,6 @@
 // constraints, the reference identifier is the entire encoded name constraint
 // extension value.
 
-#include "pkix/bind.h"
 #include "pkixcheck.h"
 #include "pkixutil.h"
 
@@ -258,9 +257,7 @@ CheckCertHostname(Input endEntityCertDER, Input hostname)
       return Result::ERROR_BAD_CERT_DOMAIN;
     case MatchResult::Match:
       return Success;
-    default:
-      return NotReached("Invalid match result",
-                        Result::FATAL_ERROR_LIBRARY_FAILURE);
+    MOZILLA_PKIX_UNREACHABLE_DEFAULT_ENUM
   }
 }
 
@@ -351,8 +348,10 @@ SearchNames(/*optional*/ const Input* subjectAltName,
       return rv;
     }
 
-    // do { ... } while(...) because subjectAltName isn't allowed to be empty.
-    do {
+    // According to RFC 5280, "If the subjectAltName extension is present, the
+    // sequence MUST contain at least one entry." For compatibility reasons, we
+    // do not enforce this. See bug 1143085.
+    while (!altNames.AtEnd()) {
       GeneralNameType presentedIDType;
       Input presentedID;
       rv = ReadGeneralName(altNames, presentedIDType, presentedID);
@@ -374,7 +373,7 @@ SearchNames(/*optional*/ const Input* subjectAltName,
           presentedIDType == GeneralNameType::iPAddress) {
         fallBackToCommonName = FallBackToSearchWithinSubject::No;
       }
-    } while (!altNames.AtEnd());
+    }
   }
 
   if (referenceIDType == GeneralNameType::nameConstraints) {
@@ -468,10 +467,10 @@ SearchNames(/*optional*/ const Input* subjectAltName,
   //   SET SIZE (1..MAX) OF AttributeTypeAndValue
   Reader subjectReader(subject);
   return der::NestedOf(subjectReader, der::SEQUENCE, der::SET,
-                       der::EmptyAllowed::Yes,
-                       bind(SearchWithinRDN, _1, referenceIDType,
-                            referenceID, fallBackToEmailAddress,
-                            fallBackToCommonName, ref(match)));
+                       der::EmptyAllowed::Yes, [&](Reader& r) {
+    return SearchWithinRDN(r, referenceIDType, referenceID,
+                          fallBackToEmailAddress, fallBackToCommonName, match);
+  });
 }
 
 // RelativeDistinguishedName ::=
@@ -489,10 +488,11 @@ SearchWithinRDN(Reader& rdn,
                 /*in/out*/ MatchResult& match)
 {
   do {
-    Result rv = der::Nested(rdn, der::SEQUENCE,
-                            bind(SearchWithinAVA, _1, referenceIDType,
-                                 referenceID, fallBackToEmailAddress,
-                                 fallBackToCommonName, ref(match)));
+    Result rv = der::Nested(rdn, der::SEQUENCE, [&](Reader& r) {
+      return SearchWithinAVA(r, referenceIDType, referenceID,
+                             fallBackToEmailAddress, fallBackToCommonName,
+                             match);
+    });
     if (rv != Success) {
       return rv;
     }
@@ -721,10 +721,8 @@ MatchPresentedIDWithReferenceID(GeneralNameType presentedIDType,
       return NotReached("unexpected nameType for SearchType::Match",
                         Result::FATAL_ERROR_INVALID_ARGS);
 
-    default:
-      return NotReached("Invalid nameType for MatchPresentedIDWithReferenceID",
-                        Result::FATAL_ERROR_INVALID_ARGS);
-  }
+    MOZILLA_PKIX_UNREACHABLE_DEFAULT_ENUM
+ }
 
   if (rv != Success) {
     return rv;
@@ -900,10 +898,11 @@ CheckPresentedIDConformsToNameConstraintsSubtrees(
         case GeneralNameType::registeredID: // fall through
           return Result::ERROR_CERT_NOT_IN_NAME_SPACE;
 
-        case GeneralNameType::nameConstraints: // fall through
-        default:
+        case GeneralNameType::nameConstraints:
           return NotReached("invalid presentedIDType",
                             Result::FATAL_ERROR_LIBRARY_FAILURE);
+
+        MOZILLA_PKIX_UNREACHABLE_DEFAULT_ENUM
       }
 
       switch (subtreesType) {
@@ -919,9 +918,6 @@ CheckPresentedIDConformsToNameConstraintsSubtrees(
             return Result::ERROR_CERT_NOT_IN_NAME_SPACE;
           }
           break;
-        default:
-          return NotReached("unexpected subtreesType",
-                            Result::FATAL_ERROR_INVALID_ARGS);
       }
     }
   } while (!subtrees.AtEnd());
@@ -1142,8 +1138,7 @@ MatchPresentedDNSIDWithReferenceDNSID(
     }
 
     case IDRole::PresentedID: // fall through
-    default:
-      return NotReached("invalid or unknown referenceDNSIDRole",
+      return NotReached("IDRole::PresentedID is not a valid referenceDNSIDRole",
                         Result::FATAL_ERROR_INVALID_ARGS);
   }
 
@@ -1348,8 +1343,6 @@ MatchPresentedDirectoryNameWithConstraint(NameConstraintsSubtrees subtreesType,
       }
       matches = true;
       return Success;
-    default:
-      return NotReached("invalid subtrees", Result::FATAL_ERROR_INVALID_ARGS);
   }
 
   for (;;) {
@@ -1448,7 +1441,9 @@ IsValidRFC822Name(Input input)
           return false;
         }
         Input domain;
-        reader.SkipToEnd(domain);
+        if (reader.SkipToEnd(domain) != Success) {
+          return false;
+        }
         return IsValidDNSID(domain, IDRole::PresentedID, AllowWildcards::No);
       }
 
@@ -1498,17 +1493,15 @@ MatchPresentedRFC822NameWithReferenceRFC822Name(Input presentedRFC822Name,
       }
 
       Input presentedDNSID;
-      presented.SkipToEnd(presentedDNSID);
+      if (presented.SkipToEnd(presentedDNSID) != Success) {
+        return Result::FATAL_ERROR_LIBRARY_FAILURE;
+      }
 
       return MatchPresentedDNSIDWithReferenceDNSID(
                presentedDNSID, AllowWildcards::No,
                AllowDotlessSubdomainMatches::No, IDRole::NameConstraint,
                referenceRFC822Name, matches);
     }
-
-    default:
-      return NotReached("invalid referenceRFC822NameRole",
-                        Result::FATAL_ERROR_INVALID_ARGS);
   }
 
   if (!IsValidRFC822Name(referenceRFC822Name)) {
@@ -1651,13 +1644,14 @@ FinishIPv6Address(/*in/out*/ uint8_t (&address)[16], int numComponents,
   }
 
   // Shift components that occur after the contraction over.
-  int componentsToMove = numComponents - contractionIndex;
-  memmove(address + (2u * (8 - componentsToMove)),
-          address + (2u * contractionIndex),
+  size_t componentsToMove = static_cast<size_t>(numComponents -
+                                                contractionIndex);
+  memmove(address + (2u * static_cast<size_t>(8 - componentsToMove)),
+          address + (2u * static_cast<size_t>(contractionIndex)),
           componentsToMove * 2u);
   // Fill in the contracted area with zeros.
-  memset(address + (2u * contractionIndex), 0u,
-         (8u - numComponents) * 2u);
+  memset(address + (2u * static_cast<size_t>(contractionIndex)), 0u,
+         (8u - static_cast<size_t>(numComponents)) * 2u);
 
   return true;
 }
@@ -1794,7 +1788,6 @@ ParseIPv6Address(Input hostname, /*out*/ uint8_t (&out)[16])
       if (contractionIndex != -1) {
         return false; // multiple contractions are not allowed.
       }
-      uint8_t b;
       if (input.Read(b) != Success || b != ':') {
         assert(false);
         return false;

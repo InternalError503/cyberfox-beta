@@ -138,6 +138,7 @@ XPCOMUtils.defineLazyGetter(this, "ALL_BUILTIN_ITEMS", function() {
     "BMB_bookmarksPopup",
     "BMB_unsortedBookmarksPopup",
     "BMB_bookmarksToolbarPopup",
+    "search-go-button",
   ]
   return DEFAULT_ITEMS.concat(PALETTE_ITEMS)
                       .concat(SPECIAL_CASES);
@@ -458,6 +459,13 @@ this.BrowserUITelemetry = {
       return;
     }
 
+    // If not, we need to check if the item's anonid is in our list
+    // of built-in items to check.
+    if (ALL_BUILTIN_ITEMS.indexOf(item.getAttribute("anonid")) != -1) {
+      this._countMouseUpEvent("click-builtin-item", item.getAttribute("anonid"), aEvent.button);
+      return;
+    }
+
     // If not, we need to check if one of the ancestors of the clicked
     // item is in our list of built-in items to check.
     let candidate = getIDBasedOnFirstIDedAncestor(item);
@@ -589,6 +597,10 @@ this.BrowserUITelemetry = {
 
   countSearchSettingsEvent: function(source) {
     this._countEvent(["click-builtin-item", source, "search-settings"]);
+  },
+
+  countPanicEvent: function(timeId) {
+    this._countEvent(["forget-button", timeId]);
   },
 
   _logAwesomeBarSearchResult: function (url) {

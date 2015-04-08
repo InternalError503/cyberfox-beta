@@ -62,7 +62,7 @@ TrackBuffer::~TrackBuffer()
   MOZ_COUNT_DTOR(TrackBuffer);
 }
 
-class MOZ_STACK_CLASS DecodersToInitialize MOZ_FINAL {
+class MOZ_STACK_CLASS DecodersToInitialize final {
 public:
   explicit DecodersToInitialize(TrackBuffer* aOwner)
     : mOwner(aOwner)
@@ -919,7 +919,7 @@ public:
   {
   }
 
-  NS_IMETHOD Run() MOZ_OVERRIDE MOZ_FINAL {
+  NS_IMETHOD Run() override final {
     mDecoder->GetReader()->BreakCycles();
     mDecoder = nullptr;
     return NS_OK;
@@ -937,12 +937,11 @@ public:
   {
   }
 
-  NS_IMETHOD Run() MOZ_OVERRIDE MOZ_FINAL {
+  NS_IMETHOD Run() override final {
     // Shutdown the reader, and remove its reference to the decoder
     // so that it can't accidentally read it after the decoder
     // is destroyed.
     mDecoder->GetReader()->Shutdown();
-    mDecoder->GetReader()->ClearDecoder();
     RefPtr<nsIRunnable> task = new ReleaseDecoderTask(mDecoder);
     mDecoder = nullptr;
     // task now holds the only ref to the decoder.

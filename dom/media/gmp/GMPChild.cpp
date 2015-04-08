@@ -37,9 +37,6 @@ static const int MAX_VOUCHER_LENGTH = 500000;
 #if defined(XP_WIN)
 #define TARGET_SANDBOX_EXPORTS
 #include "mozilla/sandboxTarget.h"
-#elif defined (XP_LINUX)
-#include "mozilla/Sandbox.h"
-#include "mozilla/SandboxInfo.h"
 #elif defined(XP_MACOSX)
 #include "mozilla/Sandbox.h"
 #endif
@@ -317,7 +314,7 @@ GMPChild::PreLoadLibraries(const std::string& aPluginPath)
 
   std::ifstream stream;
 #ifdef _MSC_VER
-  stream.open(path.get());
+  stream.open(static_cast<const wchar_t*>(path.get()));
 #else
   stream.open(NS_ConvertUTF16toUTF8(path).get());
 #endif
@@ -364,7 +361,7 @@ public:
   explicit MacOSXSandboxStarter(GMPChild* aGMPChild)
     : mGMPChild(aGMPChild)
   {}
-  virtual void Start(const char* aLibPath) MOZ_OVERRIDE {
+  virtual void Start(const char* aLibPath) override {
     mGMPChild->StartMacSandbox();
   }
 private:
@@ -462,9 +459,9 @@ GMPChild::ActorDestroy(ActorDestroyReason aWhy)
 }
 
 void
-GMPChild::ProcessingError(Result aWhat)
+GMPChild::ProcessingError(Result aCode, const char* aReason)
 {
-  switch (aWhat) {
+  switch (aCode) {
     case MsgDropped:
       _exit(0); // Don't trigger a crash report.
     case MsgNotKnown:
@@ -609,6 +606,12 @@ GMPChild::RecvPGMPDecryptorConstructor(PGMPDecryptorChild* aActor)
 
   void* session = nullptr;
   GMPErr err = GetAPI(GMP_API_DECRYPTOR, host, &session);
+
+  if (err != GMPNoErr && !session) {
+    // XXX to remove in bug 1147692
+    err = GetAPI(GMP_API_DECRYPTOR_COMPAT, host, &session);
+  }
+
   if (err != GMPNoErr || !session) {
     return false;
   }

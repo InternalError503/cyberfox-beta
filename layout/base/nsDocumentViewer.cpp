@@ -213,7 +213,7 @@ private:
 
 
 //-------------------------------------------------------------
-class nsDocumentViewer MOZ_FINAL : public nsIContentViewer,
+class nsDocumentViewer final : public nsIContentViewer,
                                    public nsIContentViewerEdit,
                                    public nsIContentViewerFile,
                                    public nsIDocumentViewerPrint
@@ -441,7 +441,7 @@ public:
   explicit nsDocumentShownDispatcher(nsCOMPtr<nsIDocument> aDocument)
   : mDocument(aDocument) {}
 
-  NS_IMETHOD Run() MOZ_OVERRIDE;
+  NS_IMETHOD Run() override;
 
 private:
   nsCOMPtr<nsIDocument> mDocument;
@@ -1447,10 +1447,10 @@ nsDocumentViewer::Open(nsISupports *aState, nsISHEntry *aSHEntry)
     DetachFromTopLevelWidget();
 
     nsViewManager *vm = GetViewManager();
-    NS_ABORT_IF_FALSE(vm, "no view manager");
+    MOZ_ASSERT(vm, "no view manager");
     nsView* v = vm->GetRootView();
-    NS_ABORT_IF_FALSE(v, "no root view");
-    NS_ABORT_IF_FALSE(mParentWidget, "no mParentWidget to set");
+    MOZ_ASSERT(v, "no root view");
+    MOZ_ASSERT(mParentWidget, "no mParentWidget to set");
     v->AttachToTopLevelWidget(mParentWidget);
 
     mAttachedToParent = true;
@@ -1937,14 +1937,13 @@ nsDocumentViewer::SetBounds(const nsIntRect& aBounds)
   NS_ENSURE_TRUE(mDocument, NS_ERROR_NOT_AVAILABLE);
 
   mBounds = aBounds;
-  if (mWindow) {
-    if (!mAttachedToParent) {
-      // Don't have the widget repaint. Layout will generate repaint requests
-      // during reflow.
-      mWindow->Resize(aBounds.x, aBounds.y,
-                      aBounds.width, aBounds.height,
-                      false);
-    }
+
+  if (mWindow && !mAttachedToParent) {
+    // Resize the widget, but don't trigger repaint. Layout will generate
+    // repaint requests during reflow.
+    mWindow->Resize(aBounds.x, aBounds.y,
+                    aBounds.width, aBounds.height,
+                    false);
   } else if (mPresContext && mViewManager) {
     int32_t p2a = mPresContext->AppUnitsPerDevPixel();
     mViewManager->SetWindowDimensions(NSIntPixelsToAppUnits(mBounds.width, p2a),
@@ -3600,8 +3599,7 @@ nsDocViewerFocusListener::HandleEvent(nsIDOMEvent* aEvent)
       selCon->RepaintSelection(nsISelectionController::SELECTION_NORMAL);
     }
   } else {
-    NS_ABORT_IF_FALSE(eventType.EqualsLiteral("blur"),
-                      "Unexpected event type");
+    MOZ_ASSERT(eventType.EqualsLiteral("blur"), "Unexpected event type");
     // If selection was on, disable it.
     if(selectionStatus == nsISelectionController::SELECTION_ON ||
        selectionStatus == nsISelectionController::SELECTION_ATTENTION) {

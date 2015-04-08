@@ -950,7 +950,7 @@ Navigator::GetGeolocation(ErrorResult& aRv)
   return mGeolocation;
 }
 
-class BeaconStreamListener MOZ_FINAL : public nsIStreamListener
+class BeaconStreamListener final : public nsIStreamListener
 {
     ~BeaconStreamListener() {}
 
@@ -1220,7 +1220,7 @@ Navigator::SendBeacon(const nsAString& aUrl,
 
     // we need to set the sameOriginChecker as a notificationCallback
     // so we can tell the channel not to follow redirects
-    nsCOMPtr<nsIInterfaceRequestor> soc = nsContentUtils::GetSameOriginChecker();
+    nsCOMPtr<nsIInterfaceRequestor> soc = nsContentUtils::SameOriginChecker();
     channel->SetNotificationCallbacks(soc);
 
     nsCOMPtr<nsIChannel> preflightChannel;
@@ -1858,6 +1858,33 @@ Navigator::MozHasPendingMessage(const nsAString& aType, ErrorResult& aRv)
 }
 
 void
+Navigator::MozSetMessageHandlerPromise(Promise& aPromise,
+                                       ErrorResult& aRv)
+{
+  // The WebIDL binding is responsible for the pref check here.
+  aRv = EnsureMessagesManager();
+  if (NS_WARN_IF(aRv.Failed())) {
+    return;
+  }
+
+  bool result = false;
+  aRv = mMessagesManager->MozIsHandlingMessage(&result);
+  if (NS_WARN_IF(aRv.Failed())) {
+    return;
+  }
+
+  if (!result) {
+    aRv.Throw(NS_ERROR_DOM_INVALID_ACCESS_ERR);
+    return;
+  }
+
+  aRv = mMessagesManager->MozSetMessageHandlerPromise(&aPromise);
+  if (NS_WARN_IF(aRv.Failed())) {
+    return;
+  }
+}
+
+void
 Navigator::MozSetMessageHandler(const nsAString& aType,
                                 systemMessageCallback* aCallback,
                                 ErrorResult& aRv)
@@ -2304,7 +2331,7 @@ Navigator::HasDataStoreSupport(nsIPrincipal* aPrincipal)
 
 // A WorkerMainThreadRunnable to synchronously dispatch the call of
 // HasDataStoreSupport() from the worker thread to the main thread.
-class HasDataStoreSupportRunnable MOZ_FINAL
+class HasDataStoreSupportRunnable final
   : public workers::WorkerMainThreadRunnable
 {
 public:
@@ -2320,7 +2347,7 @@ public:
 
 protected:
   virtual bool
-  MainThreadRun() MOZ_OVERRIDE
+  MainThreadRun() override
   {
     workers::AssertIsOnMainThread();
 
@@ -2420,6 +2447,20 @@ Navigator::HasTVSupport(JSContext* aCx, JSObject* aGlobal)
 
   // Only support TV Manager API for certified apps for now.
   return status == nsIPrincipal::APP_STATUS_CERTIFIED;
+}
+
+/* static */
+bool
+Navigator::IsE10sEnabled(JSContext* aCx, JSObject* aGlobal)
+{
+  return XRE_GetProcessType() == GeckoProcessType_Content;
+}
+
+bool
+Navigator::MozE10sEnabled()
+{
+  // This will only be called if IsE10sEnabled() is true.
+  return true;
 }
 
 /* static */

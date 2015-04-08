@@ -342,7 +342,6 @@ this.UITour = {
   },
 
   onPageEvent: function(aMessage, aEvent) {
-    let contentDocument = null;
     let browser = aMessage.target;
     let window = browser.ownerDocument.defaultView;
 
@@ -385,10 +384,6 @@ this.UITour = {
 
     // Do this before bailing if there's no tab, so later we can pick up the pieces:
     window.gBrowser.tabContainer.addEventListener("TabSelect", this);
-
-    if (!window.gMultiProcessBrowser) { // Non-e10s. See bug 1089000.
-      contentDocument = browser.contentWindow.document;
-    }
 
     switch (action) {
       case "registerPageID": {
@@ -558,6 +553,7 @@ this.UITour = {
         }
 
         let secman = Services.scriptSecurityManager;
+        let contentDocument = browser.contentWindow.document;
         let principal = contentDocument.nodePrincipal;
         let flags = secman.DISALLOW_INHERIT_PRINCIPAL;
         try {
@@ -600,7 +596,7 @@ this.UITour = {
         // 'signup' is the only action that makes sense currently, so we don't
         // accept arbitrary actions just to be safe...
         // We want to replace the current tab.
-        contentDocument.location.href = "about:accounts?action=signup&entrypoint=uitour";
+        browser.loadURI("about:accounts?action=signup&entrypoint=uitour");
         break;
       }
 

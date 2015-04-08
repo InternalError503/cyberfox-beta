@@ -17,13 +17,43 @@ loop.shared.utils = (function(mozL10n) {
     AUDIO_ONLY: "audio"
   };
 
-  var FAILURE_REASONS = {
+  var REST_ERRNOS = {
+    INVALID_TOKEN: 105,
+    EXPIRED: 111,
+    USER_UNAVAILABLE: 122,
+    ROOM_FULL: 202
+  };
+
+  var WEBSOCKET_REASONS = {
+    ANSWERED_ELSEWHERE: "answered-elsewhere",
+    BUSY: "busy",
+    CANCEL: "cancel",
+    CLOSED: "closed",
+    MEDIA_FAIL: "media-fail",
+    REJECT: "reject",
+    TIMEOUT: "timeout"
+  };
+
+  var FAILURE_DETAILS = {
     MEDIA_DENIED: "reason-media-denied",
     UNABLE_TO_PUBLISH_MEDIA: "unable-to-publish-media",
     COULD_NOT_CONNECT: "reason-could-not-connect",
     NETWORK_DISCONNECTED: "reason-network-disconnected",
     EXPIRED_OR_INVALID: "reason-expired-or-invalid",
     UNKNOWN: "reason-unknown"
+  };
+
+  var STREAM_PROPERTIES = {
+    VIDEO_DIMENSIONS: "videoDimensions",
+    HAS_AUDIO: "hasAudio",
+    HAS_VIDEO: "hasVideo"
+  };
+
+  var SCREEN_SHARE_STATES = {
+    INACTIVE: "ss-inactive",
+    // Pending is when the user is being prompted, aka gUM in progress.
+    PENDING: "ss-pending",
+    ACTIVE: "ss-active"
   };
 
   /**
@@ -55,42 +85,51 @@ loop.shared.utils = (function(mozL10n) {
     return !!localStorage.getItem(prefName);
   }
 
-  /**
-   * Helper for general things
-   */
-  function Helper() {
-    this._iOSRegex = /^(iPad|iPhone|iPod)/;
+  function isFirefox(platform) {
+    return platform.indexOf("Firefox") !== -1;
   }
 
-  Helper.prototype = {
-    isFirefox: function(platform) {
-      return platform.indexOf("Firefox") !== -1;
-    },
+  function isFirefoxOS(platform) {
+    // So far WebActivities are exposed only in FxOS, but they may be
+    // exposed in Firefox Desktop soon, so we check for its existence
+    // and also check if the UA belongs to a mobile platform.
+    // XXX WebActivities are also exposed in WebRT on Firefox for Android,
+    //     so we need a better check. Bug 1065403.
+    return !!window.MozActivity && /mobi/i.test(platform);
+  }
 
-    isFirefoxOS: function(platform) {
-      // So far WebActivities are exposed only in FxOS, but they may be
-      // exposed in Firefox Desktop soon, so we check for its existence
-      // and also check if the UA belongs to a mobile platform.
-      // XXX WebActivities are also exposed in WebRT on Firefox for Android,
-      //     so we need a better check. Bug 1065403.
-      return !!window.MozActivity && /mobi/i.test(platform);
-    },
-
-    isIOS: function(platform) {
-      return this._iOSRegex.test(platform);
-    },
-
-    /**
-     * Helper to allow getting some of the location data in a way that's compatible
-     * with stubbing for unit tests.
-     */
-    locationData: function() {
-      return {
-        hash: window.location.hash,
-        pathname: window.location.pathname
-      };
+  /**
+   * Helper to get the platform if it is unsupported.
+   *
+   * @param {String} platform The platform this is running on.
+   * @return null for supported platforms, a string for unsupported platforms.
+   */
+  function getUnsupportedPlatform(platform) {
+    if (/^(iPad|iPhone|iPod)/.test(platform)) {
+      return "ios";
     }
-  };
+
+    if (/Windows Phone/i.test(platform)) {
+      return "windows_phone";
+    }
+
+    if (/BlackBerry/i.test(platform)) {
+      return "blackberry";
+    }
+
+    return null;
+  }
+
+  /**
+   * Helper to allow getting some of the location data in a way that's compatible
+   * with stubbing for unit tests.
+   */
+  function locationData() {
+    return {
+      hash: window.location.hash,
+      pathname: window.location.pathname
+    };
+  }
 
   /**
    * Generates and opens a mailto: url with call URL information prefilled.
@@ -105,24 +144,33 @@ loop.shared.utils = (function(mozL10n) {
       return;
     }
     navigator.mozLoop.composeEmail(
-      mozL10n.get("share_email_subject4", {
-        clientShortname: mozL10n.get("clientShortname2")
+      mozL10n.get("share_email_subject5", {
+        clientShortname2: mozL10n.get("clientShortname2")
       }),
-      mozL10n.get("share_email_body4", {
+      mozL10n.get("share_email_body5", {
         callUrl: callUrl,
-        clientShortname: mozL10n.get("clientShortname2"),
+        brandShortname: mozL10n.get("brandShortname"),
+        clientShortname2: mozL10n.get("clientShortname2"),
+        clientSuperShortname: mozL10n.get("clientSuperShortname"),
         learnMoreUrl: navigator.mozLoop.getLoopPref("learnMoreUrl")
-      }),
+      }).replace(/\r\n/g, "\n").replace(/\n/g, "\r\n"),
       recipient
     );
   }
 
   return {
     CALL_TYPES: CALL_TYPES,
-    FAILURE_REASONS: FAILURE_REASONS,
-    Helper: Helper,
+    FAILURE_DETAILS: FAILURE_DETAILS,
+    REST_ERRNOS: REST_ERRNOS,
+    WEBSOCKET_REASONS: WEBSOCKET_REASONS,
+    STREAM_PROPERTIES: STREAM_PROPERTIES,
+    SCREEN_SHARE_STATES: SCREEN_SHARE_STATES,
     composeCallUrlEmail: composeCallUrlEmail,
     formatDate: formatDate,
-    getBoolPreference: getBoolPreference
+    getBoolPreference: getBoolPreference,
+    isFirefox: isFirefox,
+    isFirefoxOS: isFirefoxOS,
+    getUnsupportedPlatform: getUnsupportedPlatform,
+    locationData: locationData
   };
 })(document.mozL10n || navigator.mozL10n);

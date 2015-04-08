@@ -81,6 +81,59 @@ loop.contacts = (function(_, mozL10n) {
     contact[field][0].value = value;
   };
 
+  const GravatarPromo = React.createClass({
+    propTypes: {
+      handleUse: React.PropTypes.func.isRequired
+    },
+
+    getInitialState: function() {
+      return {
+        showMe: navigator.mozLoop.getLoopPref("contacts.gravatars.promo") &&
+          !navigator.mozLoop.getLoopPref("contacts.gravatars.show")
+      };
+    },
+
+    handleCloseButtonClick: function() {
+      navigator.mozLoop.setLoopPref("contacts.gravatars.promo", false);
+      this.setState({ showMe: false });
+    },
+
+    handleUseButtonClick: function() {
+      navigator.mozLoop.setLoopPref("contacts.gravatars.promo", false);
+      navigator.mozLoop.setLoopPref("contacts.gravatars.show", true);
+      this.setState({ showMe: false });
+      this.props.handleUse();
+    },
+
+    render: function() {
+      if (!this.state.showMe) {
+        return null;
+      }
+
+      let privacyUrl = navigator.mozLoop.getLoopPref("legal.privacy_url");
+      let message = mozL10n.get("gravatars_promo_message", {
+        "learn_more": React.renderToStaticMarkup(
+          <a href={privacyUrl} target="_blank">
+            {mozL10n.get("gravatars_promo_message_learnmore")}
+          </a>
+        )
+      });
+      return (
+        <div className="contacts-gravatar-promo">
+          <Button additionalClass="button-close" onClick={this.handleCloseButtonClick}/>
+          <p dangerouslySetInnerHTML={{__html: message}}></p>
+          <ButtonGroup>
+            <Button caption={mozL10n.get("gravatars_promo_button_nothanks")}
+                    onClick={this.handleCloseButtonClick}/>
+            <Button caption={mozL10n.get("gravatars_promo_button_use")}
+                    additionalClass="button-accept"
+                    onClick={this.handleUseButtonClick}/>
+          </ButtonGroup>
+        </div>
+      );
+    }
+  });
+
   const ContactDropdown = React.createClass({
     propTypes: {
       handleAction: React.PropTypes.func.isRequired,
@@ -232,7 +285,9 @@ loop.contacts = (function(_, mozL10n) {
 
       return (
         <li className={contactCSSClass} onMouseLeave={this.hideDropdownMenu}>
-          <div className="avatar" />
+          <div className="avatar">
+            <img src={navigator.mozLoop.getUserAvatar(email.value)} />
+          </div>
           <div className="details">
             <div className="username"><strong>{names.firstName}</strong> {names.lastName}
               <i className={cx({"icon icon-google": this.props.contact.category[0] == "google"})} />
@@ -262,6 +317,11 @@ loop.contacts = (function(_, mozL10n) {
       React.addons.LinkedStateMixin,
       loop.shared.mixins.WindowCloseMixin
     ],
+
+    propTypes: {
+      notifications: React.PropTypes.instanceOf(
+        loop.shared.models.NotificationCollection).isRequired
+    },
 
     /**
      * Contacts collection object
@@ -389,10 +449,15 @@ loop.contacts = (function(_, mozL10n) {
         service: "google"
       }, (err, stats) => {
         this.setState({ importBusy: false });
-        // TODO: bug 1076764 - proper error and success reporting.
         if (err) {
-          throw err;
+          console.error("Contact import error", err);
+          this.props.notifications.errorL10n("import_contacts_failure_message");
+          return;
         }
+        this.props.notifications.successL10n("import_contacts_success_message", {
+          num: stats.success,
+          total: stats.success
+        });
       });
     },
 
@@ -451,6 +516,12 @@ loop.contacts = (function(_, mozL10n) {
           console.error("Unrecognized action: " + actionName);
           break;
       }
+    },
+
+    handleUseGravatar: function() {
+      // We got permission to use Gravatar icons now, so we need to redraw the
+      // list entirely to show them.
+      this.refresh();
     },
 
     sortContacts: function(contact1, contact2) {
@@ -514,6 +585,7 @@ loop.contacts = (function(_, mozL10n) {
                    placeholder={mozL10n.get("contacts_search_placesholder")}
                    valueLink={this.linkState("filter")} />
             : null }
+            <GravatarPromo handleUse={this.handleUseGravatar}/>
           </div>
           <ul className="contact-list">
             {shownContacts.available ?

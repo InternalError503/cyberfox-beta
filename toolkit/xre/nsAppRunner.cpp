@@ -214,6 +214,8 @@ static nsIProfileLock* gProfileLock;
 int    gRestartArgc;
 char **gRestartArgv;
 
+bool gIsGtest = false;
+
 #ifdef MOZ_WIDGET_QT
 static int    gQtOnlyArgc;
 static char **gQtOnlyArgv;
@@ -436,7 +438,7 @@ static void RemoveArg(char **argv)
 static ArgResult
 CheckArg(const char* aArg, bool aCheckOSInt = false, const char **aParam = nullptr, bool aRemArg = true)
 {
-  NS_ABORT_IF_FALSE(gArgv, "gArgv must be initialized before CheckArg()");
+  MOZ_ASSERT(gArgv, "gArgv must be initialized before CheckArg()");
 
   char **curarg = gArgv + 1; // skip argv[0]
   ArgResult ar = ARG_NONE;
@@ -887,6 +889,21 @@ NS_IMETHODIMP
 nsXULAppInfo::GetKeyboardMayHaveIME(bool* aResult)
 {
   *aResult = KeyboardMayHaveIME();
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsXULAppInfo::GetAccessibilityIsUIA(bool* aResult)
+{
+  *aResult = false;
+#if defined(ACCESSIBILITY) && defined(XP_WIN)
+  // This is the same check the a11y service does to identify uia clients.
+  if (GetAccService() != nullptr &&
+      (::GetModuleHandleW(L"uiautomation") ||
+       ::GetModuleHandleW(L"uiautomationcore"))) {
+    *aResult = true;
+  }
+#endif
   return NS_OK;
 }
 
@@ -1405,7 +1422,7 @@ ScopedXPCOMStartup::Initialize()
  * This is a little factory class that serves as a singleton-service-factory
  * for the nativeappsupport object.
  */
-class nsSingletonFactory MOZ_FINAL : public nsIFactory
+class nsSingletonFactory final : public nsIFactory
 {
 public:
   NS_DECL_ISUPPORTS
@@ -1942,7 +1959,6 @@ ProfileLockedDialog(nsIFile* aProfileDir, nsIFile* aProfileLocalDir,
   }
 }
 
-
 static nsresult
 ProfileMissingDialog(nsINativeAppSupport* aNative)
 {
@@ -2245,7 +2261,9 @@ SelectProfile(nsIProfileLock* *aResult, nsIToolkitProfileService* aProfileSvc, n
       // Check that the profile to reset is the default since reset and migration are only
       // supported in that case.
       bool currentIsSelected;
-      GetCurrentProfileIsDefault(aProfileSvc, lf, &currentIsSelected);
+      rv = GetCurrentProfileIsDefault(aProfileSvc, lf, &currentIsSelected);
+      NS_ENSURE_SUCCESS(rv, rv);
+
       if (!currentIsSelected) {
         NS_WARNING("Profile reset is only supported for the default profile.");
         gDoProfileReset = gDoMigration = false;
@@ -3544,7 +3562,6 @@ XREMain::XRE_mainStartup(bool* aExitFlag)
 
   SetShutdownChecks();
 
-
   // Enable Telemetry IO Reporting on DEBUG, nightly and local builds
 #ifdef DEBUG
   mozilla::Telemetry::InitIOReporting(gAppData->xreDirectory);
@@ -3619,7 +3636,9 @@ XREMain::XRE_mainStartup(bool* aExitFlag)
 #endif
     // RunGTest will only be set if we're in xul-unit
     if (mozilla::RunGTest) {
+      gIsGtest = true;
       result = mozilla::RunGTest();
+      gIsGtest = false;
     } else {
       result = 1;
       printf("TEST-UNEXPECTED-FAIL | gtest | Not compiled with enable-tests\n");
@@ -4629,6 +4648,7 @@ XRE_IsParentProcess()
   return XRE_GetProcessType() == GeckoProcessType_Default;
 }
 
+#ifdef NIGHTLY_BUILD
 static void
 LogE10sBlockedReason(const char *reason) {
   gBrowserTabsRemoteDisabledReason.Assign(NS_ConvertASCIItoUTF16(reason));
@@ -4641,6 +4661,7 @@ LogE10sBlockedReason(const char *reason) {
     console->LogStringMessage(msg.get());
   }
 }
+#endif
 
 bool
 mozilla::BrowserTabsRemoteAutostart()
@@ -4712,7 +4733,10 @@ mozilla::BrowserTabsRemoteAutostart()
 
     if (accelDisabled) {
       gBrowserTabsRemoteAutostart = false;
+
+#ifdef NIGHTLY_BUILD
       LogE10sBlockedReason("Hardware acceleration is disabled");
+#endif
     }
   }
 #endif // defined(XP_MACOSX)
@@ -4783,4 +4807,3 @@ SetupErrorHandling(const char* progname)
   // Unbuffer stdout, needed for tinderbox tests.
   setbuf(stdout, 0);
 }
-

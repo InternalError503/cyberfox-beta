@@ -279,3 +279,8 @@ if (typeof Mozilla == 'undefined') {
 	};
 
 })();
+
+// Make this library Require-able.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = Mozilla.UITour;
+}
