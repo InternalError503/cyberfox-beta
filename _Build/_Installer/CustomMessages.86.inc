@@ -402,8 +402,8 @@ ru.DeleteProfileData=Вы ходите удалить Ваши личные да
 ru.ConfirmDeleteProfileData=Вы уверены? Эта операция не может быть отменена!
 ru.InstallingDocumentation=Файлы CyberCTR
 ru.InstallingDocumentationStatus=Устанавливаются файлы CyberCTR, это может занять несколько минут...
-ru.CleanInstallDescription=Perform clean installation.
-ru.CleanInstallGroupDescription=Installation Options
+ru.CleanInstallDescription=Выполнить чистую установку.
+ru.CleanInstallGroupDescription=Настройки установки
 ;SerbianCyrillic
 sbc.ProcessName={#MyAppName}
 sbc.IsAppRunning= је већ покренут, затворите Молимо {#MyAppName} затим покрените инсталер поново.
