@@ -371,8 +371,8 @@ ja.DeleteProfileData=プロファイル データを削除しますか？
 ja.ConfirmDeleteProfileData=元に戻すことはできませんがよろしいですか？
 ja.InstallingDocumentation=CyberCTR ファイル
 ja.InstallingDocumentationStatus=CyberCTR のファイルをインストールしています。これには数分かかる場合があります...
-ja.CleanInstallDescription=Perform clean installation.
-ja.CleanInstallGroupDescription=Installation Options
+ja.CleanInstallDescription=クリーン インストールを実行する
+ja.CleanInstallGroupDescription=インストール オプション
 ;Norwegian
 nr.ProcessName={#MyAppName}
 nr.IsAppRunning= er allerede i gang, Vennligst lukk {#MyAppName} deretter kjøre installasjonsprogrammet på nytt.
