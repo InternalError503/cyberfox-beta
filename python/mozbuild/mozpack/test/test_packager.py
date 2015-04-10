@@ -23,7 +23,7 @@ from mozpack.errors import (
     errors,
     ErrorMessage,
 )
-import mozpack.path
+import mozpack.path as mozpath
 
 MANIFEST = '''
 bar/*
@@ -99,7 +99,7 @@ class MockFinder(object):
     def find(self, path):
         self.log.append(path)
         for f in sorted(self.files):
-            if mozpack.path.match(f, path):
+            if mozpath.match(f, path):
                 yield f, self.files[f]
 
     def __iter__(self):
@@ -210,6 +210,58 @@ class TestSimplePackager(unittest.TestCase):
 
         self.assertEqual(packager.get_bases(), set(['', 'addon', 'qux']))
         self.assertEqual(packager.get_bases(addons=False), set(['', 'qux']))
+
+    def test_simple_packager_manifest_consistency(self):
+        formatter = MockFormatter()
+        # bar/ is detected as an addon because of install.rdf, but top-level
+        # includes a manifest inside bar/.
+        packager = SimplePackager(formatter)
+        packager.add('base.manifest', GeneratedFile(
+            'manifest foo/bar.manifest\n'
+            'manifest bar/baz.manifest\n'
+        ))
+        packager.add('foo/bar.manifest', GeneratedFile('resource bar bar'))
+        packager.add('bar/baz.manifest', GeneratedFile('resource baz baz'))
+        packager.add('bar/install.rdf', GeneratedFile(''))
+
+        with self.assertRaises(ErrorMessage) as e:
+            packager.close()
+
+        self.assertEqual(e.exception.message,
+            'Error: "bar/baz.manifest" is included from "base.manifest", '
+            'which is outside "bar"')
+
+        # bar/ is detected as a separate base because of chrome.manifest that
+        # is included nowhere, but top-level includes another manifest inside
+        # bar/.
+        packager = SimplePackager(formatter)
+        packager.add('base.manifest', GeneratedFile(
+            'manifest foo/bar.manifest\n'
+            'manifest bar/baz.manifest\n'
+        ))
+        packager.add('foo/bar.manifest', GeneratedFile('resource bar bar'))
+        packager.add('bar/baz.manifest', GeneratedFile('resource baz baz'))
+        packager.add('bar/chrome.manifest', GeneratedFile('resource baz baz'))
+
+        with self.assertRaises(ErrorMessage) as e:
+            packager.close()
+
+        self.assertEqual(e.exception.message,
+            'Error: "bar/baz.manifest" is included from "base.manifest", '
+            'which is outside "bar"')
+
+        # bar/ is detected as a separate base because of chrome.manifest that
+        # is included nowhere, but chrome.manifest includes baz.manifest from
+        # the same directory. This shouldn't error out.
+        packager = SimplePackager(formatter)
+        packager.add('base.manifest', GeneratedFile(
+            'manifest foo/bar.manifest\n'
+        ))
+        packager.add('foo/bar.manifest', GeneratedFile('resource bar bar'))
+        packager.add('bar/baz.manifest', GeneratedFile('resource baz baz'))
+        packager.add('bar/chrome.manifest',
+                     GeneratedFile('manifest baz.manifest'))
+        packager.close()
 
 
 class TestSimpleManifestSink(unittest.TestCase):

@@ -71,6 +71,9 @@ public class ShareDialog extends Locales.LocaleAwareActivity implements SendTabT
     private OverlayDialogButton readingListButton;
     private OverlayDialogButton bookmarkButton;
 
+    // The reading list drawable set from XML - we need this to reset state.
+    private Drawable readingListButtonDrawable;
+
     private String url;
     private String title;
 
@@ -122,6 +125,16 @@ public class ShareDialog extends Locales.LocaleAwareActivity implements SendTabT
                 clientrecords.length <= MAXIMUM_INLINE_DEVICES) {
             // Show the list of devices in-line.
             sendTabList.switchState(SendTabList.State.LIST);
+
+            // The first item in the list has a unique style. If there are no items
+            // in the list, the next button appears to be the first item in the list.
+            //
+            // Note: a more thorough implementation would add this
+            // (and other non-ListView buttons) into a custom ListView.
+            if (clientrecords == null || clientrecords.length == 0) {
+                readingListButton.setBackgroundResource(
+                        R.drawable.overlay_share_button_background_first);
+            }
             return;
         }
 
@@ -157,7 +170,6 @@ public class ShareDialog extends Locales.LocaleAwareActivity implements SendTabT
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getWindow().setWindowAnimations(0);
         setContentView(R.layout.overlay_share_dialog);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(uiEventListener,
@@ -173,6 +185,8 @@ public class ShareDialog extends Locales.LocaleAwareActivity implements SendTabT
 
         bookmarkButton = (OverlayDialogButton) findViewById(R.id.overlay_share_bookmark_btn);
         readingListButton = (OverlayDialogButton) findViewById(R.id.overlay_share_reading_list_btn);
+
+        readingListButtonDrawable = readingListButton.getBackground();
 
         final Resources resources = getResources();
         final String bookmarkEnabledLabel = resources.getString(R.string.overlay_share_bookmark_btn_label);
@@ -218,6 +232,7 @@ public class ShareDialog extends Locales.LocaleAwareActivity implements SendTabT
         // If the Activity is being reused, we need to reset the state. Ideally, we create a
         // new instance for each call, but Android L breaks this (bug 1137928).
         sendTabList.switchState(SendTabList.State.LOADING);
+        readingListButton.setBackgroundDrawable(readingListButtonDrawable);
 
         // The URL is usually hiding somewhere in the extra text. Extract it.
         final String extraText = ContextUtils.getStringExtra(intent, Intent.EXTRA_TEXT);
@@ -237,6 +252,11 @@ public class ShareDialog extends Locales.LocaleAwareActivity implements SendTabT
         Intent serviceStartupIntent = new Intent(this, OverlayActionService.class);
         serviceStartupIntent.setAction(OverlayConstants.ACTION_PREPARE_SHARE);
         startService(serviceStartupIntent);
+
+        // Start the slide-up animation.
+        getWindow().setWindowAnimations(0);
+        final Animation anim = AnimationUtils.loadAnimation(this, R.anim.overlay_slide_up);
+        findViewById(R.id.sharedialog).startAnimation(anim);
 
         // If provided, we use the subject text to give us something nice to display.
         // If not, we wing it with the URL.
@@ -263,15 +283,14 @@ public class ShareDialog extends Locales.LocaleAwareActivity implements SendTabT
         subtitleView.setMarqueeRepeatLimit(5);
         subtitleView.setSelected(true);
 
-        final ImageView foxIcon = (ImageView) findViewById(R.id.share_overlay_icon);
-        final LinearLayout topBar = (LinearLayout) findViewById(R.id.share_overlay_top_bar);
+        final View titleView = findViewById(R.id.title);
 
         if (state == State.DEVICES_ONLY) {
             bookmarkButton.setVisibility(View.GONE);
             readingListButton.setVisibility(View.GONE);
 
-            foxIcon.setOnClickListener(null);
-            topBar.setOnClickListener(null);
+            titleView.setOnClickListener(null);
+            subtitleView.setOnClickListener(null);
             return;
         }
 
@@ -286,15 +305,11 @@ public class ShareDialog extends Locales.LocaleAwareActivity implements SendTabT
             }
         };
 
-        foxIcon.setOnClickListener(launchBrowser);
-        topBar.setOnClickListener(launchBrowser);
+        titleView.setOnClickListener(launchBrowser);
+        subtitleView.setOnClickListener(launchBrowser);
 
         final LocalBrowserDB browserDB = new LocalBrowserDB(getCurrentProfile());
         setButtonState(url, browserDB);
-
-        // Start the slide-up animation.
-        final Animation anim = AnimationUtils.loadAnimation(this, R.anim.overlay_slide_up);
-        findViewById(R.id.sharedialog).startAnimation(anim);
     }
 
     @Override
