@@ -21,9 +21,9 @@ function checkGIT(){
 
 # Set linux branding identity color.
 function setIdentity(){
-	    echo "Setting branding identity to linux"
+	    echo "Setting branding identity to Beta"
 	    sed -i "s/\(IDENTITY_BRANDING_INTEL *= *\).*/\1/" $WORKDIR/cyberfox-beta/build/defines.sh
-	    sed -i "s/\(IDENTITY_BRANDING_LINUX *= *\).*/\11/" $WORKDIR/cyberfox-beta/build/defines.sh
+	    sed -i "s/\(IDENTITY_BRANDING_BETA *= *\).*/\11/" $WORKDIR/cyberfox-beta/build/defines.sh
 	    echo "Setting branding identity complete!"
 }
 
