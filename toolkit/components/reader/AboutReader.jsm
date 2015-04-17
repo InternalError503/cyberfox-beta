@@ -8,6 +8,7 @@ let Ci = Components.interfaces, Cc = Components.classes, Cu = Components.utils;
 
 this.EXPORTED_SYMBOLS = [ "AboutReader" ];
 
+Cu.import("resource://gre/modules/ReaderMode.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -270,8 +271,12 @@ AboutReader.prototype = {
 
           // Display the toolbar when all its initial component states are known
           if (isInitialStateChange) {
-            // Hacks! Delay showing the toolbar to avoid position: fixed; jankiness. See bug 975533.
-            this._win.setTimeout(() => this._setToolbarVisibility(true), 500);
+            // Toolbar display is updated here to avoid it appearing in the middle of the screen on page load. See bug 1145567.
+            this._win.setTimeout(() => {
+              this._toolbarElement.style.display = "block";
+              // Delay showing the toolbar to have a nice slide from bottom animation.
+              this._win.setTimeout(() => this._setToolbarVisibility(true), 200);
+            }, 500);
           }
         }
       }
@@ -783,12 +788,7 @@ AboutReader.prototype = {
    */
   _getOriginalUrl: function(win) {
     let url = win ? win.location.href : this._win.location.href;
-    let searchParams = new URLSearchParams(url.split("?")[1]);
-    if (!searchParams.has("url")) {
-      Cu.reportError("Error finding original URL for about:reader URL: " + url);
-      return url;
-    }
-    return decodeURIComponent(searchParams.get("url"));
+    return ReaderMode.getOriginalUrl(url) || url;
   },
 
   _setupSegmentedButton: function Reader_setupSegmentedButton(id, options, initialValue, callback) {
