@@ -124,7 +124,7 @@ input[type=button] {
 .newtab-cell {
   display: -moz-box;
   height: 180px;
-  margin: 20px 10px 68px;
+  margin: 20px 10px;
   width: 290px;
 }
 
@@ -372,7 +372,7 @@ input[type=button] {
 .newtab-customize-panel-item,
 .newtab-search-panel-engine,
 #newtab-search-manage {
-  padding: 10px 10px 10px 25px;
+  padding: 4px 24px;
 }
 
 .newtab-customize-panel-item:not(:last-child),
