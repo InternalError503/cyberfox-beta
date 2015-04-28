@@ -135,21 +135,11 @@ function init(aEvent) {
                         }
 
                         switch (Services.prefs.getCharPref("app.update.channel.type")) {
-
-                            case "release":
-                                currentVersion = jsObject.release;
-                                break;
-
-                            case "beta":
-                                currentVersion = jsObject.beta;
-                                break;
-
-                            case "esr":
-                                currentVersion = jsObject.esr;
-                                break;
+                            case "release": currentVersion = jsObject.release; break;
+                            case "beta":currentVersion = jsObject.beta;break;
+                            case "esr":currentVersion = jsObject.esr;break;
                         }
-
-
+						
                         var manualCheck = document.getElementById("checkForUpdatesButton");
 
                         switch (versions.compareVersions(Services.appinfo.version, currentVersion.toString())) {
@@ -180,9 +170,8 @@ function init(aEvent) {
 
                     request.ontimeout = function(aEvent) {
 
-                        //Prompt return failed check message for request time-out!
+                        //Log return failed check message for request time-out!
                         console.log(_locMSG.GetStringFromName("updateCheckErrorTitle") + " " + _locMSG.GetStringFromName("updateCheckError"));
-                        Services.prompt.alert(window, _locMSG.GetStringFromName("updateCheckErrorTitle"), _locMSG.GetStringFromName("updateCheckError"));
                         ElementState("update-button-checkNow", true);
                         ElementState("update-button-checking-throbber", true);
                         ElementState("update-button-checking", true);
@@ -194,39 +183,14 @@ function init(aEvent) {
 
                         //Marked to add better error handling and messages.
                         switch (aEvent.target.status) {
-
                             case 0:
-                                //Prompt return failed request message for status 0 unsent
-                                console.log(_locMSG.GetStringFromName("updateCheckErrorTitle") + " " + _locMSG.GetStringFromName("updateRequestError"));
-                                Services.prompt.alert(window, _locMSG.GetStringFromName("updateCheckErrorTitle"), _locMSG.GetStringFromName("updateRequestError"));
-                                break;
-
-                            case 1:
-                                console.log("Error Status: " + this.target.status);
-                                window.alert("Error Status: " + this.target.status);
-                                break;
-
-                            case 2:
-                                console.log("Error Status: " + this.target.status);
-                                window.alert("Error Status: " + this.target.status);
-                                break;
-
-                            case 3:
-                                console.log("Error Status: " + this.target.status);
-                                window.alert("Error Status: " + this.target.status);
-                                break;
-
-                            case 4:
-                                console.log("Error Status: " + this.target.status);
-                                window.alert("Error Status: " + this.target.status);
-                                break;
-
-                            default:
-                                aEvent.target.status
-                                console.log("Error Status: " + this.target.status);
-                                window.alert("Error Status: " + this.target.status);
-                                break;
-
+                                //Log return failed request message for status 0 unsent
+                                console.log(_locMSG.GetStringFromName("updateCheckErrorTitle") + " " + _locMSG.GetStringFromName("updateRequestError"));break;
+                            case 1: console.log("Error Status: " + this.target.status);break;
+                            case 2:console.log("Error Status: " + this.target.status);break;
+							case 3:console.log("Error Status: " + this.target.status);break;
+							case 4:console.log("Error Status: " + this.target.status);break;
+							default:console.log("Error Status: " + this.target.status);break;
                         }
                         //hide buttons		  
                         ElementState("update-button-checkNow", true);
@@ -309,6 +273,4 @@ var versions = {
             Components.utils.reportError(rv);
         }
     }
-
-
 }
