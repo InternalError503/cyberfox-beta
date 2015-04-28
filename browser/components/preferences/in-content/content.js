@@ -241,7 +241,7 @@ var gContentPane = {
    */  
   configureFonts: function ()
   {
-    gSubDialog.open("chrome://browser/content/preferences/fonts.xul");
+    gSubDialog.open("chrome://browser/content/preferences/fonts.xul", "resizable=no");
   },
 
   /**
@@ -250,7 +250,7 @@ var gContentPane = {
    */
   configureColors: function ()
   {
-    gSubDialog.open("chrome://browser/content/preferences/colors.xul");
+    gSubDialog.open("chrome://browser/content/preferences/colors.xul", "resizable=no");
   },
 
   // LANGUAGES

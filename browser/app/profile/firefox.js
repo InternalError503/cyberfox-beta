@@ -1661,7 +1661,7 @@ pref("image.mem.max_decoded_image_kb", 512000);
 #endif
 //Disable by default.
 pref("loop.enabled", false);
-pref("loop.screenshare.enabled", true);
+pref("loop.screenshare.enabled", false);
 pref("loop.server", "https://loop.services.mozilla.com/v0");
 pref("loop.seenToS", "unseen");
 pref("loop.showPartnerLogo", false);
