@@ -149,7 +149,7 @@ toolbarbutton.bookmark-item[open="true"] {
   display: -moz-box !important;
 }
 
-%include cyberfoxgonfig.inc
+%include cyberfox-css.inc
 
 .bookmark-item > .toolbarbutton-menu-dropmarker {
   display: none;

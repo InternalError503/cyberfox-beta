@@ -260,7 +260,7 @@
                 accesskey="&hidePluginCmd.accesskey;"
                 oncommand="gContextMenu.hidePlugin();"/>
       <menuseparator id="context-sep-ctp"/>     
-<vbox id="context-navigation-classic">	  
+<menugroup id="context-navigation-classic">	  
         <menuitem id="context-back"
                   class="menuitem-iconic"
                   tooltiptext="&backButton.tooltip;"
@@ -290,7 +290,7 @@
                   label="&bookmarkPageCmd2.label;"
                   oncommand="gContextMenu.bookmarkThisPage();"/>
       <menuseparator id="context-sep-navigation"/>				  
-</vbox>
+</menugroup>
       <menuitem id="context-sharepage"
                 label="&sharePageCmd.label;"
                 accesskey="&sharePageCmd.accesskey;"

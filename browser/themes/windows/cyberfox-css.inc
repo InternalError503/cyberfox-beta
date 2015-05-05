@@ -16,6 +16,7 @@
 }
 /* End Tab Close Button Don't remove */
 
+
 #appmenu_print,
 #menu_print,
 #appmenu_print_popup,
@@ -87,8 +88,8 @@ list-style-image: url("chrome://browser/skin/appmenu-icons.png")!important;
 #appmenu-editmenu-delete,
 #menu_delete,
 #context-delete,
-#context-back,
-#context-forward,
+#context-navigation-classic #context-back,
+#context-navigation-classic #context-forward,
 #context-reload{
   list-style-image: url("chrome://browser/skin/appmenu-icons-cf.png")!important;
 }
@@ -143,12 +144,16 @@ list-style-image: url("chrome://browser/skin/appmenu-icons.png")!important;
   -moz-image-region: rect(0 144px 16px 128px);
 }
 
-#context-back{
+#context-navigation-classic #context-back{
   -moz-image-region: rect(0 160px 16px 144px);
 }
 
-#context-forward{
+#context-navigation-classic #context-forward{
   -moz-image-region: rect(0 176px 16px 160px);
+}
+
+#context-navigation-classic {
+-moz-box-orient: vertical;
 }
 
 /* End Cyberfox Config */
@@ -164,5 +169,5 @@ list-style-image: url("chrome://browser/skin/appmenu-icons.png")!important;
 #context-bookmarklink,
 #context-bookmarkpage {
   list-style-image: url("chrome://browser/skin/places/bookmark.png")!important;
-  -moz-image-region: rect(0px 32px 16px 16px);
+  -moz-image-region: rect(0px 48px 16px 32px);
 }

@@ -148,7 +148,7 @@
 }
 %endif
 
-%include cyberfoxgonfig.inc
+%include cyberfox-css.inc
 
 /**
  * In the classic themes, the titlebar has a horizontal gradient, which is
