@@ -36,6 +36,36 @@
                   aria-label="&bookmarkPageCmd2.label;"
                   oncommand="gContextMenu.bookmarkThisPage();"/>
       </menugroup>
+	  <menugroup id="context-navigation-classic">	  
+        <menuitem id="context-back"
+                  class="menuitem-iconic"
+                  tooltiptext="&backButton.tooltip;"
+                  label="&backCmd.label;"
+                  command="Browser:BackOrBackDuplicate"
+                  onclick="checkForMiddleClick(this, event);"/>
+        <menuitem id="context-forward"
+                  class="menuitem-iconic"
+                  tooltiptext="&forwardButton.tooltip;"
+                  label="&forwardCmd.label;"
+                  command="Browser:ForwardOrForwardDuplicate"
+                  onclick="checkForMiddleClick(this, event);"/>
+        <menuitem id="context-reload"
+                  class="menuitem-iconic"
+                  tooltiptext="&reloadButton.tooltip;"
+                  label="&reloadCmd.label;"
+                  oncommand="gContextMenu.reload(event);"
+                  onclick="checkForMiddleClick(this, event);"/>
+        <menuitem id="context-stop"
+                  class="menuitem-iconic"
+                  tooltiptext="&stopButton.tooltip;"
+                  label="&stopCmd.label;"
+                  command="Browser:Stop" hidden="true"/>
+        <menuitem id="context-bookmarkpage"
+                  class="menuitem-iconic"
+                  tooltiptext="&bookmarkPageCmd2.label;"
+                  label="&bookmarkPageCmd2.label;"
+                  oncommand="gContextMenu.bookmarkThisPage();"/>				  
+	  </menugroup>
       <menuseparator id="context-sep-navigation"/>
       <menuseparator id="page-menu-separator"/>
       <menuitem id="spell-no-suggestions"
@@ -259,38 +289,7 @@
                 label="&hidePluginCmd.label;"
                 accesskey="&hidePluginCmd.accesskey;"
                 oncommand="gContextMenu.hidePlugin();"/>
-      <menuseparator id="context-sep-ctp"/>     
-<menugroup id="context-navigation-classic">	  
-        <menuitem id="context-back"
-                  class="menuitem-iconic"
-                  tooltiptext="&backButton.tooltip;"
-                  label="&backCmd.label;"
-                  command="Browser:BackOrBackDuplicate"
-                  onclick="checkForMiddleClick(this, event);"/>
-        <menuitem id="context-forward"
-                  class="menuitem-iconic"
-                  tooltiptext="&forwardButton.tooltip;"
-                  label="&forwardCmd.label;"
-                  command="Browser:ForwardOrForwardDuplicate"
-                  onclick="checkForMiddleClick(this, event);"/>
-        <menuitem id="context-reload"
-                  class="menuitem-iconic"
-                  tooltiptext="&reloadButton.tooltip;"
-                  label="&reloadCmd.label;"
-                  oncommand="gContextMenu.reload(event);"
-                  onclick="checkForMiddleClick(this, event);"/>
-        <menuitem id="context-stop"
-                  class="menuitem-iconic"
-                  tooltiptext="&stopButton.tooltip;"
-                  label="&stopCmd.label;"
-                  command="Browser:Stop" hidden="true"/>
-        <menuitem id="context-bookmarkpage"
-                  class="menuitem-iconic"
-                  tooltiptext="&bookmarkPageCmd2.label;"
-                  label="&bookmarkPageCmd2.label;"
-                  oncommand="gContextMenu.bookmarkThisPage();"/>
-      <menuseparator id="context-sep-navigation"/>				  
-</menugroup>
+      <menuseparator id="context-sep-ctp"/>
       <menuitem id="context-sharepage"
                 label="&sharePageCmd.label;"
                 accesskey="&sharePageCmd.accesskey;"
