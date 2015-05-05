@@ -94,7 +94,10 @@ function init(aEvent) {
 
                 //Set Global to disable update checks entirely 
                 if (Services.prefs.getBoolPref("app.update.check.enabled")) {
-
+			
+			//Delay about cyberfox update check two & half seconds to allow time for the check to complete on slower connections
+			window.setTimeout(function(){
+				
                     //Get Latest Browser Version
                     //Unfortunately same origin policy's prevent us using HTTPS here.
                     let url = Services.prefs.getCharPref("app.update.check.url");
@@ -206,7 +209,8 @@ function init(aEvent) {
                     request.setRequestHeader("Content-Type", "application/json");
                     request.send(null);
 
-                }
+            }, 2500);
+				}
 
             } catch (eve) {
                 //Show error
