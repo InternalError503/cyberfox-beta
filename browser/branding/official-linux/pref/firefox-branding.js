@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-pref("startup.homepage_override_url","https://8pecxstudios.com/hooray-your-cyberfox-is-up-to-date-%VERSION%");
-pref("startup.homepage_welcome_url","https://8pecxstudios.com/hooray-your-cyberfox-is-up-to-date-%VERSION%");
+pref("startup.homepage_override_url","http://cyberfox.8pecxstudios.com/hooray-your-cyberfox-is-up-to-date?version=%VERSION%&oldversion=%OLD_VERSION%");
+pref("startup.homepage_welcome_url","http://cyberfox.8pecxstudios.com/hooray-your-cyberfox-is-up-to-date?version=%VERSION%");
 pref("app.update.url.manual", ""); 
 pref("app.update.url.details", "");
-pref("app.releaseNotesURL", "https://8pecxstudios.com/hooray-your-cyberfox-is-up-to-date-%VERSION%");
+pref("app.releaseNotesURL", "http://cyberfox.8pecxstudios.com/hooray-your-cyberfox-is-up-to-date?version=%VERSION%");
 pref("app.vendorURL", "https://8pecxstudios.com/");
 
 pref("app.update.check.url", "http://download.8pecxstudios.com/current_version/update.json");
