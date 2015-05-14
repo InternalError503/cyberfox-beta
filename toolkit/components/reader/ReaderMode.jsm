@@ -20,6 +20,7 @@ XPCOMUtils.defineLazyModuleGetter(this, "Task", "resource://gre/modules/Task.jsm
 
 XPCOMUtils.defineLazyGetter(this, "Readability", function() {
   let scope = {};
+  scope.dump = this.dump;
   Services.scriptloader.loadSubScript("resource://gre/modules/reader/Readability.js", scope);
   return scope["Readability"];
 });
@@ -112,7 +113,21 @@ this.ReaderMode = {
       return false;
     }
 
-    return new Readability(uri, doc).isProbablyReaderable();
+    let utils = this.getUtilsForWin(doc.defaultView);
+    // We pass in a helper function to determine if a node is visible, because
+    // it uses gecko APIs that the engine-agnostic readability code can't rely
+    // upon.
+    // NOTE: This is currently disabled, see bug 1158228.
+    return new Readability(uri, doc).isProbablyReaderable(/*this.isNodeVisible.bind(this, utils)*/);
+  },
+
+  isNodeVisible: function(utils, node) {
+    let bounds = utils.getBoundsWithoutFlushing(node);
+    return bounds.height > 0 && bounds.width > 0;
+  },
+
+  getUtilsForWin: function(win) {
+    return win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
   },
 
   /**
@@ -232,13 +247,19 @@ this.ReaderMode = {
   },
 
   _shouldCheckUri: function (uri) {
-    if ((uri.prePath + "/") === uri.spec) {
-      this.log("Not parsing home page: " + uri.spec);
+    if (!(uri.schemeIs("http") || uri.schemeIs("https") || uri.schemeIs("file"))) {
+      this.log("Not parsing URI scheme: " + uri.scheme);
       return false;
     }
 
-    if (!(uri.schemeIs("http") || uri.schemeIs("https") || uri.schemeIs("file"))) {
-      this.log("Not parsing URI scheme: " + uri.scheme);
+    try {
+      uri.QueryInterface(Ci.nsIURL);
+    } catch (ex) {
+      // If this doesn't work, presumably the URL is not well-formed or something
+      return false;
+    }
+    if (!uri.filePath || uri.filePath == "/") {
+      this.log("Not parsing home page: " + uri.spec);
       return false;
     }
 

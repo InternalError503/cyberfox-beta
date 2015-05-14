@@ -256,6 +256,11 @@ panelview:not([mainview]) .toolbarbutton-text,
   padding: 4px 0;
 }
 
+.cui-widget-panel[viewId="PanelUI-pocketView"] > .panel-arrowcontainer > .panel-arrowcontent {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 .cui-widget-panel.cui-widget-panelWithFooter > .panel-arrowcontainer > .panel-arrowcontent {
   padding-bottom: 0;
 }
@@ -1177,7 +1182,9 @@ menuitem[checked="true"].subviewbutton > .menu-iconic-left {
 #customizationui-widget-multiview > .panel-viewcontainer,
 #customizationui-widget-multiview > .panel-viewcontainer > .panel-viewstack,
 #PanelUI-panicView > .panel-subview-body,
-#PanelUI-panicView {
+#PanelUI-panicView,
+#PanelUI-pocketView > .panel-subview-body,
+#PanelUI-pocketView {
   overflow: visible;
 }
 
