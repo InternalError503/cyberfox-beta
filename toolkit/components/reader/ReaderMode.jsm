@@ -8,16 +8,6 @@ this.EXPORTED_SYMBOLS = ["ReaderMode"];
 
 const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
 
-// Constants for telemetry.
-const DOWNLOAD_SUCCESS = 0;
-const DOWNLOAD_ERROR_XHR = 1;
-const DOWNLOAD_ERROR_NO_DOC = 2;
-
-const PARSE_SUCCESS = 0;
-const PARSE_ERROR_TOO_MANY_ELEMENTS = 1;
-const PARSE_ERROR_WORKER = 2;
-const PARSE_ERROR_NO_ARTICLE = 3;
-
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -167,7 +157,6 @@ this.ReaderMode = {
    */
   downloadAndParseDocument: Task.async(function* (url) {
     let uri = Services.io.newURI(url, null, null);
-    TelemetryStopwatch.start("READER_MODE_DOWNLOAD_MS");
     let doc = yield this._downloadDocument(url).catch(e => {
       throw e;
     });
