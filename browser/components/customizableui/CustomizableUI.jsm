@@ -383,6 +383,7 @@ let CustomizableUIInternal = {
           // Before you ask, yes, deleting things inside a let x of y loop where y is a Set is
           // safe, and we won't skip any items.
           futurePlacedWidgets.delete(widget.id);
+          gDirty = true;
           break;
         }
         // Otherwise, if we're somewhere other than the beginning, check if the previous
@@ -393,6 +394,7 @@ let CustomizableUIInternal = {
           if (previousWidgetIndex != -1) {
             savedPlacements.splice(previousWidgetIndex + 1, 0, widget.id);
             futurePlacedWidgets.delete(widget.id);
+            gDirty = true;
             break;
           }
         }
@@ -401,6 +403,7 @@ let CustomizableUIInternal = {
       // with doing nothing else now; if the item remains in gFuturePlacements, we'll
       // add it at the end in restoreStateForArea.
     }
+    this.saveState();
   },
 
   wrapWidget: function(aWidgetId) {
@@ -3665,7 +3668,7 @@ function WidgetGroupWrapper(aWidget) {
   this.isGroup = true;
 
   const kBareProps = ["id", "source", "type", "disabled", "label", "tooltiptext",
-                      "showInPrivateBrowsing"];
+                      "showInPrivateBrowsing", "viewId"];
   for (let prop of kBareProps) {
     let propertyName = prop;
     this.__defineGetter__(propertyName, function() aWidget[propertyName]);
