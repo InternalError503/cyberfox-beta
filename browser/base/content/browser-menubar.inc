@@ -431,7 +431,7 @@
 #ifndef XP_MACOSX
                 class="menuitem-iconic"
 #endif
-                oncommand="openUILink(Pocket.listURL, event);"/>
+                oncommand="window.pktUI.openTabWithUrl(Pocket.listURL);"/>
       <menuseparator id="menu_pocketSeparator"/>
       <menuitem id="menu_bookmarkThisPage"
       				  class="menuitem-iconic"	 

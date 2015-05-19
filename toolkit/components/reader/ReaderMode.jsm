@@ -107,8 +107,12 @@ this.ReaderMode = {
    * @return boolean Whether or not we should show the reader mode button.
    */
   isProbablyReaderable: function(doc) {
-    let uri = Services.io.newURI(doc.location.href, null, null);
+    // Only care about 'real' HTML documents:
+    if (doc.mozSyntheticDocument || !(doc instanceof doc.defaultView.HTMLDocument)) {
+      return false;
+    }
 
+    let uri = Services.io.newURI(doc.location.href, null, null);
     if (!this._shouldCheckUri(uri)) {
       return false;
     }
@@ -117,12 +121,20 @@ this.ReaderMode = {
     // We pass in a helper function to determine if a node is visible, because
     // it uses gecko APIs that the engine-agnostic readability code can't rely
     // upon.
-    // NOTE: This is currently disabled, see bug 1158228.
-    return new Readability(uri, doc).isProbablyReaderable(/*this.isNodeVisible.bind(this, utils)*/);
+    // NB: we need to do a flush the first time we call this, so we keep track of
+    // this using a property:
+    this._needFlushForVisibilityCheck = true;
+    return new Readability(uri, doc).isProbablyReaderable(this.isNodeVisible.bind(this, utils));
   },
 
   isNodeVisible: function(utils, node) {
-    let bounds = utils.getBoundsWithoutFlushing(node);
+    let bounds;
+    if (this._needFlushForVisibilityCheck) {
+      bounds = node.getBoundingClientRect();
+      this._needFlushForVisibilityCheck = false;
+    } else {
+      bounds = utils.getBoundsWithoutFlushing(node);
+    }
     return bounds.height > 0 && bounds.width > 0;
   },
 
@@ -252,6 +264,13 @@ this.ReaderMode = {
       dump("Reader: " + msg);
   },
 
+  _blockedHosts: [
+    "twitter.com",
+    "mail.google.com",
+    "github.com",
+    "reddit.com",
+  ],
+
   _shouldCheckUri: function (uri) {
     if (!(uri.schemeIs("http") || uri.schemeIs("https") || uri.schemeIs("file"))) {
       this.log("Not parsing URI scheme: " + uri.scheme);
@@ -264,6 +283,12 @@ this.ReaderMode = {
       // If this doesn't work, presumably the URL is not well-formed or something
       return false;
     }
+    // Sadly, some high-profile pages have false positives, so bail early for those:
+    let asciiHost = uri.asciiHost;
+    if (this._blockedHosts.some(blockedHost => asciiHost.endsWith(blockedHost))) {
+      return false;
+    }
+
     if (!uri.filePath || uri.filePath == "/") {
       this.log("Not parsing home page: " + uri.spec);
       return false;

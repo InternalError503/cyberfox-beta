@@ -202,6 +202,11 @@ let ReaderParent = {
     }
   },
 
+  forceShowReaderIcon: function(browser) {
+    browser.isArticle = true;
+    this.updateReaderButton(browser);
+  },
+
   buttonClick: function(event) {
     if (event.button != 0) {
       return;
@@ -258,6 +263,9 @@ let ReaderParent = {
    * @resolves JS object representing the article, or null if no article is found.
    */
   _getArticle: Task.async(function* (url, browser) {
-    return yield ReaderMode.downloadAndParseDocument(url);
+    return yield ReaderMode.downloadAndParseDocument(url).catch(e => {
+      Cu.reportError("Error downloading and parsing document: " + e);
+      return null;
+    });
   })
 };
