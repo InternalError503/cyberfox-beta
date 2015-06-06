@@ -46,6 +46,12 @@ searchbar {
   -moz-binding: url("chrome://browser/content/search/search.xml#searchbar");
 }
 
+/* Prevent shrinking the page content to 0 height and width */
+.browserStack > browser {
+  min-height: 25px;
+  min-width: 25px;
+}
+
 .browserStack > browser {
   -moz-binding: url("chrome://browser/content/tabbrowser.xml#tabbrowser-browser");
 }
@@ -911,6 +917,10 @@ chatbox {
   transition: height 150ms ease-out, width 150ms ease-out;
   height: 285px;
   width: 260px; /* CHAT_WIDTH_OPEN in socialchat.xml */
+}
+
+chatbox[large="true"] {
+  width: 300px;
 }
 
 chatbox[minimized="true"] {

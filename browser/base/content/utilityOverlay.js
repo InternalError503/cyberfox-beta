@@ -238,7 +238,7 @@ function openLinkIn(url, where, params) {
       return;
     }
     // TODO(1073187): propagate referrerPolicy.
-    saveURL(url, null, null, true, null, aReferrerURI, aInitiatingDoc);
+    saveURL(url, null, null, true, null, aNoReferrer ? null : aReferrerURI, aInitiatingDoc);
     return;
   }
 
@@ -731,7 +731,7 @@ function openNewWindowWith(aURL, aDocument, aPostData, aAllowThirdPartyFixup,
 function openHelpLink(aHelpTopic, aCalledFromModal, aWhere) {
   var url = Components.classes["@mozilla.org/toolkit/URLFormatterService;1"]
                       .getService(Components.interfaces.nsIURLFormatter)
-                      .formatURLPref("app.support.baseURL");
+                      .formatURLPref("app.helpdoc.baseURI");
   url += aHelpTopic;
 
   var where = aWhere;

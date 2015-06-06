@@ -16,25 +16,23 @@
 
 SimpleTest.waitForExplicitFinish();
 
-// Test to ensure NetworkStats is not accessible when it is disabled.
+// Test to ensure NetworkStats is not accessible when it is disabled
+SpecialPowers.addPermission("networkstats-manage", true, document);
 SpecialPowers.pushPrefEnv({'set': [["dom.mozNetworkStats.enabled", true]]},
-                          function() {
-  SpecialPowers.pushPermissions([{ 'type': 'networkstats-manage', 'allow': 1, 'context': window.document }],
-                                function() {
+                          function(){
+  ok(SpecialPowers.hasPermission("networkstats-manage", document),
+     "Has permission 'networkstats-manage'.");
 
-    ok(SpecialPowers.hasPermission("networkstats-manage", document),
-       "Has permission 'networkstats-manage'.");
+  ok(SpecialPowers.getBoolPref("dom.mozNetworkStats.enabled"),
+     "Preference 'dom.mozNetworkStats.enabled' is true.");
 
-    ok(SpecialPowers.getBoolPref("dom.mozNetworkStats.enabled"),
-       "Preference 'dom.mozNetworkStats.enabled' is true.");
+  ok('mozNetworkStats' in navigator, "navigator.mozNetworkStats should exist");
 
-    ok('mozNetworkStats' in navigator, "navigator.mozNetworkStats should exist");
+  ok(navigator.mozNetworkStats instanceof SpecialPowers.Ci.nsIDOMMozNetworkStatsManager,
+     "navigator.mozNetworkStats should be a nsIDOMMozNetworkStatsManager object");
 
-    ok(navigator.mozNetworkStats instanceof SpecialPowers.Ci.nsIDOMMozNetworkStatsManager,
-       "navigator.mozNetworkStats should be a nsIDOMMozNetworkStatsManager object");
-
-    SimpleTest.finish();
-  });
+  SpecialPowers.removePermission("networkstats-manage", document);
+  SimpleTest.finish();
 });
 
 </script>

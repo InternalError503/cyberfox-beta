@@ -167,7 +167,7 @@ Attr::GetNameAtom(nsIContent* aContent)
   if (!mNsAware &&
       mNodeInfo->NamespaceID() == kNameSpaceID_None &&
       aContent->IsInHTMLDocument() &&
-      aContent->IsHTML()) {
+      aContent->IsHTMLElement()) {
     nsString name;
     mNodeInfo->GetName(name);
     nsAutoString lowercaseName;
@@ -384,9 +384,9 @@ Attr::Shutdown()
 }
 
 JSObject*
-Attr::WrapNode(JSContext* aCx)
+Attr::WrapNode(JSContext* aCx, JS::Handle<JSObject*> aGivenProto)
 {
-  return AttrBinding::Wrap(aCx, this);
+  return AttrBinding::Wrap(aCx, this, aGivenProto);
 }
 
 } // namespace dom

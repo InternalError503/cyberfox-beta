@@ -1126,8 +1126,6 @@ CompositorD3D11::EndFrame()
     return;
   }
 
-  mContext->Flush();
-
   nsIntSize oldSize = mSize;
   EnsureSize();
   UINT presentInterval = 0;
@@ -1278,7 +1276,7 @@ CompositorD3D11::UpdateRenderTarget()
   }
 
   mDefaultRT = new CompositingRenderTargetD3D11(backBuf, IntPoint(0, 0));
-  mDefaultRT->SetSize(mSize.ToIntSize());
+  mDefaultRT->SetSize(mSize);
 }
 
 bool

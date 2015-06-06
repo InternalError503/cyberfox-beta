@@ -48,7 +48,7 @@ public:
 
   void SetSessionId(const nsAString& aSessionId);
 
-  virtual JSObject* WrapObject(JSContext* aCx) override;
+  virtual JSObject* WrapObject(JSContext* aCx, JS::Handle<JSObject*> aGivenProto) override;
 
   // Mark this as resultNotAddRefed to return raw pointers
   MediaKeyError* GetError() const;
@@ -100,6 +100,7 @@ private:
   ~MediaKeySession();
 
   void UpdateKeyStatusMap();
+  already_AddRefed<Promise> MakePromise(ErrorResult& aRv);
 
   nsRefPtr<Promise> mClosed;
 

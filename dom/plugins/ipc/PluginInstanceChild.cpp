@@ -394,7 +394,9 @@ PluginInstanceChild::NPN_GetValue(NPNVariable aVar,
         if (!CallNPN_GetValue_NPNVdocumentOrigin(&v, &result)) {
             return NPERR_GENERIC_ERROR;
         }
-        if (result == NPERR_NO_ERROR) {
+        if (result == NPERR_NO_ERROR ||
+            (GetQuirks() &
+                PluginModuleChild::QUIRK_FLASH_RETURN_EMPTY_DOCUMENT_ORIGIN)) {
             *static_cast<char**>(aValue) = ToNewCString(v);
         }
         return result;
@@ -2365,11 +2367,7 @@ PluginInstanceChild::RecvAsyncNPP_NewStream(PBrowserStreamChild* actor,
     BrowserStreamChild* child = static_cast<BrowserStreamChild*>(actor);
     NewStreamAsyncCall* task = new NewStreamAsyncCall(this, child, mimeType,
                                                       seekable);
-    {
-        MutexAutoLock lock(mAsyncCallMutex);
-        mPendingAsyncCalls.AppendElement(task);
-    }
-    MessageLoop::current()->PostTask(FROM_HERE, task);
+    PostChildAsyncCall(task);
     return true;
 }
 
@@ -3647,12 +3645,17 @@ void
 PluginInstanceChild::AsyncCall(PluginThreadCallback aFunc, void* aUserData)
 {
     ChildAsyncCall* task = new ChildAsyncCall(this, aFunc, aUserData);
+    PostChildAsyncCall(task);
+}
 
+void
+PluginInstanceChild::PostChildAsyncCall(ChildAsyncCall* aTask)
+{
     {
         MutexAutoLock lock(mAsyncCallMutex);
-        mPendingAsyncCalls.AppendElement(task);
+        mPendingAsyncCalls.AppendElement(aTask);
     }
-    ProcessChild::message_loop()->PostTask(FROM_HERE, task);
+    ProcessChild::message_loop()->PostTask(FROM_HERE, aTask);
 }
 
 static PLDHashOperator

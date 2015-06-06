@@ -162,7 +162,7 @@ TokenStream::SourceCoords::SourceCoords(ExclusiveContext* cx, uint32_t ln)
     lineStartOffsets_.infallibleAppend(maxPtr);
 }
 
-MOZ_ALWAYS_INLINE bool
+MOZ_ALWAYS_INLINE void
 TokenStream::SourceCoords::add(uint32_t lineNum, uint32_t lineStartOffset)
 {
     uint32_t lineIndex = lineNumToIndex(lineNum);
@@ -171,21 +171,21 @@ TokenStream::SourceCoords::add(uint32_t lineNum, uint32_t lineStartOffset)
     MOZ_ASSERT(lineStartOffsets_[0] == 0 && lineStartOffsets_[sentinelIndex] == MAX_PTR);
 
     if (lineIndex == sentinelIndex) {
-        // We haven't seen this newline before.  Update lineStartOffsets_
-        // only if lineStartOffsets_.append succeeds, to keep sentinel.
-        // Otherwise return false to tell TokenStream about OOM.
-        uint32_t maxPtr = MAX_PTR;
-        if (!lineStartOffsets_.append(maxPtr))
-            return false;
-
+        // We haven't seen this newline before.  Update lineStartOffsets_.
+        // We ignore any failures due to OOM -- because we always have a
+        // sentinel node, it'll just be like the newline wasn't present.  I.e.
+        // the line numbers will be wrong, but the code won't crash or anything
+        // like that.
         lineStartOffsets_[lineIndex] = lineStartOffset;
+
+        uint32_t maxPtr = MAX_PTR;
+        (void)lineStartOffsets_.append(maxPtr);
+
     } else {
         // We have seen this newline before (and ungot it).  Do nothing (other
         // than checking it hasn't mysteriously changed).
-        // This path can be executed after hitting OOM, so check lineIndex.
-        MOZ_ASSERT_IF(lineIndex < sentinelIndex, lineStartOffsets_[lineIndex] == lineStartOffset);
+        MOZ_ASSERT(lineStartOffsets_[lineIndex] == lineStartOffset);
     }
-    return true;
 }
 
 MOZ_ALWAYS_INLINE bool
@@ -360,8 +360,7 @@ TokenStream::updateLineInfoForEOL()
     prevLinebase = linebase;
     linebase = userbuf.offset();
     lineno++;
-    if (!srcCoords.add(lineno, linebase))
-        flags.hitOOM = true;
+    srcCoords.add(lineno, linebase);
 }
 
 MOZ_ALWAYS_INLINE void
@@ -494,7 +493,7 @@ TokenStream::TokenBuf::findEOLMax(size_t start, size_t max)
     return start + n;
 }
 
-bool
+void
 TokenStream::advance(size_t position)
 {
     const char16_t* end = userbuf.rawCharPtrAt(position);
@@ -505,11 +504,6 @@ TokenStream::advance(size_t position)
     cur->pos.begin = userbuf.offset();
     MOZ_MAKE_MEM_UNDEFINED(&cur->type, sizeof(cur->type));
     lookahead = 0;
-
-    if (flags.hitOOM)
-        return reportError(JSMSG_OUT_OF_MEMORY);
-
-    return true;
 }
 
 void
@@ -580,7 +574,7 @@ CompileError::throwError(JSContext* cx)
     // as the non-top-level "load", "eval", or "compile" native function
     // returns false, the top-level reporter will eventually receive the
     // uncaught exception report.
-    if (!js_ErrorToException(cx, message, &report, nullptr, nullptr))
+    if (!ErrorToException(cx, message, &report, nullptr, nullptr))
         CallErrorReporter(cx, message, &report);
 }
 
@@ -647,8 +641,8 @@ TokenStream::reportCompileErrorNumberVA(uint32_t offset, unsigned flags, unsigne
 
     err.argumentsType = (flags & JSREPORT_UC) ? ArgumentsAreUnicode : ArgumentsAreASCII;
 
-    if (!js_ExpandErrorArguments(cx, js_GetErrorMessage, nullptr, errorNumber, &err.message,
-                                 &err.report, err.argumentsType, args))
+    if (!ExpandErrorArguments(cx, GetErrorMessage, nullptr, errorNumber, &err.message,
+                              &err.report, err.argumentsType, args))
     {
         return false;
     }
@@ -982,8 +976,15 @@ TokenStream::putIdentInTokenbuf(const char16_t* identStart)
 bool
 TokenStream::checkForKeyword(const KeywordInfo* kw, TokenKind* ttp)
 {
-    if (kw->tokentype == TOK_RESERVED)
+    if (kw->tokentype == TOK_RESERVED
+#ifndef JS_HAS_CLASSES
+        || kw->tokentype == TOK_CLASS
+        || kw->tokentype == TOK_EXTENDS
+#endif
+        )
+    {
         return reportError(JSMSG_RESERVED_ID, kw->chars);
+    }
 
     if (kw->tokentype != TOK_STRICT_RESERVED) {
         if (kw->version <= versionNumber()) {
@@ -1628,9 +1629,6 @@ TokenStream::getTokenInternal(TokenKind* ttp, Modifier modifier)
     MOZ_CRASH("should have jumped to |out| or |error|");
 
   out:
-    if (flags.hitOOM)
-        return reportError(JSMSG_OUT_OF_MEMORY);
-
     flags.isDirtyLine = true;
     tp->pos.end = userbuf.offset();
     MOZ_ASSERT(IsTokenSane(tp));
@@ -1638,9 +1636,6 @@ TokenStream::getTokenInternal(TokenKind* ttp, Modifier modifier)
     return true;
 
   error:
-    if (flags.hitOOM)
-        return reportError(JSMSG_OUT_OF_MEMORY);
-
     flags.isDirtyLine = true;
     tp->pos.end = userbuf.offset();
     MOZ_MAKE_MEM_UNDEFINED(&tp->type, sizeof(tp->type));

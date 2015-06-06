@@ -6,9 +6,6 @@
 #include "nspr.h"
 #include "plstr.h"
 
-// For rtcp-fb constants
-#include "ccsdp.h"
-
 #include "VideoConduit.h"
 #include "AudioConduit.h"
 #include "nsThreadUtils.h"
@@ -25,6 +22,13 @@
 
 #ifdef MOZ_WIDGET_ANDROID
 #include "AndroidJNIWrapper.h"
+#endif
+
+// for ntohs
+#ifdef _MSC_VER
+#include "Winsock2.h"
+#else
+#include <netinet/in.h>
 #endif
 
 #include <algorithm>
@@ -81,7 +85,8 @@ WebrtcVideoConduit::WebrtcVideoConduit():
   mVideoLatencyAvg(0),
   mMinBitrate(200),
   mStartBitrate(300),
-  mMaxBitrate(2000)
+  mMaxBitrate(2000),
+  mCodecMode(webrtc::kRealtimeVideo)
 {
 }
 
@@ -538,7 +543,13 @@ WebrtcVideoConduit::SetReceiverTransport(mozilla::RefPtr<TransportInterface> aTr
   mReceiverTransport = aTransport;
   return kMediaConduitNoError;
 }
-
+MediaConduitErrorCode
+WebrtcVideoConduit::ConfigureCodecMode(webrtc::VideoCodecMode mode)
+{
+  CSFLogDebug(logTag,  "%s ", __FUNCTION__);
+  mCodecMode = mode;
+  return kMediaConduitNoError;
+}
 /**
  * Note: Setting the send-codec on the Video Engine will restart the encoder,
  * sets up new SSRC and reset RTP_RTCP module with the new codec setting.
@@ -590,7 +601,7 @@ WebrtcVideoConduit::ConfigureSendMediaCodec(const VideoCodecConfig* codecConfig)
 #endif
     video_codec.qpMax = 56;
     video_codec.numberOfSimulcastStreams = 1;
-    video_codec.mode = webrtc::kRealtimeVideo;
+    video_codec.mode = mCodecMode;
 
     codecFound = true;
   } else {
@@ -633,8 +644,9 @@ WebrtcVideoConduit::ConfigureSendMediaCodec(const VideoCodecConfig* codecConfig)
   }
 
   if (!mVideoCodecStat) {
-    mVideoCodecStat = new VideoCodecStatistics(mChannel, mPtrViECodec, true);
+    mVideoCodecStat = new VideoCodecStatistics(mChannel, mPtrViECodec);
   }
+  mVideoCodecStat->Register(true);
 
   mSendingWidth = 0;
   mSendingHeight = 0;
@@ -783,8 +795,9 @@ WebrtcVideoConduit::ConfigureRecvMediaCodecs(
   }
 
   if (!mVideoCodecStat) {
-    mVideoCodecStat = new VideoCodecStatistics(mChannel, mPtrViECodec, false);
+    mVideoCodecStat = new VideoCodecStatistics(mChannel, mPtrViECodec);
   }
+  mVideoCodecStat->Register(false);
 
   // XXX Currently, we gather up all of the feedback types that the remote
   // party indicated it supports for all video codecs and configure the entire
@@ -1365,6 +1378,9 @@ WebrtcVideoConduit::CodecConfigToWebRTCCodec(const VideoCodecConfig* codecInfo,
   } else if (codecInfo->mName == "VP8") {
     cinst.codecType = webrtc::kVideoCodecVP8;
     PL_strncpyz(cinst.plName, "VP8", sizeof(cinst.plName));
+  } else if (codecInfo->mName == "VP9") {
+    cinst.codecType = webrtc::kVideoCodecVP9;
+    PL_strncpyz(cinst.plName, "VP9", sizeof(cinst.plName));
   } else if (codecInfo->mName == "I420") {
     cinst.codecType = webrtc::kVideoCodecI420;
     PL_strncpyz(cinst.plName, "I420", sizeof(cinst.plName));

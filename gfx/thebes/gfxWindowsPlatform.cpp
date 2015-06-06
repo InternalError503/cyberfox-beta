@@ -412,6 +412,7 @@ NS_IMPL_ISUPPORTS(D3D9SharedTextureReporter, nsIMemoryReporter)
 gfxWindowsPlatform::gfxWindowsPlatform()
   : mD3D11DeviceInitialized(false)
   , mIsWARP(false)
+  , mCanInitMediaDevice(false)
 {
     mUseClearTypeForDownloadableFonts = UNINITIALIZED_VALUE;
     mUseClearTypeAlways = UNINITIALIZED_VALUE;
@@ -772,18 +773,18 @@ gfxWindowsPlatform::CreateOffscreenSurface(const IntSize& size,
 
 #ifdef CAIRO_HAS_WIN32_SURFACE
     if (mRenderMode == RENDER_GDI)
-        surf = new gfxWindowsSurface(ThebesIntSize(size),
+        surf = new gfxWindowsSurface(size,
                                      OptimalFormatForContent(contentType));
 #endif
 
 #ifdef CAIRO_HAS_D2D_SURFACE
     if (mRenderMode == RENDER_DIRECT2D)
-        surf = new gfxD2DSurface(ThebesIntSize(size),
+        surf = new gfxD2DSurface(size,
                                  OptimalFormatForContent(contentType));
 #endif
 
     if (!surf || surf->CairoStatus()) {
-        surf = new gfxImageSurface(ThebesIntSize(size),
+        surf = new gfxImageSurface(size,
                                    OptimalFormatForContent(contentType));
     }
 
@@ -1142,6 +1143,27 @@ gfxWindowsPlatform::IsFontFormatSupported(nsIURI *aFontURI, uint32_t aFormatFlag
     return true;
 }
 
+static DeviceResetReason HResultToResetReason(HRESULT hr)
+{
+  switch (hr) {
+  case DXGI_ERROR_DEVICE_HUNG:
+    return DeviceResetReason::HUNG;
+  case DXGI_ERROR_DEVICE_REMOVED:
+    return DeviceResetReason::REMOVED;
+  case DXGI_ERROR_DEVICE_RESET:
+    return DeviceResetReason::RESET;
+  case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
+    return DeviceResetReason::DRIVER_ERROR;
+  case DXGI_ERROR_INVALID_CALL:
+    return DeviceResetReason::INVALID_CALL;
+  case E_OUTOFMEMORY:
+    return DeviceResetReason::OUT_OF_MEMORY;
+  default:
+    MOZ_ASSERT(false);
+  }
+  return DeviceResetReason::UNKNOWN;
+}
+
 bool
 gfxWindowsPlatform::DidRenderingDeviceReset(DeviceResetReason* aResetReason)
 {
@@ -1153,35 +1175,26 @@ gfxWindowsPlatform::DidRenderingDeviceReset(DeviceResetReason* aResetReason)
     HRESULT hr = mD3D11Device->GetDeviceRemovedReason();
     if (hr != S_OK) {
       if (aResetReason) {
-        switch (hr) {
-        case DXGI_ERROR_DEVICE_HUNG:
-          *aResetReason = DeviceResetReason::HUNG;
-          break;
-        case DXGI_ERROR_DEVICE_REMOVED:
-          *aResetReason = DeviceResetReason::REMOVED;
-          break;
-        case DXGI_ERROR_DEVICE_RESET:
-          *aResetReason = DeviceResetReason::RESET;
-          break;
-        case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
-          *aResetReason = DeviceResetReason::DRIVER_ERROR;
-          break;
-        case DXGI_ERROR_INVALID_CALL:
-          *aResetReason = DeviceResetReason::INVALID_CALL;
-        default:
-          MOZ_ASSERT(false);
-        }
+        *aResetReason = HResultToResetReason(hr);
       }
       return true;
     }
   }
   if (mD3D11ContentDevice) {
-    if (mD3D11ContentDevice->GetDeviceRemovedReason() != S_OK) {
+    HRESULT hr = mD3D11ContentDevice->GetDeviceRemovedReason();
+    if (hr != S_OK) {
+      if (aResetReason) {
+        *aResetReason = HResultToResetReason(hr);
+      }
       return true;
     }
   }
   if (GetD3D10Device()) {
-    if (GetD3D10Device()->GetDeviceRemovedReason() != S_OK) {
+    HRESULT hr = GetD3D10Device()->GetDeviceRemovedReason();
+    if (hr != S_OK) {
+      if (aResetReason) {
+        *aResetReason = HResultToResetReason(hr);
+      }
       return true;
     }
   }
@@ -1550,7 +1563,7 @@ gfxWindowsPlatform::GetD3D9DeviceManager()
        CompositorParent::IsInCompositorThread())) {
     mDeviceManager = new DeviceManagerD3D9();
     if (!mDeviceManager->Init()) {
-      NS_WARNING("Could not initialise device manager");
+      gfxCriticalError() << "[D3D9] Could not Initialize the DeviceManagerD3D9";
       mDeviceManager = nullptr;
     }
   }
@@ -1581,6 +1594,59 @@ gfxWindowsPlatform::GetD3D11ContentDevice()
 
   return mD3D11ContentDevice;
 }
+
+ID3D11Device*
+gfxWindowsPlatform::GetD3D11MediaDevice()
+{
+  if (mD3D11MediaDevice) {
+    return mD3D11MediaDevice;
+  }
+
+  if (!mCanInitMediaDevice) {
+    return nullptr;
+  }
+
+  mCanInitMediaDevice = false;
+
+  nsModuleHandle d3d11Module(LoadLibrarySystem32(L"d3d11.dll"));
+  decltype(D3D11CreateDevice)* d3d11CreateDevice = (decltype(D3D11CreateDevice)*)
+    GetProcAddress(d3d11Module, "D3D11CreateDevice");
+  MOZ_ASSERT(d3d11CreateDevice);
+
+  nsTArray<D3D_FEATURE_LEVEL> featureLevels;
+  if (IsWin8OrLater()) {
+    featureLevels.AppendElement(D3D_FEATURE_LEVEL_11_1);
+  }
+  featureLevels.AppendElement(D3D_FEATURE_LEVEL_11_0);
+  featureLevels.AppendElement(D3D_FEATURE_LEVEL_10_1);
+  featureLevels.AppendElement(D3D_FEATURE_LEVEL_10_0);
+  featureLevels.AppendElement(D3D_FEATURE_LEVEL_9_3);
+
+  RefPtr<IDXGIAdapter1> adapter = GetDXGIAdapter();
+  MOZ_ASSERT(adapter);
+
+  HRESULT hr = E_INVALIDARG;
+
+  MOZ_SEH_TRY{
+    hr = d3d11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr,
+                           D3D11_CREATE_DEVICE_BGRA_SUPPORT,
+                           featureLevels.Elements(), featureLevels.Length(),
+                           D3D11_SDK_VERSION, byRef(mD3D11MediaDevice), nullptr, nullptr);
+  } MOZ_SEH_EXCEPT(EXCEPTION_EXECUTE_HANDLER) {
+    mD3D11MediaDevice = nullptr;
+  }
+
+  d3d11Module.disown();
+
+  if (FAILED(hr)) {
+    return nullptr;
+  }
+
+  mD3D11MediaDevice->SetExceptionMode(0);
+
+  return mD3D11MediaDevice;
+}
+
 
 ReadbackManagerD3D11*
 gfxWindowsPlatform::GetReadbackManager()
@@ -1831,17 +1897,6 @@ gfxWindowsPlatform::InitD3D11Devices()
           return;
         }
 
-        if (!IsWin8OrLater()) {
-            /* On Windows 7 WARP runs very badly on the builtin vga driver */
-            nsString driver;
-            gfxInfo->GetAdapterDriver(driver);
-            // driver can start with vga or svga so only look for "framebuf..."
-            if (driver.Find("framebuf vga256 vga64k") != kNotFound) {
-                gfxCriticalError(CriticalLog::DefaultOptions(false)) << "Disabling WARP on builtin vga driver";
-                return;
-            }
-        }
-
         useWARP = true;
       }
     }
@@ -1970,6 +2025,10 @@ gfxWindowsPlatform::InitD3D11Devices()
     Factory::SetDirect3D11Device(mD3D11ContentDevice);
   }
 
+  if (!useWARP) {
+    mCanInitMediaDevice = true;
+  }
+
   // We leak these everywhere and we need them our entire runtime anyway, let's
   // leak it here as well.
   d3d11Module.disown();
@@ -1999,18 +2058,13 @@ public:
         mVsyncThread = new base::Thread("WindowsVsyncThread");
         const double rate = 1000 / 60.0;
         mSoftwareVsyncRate = TimeDuration::FromMilliseconds(rate);
-      }
-
-      virtual ~D3DVsyncDisplay()
-      {
-        MOZ_ASSERT(NS_IsMainThread());
-        DisableVsync();
-        delete mVsyncThread;
+        MOZ_RELEASE_ASSERT(mVsyncThread->Start(), "Could not start Windows vsync thread");
       }
 
       virtual void EnableVsync() override
       {
         MOZ_ASSERT(NS_IsMainThread());
+        MOZ_ASSERT(mVsyncThread->IsRunning());
         { // scope lock
           MonitorAutoLock lock(mVsyncEnabledLock);
           if (mVsyncEnabled) {
@@ -2019,7 +2073,6 @@ public:
           mVsyncEnabled = true;
         }
 
-        MOZ_RELEASE_ASSERT(mVsyncThread->Start(), "Could not start Windows vsync thread");
         CancelableTask* vsyncStart = NewRunnableMethod(this,
             &D3DVsyncDisplay::VBlankLoop);
         mVsyncThread->message_loop()->PostTask(FROM_HERE, vsyncStart);
@@ -2028,15 +2081,12 @@ public:
       virtual void DisableVsync() override
       {
         MOZ_ASSERT(NS_IsMainThread());
-        { // scope lock
-          MonitorAutoLock lock(mVsyncEnabledLock);
-          if (!mVsyncEnabled) {
-            return;
-          }
-          mVsyncEnabled = false;
+        MOZ_ASSERT(mVsyncThread->IsRunning());
+        MonitorAutoLock lock(mVsyncEnabledLock);
+        if (!mVsyncEnabled) {
+          return;
         }
-
-        mVsyncThread->Stop();
+        mVsyncEnabled = false;
       }
 
       virtual bool IsVsyncEnabled() override
@@ -2102,7 +2152,7 @@ public:
           if (SUCCEEDED(hr)) {
             QueryPerformanceCounter(&qpcNow);
             QPC_TIME adjust = qpcNow.QuadPart - vblankTime.qpcVBlank;
-            MOZ_ASSERT(adjust > 0);
+            MOZ_ASSERT(adjust >= 0);
             uint64_t usAdjust = (adjust * microseconds) / frequency.QuadPart;
             vsync -= TimeDuration::FromMicroseconds((double) usAdjust);
           }
@@ -2110,6 +2160,14 @@ public:
       }
 
     private:
+      virtual ~D3DVsyncDisplay()
+      {
+        MOZ_ASSERT(NS_IsMainThread());
+        DisableVsync();
+        mVsyncThread->Stop();
+        delete mVsyncThread;
+      }
+
       bool IsInVsyncThread()
       {
         return mVsyncThread->thread_id() == PlatformThread::CurrentId();
@@ -2156,4 +2214,11 @@ gfxWindowsPlatform::CreateHardwareVsyncSource()
 
   nsRefPtr<VsyncSource> d3dVsyncSource = new D3DVsyncSource();
   return d3dVsyncSource.forget();
+}
+
+bool
+gfxWindowsPlatform::SupportsApzTouchInput()
+{
+  int value = Preferences::GetInt("dom.w3c_touch_events.enabled", 0);
+  return value == 1 || value == 2;
 }

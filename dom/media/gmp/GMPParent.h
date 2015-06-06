@@ -55,7 +55,7 @@ enum GMPState {
 };
 
 class GMPParent final : public PGMPParent,
-                            public GMPSharedMem
+                        public GMPSharedMem
 {
 public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING_WITH_MAIN_THREAD_DESTRUCTION(GMPParent)
@@ -211,6 +211,10 @@ private:
 
   bool mAsyncShutdownRequired;
   bool mAsyncShutdownInProgress;
+
+#ifdef PR_LOGGING
+  int mChildPid;
+#endif
 };
 
 } // namespace gmp

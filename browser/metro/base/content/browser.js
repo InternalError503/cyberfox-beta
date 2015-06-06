@@ -724,7 +724,7 @@ var Browser = {
       }
       case "report-phishing": {
         // It's a phishing site, just link to the generic information page
-        let url = Services.urlFormatter.formatURLPref("app.support.baseURL");
+        let url = Services.urlFormatter.formatURLPref("app.helpdoc.baseURI");
         this.loadURI(url + "phishing-malware");
         break;
       }
@@ -761,7 +761,7 @@ var Browser = {
     hasher.updateFromStream(stringStream, -1);
     let hashASCII = hasher.finish(true);
     // Replace '/' with a valid filesystem character
-    return ("FFTileID_" + hashASCII).replace('/', '_', 'g');
+    return ("FFTileID_" + hashASCII).replace(/\//g, '_');
   },
 
   unpinSite: function browser_unpinSite() {

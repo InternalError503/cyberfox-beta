@@ -43,7 +43,7 @@ CopyArrayBufferViewOrArrayBufferData(const ArrayBufferViewOrArrayBuffer& aBuffer
 // This class is used on the main thread only.
 // Note: it's addref/release is not (and can't be) thread safe!
 class MediaKeys final : public nsISupports,
-                            public nsWrapperCache
+                        public nsWrapperCache
 {
   ~MediaKeys();
 
@@ -57,7 +57,7 @@ public:
 
   nsPIDOMWindow* GetParentObject() const;
 
-  virtual JSObject* WrapObject(JSContext* aCx) override;
+  virtual JSObject* WrapObject(JSContext* aCx, JS::Handle<JSObject*> aGivenProto) override;
 
   nsresult Bind(HTMLMediaElement* aElement);
 

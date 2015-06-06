@@ -54,6 +54,8 @@ MediaKeys::MediaKeys(nsPIDOMWindow* aParent, const nsAString& aKeySystem)
   , mKeySystem(aKeySystem)
   , mCreatePromiseId(0)
 {
+  EME_LOG("MediaKeys[%p] constructed keySystem=%s",
+          this, NS_ConvertUTF16toUTF8(mKeySystem).get());
 }
 
 static PLDHashOperator
@@ -69,6 +71,7 @@ RejectPromises(const uint32_t& aKey,
 MediaKeys::~MediaKeys()
 {
   Shutdown();
+  EME_LOG("MediaKeys[%p] destroyed", this);
 }
 
 static PLDHashOperator
@@ -93,6 +96,8 @@ CloseSessions(const nsAString& aKey,
 void
 MediaKeys::Terminated()
 {
+  EME_LOG("MediaKeys[%p] CDM crashed unexpectedly", this);
+
   KeySessionHashMap keySessions;
   // Remove entries during iteration will screw it. Make a copy first.
   mKeySessions.Enumerate(&CopySessions, &keySessions);
@@ -129,9 +134,9 @@ MediaKeys::GetParentObject() const
 }
 
 JSObject*
-MediaKeys::WrapObject(JSContext* aCx)
+MediaKeys::WrapObject(JSContext* aCx, JS::Handle<JSObject*> aGivenProto)
 {
-  return MediaKeysBinding::Wrap(aCx, this);
+  return MediaKeysBinding::Wrap(aCx, this, aGivenProto);
 }
 
 void
@@ -493,6 +498,8 @@ MediaKeys::CreateSession(JSContext* aCx,
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return nullptr;
   }
+
+  EME_LOG("MediaKeys[%p] Creating session", this);
 
   nsRefPtr<MediaKeySession> session = new MediaKeySession(aCx,
                                                           GetParentObject(),

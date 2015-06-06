@@ -1070,3 +1070,9 @@ SEC_GetCrlTimes;
 ;+    local:
 ;+       *;
 ;+};
+;+NSS_3.19 { 	# NSS 3.19 release
+;+    global:
+CERT_GetImposedNameConstraints;
+;+    local:
+;+       *;
+;+};

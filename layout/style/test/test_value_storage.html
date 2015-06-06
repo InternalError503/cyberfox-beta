@@ -313,7 +313,7 @@ function runTest() {
 }
 
 SimpleTest.waitForExplicitFinish();
-SimpleTest.requestLongerTimeout(5);
+SimpleTest.requestLongerTimeout(4);
 
 SpecialPowers.pushPrefEnv({ set: [["layout.css.variables.enabled", true]] },
                           runTest);
