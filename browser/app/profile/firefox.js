@@ -1817,6 +1817,9 @@ pref("media.eme.apiVisible", false);
 pref("media.gmp-eme-adobe.enabled", false);
 pref("browser.eme.ui.enabled", false);
 
+#ifdef MOZ_ADOBE_EME
+pref("media.gmp-eme-adobe.enabled", false);
+#endif
 
 // Play with different values of the decay time and get telemetry,
 // 0 means to randomize (and persist) the experiment value in users' profiles,
