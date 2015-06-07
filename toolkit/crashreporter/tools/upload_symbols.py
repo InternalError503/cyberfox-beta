@@ -15,16 +15,13 @@
 from __future__ import print_function
 
 import os
+import redo
 import requests
 import sys
 
 from buildconfig import substs
 
-# This is the staging server
-url = 'https://crash-stats.allizom.org/symbols/upload'
-# This is the production server, we'll switch this
-# once we're comfortable this works.
-#url = 'https://crash-stats.mozilla.com/symbols/upload'
+url = 'https://crash-stats.mozilla.com/symbols/upload'
 
 def main():
     if len(sys.argv) != 2:
@@ -49,29 +46,39 @@ def main():
 
     print('Uploading symbol file "{0}" to "{1}"...'.format(sys.argv[1], url))
 
-    try:
-        r = requests.post(
-            url,
-            files={'symbols.zip': open(sys.argv[1], 'rb')},
-            headers={'Auth-Token': auth_token},
-            allow_redirects=False,
-            timeout=120,
-        )
-    except requests.exceptions.RequestException as e:
-        print('Error: {0}'.format(e))
+    for _ in redo.retrier():
+        try:
+            r = requests.post(
+                url,
+                files={'symbols.zip': open(sys.argv[1], 'rb')},
+                headers={'Auth-Token': auth_token},
+                allow_redirects=False,
+                timeout=120)
+            break
+        except requests.exceptions.RequestException as e:
+            print('Error: {0}'.format(e))
+    else:
+        print('Maximum retries hit, giving up!')
         return 1
 
     if r.status_code >= 200 and r.status_code < 300:
         print('Uploaded successfully!')
-    elif r.status_code < 400:
-        print('Error: bad auth token? ({0})'.format(r.status_code),
+        return 0
+
+    if r.status_code < 400:
+        print('Error: bad auth token? ({0}: {1})'.format(r.status_code,
+                                                         r.reason),
               file=sys.stderr)
-        return 1
     else:
-        print('Error: got HTTP response {0}'.format(r.status_code),
+        print('Error: got HTTP response {0}: {1}'.format(r.status_code,
+                                                         r.reason),
               file=sys.stderr)
-        return 1
-    return 0
+
+    print('Response body:\n{sep}\n{body}\n{sep}\n'.format(
+        sep='=' * 20,
+        body=r.text
+        ))
+    return 1
 
 if __name__ == '__main__':
     sys.exit(main())

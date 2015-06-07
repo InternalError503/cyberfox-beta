@@ -502,7 +502,7 @@ let AboutReaderListener = {
         break;
 
       case "Reader:PushState":
-        this.updateReaderButton();
+        this.updateReaderButton(!!(message.data && message.data.isArticle));
         break;
     }
   },
@@ -547,7 +547,7 @@ let AboutReaderListener = {
 
     }
   },
-  updateReaderButton: function() {
+  updateReaderButton: function(forceNonArticle) {
     if (!ReaderMode.isEnabledForParseOnLoad || this.isAboutReader ||
         !(content.document instanceof content.HTMLDocument) ||
         content.document.mozSyntheticDocument) {
@@ -557,6 +557,8 @@ let AboutReaderListener = {
     // |false| all the time.
     if (ReaderMode.isProbablyReaderable(content.document)) {
       sendAsyncMessage("Reader:UpdateReaderButton", { isArticle: true });
+    } else if (forceNonArticle) {
+      sendAsyncMessage("Reader:UpdateReaderButton", { isArticle: false });
     }
   },
 };
