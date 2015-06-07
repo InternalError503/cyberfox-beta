@@ -986,8 +986,11 @@ let Links = {
   _getMergedProviderLinks: function Links__getMergedProviderLinks() {
     // Build a list containing a copy of each provider's sortedLinks list.
     let linkLists = [];
-    for (let links of this._providerLinks.values()) {
-      linkLists.push(links.sortedLinks.slice());
+    for (let provider of this._providers.keys()) {
+      let links = this._providers.get(provider);
+      if (links && links.sortedLinks) {
+        linkLists.push(links.sortedLinks.slice());
+      }
     }
 
     function getNextLink() {
