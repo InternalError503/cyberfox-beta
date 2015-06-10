@@ -6523,7 +6523,7 @@ function AddKeywordForSearchField() {
                                    , description: bookmarkData.description
                                    , keyword: ""
                                    , postData: bookmarkData.postData
-                                   , charSet: bookmarkData.charset
+                                   , charSet: bookmarkData.charSet
                                    , hiddenRows: [ "location"
                                                  , "description"
                                                  , "tags"
