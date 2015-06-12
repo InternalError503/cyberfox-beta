@@ -1050,6 +1050,11 @@ pref("javascript.options.ion",              true);
 pref("javascript.options.asmjs",            true);
 pref("javascript.options.native_regexp",    true);
 pref("javascript.options.parallel_parsing", true);
+#if !defined(RELEASE_BUILD) && !defined(ANDROID) && !defined(MOZ_B2G) && !defined(XP_IOS)
+pref("javascript.options.asyncstack",       true);
+#else
+pref("javascript.options.asyncstack",       false);
+#endif
 pref("javascript.options.ion.offthread_compilation", true);
 // This preference instructs the JS engine to discard the
 // source of any privileged JS after compilation. This saves
@@ -2427,11 +2432,7 @@ pref("dom.ipc.plugins.unloadTimeoutSecs", 30);
 
 // Asynchronous plugin initialization should only be enabled on non-e10s
 // channels until some remaining bugs are resolved.
-#ifdef NIGHTLY_BUILD
 pref("dom.ipc.plugins.asyncInit", false);
-#else
-pref("dom.ipc.plugins.asyncInit", true);
-#endif
 
 pref("dom.ipc.processCount", 1);
 
