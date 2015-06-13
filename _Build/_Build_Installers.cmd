@@ -19,6 +19,7 @@ echo.Updating Changelog.rtf
 timeout 2 >nul
 ::---- 
 if exist "%BuildFolderPath%_Changelog\changelog.rtf" copy /y "%BuildFolderPath%_Changelog\changelog.rtf" "%BuildFolderPath%_Installer\{content}\setupFiles"
+if exist "%BuildFolderPath%_Changelog\changelog.rtf" copy /y "%BuildFolderPath%_Changelog\changelog.rtf" "%BuildFolderPath%_Directory_Tree\temp\current_version"
 timeout 2 >nul
 ::---- 
 echo.Building cyberfox installer packages!
