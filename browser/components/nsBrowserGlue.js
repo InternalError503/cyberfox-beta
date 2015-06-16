@@ -877,6 +877,12 @@ BrowserGlue.prototype = {
 
       // startup check, check all assoc
       let isDefault = ShellService.isDefaultBrowser(true, false);
+
+      if (isDefault) {
+        let now = Date.now().toString().slice(0, -3);
+        Services.prefs.setCharPref("browser.shell.mostRecentDateSetAsDefault", now);
+      }
+
       if (shouldCheck && !isDefault && !willRecoverSession) {
         Services.tm.mainThread.dispatch(function() {
           DefaultBrowserCheck.prompt(this.getMostRecentBrowserWindow());
