@@ -302,16 +302,6 @@ var gCyberfoxCustom = {
 					}, false);
 			}	
 		}
-		Application.prefs.get("browser.pocket.enabled").events.addListener("change", function(aEvent){
-			var pocket = document.getElementById("pocket-button");
-			if (nav &&  typeof(nav)  != "undefined" || nav  != null){
-				if (pocket &&  typeof(pocket)  != "undefined" || pocket  != null){
-					if (Services.prefs.getBoolPref("browser.pocket.enabled") === false) {
-						CustomizableUI.removeWidgetFromArea("pocket-button", CustomizableUI.TYPE_TOOLBAR);
-					}
-				}
-			}
-		});
 		
         document.getElementById("menu_ToolsPopup")
             .addEventListener("popupshowing", function(e) {

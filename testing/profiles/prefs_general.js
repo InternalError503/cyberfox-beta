@@ -51,7 +51,6 @@ user_pref("dom.w3c_touch_events.enabled", 1);
 user_pref("dom.undo_manager.enabled", true);
 user_pref("dom.webcomponents.enabled", true);
 user_pref("dom.htmlimports.enabled", true);
-user_pref("dom.animations-api.core.enabled", true);
 // Set a future policy version to avoid the telemetry prompt.
 user_pref("toolkit.telemetry.prompted", 999);
 user_pref("toolkit.telemetry.notifiedOptOut", 999);
@@ -70,12 +69,15 @@ user_pref("experiments.manifest.uri", "http://%(server)s/experiments-dummy/manif
 // Only load extensions from the application and user profile
 // AddonManager.SCOPE_PROFILE + AddonManager.SCOPE_APPLICATION
 user_pref("extensions.enabledScopes", 5);
+user_pref("extensions.autoDisableScopes", 0);
 // Disable metadata caching for installed add-ons by default
 user_pref("extensions.getAddons.cache.enabled", false);
 // Disable intalling any distribution add-ons
 user_pref("extensions.installDistroAddons", false);
 // XPI extensions are required for test harnesses to load
 user_pref("extensions.defaultProviders.enabled", true);
+// Disable signature requirements where possible
+user_pref("xpinstall.signatures.required", false);
 
 user_pref("geo.wifi.uri", "http://%(server)s/tests/dom/tests/mochitest/geolocation/network_geolocation.sjs");
 user_pref("geo.wifi.timeToWaitBeforeSending", 2000);
@@ -153,9 +155,6 @@ user_pref("layout.css.object-fit-and-position.enabled", true);
 // Enable CSS Ruby for testing
 user_pref("layout.css.ruby.enabled", true);
 
-// Enable CSS Font Loading API for testing
-user_pref("layout.css.font-loading-api.enabled", true);
-
 // Enable unicode-range for testing
 user_pref("layout.css.unicode-range.enabled", true);
 
@@ -163,8 +162,6 @@ user_pref("layout.css.unicode-range.enabled", true);
 user_pref("layout.spammy_warnings.enabled", false);
 
 // Enable Media Source Extensions for testing
-user_pref("media.mediasource.enabled", true);
-user_pref("media.mediasource.whitelist", false);
 user_pref("media.mediasource.mp4.enabled", true);
 user_pref("media.mediasource.webm.enabled", true);
 
@@ -196,10 +193,7 @@ user_pref("browser.download.panel.shown", true);
 // Assume the about:newtab page's intro panels have been shown to not depend on
 // which test runs first and happens to open about:newtab
 user_pref("browser.newtabpage.introShown", true);
-
-// prefs for firefox metro.
-// Disable first-tun tab
-user_pref("browser.firstrun.count", 0);
+user_pref("browser.newtabpage.updateIntroShown", true);
 
 // Tell the PBackground infrastructure to run a test at startup.
 user_pref("pbackground.testing", true);
@@ -217,6 +211,9 @@ user_pref("general.useragent.updates.enabled", false);
 
 // Disable webapp updates.  Yes, it is supposed to be an integer.
 user_pref("browser.webapps.checkForUpdates", 0);
+
+// Enable debug logging in the tcp presentation server.
+user_pref("dom.presentation.tcp_server.debug", true);
 
 // Don't connect to Yahoo! for RSS feed tests.
 // en-US only uses .types.0.uri, but set all of them just to be sure.
@@ -248,6 +245,7 @@ user_pref("identity.fxaccounts.remote.signup.uri", "https://%(server)s/fxa-signu
 user_pref("identity.fxaccounts.remote.force_auth.uri", "https://%(server)s/fxa-force-auth");
 user_pref("identity.fxaccounts.remote.signin.uri", "https://%(server)s/fxa-signin");
 user_pref("identity.fxaccounts.settings.uri", "https://%(server)s/fxa-settings");
+user_pref('identity.fxaccounts.remote.webchannel.uri', 'https://%(server)s/');
 
 // Enable logging of APZ test data (see bug 961289).
 user_pref('apz.test.logging_enabled', true);
@@ -294,7 +292,6 @@ user_pref("browser.search.countryCode", "US");
 user_pref("browser.selfsupport.url", "https://%(server)s/selfsupport-dummy/");
 
 user_pref("media.eme.enabled", true);
-user_pref("media.eme.apiVisible", true);
 
 #if defined(XP_WIN)
 user_pref("media.decoder.heuristic.dormant.timeout", 0);
@@ -304,6 +301,7 @@ user_pref("media.decoder.heuristic.dormant.timeout", 0);
 user_pref("browser.displayedE10SPrompt.1", 5);
 // Don't use auto-enabled e10s
 user_pref("browser.tabs.remote.autostart.1", false);
+user_pref("browser.tabs.remote.autostart.2", false);
 // Don't forceably kill content processes after a timeout
 user_pref("dom.ipc.tabs.shutdownTimeoutSecs", 0);
 
@@ -314,3 +312,11 @@ user_pref("browser.reader.detectedFirstArticle", true);
 // Don't let PAC generator to set PAC, as mochitest framework has its own PAC
 // rules during testing.
 user_pref("network.proxy.pac_generator", false);
+
+// Make tests run consistently on DevEdition (which has a lightweight theme
+// selected by default).
+user_pref("lightweightThemes.selectedThemeID", "");
+user_pref("browser.devedition.theme.enabled", false);
+
+// Disable periodic updates of service workers.
+user_pref("dom.serviceWorkers.periodic-updates.enabled", false);

@@ -539,7 +539,6 @@ public:
         IDX_STACK                   ,
         IDX_MESSAGE                 ,
         IDX_LASTINDEX               ,
-        IDX_SOURCE                  ,
         IDX_TOTAL_COUNT // just a count of the above
     };
 
@@ -628,6 +627,7 @@ public:
     void OnProcessNextEvent() {
         mSlowScriptCheckpoint = mozilla::TimeStamp::NowLoRes();
         mSlowScriptSecondHalf = false;
+        js::ResetStopwatches(Get()->Runtime());
     }
     void OnAfterProcessNextEvent() {
         mSlowScriptCheckpoint = mozilla::TimeStamp();
@@ -1016,6 +1016,17 @@ static inline bool IS_PROTO_CLASS(const js::Class* clazz)
            clazz == &XPC_WN_ModsAllowed_NoCall_Proto_JSClass;
 }
 
+typedef js::HashSet<size_t,
+                    js::DefaultHasher<size_t>,
+                    js::SystemAllocPolicy> InterpositionWhitelist;
+
+struct InterpositionWhitelistPair {
+    nsIAddonInterposition* interposition;
+    InterpositionWhitelist whitelist;
+};
+
+typedef nsTArray<InterpositionWhitelistPair> InterpositionWhitelistArray;
+
 /***************************************************************************/
 // XPCWrappedNativeScope is one-to-one with a JS global object.
 
@@ -1165,9 +1176,6 @@ public:
                         js::PointerHasher<JSAddonId*, 3>,
                         js::SystemAllocPolicy> InterpositionMap;
 
-    static bool SetAddonInterposition(JSAddonId* addonId,
-                                      nsIAddonInterposition* interp);
-
     // Gets the appropriate scope object for XBL in this scope. The context
     // must be same-compartment with the global upon entering, and the scope
     // object is wrapped into the compartment of the global.
@@ -1188,6 +1196,17 @@ public:
     bool HasInterposition() { return mInterposition; }
     nsCOMPtr<nsIAddonInterposition> GetInterposition();
 
+    static bool SetAddonInterposition(JSContext* cx,
+                                      JSAddonId* addonId,
+                                      nsIAddonInterposition* interp);
+
+    static InterpositionWhitelist* GetInterpositionWhitelist(nsIAddonInterposition* interposition);
+    static bool UpdateInterpositionWhitelist(JSContext* cx,
+                                             nsIAddonInterposition* interposition);
+
+    void SetAddonCallInterposition() { mHasCallInterpositions = true; }
+    bool HasCallInterposition() { return mHasCallInterpositions; };
+
 protected:
     virtual ~XPCWrappedNativeScope();
 
@@ -1206,6 +1225,8 @@ private:
     static XPCWrappedNativeScope* gDyingScopes;
 
     static InterpositionMap*         gInterpositionMap;
+
+    static InterpositionWhitelistArray* gInterpositionWhitelists;
 
     XPCJSRuntime*                    mRuntime;
     Native2WrappedNativeMap*         mWrappedNativeMap;
@@ -1226,9 +1247,13 @@ private:
     // Lazily created sandboxes for addon code.
     nsTArray<JS::ObjectPtr>          mAddonScopes;
 
-    // This is a service that will be use to interpose on all calls out of this
-    // scope. If it's null, no interposition is done.
+    // This is a service that will be use to interpose on some property accesses on
+    // objects from other scope, for add-on compatibility reasons.
     nsCOMPtr<nsIAddonInterposition>  mInterposition;
+
+    // If this flag is set, we intercept function calls on vanilla JS function objects
+    // from this scope if the caller scope has mInterposition set.
+    bool mHasCallInterpositions;
 
     nsAutoPtr<DOMExpandoSet> mDOMExpandoSet;
 
@@ -1698,7 +1723,7 @@ public:
          MOZ_COUNT_CTOR(XPCNativeScriptableShared);}
 
     ~XPCNativeScriptableShared()
-        {if (mJSClass.base.name)nsMemory::Free((void*)mJSClass.base.name);
+        {if (mJSClass.base.name)free((void*)mJSClass.base.name);
          MOZ_COUNT_DTOR(XPCNativeScriptableShared);}
 
     char* TransferNameOwnership()
@@ -2488,7 +2513,6 @@ public:
     }
 
     void TraceJS(JSTracer* trc);
-    static void GetTraceName(JSTracer* trc, char* buf, size_t bufsize);
 
     size_t SizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf) const;
 
@@ -2527,7 +2551,6 @@ public:
 
 public:
     void TraceJS(JSTracer* trc);
-    static void GetTraceName(JSTracer* trc, char* buf, size_t bufsize);
 
     explicit XPCJSObjectHolder(JSObject* obj);
 
@@ -3335,7 +3358,6 @@ public:
     virtual ~XPCTraceableVariant();
 
     void TraceJS(JSTracer* trc);
-    static void GetTraceName(JSTracer* trc, char* buf, size_t bufsize);
 };
 
 /***************************************************************************/
@@ -3441,6 +3463,7 @@ public:
         , addonId(cx)
         , writeToGlobalPrototype(false)
         , sameZoneAs(cx)
+        , freshZone(false)
         , invisibleToDebugger(false)
         , discardSource(false)
         , metadata(cx)
@@ -3456,6 +3479,7 @@ public:
     JS::RootedString addonId;
     bool writeToGlobalPrototype;
     JS::RootedObject sameZoneAs;
+    bool freshZone;
     bool invisibleToDebugger;
     bool discardSource;
     GlobalProperties globalProperties;
@@ -3648,7 +3672,6 @@ public:
         , skipWriteToGlobalPrototype(false)
         , universalXPConnectEnabled(false)
         , forcePermissiveCOWs(false)
-        , CPOWTime(0)
         , skipCOWCallableChecks(false)
         , scriptability(c)
         , scope(nullptr)
@@ -3701,9 +3724,6 @@ public:
     //
     // Using it in production is inherently unsafe.
     bool forcePermissiveCOWs;
-
-    // A running count of how much time we've spent processing CPOWs.
-    PRIntervalTime               CPOWTime;
 
     // Disables the XPConnect security checks that deny access to callables and
     // accessor descriptors on COWs. Do not use this unless you are bholley.

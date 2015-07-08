@@ -13,8 +13,8 @@
 
 #include "vpx/vpx_integer.h"
 
-#include "vp9/common/vp9_blockd.h"
 #include "vp9/common/vp9_common.h"
+#include "vp9/common/vp9_prob.h"
 #include "vp9/common/vp9_scan.h"
 
 #ifdef __cplusplus
@@ -81,6 +81,7 @@ typedef struct {
   const vp9_prob *prob;
   int len;
   int base_val;
+  const int16_t *cost;
 } vp9_extra_bit;
 
 // indexed by token value

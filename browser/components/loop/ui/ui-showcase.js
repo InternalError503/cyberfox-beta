@@ -17,6 +17,7 @@
   // 1. Desktop components
   // 1.1 Panel
   var PanelView = loop.panel.PanelView;
+  var SignInRequestView = loop.panel.SignInRequestView;
   // 1.2. Conversation Window
   var AcceptCallView = loop.conversationViews.AcceptCallView;
   var DesktopPendingConversationView = loop.conversationViews.PendingConversationView;
@@ -145,7 +146,7 @@
     level: "error",
     message: "Could Not Authenticate",
     details: "Did you change your password?",
-    detailsButtonLabel: "Retry",
+    detailsButtonLabel: "Retry"
   });
 
   var SVGIcon = React.createClass({displayName: "SVGIcon",
@@ -164,9 +165,9 @@
   var SVGIcons = React.createClass({displayName: "SVGIcons",
     shapes: {
       "10x10": ["close", "close-active", "close-disabled", "dropdown",
-        "dropdown-white", "dropdown-active", "dropdown-disabled", "expand",
-        "expand-active", "expand-disabled", "minimize", "minimize-active",
-        "minimize-disabled"
+        "dropdown-white", "dropdown-active", "dropdown-disabled", "edit",
+        "edit-active", "edit-disabled", "expand", "expand-active", "expand-disabled",
+        "minimize", "minimize-active", "minimize-disabled"
       ],
       "14x14": ["audio", "audio-active", "audio-disabled", "facemute",
         "facemute-active", "facemute-disabled", "hangup", "hangup-active",
@@ -264,6 +265,9 @@
           React.createElement(Section, {name: "PanelView"}, 
             React.createElement("p", {className: "note"}, 
               React.createElement("strong", null, "Note:"), " 332px wide."
+            ), 
+            React.createElement(Example, {summary: "Re-sign-in view", dashed: "true", style: {width: "332px"}}, 
+              React.createElement(SignInRequestView, {mozLoop: mockMozLoopRooms})
             ), 
             React.createElement(Example, {summary: "Room list tab", dashed: "true", style: {width: "332px"}}, 
               React.createElement(PanelView, {client: mockClient, notifications: notifications, 

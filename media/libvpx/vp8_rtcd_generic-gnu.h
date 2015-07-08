@@ -86,9 +86,6 @@ int vp8_diamond_search_sad_c(struct macroblock *x, struct block *b, struct block
 void vp8_fast_quantize_b_c(struct block *, struct blockd *);
 #define vp8_fast_quantize_b vp8_fast_quantize_b_c
 
-void vp8_fast_quantize_b_pair_c(struct block *b1, struct block *b2, struct blockd *d1, struct blockd *d2);
-#define vp8_fast_quantize_b_pair vp8_fast_quantize_b_pair_c
-
 int vp8_full_search_sad_c(struct macroblock *x, struct block *b, struct blockd *d, union int_mv *ref_mv, int sad_per_bit, int distance, struct variance_vtable *fn_ptr, int *mvcost[2], union int_mv *center_mv);
 #define vp8_full_search_sad vp8_full_search_sad_c
 
@@ -134,23 +131,11 @@ int vp8_mbuverror_c(struct macroblock *mb);
 unsigned int vp8_mse16x16_c(const unsigned char *src_ptr, int source_stride, const unsigned char *ref_ptr, int  ref_stride, unsigned int *sse);
 #define vp8_mse16x16 vp8_mse16x16_c
 
-void vp8_quantize_mb_c(struct macroblock *);
-#define vp8_quantize_mb vp8_quantize_mb_c
-
-void vp8_quantize_mbuv_c(struct macroblock *);
-#define vp8_quantize_mbuv vp8_quantize_mbuv_c
-
-void vp8_quantize_mby_c(struct macroblock *);
-#define vp8_quantize_mby vp8_quantize_mby_c
-
 int vp8_refining_search_sad_c(struct macroblock *x, struct block *b, struct blockd *d, union int_mv *ref_mv, int sad_per_bit, int distance, struct variance_vtable *fn_ptr, int *mvcost[2], union int_mv *center_mv);
 #define vp8_refining_search_sad vp8_refining_search_sad_c
 
 void vp8_regular_quantize_b_c(struct block *, struct blockd *);
 #define vp8_regular_quantize_b vp8_regular_quantize_b_c
-
-void vp8_regular_quantize_b_pair_c(struct block *b1, struct block *b2, struct blockd *d1, struct blockd *d2);
-#define vp8_regular_quantize_b_pair vp8_regular_quantize_b_pair_c
 
 unsigned int vp8_sad16x16_c(const unsigned char *src_ptr, int src_stride, const unsigned char *ref_ptr, int ref_stride, unsigned int max_sad);
 #define vp8_sad16x16 vp8_sad16x16_c

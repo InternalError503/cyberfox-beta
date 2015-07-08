@@ -883,6 +883,25 @@ LoginManagerPrompter.prototype = {
       updateButtonLabel();
     };
 
+    let onPasswordFocus = (focusEvent) => {
+      let passwordField = chromeDoc.getElementById("password-notification-password");
+      // Gets the caret position before changing the type of the textbox
+      let selectionStart = passwordField.selectionStart;
+      let selectionEnd = passwordField.selectionEnd;
+      if (focusEvent.rangeParent != null) {
+        // Check for a click over the SHOW placeholder
+        selectionStart = passwordField.value.length;
+        selectionEnd = passwordField.value.length;
+      }
+      passwordField.type = "";
+      passwordField.selectionStart = selectionStart;
+      passwordField.selectionEnd = selectionEnd;
+    };
+
+    let onPasswordBlur = () => {
+      chromeDoc.getElementById("password-notification-password").type = "password";
+    };
+
     let persistData = () => {
       let foundLogins = Services.logins.findLogins({}, login.hostname,
                                                    login.formSubmitURL,
@@ -949,6 +968,7 @@ LoginManagerPrompter.prototype = {
       secondaryActions,
       {
         timeout: Date.now() + 10000,
+        origin: login.hostname,
         persistWhileVisible: true,
         passwordNotificationType: type,
         eventCallback: function (topic) {
@@ -959,6 +979,10 @@ LoginManagerPrompter.prototype = {
                        .addEventListener("input", onInput);
               chromeDoc.getElementById("password-notification-password")
                        .addEventListener("input", onInput);
+              chromeDoc.getElementById("password-notification-password")
+                       .addEventListener("focus", onPasswordFocus);
+              chromeDoc.getElementById("password-notification-password")
+                       .addEventListener("blur", onPasswordBlur);
               break;
             case "shown":
               writeDataToUI();
@@ -972,6 +996,10 @@ LoginManagerPrompter.prototype = {
                        .removeEventListener("input", onInput);
               chromeDoc.getElementById("password-notification-password")
                        .removeEventListener("input", onInput);
+              chromeDoc.getElementById("password-notification-password")
+                       .removeEventListener("focus", onPasswordFocus);
+              chromeDoc.getElementById("password-notification-password")
+                       .removeEventListener("blur", onPasswordBlur);
               break;
           }
           return false;

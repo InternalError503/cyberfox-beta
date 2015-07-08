@@ -51,6 +51,7 @@ const MODE_TRUNCATE = 0x20;
 
 // Directory service keys
 const NS_APP_SEARCH_DIR_LIST  = "SrchPluginsDL";
+const NS_APP_DISTRIBUTION_SEARCH_DIR_LIST = "SrchPluginsDistDL";
 const NS_APP_USER_SEARCH_DIR  = "UsrSrchPlugns";
 const NS_APP_SEARCH_DIR       = "SrchPlugns";
 const NS_APP_USER_PROFILE_50_DIR = "ProfD";
@@ -2818,6 +2819,75 @@ Engine.prototype = {
     return this.__id = this._file.path;
   },
 
+  // This indicates where we found the .xml file to load the engine,
+  // and attempts to hide user-identifiable data (such as username).
+  get _anonymizedLoadPath() {
+    /* Examples of expected output:
+     *   jar:[app]/omni.ja!browser/engine.xml
+     *     'browser' here is the name of the chrome package, not a folder.
+     *   [profile]/searchplugins/engine.xml
+     *   [distribution]/searchplugins/common/engine.xml
+     *   [other]/engine.xml
+     */
+
+    let leafName = this._getLeafName();
+    if (!leafName)
+      return "null";
+
+    let prefix = "", suffix = "";
+    let file = this._file;
+    if (!file) {
+      let uri = this._uri;
+      if (uri.schemeIs("chrome")) {
+        let packageName = uri.hostPort;
+        uri = gChromeReg.convertChromeURL(uri);
+        if (uri instanceof Ci.nsINestedURI) {
+          prefix = "jar:";
+          suffix = "!" + packageName + "/" + leafName;
+          uri = uri.innermostURI;
+        }
+        uri.QueryInterface(Ci.nsIFileURL)
+        file = uri.file;
+      } else {
+        return "[" + uri.scheme + "]/" + leafName;
+      }
+    }
+
+    let id;
+    let enginePath = file.path;
+
+    const NS_XPCOM_CURRENT_PROCESS_DIR = "XCurProcD";
+    const NS_APP_USER_PROFILE_50_DIR = "ProfD";
+    const XRE_APP_DISTRIBUTION_DIR = "XREAppDist";
+
+    const knownDirs = {
+      app: NS_XPCOM_CURRENT_PROCESS_DIR,
+      profile: NS_APP_USER_PROFILE_50_DIR,
+      distribution: XRE_APP_DISTRIBUTION_DIR
+    };
+
+    for (let key in knownDirs) {
+      let path;
+      try {
+        path = getDir(knownDirs[key]).path;
+      } catch(e) {
+        // Getting XRE_APP_DISTRIBUTION_DIR throws during unit tests.
+        continue;
+      }
+      if (enginePath.startsWith(path)) {
+        id = "[" + key + "]" + enginePath.slice(path.length).replace(/\\/g, "/");
+        break;
+      }
+    }
+
+    // If the folder doesn't have a known ancestor, don't record its path to
+    // avoid leaking user identifiable data.
+    if (!id)
+      id = "[other]/" + file.leafName;
+
+    return prefix + id + suffix;
+  },
+
   get _installLocation() {
     if (this.__installLocation === null) {
       if (!this._file) {
@@ -3315,6 +3385,10 @@ SearchService.prototype = {
     return this.getEngineByName(defaultEngine);
   },
 
+  resetToOriginalDefaultEngine: function SRCH_SVC__resetToOriginalDefaultEngine() {
+    this.defaultEngine = this._originalDefaultEngine;
+  },
+
   _buildCache: function SRCH_SVC__buildCache() {
     if (!getBoolPref(BROWSER_SEARCH_PREF + "cache.enabled", true))
       return;
@@ -3412,21 +3486,43 @@ SearchService.prototype = {
         cache = this._readCacheFile(cacheFile);
     }
 
-    let loadDirs = [];
-    let locations = getDir(NS_APP_SEARCH_DIR_LIST, Ci.nsISimpleEnumerator);
-    while (locations.hasMoreElements()) {
-      let dir = locations.getNext().QueryInterface(Ci.nsIFile);
-      if (dir.directoryEntries.hasMoreElements())
-        loadDirs.push(dir);
-    }
+    let chromeURIs = [], chromeFiles = [];
+    let loadFromJARs = false;
+    try {
+      loadFromJARs = Services.prefs.getDefaultBranch(BROWSER_SEARCH_PREF)
+                             .getBoolPref("loadFromJars");
+    } catch (ex) {}
 
-    let loadFromJARs = getBoolPref(BROWSER_SEARCH_PREF + "loadFromJars", false);
-    let chromeURIs = [];
-    let chromeFiles = [];
     if (loadFromJARs)
       [chromeFiles, chromeURIs] = this._findJAREngines();
 
-    let toLoad = chromeFiles.concat(loadDirs);
+    let distDirs = [];
+    let locations;
+    try {
+      locations = getDir(NS_APP_DISTRIBUTION_SEARCH_DIR_LIST,
+                         Ci.nsISimpleEnumerator);
+    } catch (e) {
+      // NS_APP_DISTRIBUTION_SEARCH_DIR_LIST is defined by each app
+      // so this throws during unit tests (but not xpcshell tests).
+      locations = {hasMoreElements: () => false};
+    }
+    while (locations.hasMoreElements()) {
+      let dir = locations.getNext().QueryInterface(Ci.nsIFile);
+      if (dir.directoryEntries.hasMoreElements())
+        distDirs.push(dir);
+    }
+
+    let otherDirs = [];
+    locations = getDir(NS_APP_SEARCH_DIR_LIST, Ci.nsISimpleEnumerator);
+    while (locations.hasMoreElements()) {
+      let dir = locations.getNext().QueryInterface(Ci.nsIFile);
+      if (loadFromJARs && dir.equals(getDir(NS_APP_SEARCH_DIR)))
+        continue;
+      if (dir.directoryEntries.hasMoreElements())
+        otherDirs.push(dir);
+    }
+
+    let toLoad = chromeFiles.concat(distDirs, otherDirs);
 
     function modifiedDir(aDir) {
       return (!cache.directories || !cache.directories[aDir.path] ||
@@ -3449,9 +3545,11 @@ SearchService.prototype = {
 
     if (!cacheEnabled || rebuildCache) {
       LOG("_loadEngines: Absent or outdated cache. Loading engines from disk.");
-      loadDirs.forEach(this._loadEnginesFromDir, this);
+      distDirs.forEach(this._loadEnginesFromDir, this);
 
       this._loadFromChromeURLs(chromeURIs);
+
+      otherDirs.forEach(this._loadEnginesFromDir, this);
 
       if (cacheEnabled)
         this._buildCache();
@@ -3482,18 +3580,38 @@ SearchService.prototype = {
         cache = yield checkForSyncCompletion(this._asyncReadCacheFile(cacheFilePath));
       }
 
-      // Add all the non-empty directories of NS_APP_SEARCH_DIR_LIST to
-      // loadDirs.
-      let loadDirs = [];
-      let locations = getDir(NS_APP_SEARCH_DIR_LIST, Ci.nsISimpleEnumerator);
+      let chromeURIs = [], chromeFiles = [];
+      let loadFromJARs = false;
+      try {
+        loadFromJARs = Services.prefs.getDefaultBranch(BROWSER_SEARCH_PREF)
+                               .getBoolPref("loadFromJars");
+      } catch (ex) {}
+
+      if (loadFromJARs) {
+        Services.obs.notifyObservers(null, SEARCH_SERVICE_TOPIC, "find-jar-engines");
+        [chromeFiles, chromeURIs] =
+          yield checkForSyncCompletion(this._asyncFindJAREngines());
+      }
+
+      // Get the non-empty distribution directories into distDirs...
+      let distDirs = [];
+      let locations;
+      try {
+        locations = getDir(NS_APP_DISTRIBUTION_SEARCH_DIR_LIST,
+                           Ci.nsISimpleEnumerator);
+      } catch (e) {
+        // NS_APP_DISTRIBUTION_SEARCH_DIR_LIST is defined by each app
+        // so this throws during unit tests (but not xpcshell tests).
+        locations = {hasMoreElements: () => false};
+      }
       while (locations.hasMoreElements()) {
         let dir = locations.getNext().QueryInterface(Ci.nsIFile);
         let iterator = new OS.File.DirectoryIterator(dir.path,
                                                      { winPattern: "*.xml" });
         try {
-          // Add dir to loadDirs if it contains any files.
+          // Add dir to distDirs if it contains any files.
           yield checkForSyncCompletion(iterator.next());
-          loadDirs.push(dir);
+          distDirs.push(dir);
         } catch (ex if ex.result != Cr.NS_ERROR_ALREADY_INITIALIZED) {
           // Catch for StopIteration exception.
         } finally {
@@ -3501,16 +3619,32 @@ SearchService.prototype = {
         }
       }
 
-      let loadFromJARs = getBoolPref(BROWSER_SEARCH_PREF + "loadFromJars", false);
-      let chromeURIs = [];
-      let chromeFiles = [];
-      if (loadFromJARs) {
-        Services.obs.notifyObservers(null, SEARCH_SERVICE_TOPIC, "find-jar-engines");
-        [chromeFiles, chromeURIs] =
-          yield checkForSyncCompletion(this._asyncFindJAREngines());
+      // Add the non-empty directories of NS_APP_SEARCH_DIR_LIST to
+      // otherDirs...
+      let otherDirs = [];
+      locations = getDir(NS_APP_SEARCH_DIR_LIST, Ci.nsISimpleEnumerator);
+      while (locations.hasMoreElements()) {
+        let dir = locations.getNext().QueryInterface(Ci.nsIFile);
+        // ... but skip the application directory if we are loading from JAR.
+        // Applications shipping JAR engines don't ship plain text
+        // engine files anymore.
+        if (loadFromJARs && dir.equals(getDir(NS_APP_SEARCH_DIR)))
+          continue;
+
+        let iterator = new OS.File.DirectoryIterator(dir.path,
+                                                     { winPattern: "*.xml" });
+        try {
+          // Add dir to otherDirs if it contains any files.
+          yield checkForSyncCompletion(iterator.next());
+          otherDirs.push(dir);
+        } catch (ex if ex.result != Cr.NS_ERROR_ALREADY_INITIALIZED) {
+          // Catch for StopIteration exception.
+        } finally {
+          iterator.close();
+        }
       }
 
-      let toLoad = chromeFiles.concat(loadDirs);
+      let toLoad = chromeFiles.concat(distDirs, otherDirs);
       function hasModifiedDir(aList) {
         return Task.spawn(function() {
           let modifiedDir = false;
@@ -3549,7 +3683,7 @@ SearchService.prototype = {
       if (!cacheEnabled || rebuildCache) {
         LOG("_asyncLoadEngines: Absent or outdated cache. Loading engines from disk.");
         let engines = [];
-        for (let loadDir of loadDirs) {
+        for (let loadDir of distDirs) {
           let enginesFromDir =
             yield checkForSyncCompletion(this._asyncLoadEnginesFromDir(loadDir));
           engines = engines.concat(enginesFromDir);
@@ -3557,6 +3691,11 @@ SearchService.prototype = {
         let enginesFromURLs =
            yield checkForSyncCompletion(this._asyncLoadFromChromeURLs(chromeURIs));
         engines = engines.concat(enginesFromURLs);
+        for (let loadDir of otherDirs) {
+          let enginesFromDir =
+            yield checkForSyncCompletion(this._asyncLoadEnginesFromDir(loadDir));
+          engines = engines.concat(enginesFromDir);
+        }
 
         for (let engine of engines) {
           this._addEngineToStore(engine);
@@ -3874,7 +4013,8 @@ SearchService.prototype = {
 
     let rootURIPref = ""
     try {
-      rootURIPref = Services.prefs.getCharPref(BROWSER_SEARCH_PREF + "jarURIs");
+      rootURIPref = Services.prefs.getDefaultBranch(BROWSER_SEARCH_PREF)
+                            .getCharPref("jarURIs");
     } catch (ex) {}
 
     if (!rootURIPref) {
@@ -3890,27 +4030,25 @@ SearchService.prototype = {
     rootURIs.forEach(function (root) {
       // Find the underlying JAR file for this chrome package (_loadEngines uses
       // it to determine whether it needs to invalidate the cache)
-      let chromeFile;
+      let jarPackaging = false;
       try {
         let chromeURI = gChromeReg.convertChromeURL(makeURI(root));
-        let fileURI = chromeURI; // flat packaging
-        while (fileURI instanceof Ci.nsIJARURI)
-          fileURI = fileURI.JARFile; // JAR packaging
-        fileURI.QueryInterface(Ci.nsIFileURL);
-        chromeFile = fileURI.file;
+        if (chromeURI instanceof Ci.nsIJARURI) {
+          let fileURI = chromeURI;
+          while (fileURI instanceof Ci.nsIJARURI)
+            fileURI = fileURI.JARFile;
+          fileURI.QueryInterface(Ci.nsIFileURL);
+          chromeFiles.push(fileURI.file);
+          jarPackaging = true;
+        }
       } catch (ex) {
         LOG("_findJAREngines: failed to get chromeFile for " + root + ": " + ex);
-      }
-
-      if (!chromeFile)
         return;
-
-      chromeFiles.push(chromeFile);
+      }
 
       // Read list.txt from the chrome package to find the engines we need to
       // load
       let listURL = root + "list.txt";
-      let names = [];
       try {
         let chan = NetUtil.ioService.newChannelFromURI2(makeURI(listURL),
                                                         null,      // aLoadingNode
@@ -3922,14 +4060,22 @@ SearchService.prototype = {
                   createInstance(Ci.nsIScriptableInputStream);
         sis.init(chan.open());
         let list = sis.read(sis.available());
-        names = list.split("\n").filter(function (n) !!n);
+        let names = list.split("\n").filter(function (n) !!n);
+        for (let name of names) {
+          let uri = root + name + ".xml";
+          uris.push(uri);
+          if (!jarPackaging) {
+            // Flat packaging requires that _loadEngines checks the modification
+            // time of each engine file.
+            uri = gChromeReg.convertChromeURL(makeURI(uri));
+            chromeFiles.push(uri.QueryInterface(Ci.nsIFileURL).file);
+          }
+        }
       } catch (ex) {
         LOG("_findJAREngines: failed to retrieve list.txt from " + listURL + ": " + ex);
 
         return;
       }
-
-      names.forEach(function (n) uris.push(root + n + ".xml"));
     });
 
     return [chromeFiles, uris];
@@ -3947,7 +4093,8 @@ SearchService.prototype = {
 
       let rootURIPref = "";
       try {
-        rootURIPref = Services.prefs.getCharPref(BROWSER_SEARCH_PREF + "jarURIs");
+        rootURIPref = Services.prefs.getDefaultBranch(BROWSER_SEARCH_PREF)
+                              .getCharPref("jarURIs");
       } catch (ex) {}
 
       if (!rootURIPref) {
@@ -3962,23 +4109,21 @@ SearchService.prototype = {
       for (let root of rootURIs) {
         // Find the underlying JAR file for this chrome package (_loadEngines uses
         // it to determine whether it needs to invalidate the cache)
-        let chromeFile;
+        let jarPackaging = false;
         try {
           let chromeURI = gChromeReg.convertChromeURL(makeURI(root));
-          let fileURI = chromeURI; // flat packaging
-          while (fileURI instanceof Ci.nsIJARURI)
-            fileURI = fileURI.JARFile; // JAR packaging
-          fileURI.QueryInterface(Ci.nsIFileURL);
-          chromeFile = fileURI.file;
+          if (chromeURI instanceof Ci.nsIJARURI) {
+            let fileURI = chromeURI;
+            while (fileURI instanceof Ci.nsIJARURI)
+              fileURI = fileURI.JARFile;
+            fileURI.QueryInterface(Ci.nsIFileURL);
+            chromeFiles.push(fileURI.file);
+            jarPackaging = true;
+          }
         } catch (ex) {
           LOG("_asyncFindJAREngines: failed to get chromeFile for " + root + ": " + ex);
-        }
-
-        if (!chromeFile) {
           return;
         }
-
-        chromeFiles.push(chromeFile);
 
         // Read list.txt from the chrome package to find the engines we need to
         // load
@@ -4000,7 +4145,16 @@ SearchService.prototype = {
 
         let names = [];
         names = list.split("\n").filter(function (n) !!n);
-        names.forEach(function (n) uris.push(root + n + ".xml"));
+        for (let name of names) {
+          let uri = root + name + ".xml";
+          uris.push(uri);
+          if (!jarPackaging) {
+            // Flat packaging requires that _loadEngines checks the modification
+            // time of each engine file.
+            uri = gChromeReg.convertChromeURL(makeURI(uri));
+            chromeFiles.push(uri.QueryInterface(Ci.nsIFileURL).file);
+          }
+        }
       }
       throw new Task.Result([chromeFiles, uris]);
     });
@@ -4562,6 +4716,71 @@ SearchService.prototype = {
     engineMetadataService.setGlobalAttr("hash", this._getVerificationHash(newName));
 
     notifyAction(this._currentEngine, SEARCH_ENGINE_CURRENT);
+  },
+
+  getDefaultEngineInfo() {
+    let result = {};
+
+    let engine;
+    try {
+      engine = this.defaultEngine;
+    } catch(e) {
+      // The defaultEngine getter will throw if there's no engine at all,
+      // which shouldn't happen unless an add-on or a test deleted all of them.
+      // Our preferences UI doesn't let users do that.
+      Cu.reportError("getDefaultEngineInfo: No default engine");
+    }
+
+    if (!engine) {
+      result.name = "NONE";
+    } else {
+      if (engine.name)
+        result.name = engine.name;
+
+      result.loadPath = engine._anonymizedLoadPath;
+
+      // For privacy, we only collect the submission URL for engines
+      // from the application or distribution folder...
+      let sendSubmissionURL =
+        /^(?:jar:|\[app\]|\[distribution\])/.test(result.loadPath);
+
+      // ... or engines sorted by default near the top of the list.
+      if (!sendSubmissionURL) {
+        let extras =
+          Services.prefs.getChildList(BROWSER_SEARCH_PREF + "order.extra.");
+
+        for (let prefName of extras) {
+          try {
+            if (result.name == Services.prefs.getCharPref(prefName)) {
+              sendSubmissionURL = true;
+              break;
+            }
+          } catch(e) {}
+        }
+
+        let prefNameBase = getGeoSpecificPrefName(BROWSER_SEARCH_PREF + "order");
+        let i = 0;
+        while (!sendSubmissionURL) {
+          let prefName = prefNameBase + "." + (++i);
+          let engineName = getLocalizedPref(prefName);
+          if (!engineName)
+            break;
+          if (result.name == engineName) {
+            sendSubmissionURL = true;
+            break;
+          }
+        }
+      }
+
+      if (sendSubmissionURL) {
+        let uri = engine._getURLOfType("text/html")
+                        .getSubmission("", engine, "searchbar").uri;
+        uri.userPass = ""; // Avoid reporting a username or password.
+        result.submissionURL = uri.spec;
+      }
+    }
+
+    return result;
   },
 
   /**

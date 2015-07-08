@@ -300,6 +300,10 @@ toolbar[customizing] > .overflow-button {
   visibility: collapse;
 }
 
+#navigator-toolbox[fullscreenShouldAnimate] {
+  transition: 1.5s margin-top ease-out;
+}
+
 /* Rules to help integrate SDK widgets */
 toolbaritem[sdkstylewidget="true"] > toolbarbutton,
 toolbarpaletteitem > toolbaritem[sdkstylewidget="true"] > iframe,
@@ -769,6 +773,14 @@ window[chromehidden~="toolbar"] toolbar:not(#nav-bar):not(#TabsToolbar):not(#pri
   -moz-binding: url("chrome://browser/content/urlbarBindings.xml#click-to-play-plugins-notification");
 }
 
+#password-fill-notification {
+  -moz-binding: url("chrome://browser/content/urlbarBindings.xml#password-fill-notification");
+}
+
+.login-fill-item {
+  -moz-binding: url("chrome://passwordmgr/content/login.xml#login");
+}
+
 .plugin-popupnotification-centeritem {
   -moz-binding: url("chrome://browser/content/urlbarBindings.xml#plugin-popupnotification-center-item");
 }
@@ -885,14 +897,6 @@ html|*#gcli-output-frame,
 
 toolbarbutton[type="socialmark"] {
   -moz-binding: url("chrome://browser/content/socialmarks.xml#toolbarbutton-marks");
-}
-
-toolbarbutton.badged-button > .toolbarbutton-badge-container > .toolbarbutton-icon,
-toolbarbutton[type="socialmark"] > .toolbarbutton-icon {
-  max-width: 18px;
-}
-toolbarpaletteitem[place="palette"] > toolbarbutton.badged-button > .toolbarbutton-badge-container > .toolbarbutton-icon {
-  max-width: 32px;
 }
 
 panelview > .social-panel-frame {

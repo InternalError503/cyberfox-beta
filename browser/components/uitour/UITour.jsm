@@ -12,6 +12,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 Cu.import("resource://gre/modules/Promise.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
+Cu.import("resource://gre/modules/TelemetryController.jsm");
 
 Cu.importGlobalProperties(["URL"]);
 
@@ -430,7 +431,7 @@ this.UITour = {
 
         // We don't want to allow BrowserUITelemetry.BUCKET_SEPARATOR in the
         // pageID, as it could make parsing the telemetry bucket name difficult.
-        if (data.pageID.contains(BrowserUITelemetry.BUCKET_SEPARATOR)) {
+        if (data.pageID.includes(BrowserUITelemetry.BUCKET_SEPARATOR)) {
           log.warn("registerPageID: Invalid page ID specified");
           break;
         }
@@ -706,16 +707,16 @@ this.UITour = {
         break;
       }
 
+      case "forceShowReaderIcon": {
+        ReaderParent.forceShowReaderIcon(browser);
+        break;
+      }
+
       case "toggleReaderMode": {
         let targetPromise = this.getTarget(window, "readerMode-urlBar");
         targetPromise.then(target => {
           ReaderParent.toggleReaderMode({target: target.node});
         });
-      }
-
-      case "forceShowReaderIcon": {
-        ReaderParent.forceShowReaderIcon(browser);
-        break;
       }
     }
 
@@ -1979,6 +1980,16 @@ const DAILY_DISCRETE_TEXT_FIELD = Metrics.Storage.FIELD_DAILY_DISCRETE_TEXT;
  */
 const UITourHealthReport = {
   recordTreatmentTag: function(tag, value) {
+  TelemetryController.submitExternalPing("uitour-tag",
+    {
+      version: 1,
+      tagName: tag,
+      tagValue: value,
+    },
+    {
+      addClientId: true,
+      addEnvironment: true,
+    });
 #ifdef MOZ_SERVICES_HEALTHREPORT
     Task.spawn(function*() {
       let reporter = Cc["@mozilla.org/datareporting/service;1"]

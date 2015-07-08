@@ -17,14 +17,10 @@
 #include "vpx_ports/mem.h"
 #include "vpx_scale/yv12config.h"
 
-#include "vp9/common/vp9_common.h"
 #include "vp9/common/vp9_common_data.h"
-#include "vp9/common/vp9_enums.h"
 #include "vp9/common/vp9_filter.h"
-#include "vp9/common/vp9_idct.h"
 #include "vp9/common/vp9_mv.h"
 #include "vp9/common/vp9_scale.h"
-#include "vp9/common/vp9_seg_common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,9 +43,9 @@ typedef enum {
   PLANE_TYPES
 } PLANE_TYPE;
 
-typedef char ENTROPY_CONTEXT;
+#define MAX_MB_PLANE 3
 
-typedef char PARTITION_CONTEXT;
+typedef char ENTROPY_CONTEXT;
 
 static INLINE int combine_entropy_contexts(ENTROPY_CONTEXT a,
                                            ENTROPY_CONTEXT b) {
@@ -111,17 +107,6 @@ typedef enum {
   MAX_REF_FRAMES = 4
 } MV_REFERENCE_FRAME;
 
-static INLINE int b_width_log2(BLOCK_SIZE sb_type) {
-  return b_width_log2_lookup[sb_type];
-}
-static INLINE int b_height_log2(BLOCK_SIZE sb_type) {
-  return b_height_log2_lookup[sb_type];
-}
-
-static INLINE int mi_width_log2(BLOCK_SIZE sb_type) {
-  return mi_width_log2_lookup[sb_type];
-}
-
 // This structure now relates to 8x8 block regions.
 typedef struct {
   // Common for both INTER and INTRA blocks
@@ -141,6 +126,7 @@ typedef struct {
   int_mv ref_mvs[MAX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
   uint8_t mode_context[MAX_REF_FRAMES];
   INTERP_FILTER interp_filter;
+
 } MB_MODE_INFO;
 
 typedef struct MODE_INFO {
@@ -172,8 +158,6 @@ enum mv_precision {
   MV_PRECISION_Q3,
   MV_PRECISION_Q4
 };
-
-enum { MAX_MB_PLANE = 3 };
 
 struct buf_2d {
   uint8_t *buf;
@@ -208,6 +192,10 @@ typedef struct macroblockd {
   int mi_stride;
 
   MODE_INFO *mi;
+  MODE_INFO *left_mi;
+  MODE_INFO *above_mi;
+  MB_MODE_INFO *left_mbmi;
+  MB_MODE_INFO *above_mbmi;
 
   int up_available;
   int left_available;
@@ -224,6 +212,12 @@ typedef struct macroblockd {
   /* pointer to current frame */
   const YV12_BUFFER_CONFIG *cur_buf;
 
+  ENTROPY_CONTEXT *above_context[MAX_MB_PLANE];
+  ENTROPY_CONTEXT left_context[MAX_MB_PLANE][16];
+
+  PARTITION_CONTEXT *above_seg_context;
+  PARTITION_CONTEXT left_seg_context[8];
+
   /* mc buffer */
   DECLARE_ALIGNED(16, uint8_t, mc_buf[80 * 2 * 80 * 2]);
 
@@ -233,17 +227,13 @@ typedef struct macroblockd {
   DECLARE_ALIGNED(16, uint16_t, mc_buf_high[80 * 2 * 80 * 2]);
 #endif
 
-  int lossless;
+  /* dqcoeff are shared by all the planes. So planes must be decoded serially */
+  DECLARE_ALIGNED(16, tran_low_t, dqcoeff[64 * 64]);
 
+  int lossless;
   int corrupted;
 
-  DECLARE_ALIGNED(16, tran_low_t, dqcoeff[MAX_MB_PLANE][64 * 64]);
-
-  ENTROPY_CONTEXT *above_context[MAX_MB_PLANE];
-  ENTROPY_CONTEXT left_context[MAX_MB_PLANE][16];
-
-  PARTITION_CONTEXT *above_seg_context;
-  PARTITION_CONTEXT left_seg_context[8];
+  struct vpx_internal_error_info *error_info;
 } MACROBLOCKD;
 
 static INLINE BLOCK_SIZE get_subsize(BLOCK_SIZE bsize,
@@ -257,8 +247,9 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type,
                                   const MACROBLOCKD *xd) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0].src_mi->mbmi;
 
-  if (plane_type != PLANE_TYPE_Y || is_inter_block(mbmi))
+  if (plane_type != PLANE_TYPE_Y || xd->lossless || is_inter_block(mbmi))
     return DCT_DCT;
+
   return intra_mode_to_tx_type_lookup[mbmi->mode];
 }
 
@@ -312,7 +303,7 @@ void vp9_foreach_transformed_block(
 static INLINE void txfrm_block_to_raster_xy(BLOCK_SIZE plane_bsize,
                                             TX_SIZE tx_size, int block,
                                             int *x, int *y) {
-  const int bwl = b_width_log2(plane_bsize);
+  const int bwl = b_width_log2_lookup[plane_bsize];
   const int tx_cols_log2 = bwl - tx_size;
   const int tx_cols = 1 << tx_cols_log2;
   const int raster_mb = block >> (tx_size << 1);

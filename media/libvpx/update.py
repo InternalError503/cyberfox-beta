@@ -42,7 +42,7 @@ mk_files = [
 extensions = ['.asm', '.c', '.h']
 
 MODULES = {
-    'UNIFIED_SOURCES': [
+    'SOURCES': [
         'API_DOC_SRCS-$(CONFIG_VP8_DECODER)',
         'API_DOC_SRCS-yes',
         'API_EXPORTS',
@@ -77,6 +77,7 @@ MODULES = {
         'VP8_CX_SRCS-no',
         'VP8_CX_SRCS_REMOVE-no',
         'VP8_CX_SRCS_REMOVE-yes',
+        'VP8_CX_SRCS_REMOVE-yes+$(CONFIG_REALTIME_ONLY)',
         'VP8_CX_SRCS-yes',
         'VP9_CX_EXPORTS',
         'VP9_CX_SRCS-no',
@@ -86,32 +87,44 @@ MODULES = {
     ],
     'X86_ASM': [
         'PORTS_SRCS-$(BUILD_LIBVPX)',
+        'PORTS_SRCS-$(BUILD_LIBVPX)+$(ARCH_X86)$(ARCH_X86_64)',
         'VP8_COMMON_SRCS-$(ARCH_X86)$(ARCH_X86_64)',
         'VP8_COMMON_SRCS-$(HAVE_MMX)',
+        'VP8_COMMON_SRCS-$(HAVE_MMX)+$(CONFIG_POSTPROC)',
         'VP8_COMMON_SRCS-$(HAVE_SSE2)',
+        'VP8_COMMON_SRCS-$(HAVE_SSE2)+$(CONFIG_POSTPROC)',
         'VP8_COMMON_SRCS-$(HAVE_SSE3)',
         'VP8_COMMON_SRCS-$(HAVE_SSE4_1)',
         'VP8_COMMON_SRCS-$(HAVE_SSSE3)',
-        'VP9_COMMON_SRCS-$(ARCH_X86)$(ARCH_X86_64)',
-        'VP9_COMMON_SRCS-$(HAVE_MMX)',
-        'VP9_COMMON_SRCS-$(HAVE_SSE2)',
-        'VP9_COMMON_SRCS-$(HAVE_SSSE3)',
         'VP8_CX_SRCS-$(ARCH_X86)$(ARCH_X86_64)',
         'VP8_CX_SRCS-$(HAVE_MMX)',
         'VP8_CX_SRCS-$(HAVE_SSE2)',
+        'VP8_CX_SRCS-$(HAVE_SSE2)+$(CONFIG_TEMPORAL_DENOISING)',
         'VP8_CX_SRCS-$(HAVE_SSE4_1)',
         'VP8_CX_SRCS-$(HAVE_SSSE3)',
         'VP8_CX_SRCS_REMOVE-$(HAVE_SSE2)',
+        'VP8_CX_SRCS_REMOVE-$(HAVE_SSE2)+$(CONFIG_REALTIME_ONLY)',
+        'VP9_COMMON_SRCS-$(ARCH_X86)$(ARCH_X86_64)',
+        'VP9_COMMON_SRCS-$(HAVE_MMX)',
+        'VP9_COMMON_SRCS-$(HAVE_SSE2)',
+        'VP9_COMMON_SRCS-$(HAVE_SSE2)+$(CONFIG_USE_X86INC)',
+        'VP9_COMMON_SRCS-$(HAVE_SSSE3)',
+        'VP9_COMMON_SRCS-$(HAVE_SSSE3)+$(CONFIG_USE_X86INC)',
         'VP9_CX_SRCS-$(ARCH_X86)$(ARCH_X86_64)',
         'VP9_CX_SRCS-$(HAVE_MMX)',
+        'VP9_CX_SRCS-$(HAVE_MMX)+$(CONFIG_USE_X86INC)',
         'VP9_CX_SRCS-$(HAVE_SSE2)',
+        'VP9_CX_SRCS-$(HAVE_SSE2)+$(CONFIG_USE_X86INC)',
         'VP9_CX_SRCS-$(HAVE_SSE3)',
         'VP9_CX_SRCS-$(HAVE_SSE4_1)',
         'VP9_CX_SRCS-$(HAVE_SSSE3)',
     ],
     'X86-64_ASM': [
+        'VP8_COMMON_SRCS-$(HAVE_SSE2)+$(ARCH_X86_64)',
         'VP8_CX_SRCS-$(ARCH_X86_64)',
+        'VP9_COMMON_SRCS-$(HAVE_SSSE3)+$(ARCH_X86_64)',
         'VP9_CX_SRCS-$(ARCH_X86_64)',
+        'VP9_CX_SRCS-$(HAVE_SSSE3)+$(ARCH_X86_64)',
     ],
     'ARM_ASM': [
         'PORTS_SRCS-$(ARCH_ARM)',
@@ -121,6 +134,7 @@ MODULES = {
         'VP8_COMMON_SRCS-$(HAVE_NEON)',
         'VP9_COMMON_SRCS-$(HAVE_NEON)',
         'VP9_COMMON_SRCS-$(HAVE_NEON_ASM)',
+        'VP9_COMMON_SRCS-yes+$(HAVE_NEON_ASM)',
         'VP8_CX_SRCS-$(ARCH_ARM)',
         'VP8_CX_SRCS-$(HAVE_EDSP)',
         'VP8_CX_SRCS-$(HAVE_MEDIA)',
@@ -140,18 +154,29 @@ MODULES = {
     ],
     'VP9_POSTPROC': [
         'VP9_COMMON_SRCS-$(CONFIG_VP9_POSTPROC)',
+        'VP9_COMMON_SRCS-$(HAVE_SSE2)+$(CONFIG_VP9_POSTPROC)',
     ]
 }
 
 DISABLED_MODULES = [
     'API_SRCS-$(CONFIG_SPATIAL_SVC)',
+    'API_SRCS-$(CONFIG_SPATIAL_SVC)+$(CONFIG_VP9_ENCODER)',
     'MEM_SRCS-$(CONFIG_MEM_MANAGER)',
     'MEM_SRCS-$(CONFIG_MEM_TRACKER)',
     'VP8_COMMON_SRCS-$(CONFIG_POSTPROC_VISUALIZER)',
     'VP9_COMMON_SRCS-$(CONFIG_POSTPROC_VISUALIZER)',
     'VP8_CX_SRCS-$(CONFIG_INTERNAL_STATS)',
     'VP9_CX_SRCS-$(CONFIG_INTERNAL_STATS)',
+    'VP9_CX_SRCS-$(CONFIG_INTERNAL_STATS)+$(CONFIG_VP9_POSTPROC)',
     'VP9_CX_SRCS-$(CONFIG_VP9_TEMPORAL_DENOISING)',
+    'VP9_CX_SRCS-$(HAVE_SSE2)+$(CONFIG_VP9_TEMPORAL_DENOISING)',
+    'VP9_COMMON_SRCS-$(HAVE_SSE2)+$(CONFIG_VP9_HIGHBITDEPTH)',
+    'VP9_CX_SRCS-$(HAVE_SSE2)+$(CONFIG_VP9_HIGHBITDEPTH)',
+
+    # use asm implementations instead of intrinsics
+    # neon exists as assembly and intrinsics implementations.
+    # If both are available prefer assembly (HAVE_NEON_ASM)
+    'VP9_COMMON_SRCS-yes+$(HAVE_NEON)',
 
     # mips files are also ignored via ignored_folders
     'SCALE_SRCS-$(HAVE_DSPR2)',
@@ -161,7 +186,6 @@ DISABLED_MODULES = [
 ]
 
 libvpx_files = [
-    'build/make/obj_int_extract.c',
     'build/make/ads2gas.pl',
     'build/make/thumb.pm',
     'LICENSE',
@@ -195,6 +219,12 @@ ignore_folders = [
     'test/',
     'vpx_mem/memory_manager/',
 ]
+
+rename_files = {
+    #avoid clash with common/arm/neon/vp9_avg_neon.c
+    'vp9/encoder/arm/neon/vp9_avg_neon.c': 'vp9/encoder/arm/neon/vp9enc_avg_neon.c'
+}
+
 files = {
     'EXPORTS': [
         'vpx_mem/include/vpx_mem_intrnl.h',
@@ -217,8 +247,6 @@ files = {
     ],
     'X86-64_ASM': [
         'third_party/x86inc/x86inc.asm',
-        'vp8/common/x86/loopfilter_block_sse2_x86_64.asm',
-        'vp9/encoder/x86/vp9_quantize_ssse3_x86_64.asm',
     ],
     'SOURCES': [
         'vp8/common/rtcd.c',
@@ -249,26 +277,18 @@ files = {
         'vp9/common/vp9_scale.c',
         'vp9/common/vp9_scan.c',
         'vp9/common/vp9_seg_common.c',
-        'vp9/common/vp9_thread.c',
         'vp9/common/vp9_tile_common.c',
         'vp9/decoder/vp9_decodeframe.c',
         'vp9/decoder/vp9_decodemv.c',
-        'vp9/decoder/vp9_decoder.c',
         'vp9/decoder/vp9_detokenize.c',
         'vp9/decoder/vp9_dsubexp.c',
         'vp9/decoder/vp9_dthread.c',
         'vp9/decoder/vp9_reader.c',
         'vp9/encoder/vp9_bitstream.c',
-        'vp9/encoder/vp9_aq_complexity.c',
-        'vp9/encoder/vp9_aq_cyclicrefresh.c',
-        'vp9/encoder/vp9_aq_variance.c',
-        'vp9/encoder/vp9_context_tree.c',
-        'vp9/encoder/vp9_cost.c',
         'vp9/encoder/vp9_dct.c',
         'vp9/encoder/vp9_encodeframe.c',
         'vp9/encoder/vp9_encodemb.c',
         'vp9/encoder/vp9_encodemv.c',
-        'vp9/encoder/vp9_encoder.c',
         'vp9/encoder/vp9_extend.c',
         'vp9/encoder/vp9_firstpass.c',
         'vp9/encoder/vp9_lookahead.c',
@@ -278,23 +298,18 @@ files = {
         'vp9/encoder/vp9_pickmode.c',
         'vp9/encoder/vp9_quantize.c',
         'vp9/encoder/vp9_ratectrl.c',
-        'vp9/encoder/vp9_rd.c',
         'vp9/encoder/vp9_rdopt.c',
         'vp9/encoder/vp9_resize.c',
         'vp9/encoder/vp9_sad.c',
         'vp9/encoder/vp9_segmentation.c',
-        'vp9/encoder/vp9_speed_features.c',
         'vp9/encoder/vp9_subexp.c',
-        'vp9/encoder/vp9_svc_layercontext.c',
         'vp9/encoder/vp9_temporal_filter.c',
         'vp9/encoder/vp9_tokenize.c',
         'vp9/encoder/vp9_treewriter.c',
         'vp9/encoder/vp9_variance.c',
-        'vp9/encoder/vp9_write_bit_buffer.c',
         'vp9/encoder/vp9_writer.c',
         'vp9/vp9_cx_iface.c',
         'vp9/vp9_dx_iface.c',
-        'vpx/src/svc_encodeframe.c',
         'vpx/src/vpx_encoder.c',
         'vpx_mem/vpx_mem.c',
         'vpx_scale/vpx_scale_rtcd.c',
@@ -307,9 +322,9 @@ manual = [
     # special case in moz.build
     'vp8/encoder/boolhuff.c',
 
-    # 64bit only
-    'vp8/common/x86/loopfilter_block_sse2_x86_64.asm',
-    'vp9/encoder/x86/vp9_quantize_ssse3_x86_64.asm',
+    # These 64-bit only files end up in X86_ASM. Filter them out.
+    'vp8/common/x86/loopfilter_block_sse2.asm',
+    'vp9/encoder/x86/vp9_quantize_ssse3.asm',
 
     # offsets are special cased in Makefile.in
     'vp8/encoder/vp8_asm_enc_offsets.c',
@@ -336,17 +351,17 @@ platform_files = [
 ]
 
 def prepare_upstream(prefix, commit=None):
+    upstream_url = 'https://chromium.googlesource.com/webm/libvpx'
     if os.path.exists(prefix):
-        print "Please remove '%s' folder before running %s" % (prefix, sys.argv[0])
-        sys.exit(1)
-
-    upstream_url = 'https://gerrit.chromium.org/gerrit/webm/libvpx'
-    subprocess.call(['git', 'clone', upstream_url, prefix])
-    if commit:
+        print "Using existing repo in '%s'" % prefix
         os.chdir(prefix)
+        subprocess.call(['git', 'fetch', upstream_url, prefix])
+    else:
+        subprocess.call(['git', 'clone', upstream_url, prefix])
+        os.chdir(prefix)
+    if commit:
         subprocess.call(['git', 'checkout', commit])
     else:
-        os.chdir(prefix)
         p = subprocess.Popen(['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE)
         stdout, stderr = p.communicate()
         commit = stdout.strip()
@@ -385,7 +400,7 @@ def prepare_upstream(prefix, commit=None):
     return commit
 
 def cleanup_upstream():
-    shutil.rmtree(os.path.join(base, 'upstream'))
+    shutil.rmtree(os.path.join(base, 'upstream/objdir'))
 
 def get_module(key):
     for module in MODULES:
@@ -411,10 +426,17 @@ def get_sources(prefix):
     for mk in mk_files:
         with open(os.path.join(prefix, mk)) as f:
             base = os.path.dirname(mk)
+            extra = ''
             for l in f:
+                m = re.compile('ifeq +\((.*?\)), *yes\)').findall(l)
+                if m:
+                    extra = '+' + m[0]
+                if extra and l.startswith('else') or l.startswith('endif'):
+                    extra = ''
                 if '+=' in l:
                     l = l.split('+=')
                     key = l[0].strip()
+                    key += extra
                     value = l[1].strip().replace('$(ASM)', '.asm')
                     value = os.path.join(base, value)
                     if not key.startswith('#') and os.path.splitext(value)[-1] in extensions:
@@ -424,6 +446,7 @@ def get_sources(prefix):
 
     for key in source:
         for f in source[key]:
+            f = rename_files.get(f, f)
             if key.endswith('EXPORTS') and f.endswith('.h'):
                 files['EXPORTS'].append(f)
             if os.path.splitext(f)[-1] in ('.c', '.asm') and not f in manual:
@@ -441,8 +464,6 @@ def get_sources(prefix):
                         unknown[key] = []
                     t = unknown[key]
                 t.append(f)
-
-    files['UNIFIED_SOURCES'] = [f for f in files['UNIFIED_SOURCES'] if f not in files['SOURCES']]
 
     for key in files:
         files[key] = list(sorted(set(files[key])))
@@ -494,6 +515,7 @@ def update_and_remove_files(prefix, libvpx_files, files):
         if fdir and not os.path.exists(fdir):
             os.makedirs(fdir)
         s = os.path.join(prefix, f)
+        f = rename_files.get(f, f)
         if is_new(f, s):
             if first:
                 print "Copy files:"
@@ -520,7 +542,7 @@ def update_and_remove_files(prefix, libvpx_files, files):
         copy(s, f)
 
     # Remove unknown files from tree
-    removed_files = [f for f in current_files if f not in libvpx_files]
+    removed_files = [f for f in current_files if f not in libvpx_files and f not in rename_files.values()]
     if removed_files:
         print "Remove files:"
         for f in removed_files:
@@ -530,10 +552,8 @@ def update_and_remove_files(prefix, libvpx_files, files):
 def apply_patches():
     # Patch to permit vpx users to specify their own <stdint.h> types.
     os.system("patch -p0 < stdint.patch")
-    # Patch to allow older versions of Apple's clang to build libvpx.
-    os.system("patch -p3 < apple-clang.patch")
     # Patch to allow MSVC 2015 to compile libvpx
-    os.system("patch -p3 < msvc2015.patch")
+    os.system("patch -p1 < msvc2015.patch")
     # Patch to fix a crash caused by MSVC 2013
     os.system("patch -p3 < bug1137614.patch")
 
