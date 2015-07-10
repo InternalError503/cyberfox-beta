@@ -118,9 +118,9 @@ nsXREDirProvider::Initialize(nsIFile *aXULAppDir,
     }
   }
 
-#ifdef MOZ_B2G
+
   LoadAppBundleDirs();
-#endif
+
 
   return NS_OK;
 }
@@ -644,7 +644,7 @@ nsXREDirProvider::LoadExtensionBundleDirectories()
   }
 }
 
-#ifdef MOZ_B2G
+
 void
 nsXREDirProvider::LoadAppBundleDirs()
 {
@@ -671,10 +671,14 @@ nsXREDirProvider::LoadAppBundleDirs()
 
     nsCOMPtr<nsIFile> manifest =
       CloneAndAppend(subdir, "chrome.manifest");
+#ifdef MOZ_B2G	  
     XRE_AddManifestLocation(NS_APP_LOCATION, manifest);
+#else
+    XRE_AddManifestLocation(NS_EXTENSION_LOCATION, manifest);
+#endif
   }
 }
-#endif
+
 
 static const char *const kAppendPrefDir[] = { "defaults", "preferences", nullptr };
 
