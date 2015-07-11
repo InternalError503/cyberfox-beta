@@ -205,8 +205,11 @@ browser.jar:
 * skin/classic/browser/preferences/in-content/preferences.css (preferences/in-content/preferences.css)
 * skin/classic/browser/preferences/in-content/dialog.css      (preferences/in-content/dialog.css)
   skin/classic/browser/preferences/in-content/favicon.ico     (../shared/incontentprefs/favicon.ico)
-  skin/classic/browser/preferences/in-content/icons.svg       (../shared/incontentprefs/icons.svg)
+  skin/classic/browser/preferences/in-content/icons.png       (../shared/incontentprefs/icons.png)
+  skin/classic/browser/preferences/in-content/icons@2x.png    (../shared/incontentprefs/icons@2x.png)
   skin/classic/browser/preferences/in-content/search.css      (../shared/incontentprefs/search.css)
+  skin/classic/browser/preferences/in-content/check.png       (../shared/incontentprefs/check.png)
+  skin/classic/browser/preferences/in-content/check@2x.png    (../shared/incontentprefs/check@2x.png)
   skin/classic/browser/preferences/in-content/default-profile-image.svg   (../shared/incontentprefs/default-profile-image.svg)
   skin/classic/browser/preferences/applications.css   (preferences/applications.css)
   skin/classic/browser/preferences/aboutPermissions.css (preferences/aboutPermissions.css)
@@ -472,17 +475,16 @@ browser.jar:
   skin/classic/browser/warning16.png                        (../shared/warning16.png)
   skin/classic/browser/warning16@2x.png                     (../shared/warning16@2x.png)
 
-../extensions/{972ce4c6-7e08-4474-a285-3208198ce6fd}/chrome.jar:
-% override chrome://browser/skin/feeds/audioFeedIcon.png              chrome://browser/skin/feeds/feedIcon.png
-% override chrome://browser/skin/feeds/audioFeedIcon16.png            chrome://browser/skin/feeds/feedIcon16.png
-% override chrome://browser/skin/feeds/videoFeedIcon.png              chrome://browser/skin/feeds/feedIcon.png
-% override chrome://browser/skin/feeds/videoFeedIcon16.png            chrome://browser/skin/feeds/feedIcon16.png
-
 # Add Files For Cyberfox
-
 #Browser Theme Core
   skin/classic/browser/newtab/noise.png               (newtab/noise.png)
 #Browser Theme Core Menu
   skin/classic/browser/appmenu-icons.png
   skin/classic/browser/appmenu-icons-cf.png
 	skin/classic/browser/places/bookmark.png                     (places/bookmark.png)
+
+../extensions/{972ce4c6-7e08-4474-a285-3208198ce6fd}/chrome.jar:
+% override chrome://browser/skin/feeds/audioFeedIcon.png              chrome://browser/skin/feeds/feedIcon.png
+% override chrome://browser/skin/feeds/audioFeedIcon16.png            chrome://browser/skin/feeds/feedIcon16.png
+% override chrome://browser/skin/feeds/videoFeedIcon.png              chrome://browser/skin/feeds/feedIcon.png
+% override chrome://browser/skin/feeds/videoFeedIcon16.png            chrome://browser/skin/feeds/feedIcon16.png

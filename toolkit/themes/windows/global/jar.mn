@@ -259,6 +259,18 @@ toolkit.jar:
         skin/classic/global/tree/twisty-clsd-XP.png                    (tree/twisty-clsd-XP.png)
         skin/classic/global/tree/twisty-open-XP.png                    (tree/twisty-open-XP.png)
 
+
+# Add Files For Cyberfox
+#Browser Theme Core Preferences
+    skin/classic/aero/global/in-content/check.png                    			(../../shared/in-content/check.png)
+    skin/classic/aero/global/in-content/check@2x.png						(../../shared/in-content/check@2x.png)
+    skin/classic/aero/global/in-content/header.png							(../../shared/in-content/header.png)
+    skin/classic/aero/global/in-content/header@2x.png						(../../shared/in-content/header@2x.png)	
+    skin/classic/aero/global/in-content/dropdown.png						(../../shared/in-content/dropdown.png)
+    skin/classic/aero/global/in-content/dropdown@2x.png 					(../../shared/in-content/dropdown@2x.png)
+    skin/classic/aero/global/in-content/dropdown-disabled.png			(../../shared/in-content/dropdown-disabled.png)
+    skin/classic/aero/global/in-content/dropdown-disabled@2x.png	(../../shared/in-content/dropdown-disabled@2x.png)
+
 #if MOZ_BUILD_APP == browser
 ../browser/extensions/{972ce4c6-7e08-4474-a285-3208198ce6fd}/chrome.jar:
 #endif
@@ -300,18 +312,6 @@ toolkit.jar:
 % override chrome://global/skin/tree/sort-dsc.png                 chrome://global/skin/tree/sort-dsc-XP.png                osversion<6
 % override chrome://global/skin/tree/twisty-clsd.png              chrome://global/skin/tree/twisty-clsd-XP.png             osversion<6
 % override chrome://global/skin/tree/twisty-open.png              chrome://global/skin/tree/twisty-open-XP.png             osversion<6
-
-# Add Files For Cyberfox
-
-#Browser Theme Core Preferences
-        skin/classic/aero/global/in-content/check.png                    (../../shared/in-content/check.png)
-        skin/classic/aero/global/in-content/check@2x.png                 (../../shared/in-content/check@2x.png)
-        skin/classic/aero/global/in-content/header.png      (../../shared/in-content/header.png)
-        skin/classic/aero/global/in-content/header@2x.png   (../../shared/in-content/header@2x.png)	
-        skin/classic/aero/global/in-content/dropdown.png                 (../../shared/in-content/dropdown.png)
-        skin/classic/aero/global/in-content/dropdown@2x.png              (../../shared/in-content/dropdown@2x.png)
-        skin/classic/aero/global/in-content/dropdown-disabled.png        (../../shared/in-content/dropdown-disabled.png)
-        skin/classic/aero/global/in-content/dropdown-disabled@2x.png     (../../shared/in-content/dropdown-disabled@2x.png)
 
 #endif
 
