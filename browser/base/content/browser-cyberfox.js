@@ -427,10 +427,8 @@ var gCyberfoxCustom = {
     },
 
 
-    toolsDownloads: function(e) {
-
+    toolsDownloads: function(tools) {
         try {
-
             if (Services.prefs.getBoolPref("browser.download.useToolkitUI")) {
                 if (DownloadsWindow == null || DownloadsWindow.closed) {
                     window.open("chrome://browser/content/downloads/downloadsWindow.xul", "Downloads", params);
@@ -438,35 +436,16 @@ var gCyberfoxCustom = {
                     DownloadsWindow.focus();
                 }
             } else {
-                BrowserDownloadsUI();
+				if (tools === true){
+					BrowserDownloadsUI();
+				} else if (tools === false){
+					DownloadsPanel.showDownloadsHistory();
+				}				
             }
         } catch (e) {
             //Catch any nasty errors and output to console
             console.log("Were sorry but something has gone wrong with 'toolsDownloads' " + e);
         }
-    },
-
-    customDownloadsOverlay: function(e) {
-
-        try {
-
-            if (Services.prefs.getBoolPref("browser.download.useToolkitUI")) {
-
-                if (DownloadsWindow == null || DownloadsWindow.closed) {
-                    window.open("chrome://browser/content/downloads/downloadsWindow.xul", "Downloads", params);
-                } else {
-                    DownloadsWindow.focus();
-                }
-            } else {
-                DownloadsPanel.showDownloadsHistory();
-            }
-
-
-        } catch (e) {
-            //Catch any nasty errors and output to console
-            console.log("Were sorry but something has gone wrong with 'customDownloadsOverlay' " + e);
-        }
-
     },
 	
     compareVersions: function(_Installed, _Required) {
