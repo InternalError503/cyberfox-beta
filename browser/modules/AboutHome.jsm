@@ -76,7 +76,7 @@ let AboutHome = {
 				var DownloadsWindow;
 				if ( Services.prefs.getBoolPref("browser.download.useToolkitUI")){
 						if(DownloadsWindow == null || DownloadsWindow.closed){
-								window.open("chrome://browser/content/downloadUI.xul","Downloads","resizable,chrome,centerscreen");
+								window.open("chrome://browser/content/downloads/downloadsWindow.xul","Downloads","resizable,chrome,centerscreen");
 						}else{
 								DownloadsWindow.focus();
 							}

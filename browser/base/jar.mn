@@ -196,8 +196,7 @@ browser.jar:
 #Browser Core
     content/browser/browser-cyberfox.js           (content/browser-cyberfox.js)
     content/browser/browser-cyberfox.xul          (content/browser-cyberfox.xul)
-    content/browser/browser-cyberfox.css          (content/browser-cyberfox.css)		
-    content/browser/downloadUI.xul                (content/downloadUI.xul)
+    content/browser/browser-cyberfox.css          (content/browser-cyberfox.css)
 #Preferences
     content/browser/fonts/ClearSans-Regular.woff  (content/fonts/ClearSans-Regular.woff)
     content/browser/fonts/FiraSans-Regular.woff   (content/fonts/FiraSans-Regular.woff)

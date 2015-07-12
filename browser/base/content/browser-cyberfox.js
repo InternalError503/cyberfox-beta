@@ -433,7 +433,7 @@ var gCyberfoxCustom = {
 
             if (Services.prefs.getBoolPref("browser.download.useToolkitUI")) {
                 if (DownloadsWindow == null || DownloadsWindow.closed) {
-                    window.open("chrome://browser/content/downloadUI.xul", "Downloads", params);
+                    window.open("chrome://browser/content/downloads/downloadsWindow.xul", "Downloads", params);
                 } else {
                     DownloadsWindow.focus();
                 }
@@ -453,7 +453,7 @@ var gCyberfoxCustom = {
             if (Services.prefs.getBoolPref("browser.download.useToolkitUI")) {
 
                 if (DownloadsWindow == null || DownloadsWindow.closed) {
-                    window.open("chrome://browser/content/downloadUI.xul", "Downloads", params);
+                    window.open("chrome://browser/content/downloads/downloadsWindow.xul", "Downloads", params);
                 } else {
                     DownloadsWindow.focus();
                 }
