@@ -502,8 +502,7 @@
           }
 
           this.doSearch(textValue, where, aEngine);
-#ifdef MOZ_SERVICES_HEALTHREPORT
- let selection = this.telemetrySearchDetails;
+
           if (!selection || (selection.index == -1)) {
             let source = "unknown";
             let type = "unknown";
@@ -513,7 +512,6 @@
                 source = "oneoff";
               }
             } else if (aEvent instanceof MouseEvent) {
-              let target = aEvent.originalTarget;
               type = "mouse";
               if (target.classList.contains("searchbar-engine-one-off-item")) {
                 source = "oneoff";
@@ -523,14 +521,15 @@
               }
             } else if (aEvent instanceof XULCommandEvent) {
               if (target.getAttribute("anonid") == "paste-and-search") {
-                aEngine = this.currentEngine;
                 source = "paste";
               }
             }
 
-            BrowserSearch.recordOneoffSearchInTelemetry(aEngine, source, type, where);
+            if (!aEngine) {
+              aEngine = this.currentEngine;
+            }
           }
-#endif
+
           if (where == "tab-background")
             this.focus();
         ]]></body>
@@ -556,14 +555,6 @@
 
           let engine = aEngine || this.currentEngine;
           var submission = engine.getSubmission(aData, null, "searchbar");
-#ifdef MOZ_SERVICES_HEALTHREPORT
-          let telemetrySearchDetails = this.telemetrySearchDetails;
-          this.telemetrySearchDetails = null;
-          if (telemetrySearchDetails && telemetrySearchDetails.index == -1) {
-            telemetrySearchDetails = null;
-          }
-          BrowserSearch.recordSearchInHealthReport(engine, "searchbar", telemetrySearchDetails);
-#endif
           // null parameter below specifies HTML response for search
           let params = {
             postData: submission.postData,
