@@ -502,7 +502,8 @@
           }
 
           this.doSearch(textValue, where, aEngine);
-
+#ifdef MOZ_SERVICES_HEALTHREPORT
+ let selection = this.telemetrySearchDetails;
           if (!selection || (selection.index == -1)) {
             let source = "unknown";
             let type = "unknown";
@@ -528,8 +529,9 @@
             if (!aEngine) {
               aEngine = this.currentEngine;
             }
+            BrowserSearch.recordOneoffSearchInTelemetry(aEngine, source, type, where);
           }
-
+#endif
           if (where == "tab-background")
             this.focus();
         ]]></body>
