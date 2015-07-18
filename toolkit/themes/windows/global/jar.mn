@@ -102,9 +102,7 @@ toolkit.jar:
         skin/classic/global/icons/blacklist_large.png            (icons/blacklist_large.png)
         skin/classic/global/icons/Close.gif                      (icons/Close.gif)
         skin/classic/global/icons/close.png                      (icons/close.png)
-        skin/classic/global/icons/close-lunaBlue.png             (icons/close-lunaBlue.png)
-        skin/classic/global/icons/close-lunaOlive.png            (icons/close-lunaOlive.png)
-        skin/classic/global/icons/close-lunaSilver.png           (icons/close-lunaSilver.png)
+        skin/classic/global/icons/close@2x.png                   (icons/close@2x.png)
         skin/classic/global/icons/collapse.png                   (icons/collapse.png)
         skin/classic/global/icons/Error.png                      (icons/Error.png)
         skin/classic/global/icons/error-16.png                   (icons/error-16.png)
@@ -312,7 +310,6 @@ toolkit.jar:
 % override chrome://global/skin/tree/sort-dsc.png                 chrome://global/skin/tree/sort-dsc-XP.png                osversion<6
 % override chrome://global/skin/tree/twisty-clsd.png              chrome://global/skin/tree/twisty-clsd-XP.png             osversion<6
 % override chrome://global/skin/tree/twisty-open.png              chrome://global/skin/tree/twisty-open-XP.png             osversion<6
-
 #endif
 
 #if MOZ_BUILD_APP == browser

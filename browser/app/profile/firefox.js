@@ -417,6 +417,12 @@ pref("browser.search.showOneOffButtons", false);
 // comma seperated list of of engines to hide in the search panel.
 pref("browser.search.hiddenOneOffs", "");
 
+#ifdef XP_WIN
+pref("browser.search.redirectWindowsSearch", true);
+#else
+pref("browser.search.redirectWindowsSearch", false);
+#endif
+
 pref("browser.sessionhistory.max_entries", 50);
 
 // Built-in default permissions.
@@ -1827,6 +1833,8 @@ pref("browser.translation.ui.show", false);
 // Telemetry settings.
 // Determines if Telemetry pings can be archived locally.
 pref("toolkit.telemetry.archive.enabled", false);
+// Whether Telemetry is opt-in even with unified Telemetry enabled, requires a restart.
+pref("toolkit.telemetry.unifiedIsOptIn", true);
 
 // Telemetry experiments settings.
 pref("experiments.enabled", true);
