@@ -1,3 +1,4 @@
+(function(global) {
 Cu.import("resource://gre/modules/Services.jsm");
 
 if (typeof gCyberfoxCustom == "undefined") {
@@ -7,18 +8,13 @@ if (!gCyberfoxCustom) {
     gCyberfoxCustom = {};
 };
 
-let DownloadsWindow = null;
-let params = "resizable=yes,chrome=yes,centerscreen=yes,top=yes,alwaysRaised=no";
-
-let urlArray = {
-    url: []
-};
-
 var gCyberfoxCustom = {
 
     //Note: We are using pre-existing strings for the message to reduce edits to language packs.
     RestartMsg: Services.strings.createBundle("chrome://browser/locale/browser.properties"),
     Branding: Services.strings.createBundle("chrome://branding/locale/brand.properties").GetStringFromName("brandShortName"),
+	  urlArray: {url:[]},
+	  DownloadsWindow: null,
 
     restartBrowser: function(e) {
         //Added in some general error handling by encapsulating it in try catch statements
@@ -86,7 +82,7 @@ var gCyberfoxCustom = {
 
         try {
             //Enumerate all urls in to a list.
-            var urlItems = urlArray.url;
+            var urlItems = this.urlArray.url;
             var urlList = "";
             for (i = 0; urlItems[i]; i++) {
                 try {
@@ -102,10 +98,12 @@ var gCyberfoxCustom = {
             gClipboardHelper.copyString(urlList.trim());
 
             //Reset the array.
-            urlArray = {
+            this.urlArray = {
                 url: []
             };
-
+			     //clear url list after clipbaord event
+		       urlList = "";
+			
         } catch (e) {
             //Catch any nasty errors and output to console
             console.log("Were sorry but something has gone wrong with 'CopyAllTabUrls' " + e);
@@ -124,7 +122,7 @@ var gCyberfoxCustom = {
             try {
                 var urlItems = _browsersI.currentURI.spec;
 
-                urlArray.url.push({
+                this.urlArray.url.push({
                     "url": urlItems
                 });
 
@@ -430,10 +428,10 @@ var gCyberfoxCustom = {
     toolsDownloads: function(tools) {
         try {
             if (Services.prefs.getBoolPref("browser.download.useToolkitUI")) {
-                if (DownloadsWindow == null || DownloadsWindow.closed) {
-                    window.open("chrome://browser/content/downloads/downloadsWindow.xul", "Downloads", params);
+                if (this.DownloadsWindow == null || this.DownloadsWindow.closed) {
+                    window.open("chrome://browser/content/downloads/downloadsWindow.xul", "Downloads", "resizable=yes,chrome=yes,centerscreen=yes,top=yes,alwaysRaised=no");
                 } else {
-                    DownloadsWindow.focus();
+                    this.DownloadsWindow.focus();
                 }
             } else {
 				if (tools === true){
@@ -595,3 +593,7 @@ window.addEventListener("load", function() {
 		gCyberfoxCustom.startupUpdateCheck(true);
 	},6000);
 }, false);
+
+
+  global.gCyberfoxCustom = gCyberfoxCustom;
+}(this));
