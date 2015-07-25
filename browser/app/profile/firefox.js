@@ -399,8 +399,11 @@ pref("browser.search.order.1",                "chrome://browser-region/locale/re
 pref("browser.search.order.2",                "chrome://browser-region/locale/region.properties");
 pref("browser.search.order.3",                "chrome://browser-region/locale/region.properties");
 
-// Market-specific search defaults (US market only)//
+// Market-specific search defaults
+// This is disabled globally, and then enabled for individual locales
+// in firefox-l10n.js (eg. it's enabled for en-US).
 pref("browser.search.geoSpecificDefaults", false);
+pref("browser.search.geoSpecificDefaults.url", "https://search.services.mozilla.com/1/%APP%/%VERSION%/%CHANNEL%/%LOCALE%/%REGION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%");
 pref("browser.search.defaultenginename.US",      "data:text/plain,browser.search.defaultenginename.US=Google");
 pref("browser.search.order.US.1",                "data:text/plain,browser.search.order.US.1=Google");
 pref("browser.search.order.US.2",                "data:text/plain,browser.search.order.US.2=Yahoo");
@@ -422,6 +425,9 @@ pref("browser.search.redirectWindowsSearch", true);
 #else
 pref("browser.search.redirectWindowsSearch", false);
 #endif
+
+pref("browser.usedOnWindows10", false);
+pref("browser.usedOnWindows10.introURL", "");
 
 pref("browser.sessionhistory.max_entries", 50);
 
@@ -1622,9 +1628,6 @@ pref("browser.newtab.preload", true);
 
 // Remembers if the about:newtab intro has been shown
 pref("browser.newtabpage.introShown", false);
-
-// Remembers if the about:newtab update intro has been shown
-pref("browser.newtabpage.updateIntroShown", false);
 
 // Toggles the content of 'about:newtab'. Shows the grid when enabled.
 pref("browser.newtabpage.enabled", true);

@@ -1881,6 +1881,11 @@ gfxWindowsPlatform::InitD3D11Devices()
   }
 
   bool useWARP = false;
+  bool allowWARP = false;
+
+  if (IsWin8OrLater()) {
+    allowWARP = true;
+  }
 
   nsCOMPtr<nsIGfxInfo> gfxInfo = do_GetService("@mozilla.org/gfx/info;1");
   if (gfxInfo) {
@@ -1894,17 +1899,11 @@ gfxWindowsPlatform::InitD3D11Devices()
         }
 
         if (!IsWin8OrLater()) {
-            /* On Windows 7 WARP runs very badly on the builtin vga driver */
-            nsString driver;
-            gfxInfo->GetAdapterDriver(driver);
-            // driver can start with vga or svga so only look for "framebuf..."
-            if (driver.Find("framebuf vga256 vga64k") != kNotFound) {
-                gfxCriticalError(CriticalLog::DefaultOptions(false)) << "Disabling WARP on builtin vga driver";
-                return;
-            }
+          /* We don't trust Windows 7 enough yet to use WARP */
+          return;
         }
 
-        useWARP = true;
+        useWARP = allowWARP;
       }
     }
   }
@@ -1940,7 +1939,7 @@ gfxWindowsPlatform::InitD3D11Devices()
       if (!gfxPrefs::LayersD3D11DisableWARP()) {
         return;
       }
-      useWARP = true;
+      useWARP = allowWARP;
     }
   }
 
@@ -1962,7 +1961,7 @@ gfxWindowsPlatform::InitD3D11Devices()
         return;
       }
 
-      useWARP = true;
+      useWARP = allowWARP;
       adapter = nullptr;
     }
 
@@ -1972,7 +1971,7 @@ gfxWindowsPlatform::InitD3D11Devices()
         return;
       }
 
-      useWARP = true;
+      useWARP = allowWARP;
       adapter = nullptr;
     }
   }
@@ -2006,6 +2005,9 @@ gfxWindowsPlatform::InitD3D11Devices()
       return;
     }
   }
+
+  if (!mD3D11Device)
+    return;
 
   mD3D11Device->SetExceptionMode(0);
 

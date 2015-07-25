@@ -5537,7 +5537,6 @@ AutoTraceSession::AutoTraceSession(JSRuntime* rt, js::HeapState heapState)
     runtime(rt),
     prevState(rt->gc.heapState)
 {
-    MOZ_ASSERT(rt->gc.isAllocAllowed());
     MOZ_ASSERT(rt->gc.heapState == Idle);
     MOZ_ASSERT(heapState != Idle);
     MOZ_ASSERT_IF(heapState == MajorCollecting, rt->gc.nursery.isEmpty());
@@ -6154,6 +6153,8 @@ GCRuntime::collect(bool incremental, SliceBudget budget, JS::gcreason::Reason re
     /* The engine never locks across anything that could GC. */
     MOZ_ASSERT(!rt->currentThreadHasExclusiveAccess());
 
+    MOZ_ASSERT(isAllocAllowed());
+
     if (rt->mainThread.suppressGC)
         return;
 
@@ -6429,6 +6430,13 @@ GCRuntime::minorGC(JSContext* cx, JS::gcreason::Reason reason)
         if (pretenureGroups[i]->canPreTenure())
             pretenureGroups[i]->setShouldPreTenure(cx);
     }
+}
+
+void
+GCRuntime::clearPostBarrierCallbacks()
+{
+    if (storeBuffer.hasPostBarrierCallbacks())
+        evictNursery();
 }
 
 void

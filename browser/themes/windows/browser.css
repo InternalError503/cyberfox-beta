@@ -305,15 +305,22 @@
 }
 
 #nav-bar {
-  border-top: 1px solid @toolbarShadowColor@ !important;
   background-clip: padding-box;
   background-image: linear-gradient(@toolbarHighlight@, transparent);
   box-shadow: 0 1px 0 @toolbarHighlight@ inset;
 }
 
-@media not all and (-moz-windows-compositor) {
-  #TabsToolbar[collapsed="true"] + #nav-bar {
-    border-top-style: none !important;
+@media (-moz-os-version: windows-xp),
+       (-moz-os-version: windows-vista),
+       (-moz-os-version: windows-win7),
+       (-moz-os-version: windows-win8) {
+  #nav-bar {
+    border-top: 1px solid @toolbarShadowColor@ !important;
+  }
+  @media not all and (-moz-windows-compositor) {
+    #TabsToolbar[collapsed="true"] + #nav-bar {
+      border-top-style: none !important;
+    }
   }
 }
 
@@ -1221,7 +1228,6 @@ toolbarbutton[constrain-size="true"][cui-areatype="toolbar"] > .toolbarbutton-ba
     #urlbar:not(:-moz-lwtheme):hover,
     .searchbar-textbox:not(:-moz-lwtheme):hover {
       border-color: hsl(0,0%,80%);
-      box-shadow: 0 0 0 1px hsl(0,0%,80%) inset;
     }
 
     #urlbar:not(:-moz-lwtheme)[focused],
@@ -1576,6 +1582,15 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
   list-style-image: url("chrome://browser/skin/actionicon-tab.png");
   -moz-image-region: rect(0, 16px, 11px, 0);
   padding: 0 3px;
+  width: 22px;
+  height: 11px;
+}
+
+@media (min-resolution: 1.1dppx) {
+  richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-icon {
+    list-style-image: url("chrome://browser/skin/actionicon-tab@2x.png");
+    -moz-image-region: rect(0, 32px, 22px, 0);
+  }
 }
 
 @media not all and (-moz-os-version: windows-vista),
@@ -1584,6 +1599,12 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
          not all and (-moz-windows-default-theme) {
     richlistitem[type~="action"][actiontype="switchtab"][selected="true"] > .ac-url-box > .ac-action-icon {
       -moz-image-region: rect(11px, 16px, 22px, 0);
+    }
+
+    @media (min-resolution: 1.1dppx) {
+      richlistitem[type~="action"][actiontype="switchtab"][selected="true"] > .ac-url-box > .ac-action-icon {
+        -moz-image-region: rect(22px, 32px, 44px, 0);
+      }
     }
 
     .ac-comment[selected="true"],
@@ -1937,9 +1958,18 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 
 #sidebar-header > .close-icon {
   -moz-appearance: none;
-  padding: 4px 2px;
+  padding: 2px;
   margin: 0;
   border: none;
+}
+
+@media (-moz-os-version: windows-xp),
+       (-moz-os-version: windows-vista),
+       (-moz-os-version: windows-win7) {
+  #sidebar-header > .close-icon {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
 }
 
 .browserContainer > findbar {
@@ -1998,6 +2028,30 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
   }
 }
 
+/* Remove border between tab strip and navigation toolbar on Windows 10+ */
+@media not all and (-moz-os-version: windows-xp) {
+  @media not all and (-moz-os-version: windows-vista) {
+    @media not all and (-moz-os-version: windows-win7) {
+      @media not all and (-moz-os-version: windows-win8) {
+        .tab-background-end[visuallyselected=true]::after,
+        .tab-background-start[visuallyselected=true]::after {
+          content: none;
+        }
+
+        .tab-background-middle[visuallyselected=true] {
+          /* Setting background-size to "0 0" for the first
+             background-image to remove the stroke. */
+          background-size: 0 0, auto 100%, auto 100%;
+        }
+
+        :root {
+          --tab-toolbar-navbar-overlap: 0;
+        }
+      }
+    }
+  }
+}
+
 /* Use solid tab separators for Windows 8+ */
 @media not all and (-moz-os-version: windows-xp) {
   @media not all and (-moz-os-version: windows-vista) {
@@ -2020,14 +2074,14 @@ richlistitem[type~="action"][actiontype="switchtab"] > .ac-url-box > .ac-action-
 
 /* Invert the unhovered close tab icons on bright-text tabs */
 @media not all and (min-resolution: 1.1dppx) {
-  #TabsToolbar[brighttext] .tab-close-button:not(:hover):not([visuallyselected="true"]) {
-    -moz-image-region: rect(0, 64px, 16px, 48px) !important;
+  #TabsToolbar[brighttext] .tab-close-button:not([visuallyselected="true"]) {
+    list-style-image: url("chrome://global/skin/icons/close-inverted.png");
   }
 }
 
 @media (min-resolution: 1.1dppx) {
-  #TabsToolbar[brighttext] .tab-close-button:not(:hover):not([visuallyselected="true"]) {
-    -moz-image-region: rect(0, 128px, 32px, 96px) !important;
+  #TabsToolbar[brighttext] .tab-close-button:not([visuallyselected="true"]) {
+    list-style-image: url("chrome://global/skin/icons/close-inverted@2x.png");
   }
 }
 

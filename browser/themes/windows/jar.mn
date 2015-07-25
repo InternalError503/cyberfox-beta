@@ -22,9 +22,12 @@ browser.jar:
 #endif
         skin/classic/browser/aboutTabCrashed.css                     (../shared/aboutTabCrashed.css)
         skin/classic/browser/actionicon-tab.png
+        skin/classic/browser/actionicon-tab@2x.png
+        skin/classic/browser/actionicon-tab-XPVista7.png
 *       skin/classic/browser/browser.css
 *       skin/classic/browser/devedition.css
 *       skin/classic/browser/browser-lightweightTheme.css
+        skin/classic/browser/caption-buttons.svg
         skin/classic/browser/click-to-play-warning-stripes.png
         skin/classic/browser/content-contextmenu.svg
         skin/classic/browser/drm-icon.svg                            (../shared/drm-icon.svg)
@@ -100,6 +103,8 @@ browser.jar:
         skin/classic/browser/privatebrowsing-mask-titlebar-XPVista7-tall.png
         skin/classic/browser/reload-stop-go.png
         skin/classic/browser/reload-stop-go@2x.png
+        skin/classic/browser/reload-stop-go-preWin10.png
+        skin/classic/browser/reload-stop-go-preWin10@2x.png
         skin/classic/browser/searchbar.css
         skin/classic/browser/searchbar-dropdown-arrow.png
         skin/classic/browser/searchbar-dropdown-arrow-XP.png
@@ -139,6 +144,8 @@ browser.jar:
         skin/classic/browser/urlbar-popup-blocked.png
         skin/classic/browser/urlbar-history-dropmarker.png
         skin/classic/browser/urlbar-history-dropmarker@2x.png
+        skin/classic/browser/urlbar-history-dropmarker-preWin10.png
+        skin/classic/browser/urlbar-history-dropmarker-preWin10@2x.png
         skin/classic/browser/session-restore.svg                     (../shared/incontent-icons/session-restore.svg)
         skin/classic/browser/tab-crashed.svg                         (../shared/incontent-icons/tab-crashed.svg)
         skin/classic/browser/welcome-back.svg                        (../shared/incontent-icons/welcome-back.svg)
@@ -307,6 +314,8 @@ browser.jar:
         skin/classic/browser/tabbrowser/newtab-XPVista7@2x.png       (tabbrowser/newtab-XPVista7@2x.png)
         skin/classic/browser/tabbrowser/newtab-inverted.png          (tabbrowser/newtab-inverted.png)
         skin/classic/browser/tabbrowser/newtab-inverted@2x.png       (tabbrowser/newtab-inverted@2x.png)
+        skin/classic/browser/tabbrowser/newtab-inverted-XPVista7.png (tabbrowser/newtab-inverted-XPVista7.png)
+        skin/classic/browser/tabbrowser/newtab-inverted-XPVista7@2x.png (tabbrowser/newtab-inverted-XPVista7@2x.png)
         skin/classic/browser/tabbrowser/connecting.png               (tabbrowser/connecting.png)
         skin/classic/browser/tabbrowser/crashed.svg                  (../shared/tabbrowser/crashed.svg)
         skin/classic/browser/tabbrowser/loading.png                  (tabbrowser/loading.png)
@@ -629,6 +638,7 @@ browser.jar:
 % override chrome://browser/skin/preferences/saveFile.png             chrome://browser/skin/preferences/saveFile-XP.png                 os=WINNT osversion<6
 % override chrome://browser/skin/tabbrowser/tab-separator.png         chrome://browser/skin/tabbrowser/tab-separator-XP.png             os=WINNT osversion<6
 
+% override chrome://browser/skin/actionicon-tab.png                   chrome://browser/skin/actionicon-tab-XPVista7.png                 os=WINNT osversion<=6.1
 % override chrome://browser/skin/sync-horizontalbar.png               chrome://browser/skin/sync-horizontalbar-XPVista7.png             os=WINNT osversion<=6.1
 % override chrome://browser/skin/sync-horizontalbar@2x.png            chrome://browser/skin/sync-horizontalbar-XPVista7@2x.png          os=WINNT osversion<=6.1
 % override chrome://browser/skin/syncProgress-horizontalbar.png       chrome://browser/skin/syncProgress-horizontalbar-XPVista7.png     os=WINNT osversion<=6.1
@@ -638,6 +648,8 @@ browser.jar:
 % override chrome://browser/skin/toolbarbutton-dropdown-arrow.png     chrome://browser/skin/toolbarbutton-dropdown-arrow-XPVista7.png   os=WINNT osversion<=6.1
 % override chrome://browser/skin/tabbrowser/newtab.png                chrome://browser/skin/tabbrowser/newtab-XPVista7.png              os=WINNT osversion<=6.1
 % override chrome://browser/skin/tabbrowser/newtab@2x.png             chrome://browser/skin/tabbrowser/newtab-XPVista7@2x.png           os=WINNT osversion<=6.1
+% override chrome://browser/skin/tabbrowser/newtab-inverted.png       chrome://browser/skin/tabbrowser/newtab-inverted-XPVista7.png     os=WINNT osversion<=6.1
+% override chrome://browser/skin/tabbrowser/newtab-inverted@2x.png    chrome://browser/skin/tabbrowser/newtab-inverted-XPVista7@2x.png  os=WINNT osversion<=6.1
 % override chrome://browser/skin/tabbrowser/tab-arrow-left.png        chrome://browser/skin/tabbrowser/tab-arrow-left-XPVista7.png      os=WINNT osversion<=6.1
 % override chrome://browser/skin/tabbrowser/tab-arrow-left@2x.png     chrome://browser/skin/tabbrowser/tab-arrow-left-XPVista7@2x.png   os=WINNT osversion<=6.1
 
@@ -676,4 +688,9 @@ browser.jar:
 % override chrome://browser/skin/preferences/checkbox.png             chrome://browser/skin/preferences/checkbox-aero.png               os=WINNT osversion=6
 % override chrome://browser/skin/preferences/checkbox.png             chrome://browser/skin/preferences/checkbox-aero.png               os=WINNT osversion=6.1
 % override chrome://browser/skin/preferences/checkbox.png             chrome://browser/skin/preferences/checkbox-xp.png                 os=WINNT osversion<6
+
+% override chrome://browser/skin/reload-stop-go.png                   chrome://browser/skin/reload-stop-go-preWin10.png                 os=WINNT osversion<=6.3
+% override chrome://browser/skin/reload-stop-go@2x.png                chrome://browser/skin/reload-stop-go-preWin10@2x.png              os=WINNT osversion<=6.3
+% override chrome://browser/skin/urlbar-history-dropmarker.png        chrome://browser/skin/urlbar-history-dropmarker-preWin10.png      os=WINNT osversion<=6.3
+% override chrome://browser/skin/urlbar-history-dropmarker@2x.png     chrome://browser/skin/urlbar-history-dropmarker-preWin10@2x.png   os=WINNT osversion<=6.3
 

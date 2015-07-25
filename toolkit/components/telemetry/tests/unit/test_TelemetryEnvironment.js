@@ -970,8 +970,7 @@ add_task(function* test_defaultSearchEngine() {
   Assert.equal(data.settings.defaultSearchEngine, "telemetrySearchIdentifier");
   let expectedSearchEngineData = {
     name: "telemetrySearchIdentifier",
-    loadPath: "jar:[other]/searchTest.jar!testsearchplugin/telemetrySearchIdentifier.xml",
-    submissionURL: "http://ar.wikipedia.org/wiki/%D8%AE%D8%A7%D8%B5:%D8%A8%D8%AD%D8%AB?search=&sourceid=Mozilla-search"
+    loadPath: "jar:[other]/searchTest.jar!testsearchplugin/telemetrySearchIdentifier.xml"
   };
   Assert.deepEqual(data.settings.defaultSearchEngineData, expectedSearchEngineData);
 
@@ -1038,6 +1037,15 @@ add_task(function* test_defaultSearchEngine() {
   data = TelemetryEnvironment.currentEnvironment;
   checkEnvironmentData(data);
   Assert.equal(data.settings.defaultSearchEngine, EXPECTED_SEARCH_ENGINE);
+
+  // Check that by default we are not sending a cohort identifier...
+  Assert.equal(data.settings.searchCohort, undefined);
+
+  // ... but that if a cohort identifier is set, we send it.
+  Services.prefs.setCharPref("browser.search.cohort", "testcohort");
+  Services.obs.notifyObservers(null, "browser-search-service", "init-complete");
+  data = TelemetryEnvironment.currentEnvironment;
+  Assert.equal(data.settings.searchCohort, "testcohort");
 });
 
 add_task(function*() {

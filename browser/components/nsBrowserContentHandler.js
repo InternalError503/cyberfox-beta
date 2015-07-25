@@ -543,6 +543,23 @@ nsBrowserContentHandler.prototype = {
     if (overridePage == "about:blank")
       overridePage = "";
 
+    // Temporary override page for users who are running Cyberfox on Windows 10 for their first time.
+    let platformVersion = Services.sysinfo.getProperty("version");
+    if (AppConstants.platform == "win" &&
+        Services.vc.compare(platformVersion, "10") == 0 &&
+        !Services.prefs.getBoolPref("browser.usedOnWindows10")) {
+      Services.prefs.setBoolPref("browser.usedOnWindows10", true);
+      let firstUseOnWindows10URL = Services.urlFormatter.formatURLPref("browser.usedOnWindows10.introURL");
+
+      if (firstUseOnWindows10URL && firstUseOnWindows10URL.length) {
+        if (overridePage) {
+          overridePage += "|" + firstUseOnWindows10URL;
+        } else {
+          overridePage = firstUseOnWindows10URL;
+        }
+      }
+    }
+
     var startPage = "";
     try {
       var choice = prefb.getIntPref("browser.startup.page");
@@ -741,12 +758,14 @@ nsDefaultCommandLineHandler.prototype = {
             var params = new URLSearchParams(url.query);
             // We don't want to rewrite all Bing URLs coming from external apps. Look
             // for the magic URL parm that's present in searches from the task bar.
-            // (Typed searches use "form=WNSGPH", Cortana voice searches use "FORM=WNSBOX")
+            // (Typed searches use "form=WNSGPH", Cortana voice searches use "FORM=WNSBOX"
+            // for direct results, or "FORM=WNSFC2" for "see more results on
+            // Bing.com")
             var formParam = params.get("form");
             if (!formParam) {
               formParam = params.get("FORM");
             }
-            if (formParam == "WNSGPH" || formParam == "WNSBOX") {
+            if (formParam == "WNSGPH" || formParam == "WNSBOX" || formParam == "WNSFC2") {
               var term = params.get("q");
               var ss = Components.classes["@mozilla.org/browser/search-service;1"]
                                  .getService(nsIBrowserSearchService);
