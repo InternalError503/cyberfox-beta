@@ -80,9 +80,6 @@
 
 #newtab-customize-button:-moz-any(:hover, :active, [active]) {
   background-image: -moz-image-rect(url(chrome://browser/skin/newtab/controls.svg), 0, 64, 32, 32);
-  background-color: #FFFFFF;
-  border: solid 1px #CCCCCC;
-  border-radius: 2px;
 }
 
 /* CELLS */
