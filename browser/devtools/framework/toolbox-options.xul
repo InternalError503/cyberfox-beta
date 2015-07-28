@@ -202,6 +202,40 @@
 										class="options-citation-label"/>					
 				</menupopup>
 			</menulist>
+
+<hbox flex="1" id="configurableAgent" hidden="true">
+			<menulist id="devtools-agent-os"
+							 tooltiptext="OS"
+							 oncommand="gCustomOptionsPanel.configurableAgentChanged();">
+				<menupopup>
+					<menuitem label="5.1" value="5.1"/>
+					<menuitem label="6.0" value="6.0"/>
+					<menuitem label="6.1" value="6.1"/>
+					<menuitem label="6.2" value="6.2"/>
+					<menuitem label="6.3" value="6.3"/>
+					<menuitem label="6.4" value="6.4"/>					
+				</menupopup>
+			</menulist>			
+			<menulist id="devtools-agent-version"
+							 tooltiptext="Version"
+							 oncommand="gCustomOptionsPanel.configurableAgentChanged();">
+				<menupopup>
+					<menuitem label="15.0"
+										value="15.0"/>
+				</menupopup>
+			</menulist>
+			<menulist id="devtools-agent-arch"
+							 tooltiptext="Arch"
+							 oncommand="gCustomOptionsPanel.configurableAgentChanged();">
+				<menupopup>
+					<menuitem label="WOW64;"
+										value="WOW64;"/>
+					<menuitem label="Win64; x64;" 
+											value="Win64; x64;"/>					
+				</menupopup>
+			</menulist>			
+</hbox>	
+	
 			<button label="&clearUserAgentButton.label;"
 					      oncommand="gCustomOptionsPanel.restoreDefaultUserAgent();"
 						  id="restoreDefaultUserAgent"/>	

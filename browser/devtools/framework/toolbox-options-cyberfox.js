@@ -16,13 +16,19 @@ if (!gCustomOptionsPanel) {
 var gCustomOptionsPanel = {
 		panelPopUpOther : "",
 		agentID : "",
+		agentOS : "",
+		agentVersion : "",
+		agentArch: "",
 
     init: function(e) {
 
         try {
-
+			
             this.panelPopUpOther = document.getElementById("devtools-agent-options-other");
             this.agentID = document.getElementById("devtools-agent-menu");
+			this.agentOS = document.getElementById("devtools-agent-os");
+			this.agentVersion = document.getElementById("devtools-agent-version");
+			this.agentArch = document.getElementById("devtools-agent-arch");
 
             //Get, Load and parse agents.json	
             var jsonFile = FileUtils.getFile("CurProcD", ["agents.json"]);
@@ -55,11 +61,16 @@ var gCustomOptionsPanel = {
                 }
 
                 var browserListArray = myJson.userAgents[0].browsers;
+				var optionsListArrayVersion = myJson.userAgents[0].options[0].version;
+
+				for (var i = 0;optionsListArrayVersion[i]; i++) {
+						var optionsItemsList = document.getElementById("devtools-agent-version").appendItem(optionsListArrayVersion[i], optionsListArrayVersion[i]);
+				}
 
                 for (var i = 0; browserListArray[i]; i++) {
 
                     var menuItemsList = document.getElementById("devtools-agent-menu").appendItem(browserListArray[i].name, browserListArray[i].agent);
-
+					
                 }
 
             });
@@ -98,7 +109,35 @@ var gCustomOptionsPanel = {
         try {
             Services.prefs.setCharPref("general.useragent.override", this.agentID.value);
             this.panelPopUpOther.value = this.agentID.value;
+			if(this.agentID.label === "Cyberfox (Configurable)" || this.agentID.label === "Firefox (Configurable)"){
+				document.getElementById("configurableAgent").hidden = false;
+			}else{
+				document.getElementById("configurableAgent").hidden = true;
+			}
             this.showOtherUserAgent();
+        } catch (e) {
+            //Catch any nasty errors and output to console
+            console.log("Were sorry but something has gone wrong selected item changed event!" + e);
+        }
+    },
+	
+    configurableAgentChanged: function() {
+        try {
+			switch (this.agentID.label) {
+				case "Cyberfox (Configurable)":
+					var newAgent = "Mozilla/5.0 (Windows NT "+this.agentOS.value+"; "+this.agentArch.value+" rv:"+this.agentVersion.value+") Gecko/20100101 Firefox/"+this.agentVersion.value+" Cyberfox/"+this.agentVersion.value;
+					Services.prefs.setCharPref("general.useragent.override", newAgent);
+					this.panelPopUpOther.value = newAgent;
+				break;
+				
+				case "Firefox (Configurable)":
+					var newAgent = "Mozilla/5.0 (Windows NT "+this.agentOS.value+"; "+this.agentArch.value+" rv:"+this.agentVersion.value+") Gecko/20100101 Firefox/"+this.agentVersion.value;
+					Services.prefs.setCharPref("general.useragent.override", newAgent);
+					this.panelPopUpOther.value = newAgent;
+				break;
+				
+			}
+			this.showOtherUserAgent();
         } catch (e) {
             //Catch any nasty errors and output to console
             console.log("Were sorry but something has gone wrong selected item changed event!" + e);
