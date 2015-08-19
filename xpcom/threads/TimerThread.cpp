@@ -83,7 +83,7 @@ TimerObserverRunnable::Run()
 nsresult
 TimerThread::Init()
 {
-  PR_LOG(GetTimerLog(), PR_LOG_DEBUG,
+  MOZ_LOG(GetTimerLog(), LogLevel::Debug,
          ("TimerThread::Init [%d]\n", mInitialized));
 
   if (mInitialized) {
@@ -130,7 +130,7 @@ TimerThread::Init()
 nsresult
 TimerThread::Shutdown()
 {
-  PR_LOG(GetTimerLog(), PR_LOG_DEBUG, ("TimerThread::Shutdown begin\n"));
+  MOZ_LOG(GetTimerLog(), LogLevel::Debug, ("TimerThread::Shutdown begin\n"));
 
   if (!mThread) {
     return NS_ERROR_NOT_INITIALIZED;
@@ -168,7 +168,7 @@ TimerThread::Shutdown()
 
   mThread->Shutdown();    // wait for the thread to die
 
-  PR_LOG(GetTimerLog(), PR_LOG_DEBUG, ("TimerThread::Shutdown end\n"));
+  MOZ_LOG(GetTimerLog(), LogLevel::Debug, ("TimerThread::Shutdown end\n"));
   return NS_OK;
 }
 
@@ -206,7 +206,6 @@ TimerThread::Run()
   }
 #endif
 
-  NS_SetIgnoreStatusOfCurrentThread();
   MonitorAutoLock lock(mMonitor);
 
   // We need to know how many microseconds give a positive PRIntervalTime. This
@@ -262,7 +261,7 @@ TimerThread::Run()
           RemoveTimerInternal(timer);
           timer = nullptr;
 
-          PR_LOG(GetTimerLog(), PR_LOG_DEBUG,
+          MOZ_LOG(GetTimerLog(), LogLevel::Debug,
                  ("Timer thread woke up %fms from when it was supposed to\n",
                   fabs((now - timerRef->mTimeout).ToMilliseconds())));
 
@@ -344,12 +343,12 @@ TimerThread::Run()
         }
       }
 
-      if (PR_LOG_TEST(GetTimerLog(), PR_LOG_DEBUG)) {
+      if (MOZ_LOG_TEST(GetTimerLog(), LogLevel::Debug)) {
         if (waitFor == PR_INTERVAL_NO_TIMEOUT)
-          PR_LOG(GetTimerLog(), PR_LOG_DEBUG,
+          MOZ_LOG(GetTimerLog(), LogLevel::Debug,
                  ("waiting for PR_INTERVAL_NO_TIMEOUT\n"));
         else
-          PR_LOG(GetTimerLog(), PR_LOG_DEBUG,
+          MOZ_LOG(GetTimerLog(), LogLevel::Debug,
                  ("waiting for %u\n", PR_IntervalToMilliseconds(waitFor)));
       }
     }
@@ -456,9 +455,9 @@ TimerThread::AddTimerInternal(nsTimerImpl* aTimer)
   NS_ADDREF(aTimer);
 
 #ifdef MOZ_TASK_TRACER
-  // Create a FakeTracedTask, and dispatch it here. This is the start point of
-  // the latency.
-  aTimer->DispatchTracedTask();
+  // Caller of AddTimer is the parent task of its timer event, so we store the
+  // TraceInfo here for later used.
+  aTimer->GetTLSTraceInfo();
 #endif
 
   return insertSlot - mTimers.Elements();

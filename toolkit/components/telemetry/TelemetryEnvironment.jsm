@@ -146,7 +146,6 @@ const PREF_DISTRIBUTION_ID = "distribution.id";
 const PREF_DISTRIBUTION_VERSION = "distribution.version";
 const PREF_DISTRIBUTOR = "app.distributor";
 const PREF_DISTRIBUTOR_CHANNEL = "app.distributor.channel";
-const PREF_E10S_ENABLED = "browser.tabs.remote.autostart";
 const PREF_HOTFIX_LASTVERSION = "extensions.hotfix.lastVersion";
 const PREF_APP_PARTNER_BRANCH = "app.partner.";
 const PREF_PARTNER_ID = "mozilla.partner.id";
@@ -496,7 +495,11 @@ EnvironmentAddonBuilder.prototype = {
         hasBinaryComponents: addon.hasBinaryComponents,
         installDay: Utils.millisecondsToDays(installDate.getTime()),
         updateDay: Utils.millisecondsToDays(updateDate.getTime()),
+        signedState: addon.signedState,
       };
+
+      if (addon.signedState !== undefined)
+        activeAddons[addon.id].signedState = addon.signedState;
     }
 
     return activeAddons;
@@ -973,7 +976,7 @@ EnvironmentCache.prototype = {
 #ifndef MOZ_WIDGET_ANDROID
       isDefaultBrowser: this._isDefaultBrowser(),
 #endif
-      e10sEnabled: Preferences.get(PREF_E10S_ENABLED, false),
+      e10sEnabled: Services.appinfo.browserTabsRemoteAutostart,
       telemetryEnabled: Preferences.get(PREF_TELEMETRY_ENABLED, false),
       locale: getBrowserLocale(),
       update: {
@@ -1128,7 +1131,17 @@ EnvironmentCache.prototype = {
       // again as part of bug 1154500.
       //DWriteVersion: getGfxField("DWriteVersion", null),
       adapters: [],
+      monitors: [],
     };
+
+#if !defined(MOZ_WIDGET_GONK) && !defined(MOZ_WIDGET_ANDROID)
+    let gfxInfo = Cc["@mozilla.org/gfx/info;1"].getService(Ci.nsIGfxInfo);
+    try {
+      gfxData.monitors = gfxInfo.getMonitors();
+    } catch (e) {
+      this._log.error("nsIGfxInfo.getMonitors() caught error", e);
+    }
+#endif
 
     // GfxInfo does not yet expose a way to iterate through all the adapters.
     gfxData.adapters.push(getGfxAdapter(""));

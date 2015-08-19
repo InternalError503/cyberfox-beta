@@ -7,7 +7,6 @@
 #include "AbstractMediaDecoder.h"
 #include "MediaResource.h"
 #include "WaveReader.h"
-#include "mozilla/dom/TimeRanges.h"
 #include "MediaDecoderStateMachine.h"
 #include "VideoUtils.h"
 #include "nsISeekableStream.h"
@@ -18,21 +17,18 @@
 #include "mozilla/Endian.h"
 #include <algorithm>
 
+using namespace mozilla::media;
+
 namespace mozilla {
 
 // Un-comment to enable logging of seek bisections.
 //#define SEEK_LOGGING
 
-#ifdef PR_LOGGING
 extern PRLogModuleInfo* gMediaDecoderLog;
-#define LOG(type, msg) PR_LOG(gMediaDecoderLog, type, msg)
+#define LOG(type, msg) MOZ_LOG(gMediaDecoderLog, type, msg)
 #ifdef SEEK_LOGGING
-#define SEEK_LOG(type, msg) PR_LOG(gMediaDecoderLog, type, msg)
+#define SEEK_LOG(type, msg) MOZ_LOG(gMediaDecoderLog, type, msg)
 #else
-#define SEEK_LOG(type, msg)
-#endif
-#else
-#define LOG(type, msg)
 #define SEEK_LOG(type, msg)
 #endif
 
@@ -144,15 +140,12 @@ nsresult WaveReader::ReadMetadata(MediaInfo* aInfo,
 
   mInfo.mAudio.mRate = mSampleRate;
   mInfo.mAudio.mChannels = mChannels;
+  mInfo.mMetadataDuration.emplace(TimeUnit::FromSeconds(BytesToTime(GetDataLength())));
 
   *aInfo = mInfo;
 
   *aTags = tags.forget();
 
-  ReentrantMonitorAutoEnter mon(mDecoder->GetReentrantMonitor());
-
-  mDecoder->SetMediaDuration(
-    static_cast<int64_t>(BytesToTime(GetDataLength()) * USECS_PER_S));
 
   return NS_OK;
 }
@@ -260,7 +253,7 @@ nsRefPtr<MediaDecoderReader::SeekPromise>
 WaveReader::Seek(int64_t aTarget, int64_t aEndTime)
 {
   MOZ_ASSERT(OnTaskQueue());
-  LOG(PR_LOG_DEBUG, ("%p About to seek to %lld", mDecoder, aTarget));
+  LOG(LogLevel::Debug, ("%p About to seek to %lld", mDecoder, aTarget));
 
   if (NS_FAILED(ResetDecode())) {
     return SeekPromise::CreateAndReject(NS_ERROR_FAILURE, __func__);
@@ -280,15 +273,13 @@ WaveReader::Seek(int64_t aTarget, int64_t aEndTime)
   }
 }
 
-static double RoundToUsecs(double aSeconds) {
-  return floor(aSeconds * USECS_PER_S) / USECS_PER_S;
-}
-
-nsresult WaveReader::GetBuffered(dom::TimeRanges* aBuffered)
+media::TimeIntervals WaveReader::GetBuffered()
 {
+  MOZ_ASSERT(OnTaskQueue());
   if (!mInfo.HasAudio()) {
-    return NS_OK;
+    return media::TimeIntervals();
   }
+  media::TimeIntervals buffered;
   AutoPinned<MediaResource> resource(mDecoder->GetResource());
   int64_t startOffset = resource->GetNextCachedData(mWavePCMOffset);
   while (startOffset >= 0) {
@@ -300,11 +291,12 @@ nsresult WaveReader::GetBuffered(dom::TimeRanges* aBuffered)
     // We need to round the buffered ranges' times to microseconds so that they
     // have the same precision as the currentTime and duration attribute on
     // the media element.
-    aBuffered->Add(RoundToUsecs(BytesToTime(startOffset - mWavePCMOffset)),
-                   RoundToUsecs(BytesToTime(endOffset - mWavePCMOffset)));
+    buffered += media::TimeInterval(
+      media::TimeUnit::FromSeconds(BytesToTime(startOffset - mWavePCMOffset)),
+      media::TimeUnit::FromSeconds(BytesToTime(endOffset - mWavePCMOffset)));
     startOffset = resource->GetNextCachedData(endOffset);
   }
-  return NS_OK;
+  return buffered;
 }
 
 bool

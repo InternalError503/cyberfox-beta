@@ -215,18 +215,25 @@ PushNodeChildren(ParseNode* pn, NodeStack* stack)
       case PNK_OBJECT_PROPERTY_NAME:
       case PNK_FRESHENBLOCK:
       case PNK_SUPERPROP:
+      case PNK_NEWTARGET:
         MOZ_ASSERT(pn->isArity(PN_NULLARY));
         MOZ_ASSERT(!pn->isUsed(), "handle non-trivial cases separately");
         MOZ_ASSERT(!pn->isDefn(), "handle non-trivial cases separately");
         return PushResult::Recyclable;
 
       // Nodes with a single non-null child.
-      case PNK_TYPEOF:
+      case PNK_TYPEOFNAME:
+      case PNK_TYPEOFEXPR:
       case PNK_VOID:
       case PNK_NOT:
       case PNK_BITNOT:
       case PNK_THROW:
-      case PNK_DELETE:
+      case PNK_DELETENAME:
+      case PNK_DELETEPROP:
+      case PNK_DELETESUPERPROP:
+      case PNK_DELETEELEM:
+      case PNK_DELETESUPERELEM:
+      case PNK_DELETEEXPR:
       case PNK_POS:
       case PNK_NEG:
       case PNK_PREINCREMENT:
@@ -238,6 +245,7 @@ PushNodeChildren(ParseNode* pn, NodeStack* stack)
       case PNK_SPREAD:
       case PNK_MUTATEPROTO:
       case PNK_EXPORT:
+      case PNK_EXPORT_DEFAULT:
       case PNK_SUPERELEM:
         return PushUnaryNodeChild(pn, stack);
 
@@ -266,7 +274,6 @@ PushNodeChildren(ParseNode* pn, NodeStack* stack)
       case PNK_MODASSIGN:
       // ...and a few others.
       case PNK_ELEM:
-      case PNK_LETEXPR:
       case PNK_IMPORT_SPEC:
       case PNK_EXPORT_SPEC:
       case PNK_COLON:
@@ -488,7 +495,6 @@ PushNodeChildren(ParseNode* pn, NodeStack* stack)
       case PNK_STATEMENTLIST:
       case PNK_IMPORT_SPEC_LIST:
       case PNK_EXPORT_SPEC_LIST:
-      case PNK_SEQ:
       case PNK_ARGSBODY:
       case PNK_CLASSMETHODLIST:
         return PushListNodeChildren(pn, stack);
@@ -1070,6 +1076,11 @@ NameNode::dump(int indent)
 
         if (!pn_atom) {
             fprintf(stderr, "#<null name>");
+        } else if (getOp() == JSOP_GETARG && pn_atom->length() == 0) {
+            // Dump destructuring parameter.
+            fprintf(stderr, "(#<zero-length name> ");
+            DumpParseTree(expr(), indent + 21);
+            fputc(')', stderr);
         } else {
             JS::AutoCheckCannotGC nogc;
             if (pn_atom->hasLatin1Chars())

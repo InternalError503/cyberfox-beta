@@ -74,6 +74,7 @@
 #include "gfxPrefs.h"
 
 #include "VsyncSource.h"
+#include "DriverInitCrashDetection.h"
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -456,8 +457,8 @@ gfxWindowsPlatform::~gfxWindowsPlatform()
 
     mozilla::gfx::Factory::D2DCleanup();
 
-	mAdapter = nullptr;
-	
+    mAdapter = nullptr;
+
     /* 
      * Uninitialize COM 
      */ 
@@ -504,7 +505,6 @@ gfxWindowsPlatform::UpdateRenderMode()
     }
 
     mRenderMode = RENDER_GDI;
-    mDoesD3D11TextureSharingWork = true;
 
     bool isVistaOrHigher = IsVistaOrLater();
 
@@ -544,9 +544,6 @@ gfxWindowsPlatform::UpdateRenderMode()
     }
 
     ID3D11Device *device = GetD3D11Device();
-    if (device) {
-        mDoesD3D11TextureSharingWork = DoesD3D11TextureSharingWork(device);
-    }
     if (isVistaOrHigher && !InSafeMode() && tryD2D && device &&
         mDoesD3D11TextureSharingWork) {
 
@@ -667,6 +664,11 @@ void
 gfxWindowsPlatform::VerifyD2DDevice(bool aAttemptForce)
 {
 #ifdef CAIRO_HAS_D2D_SURFACE
+    DriverInitCrashDetection detectCrashes;
+    if (detectCrashes.DisableAcceleration()) {
+      return;
+    }
+
     if (mD2DDevice) {
         ID3D10Device1 *device = cairo_d2d_device_get_device(mD2DDevice);
 
@@ -1843,23 +1845,7 @@ bool DoesD3D11TextureSharingWork(ID3D11Device *device)
 
 bool DoesD3D11AlphaTextureSharingWork(ID3D11Device *device)
 {
-  nsCOMPtr<nsIGfxInfo> gfxInfo = do_GetService("@mozilla.org/gfx/info;1");
-  if (gfxInfo) {
-    // A8 texture sharing crashes on this intel driver version (and no others)
-    // so just avoid using it in that case.
-    nsString adapterVendor;
-    nsString driverVersion;
-    gfxInfo->GetAdapterVendorID(adapterVendor);
-    gfxInfo->GetAdapterDriverVersion(driverVersion);
-
-    nsAString &intelVendorID = (nsAString &)GfxDriverInfo::GetDeviceVendor(VendorIntel);
-    if (adapterVendor.Equals(intelVendorID, nsCaseInsensitiveStringComparator()) &&
-        driverVersion.Equals(NS_LITERAL_STRING("8.15.10.2086"))) {
-      return false;
-    }
-  }
-
-  return DoesD3D11TextureSharingWorkInternal(device, DXGI_FORMAT_A8_UNORM, D3D11_BIND_SHADER_RESOURCE);
+  return DoesD3D11TextureSharingWorkInternal(device, DXGI_FORMAT_R8_UNORM, D3D11_BIND_SHADER_RESOURCE);
 }
 
 void
@@ -1873,10 +1859,12 @@ gfxWindowsPlatform::InitD3D11Devices()
   // a WARP device which should always be available on Windows 7 and higher.
 
   mD3D11DeviceInitialized = true;
+  mDoesD3D11TextureSharingWork = false;
 
   MOZ_ASSERT(!mD3D11Device); 
 
-  if (InSafeMode()) {
+  DriverInitCrashDetection detectCrashes;
+  if (InSafeMode() || detectCrashes.DisableAcceleration()) {
     return;
   }
 
@@ -1974,6 +1962,12 @@ gfxWindowsPlatform::InitD3D11Devices()
       useWARP = allowWARP;
       adapter = nullptr;
     }
+
+    if (mD3D11Device) {
+      // Only test this when not using WARP since it can fail and cause GetDeviceRemovedReason to return
+      // weird values.
+      mDoesD3D11TextureSharingWork = ::DoesD3D11TextureSharingWork(mD3D11Device);
+    }
   }
 
   if (useWARP) {
@@ -1994,7 +1988,7 @@ gfxWindowsPlatform::InitD3D11Devices()
 
       if (FAILED(hr)) {
         // This should always succeed... in theory.
-        gfxCriticalError() << "Failed to initialize WARP D3D11 device!" << hr;
+        gfxCriticalError() << "Failed to initialize WARP D3D11 device! " << hexa(hr);
         return;
       }
 
@@ -2119,7 +2113,7 @@ gfxWindowsPlatform::CreateD3D11DecoderDevice()
 
   multi->SetMultithreadProtected(TRUE);
 
-  return device;
+  return device.forget();
 }
 
 static bool

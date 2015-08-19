@@ -217,8 +217,8 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
 	  { "rndlnpshimswf.dll", ALL_VERSIONS },
 	  { "rndlmainbrowserrecordplugin.dll", ALL_VERSIONS },
 	  
-    // Startup crashes with RealNetworks Browser Record Plugin, bug 1170141
-    { "nprpffbrowserrecordext.dll", ALL_VERSIONS },
+      // Startup crashes with RealNetworks Browser Record Plugin, bug 1170141
+      { "nprpffbrowserrecordext.dll", ALL_VERSIONS },
 	  { "nprndlffbrowserrecordext.dll", ALL_VERSIONS },
 	  
 	  // Crashes with CyberLink YouCam, bug 1136968
@@ -229,6 +229,9 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
 
 	  // NetOp School, discontinued product, bug 763395
       { "nlsp.dll", MAKE_VERSION(6, 23, 2012, 19) },
+	  
+	  //Temp solution for mass startup crash with Websense Endpoint
+	  { "qipcap.dll", ALL_VERSIONS },
 
 	  { nullptr, 0 }
 };
@@ -770,7 +773,7 @@ void ReadPreviouslyCrashedModule()
     return;
   }
 
-  if (wcscat_s(tempPath, ArrayLength(tempPath), L"FirefoxBlockedDLL.txt")) {
+  if (wcscat_s(tempPath, ArrayLength(tempPath), L"CyberfoxBlockedDLL.txt")) {
     return;
   }
 

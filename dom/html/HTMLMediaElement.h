@@ -132,6 +132,9 @@ public:
                            bool aNotify) override;
   virtual nsresult UnsetAttr(int32_t aNameSpaceID, nsIAtom* aAttr,
                              bool aNotify) override;
+  virtual nsresult AfterSetAttr(int32_t aNameSpaceID, nsIAtom* aName,
+                                const nsAttrValue* aValue,
+                                bool aNotify) override;
 
   virtual nsresult BindToTree(nsIDocument* aDocument, nsIContent* aParent,
                               nsIContent* aBindingParent,
@@ -208,6 +211,9 @@ public:
   virtual bool IsActive() final override;
 
   virtual bool IsHidden() final override;
+
+  // In order to create overlayImageContainer to support DOMHwMediaStream.
+  VideoFrameContainer* GetOverlayImageVideoFrameContainer();
 
   // Called by the media decoder and the video frame to get the
   // ImageContainer containing the video data.
@@ -645,7 +651,10 @@ protected:
   class StreamSizeListener;
 
   MediaDecoderOwner::NextFrameStatus NextFrameStatus();
-  void SetDecoder(MediaDecoder* aDecoder) { mDecoder = aDecoder; }
+  void SetDecoder(MediaDecoder* aDecoder) {
+    MOZ_ASSERT(aDecoder); // Use ShutdownDecoder() to clear.
+    mDecoder = aDecoder;
+  }
 
   virtual void GetItemValueText(DOMString& text) override;
   virtual void SetItemValueText(const nsAString& text) override;
@@ -888,6 +897,13 @@ protected:
   };
 
   /**
+   * The guts of Load(). Load() acts as a wrapper around this which sets
+   * mIsDoingExplicitLoad to true so that when script calls 'load()'
+   * preload-none will be automatically upgraded to preload-metadata.
+   */
+  void DoLoad();
+
+  /**
    * Suspends the load of mLoadingSrc, so that it can be resumed later
    * by ResumeLoad(). This is called when we have a media with a 'preload'
    * attribute value of 'none', during the resource selection algorithm.
@@ -1064,7 +1080,14 @@ protected:
   // mSrcStream.
   nsRefPtr<StreamSizeListener> mMediaStreamSizeListener;
 
-  // Holds a reference to the MediaSource supplying data for playback.
+  // Holds a reference to the MediaSource, if any, referenced by the src
+  // attribute on the media element.
+  nsRefPtr<MediaSource> mSrcMediaSource;
+
+  // Holds a reference to the MediaSource supplying data for playback.  This
+  // may either match mSrcMediaSource or come from Source element children.
+  // This is set when and only when mLoadingSrc corresponds to an object url
+  // that resolved to a MediaSource.
   nsRefPtr<MediaSource> mMediaSource;
 
   // Holds a reference to the first channel we open to the media resource.
@@ -1270,6 +1293,10 @@ protected:
   // True if we're running the "load()" method.
   bool mIsRunningLoadMethod;
 
+  // True if we're running or waiting to run queued tasks due to an explicit
+  // call to "load()".
+  bool mIsDoingExplicitLoad;
+
   // True if we're loading the resource from the child source elements.
   bool mIsLoadingFromSourceChildren;
 
@@ -1410,6 +1437,10 @@ private:
 
   // Time spent between video load and video playback.
   TimeDurationAccumulator mJoinLatency;
+
+  // Indicates if user has interacted with the element.
+  // Used to block autoplay when disabled.
+  bool mHasUserInteraction;
 };
 
 } // namespace dom

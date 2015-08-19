@@ -18,6 +18,8 @@
 %define conditionalForwardWithUrlbarWidth 30
 
 :root {
+  --space-above-tabbar: 15px;
+
   --toolbarbutton-vertical-inner-padding: 2px;
   --toolbarbutton-vertical-outer-padding: 8px;
 
@@ -70,7 +72,7 @@
 
 #main-window[tabsintitlebar][sizemode="normal"]:not([inFullscreen])[chromehidden~="menubar"] #toolbar-menubar ~ #TabsToolbar,
 #main-window[tabsintitlebar][sizemode="normal"]:not([inFullscreen]) #toolbar-menubar[autohide="true"][inactive] ~ #TabsToolbar {
-  margin-top: 15px;
+  margin-top: var(--space-above-tabbar);
 }
 
 #toolbar-menubar:not([autohide="true"]) {
@@ -121,6 +123,9 @@
 
 @media not all and (-moz-windows-compositor),
        not all and (-moz-windows-default-theme) {
+  /* Please keep the menu text colors in this media block in sync with
+   * devedition.css, minus the :not(:-moz-lwtheme) condition - see Bug 1165718.
+   */
   #main-window[tabsintitlebar]:not([inFullscreen]) #toolbar-menubar:not(:-moz-lwtheme),
   #main-window[tabsintitlebar]:not([inFullscreen]) #TabsToolbar:not(:-moz-lwtheme) {
     color: CaptionText;
@@ -1263,6 +1268,8 @@ toolbarbutton[constrain-size="true"][cui-areatype="toolbar"] > .toolbarbutton-ba
   .searchbar-textbox {
     font-size: 1.15em;
     min-height: 28px;
+    transition-property: border-color, box-shadow;
+    transition-duration: .1s;
   }
 
   :root {
@@ -2319,116 +2326,6 @@ toolbarbutton.bookmark-item[dragover="true"][open="true"] {
   background-color: Highlight;
 }
 
-/* ::::: Identity Indicator Styling ::::: */
-
-/* Popup Icons */
-#identity-popup-icon {
-  height: 64px;
-  width: 64px;
-  padding: 0;
-  list-style-image: url("chrome://browser/skin/identity.png");
-  -moz-image-region: rect(0px, 64px, 64px, 0px);
-}
-
-#identity-popup.verifiedDomain > #identity-popup-container > #identity-popup-icon {
-  -moz-image-region: rect(64px, 64px, 128px, 0px);
-}
-
-#identity-popup.verifiedIdentity > #identity-popup-container > #identity-popup-icon {
-  -moz-image-region: rect(128px, 64px, 192px, 0px);
-}
-
-/* Popup Body Text */
-.identity-popup-description {
-  white-space: pre-wrap;
-  -moz-padding-start: 15px;
-  margin: 2px 0 4px;
-}
-
-.identity-popup-label {
-  white-space: pre-wrap;
-  -moz-padding-start: 15px;
-  margin: 0;
-}
-
-#identity-popup-content-host,
-#identity-popup-content-box.verifiedIdentity > #identity-popup-content-owner {
-  font-size: 1.2em;
-}
-
-#identity-popup-content-host {
-  margin-top: 3px;
-  margin-bottom: 5px;
-  font-weight: bold;
-  max-width: 300px;
-}
-
-#identity-popup-content-owner {
-  margin-top: 4px;
-  margin-bottom: 0 !important;
-  font-weight: bold;
-  max-width: 300px;
-}
-
-.verifiedDomain > #identity-popup-content-owner {
-  font-weight: normal;
-}
-
-#identity-popup-content-verifier {
-  margin: 4px 0 2px;
-}
-
-#identity-popup-content-box.verifiedIdentity > #identity-popup-encryption ,
-#identity-popup-content-box.verifiedDomain > #identity-popup-encryption {
-  margin-top: 10px;
-  -moz-margin-start: -24px;
-}
-
-#identity-popup-content-box.verifiedIdentity > #identity-popup-encryption > vbox > #identity-popup-encryption-icon ,
-#identity-popup-content-box.verifiedDomain > #identity-popup-encryption > vbox > #identity-popup-encryption-icon {
-  list-style-image: url("chrome://browser/skin/Secure24.png");
-}
-
-#identity-popup-help-icon {
-  -moz-appearance: none;
-  border: none;
-  margin: 7px 0 0 -3px;
-  background: none;
-  min-width: 0;
-  list-style-image: url("chrome://global/skin/icons/question-16.png");
-  cursor: pointer;
-}
-
-#identity-popup-help-icon > .button-box > .button-text {
-  display: none;
-}
-
-#identity-popup-help-icon > .button-box > .button-icon {
-  height: 16px;
-  width: 16px;
-}
-
-#identity-popup-more-info-button {
-  margin-top: 6px;
-  margin-bottom: 0;
-  -moz-margin-end: 0;
-}
-
-#identity-popup > .panel-arrowcontainer > .panel-arrowcontent {
-  padding: 0;
-}
-
-#identity-popup-container {
-  min-width: 280px;
-  padding: 10px;
-}
-
-#identity-popup-button-container {
-  background: linear-gradient(to bottom, rgba(0,0,0,0.04) 60%, transparent);
-  padding: 10px;
-  margin-top: 5px;
-}
-
 %include ../shared/notification-icons.inc.css
 
 .popup-notification-body[popupid="addon-progress"],
@@ -2448,10 +2345,6 @@ toolbarbutton.bookmark-item[dragover="true"][open="true"] {
 
 .notification-anchor-icon:-moz-focusring {
   outline: 1px dotted -moz-DialogText;
-}
-
-#pointerLock-cancel {
-  margin: 0px;
 }
 
 /* Translation infobar */
@@ -2750,10 +2643,6 @@ notification[value="loop-sharing-notification"] .messageImage {
 }
 
 /* Social toolbar item */
-
-#social-undoactivation-button {
-  -moz-margin-start: 0; /* override default label margin to match description margin */
-}
 
 #socialActivatedNotification .popup-notification-button-container {
   margin-left: 6px;

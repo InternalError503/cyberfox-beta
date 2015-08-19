@@ -151,7 +151,7 @@ protected:
                                    nsTArray<nsCString>&& aFeatures,
                                    nsTArray<nsCString>&& aThreadNameFilters) override;
     virtual bool RecvStopProfiler() override;
-    virtual bool AnswerGetProfile(nsCString* aProfile) override;
+    virtual bool RecvGatherProfile() override;
 
 public:
     explicit PluginModuleChild(bool aIsChrome);
@@ -176,6 +176,8 @@ public:
                             base::ProcessId aOtherProcess);
 
     void CleanUp();
+
+    NPError NP_Shutdown();
 
     const char* GetUserAgent();
 
@@ -323,10 +325,10 @@ private:
 
     PRLibrary* mLibrary;
     nsCString mPluginFilename; // UTF8
-    nsCString mUserAgent;
     int mQuirks;
 
     bool mIsChrome;
+    bool mHasShutdown; // true if NP_Shutdown has run
     Transport* mTransport;
 
     // we get this from the plugin
