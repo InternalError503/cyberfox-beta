@@ -28,7 +28,7 @@ browser.jar:
     content/browser/preferences/languages.js
 *   content/browser/preferences/main.xul
 *   content/browser/preferences/main.js
-    content/browser/preferences/permissions.xul
+*   content/browser/preferences/permissions.xul
 *   content/browser/preferences/permissions.js
 *   content/browser/preferences/preferences.xul
     content/browser/preferences/preferences.js
@@ -36,7 +36,7 @@ browser.jar:
 *   content/browser/preferences/privacy.js
     content/browser/preferences/sanitize.xul
     content/browser/preferences/sanitize.js
-    content/browser/preferences/security.xul
+*   content/browser/preferences/security.xul
     content/browser/preferences/security.js
     content/browser/preferences/selectBookmark.xul
     content/browser/preferences/selectBookmark.js
