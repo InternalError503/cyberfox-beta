@@ -1770,7 +1770,6 @@ RestyleManager::UpdateOnlyAnimationStyles()
   bool doCSS = mLastUpdateForThrottledAnimations != now;
   mLastUpdateForThrottledAnimations = now;
 
-
   nsIDocument* document = mPresContext->Document();
   nsSMILAnimationController* animationController =
     document->HasAnimationController() ?

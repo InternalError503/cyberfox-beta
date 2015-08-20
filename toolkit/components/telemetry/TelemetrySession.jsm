@@ -162,11 +162,21 @@ function generateUUID() {
   return str.substring(1, str.length - 1);
 }
 
+function getMsSinceProcessStart() {
+  try {
+    return Telemetry.msSinceProcessStart();
+  } catch (ex) {
+    // If this fails return a special value.
+    return -1;
+  }
+}
+
 /**
  * This is a policy object used to override behavior for testing.
  */
 let Policy = {
   now: () => new Date(),
+  monotonicNow: getMsSinceProcessStart,
   generateSessionUUID: () => generateUUID(),
   generateSubsessionUUID: () => generateUUID(),
   setSchedulerTickTimeout: (callback, delayMs) => setTimeout(callback, delayMs),
@@ -710,6 +720,7 @@ this.TelemetrySession = Object.freeze({
     Impl._subsessionCounter = 0;
     Impl._profileSubsessionCounter = 0;
     Impl._subsessionStartActiveTicks = 0;
+    Impl._subsessionStartTimeMonotonic = 0;
     this.uninstall();
     return this.setup();
   },
@@ -795,6 +806,9 @@ let Impl = {
   _profileSubsessionCounter: 0,
   // Date of the last session split
   _subsessionStartDate: null,
+  // Start time of the current subsession using a monotonic clock for the subsession
+  // length measurements.
+  _subsessionStartTimeMonotonic: 0,
   // The active ticks counted when the subsession starts
   _subsessionStartActiveTicks: 0,
   // A task performing delayed initialization of the chrome process
@@ -1079,11 +1093,9 @@ let Impl = {
   getMetadata: function getMetadata(reason) {
     this._log.trace("getMetadata - Reason " + reason);
 
-    let sessionStartDate = toLocalTimeISOString(Utils.truncateToDays(this._sessionStartDate));
-    let subsessionStartDate = toLocalTimeISOString(Utils.truncateToDays(this._subsessionStartDate));
-    // Compute the subsession length in milliseconds, then convert to seconds.
-    let subsessionLength =
-      Math.floor((Policy.now() - this._subsessionStartDate.getTime()) / 1000);
+    const sessionStartDate = toLocalTimeISOString(Utils.truncateToDays(this._sessionStartDate));
+    const subsessionStartDate = toLocalTimeISOString(Utils.truncateToDays(this._subsessionStartDate));
+    const monotonicNow = Policy.monotonicNow();
 
     let ret = {
       reason: reason,
@@ -1105,7 +1117,13 @@ let Impl = {
 
       sessionStartDate: sessionStartDate,
       subsessionStartDate: subsessionStartDate,
-      subsessionLength: subsessionLength,
+
+      // Compute the session and subsession length in seconds.
+      // We use monotonic clocks as Date() is affected by jumping clocks (leading
+      // to negative lengths and other issues).
+      sessionLength: Math.floor(monotonicNow / 1000),
+      subsessionLength:
+        Math.floor((monotonicNow - this._subsessionStartTimeMonotonic) / 1000),
     };
 
     // TODO: Remove this when bug 1124128 lands.
@@ -1334,6 +1352,7 @@ let Impl = {
    */
   startNewSubsession: function () {
     this._subsessionStartDate = Policy.now();
+    this._subsessionStartTimeMonotonic = Policy.monotonicNow();
     this._previousSubsessionId = this._subsessionId;
     this._subsessionId = Policy.generateSubsessionUUID();
     this._subsessionCounter++;
@@ -1888,29 +1907,45 @@ let Impl = {
    *                            loading has completed, with false otherwise.
    */
   _loadSessionData: Task.async(function* () {
-    let dataFile = OS.Path.join(OS.Constants.Path.profileDir, DATAREPORTING_DIRECTORY,
-                                SESSION_STATE_FILE_NAME);
+    const dataFile = OS.Path.join(OS.Constants.Path.profileDir, DATAREPORTING_DIRECTORY,
+                                  SESSION_STATE_FILE_NAME);
 
-    // Try to load info about the previous session from the state file.
+    let content;
     try {
-      let data = yield CommonUtils.readJSON(dataFile);
-      if (data &&
-          "profileSubsessionCounter" in data &&
-          typeof(data.profileSubsessionCounter) == "number" &&
-          "subsessionId" in data && "sessionId" in data) {
-        this._previousSessionId = data.sessionId;
-        this._previousSubsessionId = data.subsessionId;
-        // Add |_subsessionCounter| to the |_profileSubsessionCounter| to account for
-        // new subsession while loading still takes place. This will always be exactly
-        // 1 - the current subsessions.
-        this._profileSubsessionCounter = data.profileSubsessionCounter +
-                                         this._subsessionCounter;
-        return true;
-      }
-    } catch (e) {
-      this._log.info("_loadSessionData - Cannot load session data file " + dataFile, e);
+      content = yield OS.File.read(dataFile, { encoding: "utf-8" });
+    } catch (ex) {
+      this._log.info("_loadSessionData - can not load session data file", ex);
+      Telemetry.getHistogramById("TELEMETRY_SESSIONDATA_FAILED_LOAD").add(1);
+      return false;
     }
-    return false;
+
+    let data;
+    try {
+      data = JSON.parse(content);
+    } catch (ex) {
+      this._log.error("_loadSessionData - failed to parse session data", ex);
+      Telemetry.getHistogramById("TELEMETRY_SESSIONDATA_FAILED_PARSE").add(1);
+      return false;
+    }
+
+    if (!data ||
+        !("profileSubsessionCounter" in data) ||
+        !(typeof(data.profileSubsessionCounter) == "number") ||
+        !("subsessionId" in data) || !("sessionId" in data)) {
+      this._log.error("_loadSessionData - session data is invalid");
+      Telemetry.getHistogramById("TELEMETRY_SESSIONDATA_FAILED_VALIDATION").add(1);
+      return false;
+    }
+
+    this._previousSessionId = data.sessionId;
+    this._previousSubsessionId = data.subsessionId;
+    // Add |_subsessionCounter| to the |_profileSubsessionCounter| to account for
+    // new subsession while loading still takes place. This will always be exactly
+    // 1 - the current subsessions.
+    this._profileSubsessionCounter = data.profileSubsessionCounter +
+                                     this._subsessionCounter;
+
+    return true;
   }),
 
   /**
@@ -1936,6 +1971,7 @@ let Impl = {
       yield CommonUtils.writeJSON(sessionData, filePath);
     } catch(e) {
       this._log.error("_saveSessionData - Failed to write session data to " + filePath, e);
+      Telemetry.getHistogramById("TELEMETRY_SESSIONDATA_FAILED_SAVE").add(1);
     }
   }),
 
