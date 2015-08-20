@@ -365,7 +365,7 @@ bool PCUuidGenerator::Generate(std::string* idp) {
 
 
 PeerConnectionImpl::PeerConnectionImpl(const GlobalObject* aGlobal)
-: mTimeCard(PR_LOG_TEST(signalingLogInfo(),PR_LOG_ERROR) ?
+: mTimeCard(MOZ_LOG_TEST(signalingLogInfo(),LogLevel::Error) ?
             create_timecard() : nullptr)
   , mSignalingState(PCImplSignalingState::SignalingStable)
   , mIceConnectionState(PCImplIceConnectionState::New)
@@ -607,7 +607,8 @@ PeerConnectionImpl::AddIceServer(const RTCIceServer &aServer,
         return NS_ERROR_FAILURE;
       }
     } else {
-      if (!aDst->addStunServer(host.get(), port)) {
+      if (!aDst->addStunServer(host.get(), port, (transport.IsEmpty() ?
+                                kNrIceTransportUdp : transport.get()))) {
         return NS_ERROR_FAILURE;
       }
     }
@@ -1491,6 +1492,9 @@ PeerConnectionImpl::SetLocalDescription(int32_t aAction, const char* aSDP)
     case IPeerConnection::kActionPRAnswer:
       sdpType = mozilla::kJsepSdpPranswer;
       break;
+    case IPeerConnection::kActionRollback:
+      sdpType = mozilla::kJsepSdpRollback;
+      break;
     default:
       MOZ_ASSERT(false);
       return NS_ERROR_FAILURE;
@@ -1519,7 +1523,7 @@ PeerConnectionImpl::SetLocalDescription(int32_t aAction, const char* aSDP)
     pco->OnSetLocalDescriptionSuccess(rv);
   }
 
-  UpdateSignalingState();
+  UpdateSignalingState(sdpType == mozilla::kJsepSdpRollback);
   return NS_OK;
 }
 
@@ -1587,11 +1591,14 @@ PeerConnectionImpl::SetRemoteDescription(int32_t action, const char* aSDP)
     case IPeerConnection::kActionPRAnswer:
       sdpType = mozilla::kJsepSdpPranswer;
       break;
+    case IPeerConnection::kActionRollback:
+      sdpType = mozilla::kJsepSdpRollback;
+      break;
     default:
       MOZ_ASSERT(false);
       return NS_ERROR_FAILURE;
-
   }
+
   nsresult nrv = mJsepSession->SetRemoteDescription(sdpType,
                                                     mRemoteRequestedSDP);
   if (NS_FAILED(nrv)) {
@@ -1725,7 +1732,7 @@ PeerConnectionImpl::SetRemoteDescription(int32_t action, const char* aSDP)
 #endif
   }
 
-  UpdateSignalingState();
+  UpdateSignalingState(sdpType == mozilla::kJsepSdpRollback);
   return NS_OK;
 }
 
@@ -2416,7 +2423,8 @@ PeerConnectionImpl::destructorSafeDestroyNSSReference()
 #endif
 
 void
-PeerConnectionImpl::SetSignalingState_m(PCImplSignalingState aSignalingState)
+PeerConnectionImpl::SetSignalingState_m(PCImplSignalingState aSignalingState,
+                                        bool rollback)
 {
   PC_AUTO_ENTER_API_CALL_NO_CHECK();
   if (mSignalingState == aSignalingState ||
@@ -2424,33 +2432,35 @@ PeerConnectionImpl::SetSignalingState_m(PCImplSignalingState aSignalingState)
     return;
   }
 
-  bool restartGathering =
-    aSignalingState == PCImplSignalingState::SignalingHaveLocalOffer ||
-    (aSignalingState == PCImplSignalingState::SignalingStable &&
-     mSignalingState == PCImplSignalingState::SignalingHaveRemoteOffer);
+  if (aSignalingState == PCImplSignalingState::SignalingHaveLocalOffer ||
+      (aSignalingState == PCImplSignalingState::SignalingStable &&
+       mSignalingState == PCImplSignalingState::SignalingHaveRemoteOffer &&
+       !rollback)) {
+    mMedia->EnsureTransports(*mJsepSession);
+  }
 
   mSignalingState = aSignalingState;
-
-  if (mSignalingState == PCImplSignalingState::SignalingHaveLocalOffer ||
-      mSignalingState == PCImplSignalingState::SignalingStable) {
-    mMedia->UpdateTransports(*mJsepSession, restartGathering);
-  }
 
   bool fireNegotiationNeeded = false;
 
   if (mSignalingState == PCImplSignalingState::SignalingStable) {
-    mMedia->UpdateMediaPipelines(*mJsepSession);
-    InitializeDataChannel();
-    mMedia->StartIceChecks(*mJsepSession);
-    mShouldSuppressNegotiationNeeded = false;
-    if (!mJsepSession->AllLocalTracksAreAssigned()) {
-      CSFLogInfo(logTag, "Not all local tracks were assigned to an "
-                         "m-section, either because the offerer did not offer"
-                         " to receive enough tracks, or because tracks were "
-                         "added after CreateOffer/Answer, but before "
-                         "offer/answer completed. This requires "
-                         "renegotiation.");
-      fireNegotiationNeeded = true;
+    // If we're rolling back a local offer, we might need to remove some
+    // transports, but nothing further needs to be done.
+    mMedia->ActivateOrRemoveTransports(*mJsepSession);
+    if (!rollback) {
+      mMedia->UpdateMediaPipelines(*mJsepSession);
+      InitializeDataChannel();
+      mMedia->StartIceChecks(*mJsepSession);
+      mShouldSuppressNegotiationNeeded = false;
+      if (!mJsepSession->AllLocalTracksAreAssigned()) {
+        CSFLogInfo(logTag, "Not all local tracks were assigned to an "
+                           "m-section, either because the offerer did not offer"
+                           " to receive enough tracks, or because tracks were "
+                           "added after CreateOffer/Answer, but before "
+                           "offer/answer completed. This requires "
+                           "renegotiation.");
+        fireNegotiationNeeded = true;
+      }
     }
   } else {
     mShouldSuppressNegotiationNeeded = true;
@@ -2473,7 +2483,7 @@ PeerConnectionImpl::SetSignalingState_m(PCImplSignalingState aSignalingState)
 }
 
 void
-PeerConnectionImpl::UpdateSignalingState() {
+PeerConnectionImpl::UpdateSignalingState(bool rollback) {
   mozilla::JsepSignalingState state =
       mJsepSession->GetState();
 
@@ -2502,7 +2512,7 @@ PeerConnectionImpl::UpdateSignalingState() {
       MOZ_CRASH();
   }
 
-  SetSignalingState_m(newState);
+  SetSignalingState_m(newState, rollback);
 }
 
 bool
@@ -2935,7 +2945,7 @@ static void ToRTCIceCandidateStats(
       cand.mMozLocalTransport.Construct(
           NS_ConvertASCIItoUTF16(c->local_addr.transport.c_str()));
     }
-    report->mIceCandidateStats.Value().AppendElement(cand);
+    report->mIceCandidateStats.Value().AppendElement(cand, fallible);
   }
 }
 
@@ -2972,7 +2982,7 @@ static void RecordIceStats_s(
     s.mMozPriority.Construct(p->priority);
     s.mSelected.Construct(p->selected);
     s.mState.Construct(RTCStatsIceCandidatePairState(p->state));
-    report->mIceCandidatePairStats.Value().AppendElement(s);
+    report->mIceCandidatePairStats.Value().AppendElement(s, fallible);
   }
 
   std::vector<NrIceCandidate> candidates;
@@ -3051,7 +3061,8 @@ PeerConnectionImpl::ExecuteStatsQuery_s(RTCStatsQuery *query) {
             s.mBytesReceived.Construct(bytesReceived);
             s.mPacketsLost.Construct(packetsLost);
             s.mMozRtt.Construct(rtt);
-            query->report->mInboundRTPStreamStats.Value().AppendElement(s);
+            query->report->mInboundRTPStreamStats.Value().AppendElement(s,
+                                                                        fallible);
           }
         }
         // Then, fill in local side (with cross-link to remote only if present)
@@ -3088,7 +3099,8 @@ PeerConnectionImpl::ExecuteStatsQuery_s(RTCStatsQuery *query) {
               s.mDroppedFrames.Construct(droppedFrames);
             }
           }
-          query->report->mOutboundRTPStreamStats.Value().AppendElement(s);
+          query->report->mOutboundRTPStreamStats.Value().AppendElement(s,
+                                                                       fallible);
         }
         break;
       }
@@ -3120,7 +3132,8 @@ PeerConnectionImpl::ExecuteStatsQuery_s(RTCStatsQuery *query) {
             s.mIsRemote = true;
             s.mPacketsSent.Construct(packetsSent);
             s.mBytesSent.Construct(bytesSent);
-            query->report->mOutboundRTPStreamStats.Value().AppendElement(s);
+            query->report->mOutboundRTPStreamStats.Value().AppendElement(s,
+                                                                         fallible);
           }
         }
         // Then, fill in local side (with cross-link to remote only if present)
@@ -3174,7 +3187,8 @@ PeerConnectionImpl::ExecuteStatsQuery_s(RTCStatsQuery *query) {
             s.mDiscardedPackets.Construct(discardedPackets);
           }
         }
-        query->report->mInboundRTPStreamStats.Value().AppendElement(s);
+        query->report->mInboundRTPStreamStats.Value().AppendElement(s,
+                                                                    fallible);
         break;
       }
     }
@@ -3294,6 +3308,10 @@ PeerConnectionImpl::IceStreamReady(NrIceMediaStream *aStream)
 //Telemetry for when calls start
 void
 PeerConnectionImpl::startCallTelem() {
+  if (!mStartTime.IsNull()) {
+    return;
+  }
+
   // Start time for calls
   mStartTime = TimeStamp::Now();
 

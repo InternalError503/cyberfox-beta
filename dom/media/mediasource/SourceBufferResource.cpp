@@ -10,10 +10,9 @@
 
 #include "nsISeekableStream.h"
 #include "nsISupports.h"
-#include "prlog.h"
+#include "mozilla/Logging.h"
 #include "MediaData.h"
 
-#ifdef PR_LOGGING
 PRLogModuleInfo* GetSourceBufferResourceLog()
 {
   static PRLogModuleInfo* sLogModule;
@@ -23,12 +22,8 @@ PRLogModuleInfo* GetSourceBufferResourceLog()
   return sLogModule;
 }
 
-#define SBR_DEBUG(arg, ...) PR_LOG(GetSourceBufferResourceLog(), PR_LOG_DEBUG, ("SourceBufferResource(%p:%s)::%s: " arg, this, mType.get(), __func__, ##__VA_ARGS__))
-#define SBR_DEBUGV(arg, ...) PR_LOG(GetSourceBufferResourceLog(), PR_LOG_DEBUG+1, ("SourceBufferResource(%p:%s)::%s: " arg, this, mType.get(), __func__, ##__VA_ARGS__))
-#else
-#define SBR_DEBUG(...)
-#define SBR_DEBUGV(...)
-#endif
+#define SBR_DEBUG(arg, ...) MOZ_LOG(GetSourceBufferResourceLog(), mozilla::LogLevel::Debug, ("SourceBufferResource(%p:%s)::%s: " arg, this, mType.get(), __func__, ##__VA_ARGS__))
+#define SBR_DEBUGV(arg, ...) MOZ_LOG(GetSourceBufferResourceLog(), mozilla::LogLevel::Verbose, ("SourceBufferResource(%p:%s)::%s: " arg, this, mType.get(), __func__, ##__VA_ARGS__))
 
 namespace mozilla {
 
@@ -179,12 +174,13 @@ SourceBufferResource::ReadFromCache(char* aBuffer, int64_t aOffset, uint32_t aCo
 }
 
 uint32_t
-SourceBufferResource::EvictData(uint64_t aPlaybackOffset, uint32_t aThreshold)
+SourceBufferResource::EvictData(uint64_t aPlaybackOffset, uint32_t aThreshold,
+                                ErrorResult& aRv)
 {
   SBR_DEBUG("EvictData(aPlaybackOffset=%llu,"
             "aThreshold=%u)", aPlaybackOffset, aThreshold);
   ReentrantMonitorAutoEnter mon(mMonitor);
-  uint32_t result = mInputBuffer.Evict(aPlaybackOffset, aThreshold);
+  uint32_t result = mInputBuffer.Evict(aPlaybackOffset, aThreshold, aRv);
   if (result > 0) {
     // Wake up any waiting threads in case a ReadInternal call
     // is now invalid.
@@ -194,13 +190,13 @@ SourceBufferResource::EvictData(uint64_t aPlaybackOffset, uint32_t aThreshold)
 }
 
 void
-SourceBufferResource::EvictBefore(uint64_t aOffset)
+SourceBufferResource::EvictBefore(uint64_t aOffset, ErrorResult& aRv)
 {
   SBR_DEBUG("EvictBefore(aOffset=%llu)", aOffset);
   ReentrantMonitorAutoEnter mon(mMonitor);
   // If aOffset is past the current playback offset we don't evict.
   if (aOffset < mOffset) {
-    mInputBuffer.EvictBefore(aOffset);
+    mInputBuffer.EvictBefore(aOffset, aRv);
   }
   // Wake up any waiting threads in case a ReadInternal call
   // is now invalid.
@@ -216,7 +212,7 @@ SourceBufferResource::EvictAll()
 }
 
 void
-SourceBufferResource::AppendData(MediaLargeByteBuffer* aData)
+SourceBufferResource::AppendData(MediaByteBuffer* aData)
 {
   SBR_DEBUG("AppendData(aData=%p, aLength=%u)",
             aData->Elements(), aData->Length());

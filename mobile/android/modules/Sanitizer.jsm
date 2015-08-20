@@ -3,6 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/*globals LoadContextInfo, FormHistory, Accounts */
+
 let Cc = Components.classes;
 let Ci = Components.interfaces;
 let Cu = Components.utils;
@@ -15,6 +17,7 @@ Cu.import("resource://gre/modules/Messaging.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
 Cu.import("resource://gre/modules/Downloads.jsm");
 Cu.import("resource://gre/modules/osfile.jsm");
+Cu.import("resource://gre/modules/Accounts.jsm");
 
 function dump(a) {
   Services.console.logStringMessage(a);
@@ -266,7 +269,25 @@ Sanitizer.prototype = {
       {
         return true;
       }
+    },
+
+    syncedTabs: {
+      clear: function ()
+      {
+        return Messaging.sendRequestForResult({ type: "Sanitize:ClearSyncedTabs" })
+          .catch(e => Cu.reportError("Java-side synced tabs clearing failed: " + e));
+      },
+
+      canClear: function(aCallback)
+      {
+        Accounts.anySyncAccountsExist().then(aCallback)
+          .catch(function(err) {
+            Cu.reportError("Java-side synced tabs clearing failed: " + err)
+            aCallback(false);
+          });
+      }
     }
+
   }
 };
 

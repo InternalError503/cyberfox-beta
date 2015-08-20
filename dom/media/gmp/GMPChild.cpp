@@ -45,14 +45,9 @@ namespace mozilla {
 #undef LOG
 #undef LOGD
 
-#ifdef PR_LOGGING
 extern PRLogModuleInfo* GetGMPLog();
-#define LOG(level, x, ...) PR_LOG(GetGMPLog(), (level), (x, ##__VA_ARGS__))
-#define LOGD(x, ...) LOG(PR_LOG_DEBUG, "GMPChild[pid=%d] " x, (int)base::GetCurrentProcId(), ##__VA_ARGS__)
-#else
-#define LOG(level, x, ...)
-#define LOGD(x, ...)
-#endif
+#define LOG(level, x, ...) MOZ_LOG(GetGMPLog(), (level), (x, ##__VA_ARGS__))
+#define LOGD(x, ...) LOG(mozilla::LogLevel::Debug, "GMPChild[pid=%d] " x, (int)base::GetCurrentProcId(), ##__VA_ARGS__)
 
 namespace gmp {
 
@@ -79,7 +74,7 @@ GMPChild::~GMPChild()
 
 static bool
 GetFileBase(const std::string& aPluginPath,
-#if defined(XP_MACOSX)
+#if defined(XP_MACOSX) && defined(MOZ_GMP_SANDBOX)
             nsCOMPtr<nsIFile>& aLibDirectory,
 #endif
             nsCOMPtr<nsIFile>& aFileBase,
@@ -93,7 +88,7 @@ GetFileBase(const std::string& aPluginPath,
     return false;
   }
 
-#if defined(XP_MACOSX)
+#if defined(XP_MACOSX) && defined(MOZ_GMP_SANDBOX)
   if (NS_FAILED(aFileBase->Clone(getter_AddRefs(aLibDirectory)))) {
     return false;
   }
@@ -119,13 +114,13 @@ GetFileBase(const std::string& aPluginPath,
 
 static bool
 GetPluginFile(const std::string& aPluginPath,
-#if defined(XP_MACOSX)
+#if defined(XP_MACOSX) && defined(MOZ_GMP_SANDBOX)
               nsCOMPtr<nsIFile>& aLibDirectory,
 #endif
               nsCOMPtr<nsIFile>& aLibFile)
 {
   nsAutoString baseName;
-#ifdef XP_MACOSX
+#if defined(XP_MACOSX) && defined(MOZ_GMP_SANDBOX)
   GetFileBase(aPluginPath, aLibDirectory, aLibFile, baseName);
 #else
   GetFileBase(aPluginPath, aLibFile, baseName);
@@ -429,12 +424,14 @@ GMPChild::RecvStartPlugin()
   mGMPLoader = GMPProcessChild::GetGMPLoader();
   if (!mGMPLoader) {
     NS_WARNING("Failed to get GMPLoader");
+    delete platformAPI;
     return false;
   }
 
 #if defined(MOZ_GMP_SANDBOX) && defined(XP_MACOSX)
   if (!SetMacSandboxInfo()) {
     NS_WARNING("Failed to set Mac GMP sandbox info");
+    delete platformAPI;
     return false;
   }
 #endif
@@ -445,6 +442,7 @@ GMPChild::RecvStartPlugin()
                         mNodeId.size(),
                         platformAPI)) {
     NS_WARNING("Failed to load GMP");
+    delete platformAPI;
     return false;
   }
 
@@ -610,6 +608,7 @@ GMPChild::ShutdownComplete()
 {
   LOGD("%s", __FUNCTION__);
   MOZ_ASSERT(mGMPMessageLoop == MessageLoop::current());
+  mAsyncShutdown = nullptr;
   SendAsyncShutdownComplete();
 }
 
@@ -618,7 +617,7 @@ GetPluginVoucherFile(const std::string& aPluginPath,
                      nsCOMPtr<nsIFile>& aOutVoucherFile)
 {
   nsAutoString baseName;
-#if defined(XP_MACOSX)
+#if defined(XP_MACOSX) && defined(MOZ_GMP_SANDBOX)
   nsCOMPtr<nsIFile> libDir;
   GetFileBase(aPluginPath, aOutVoucherFile, libDir, baseName);
 #else

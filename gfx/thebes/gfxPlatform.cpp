@@ -10,7 +10,7 @@
 #include "mozilla/layers/SharedBufferManagerChild.h"
 #include "mozilla/layers/ISurfaceAllocator.h"     // for GfxMemoryImageReporter
 
-#include "prlog.h"
+#include "mozilla/Logging.h"
 #include "prprf.h"
 
 #include "gfxPlatform.h"
@@ -75,6 +75,10 @@
 #include "GLContext.h"
 #include "GLContextProvider.h"
 #include "mozilla/gfx/Logging.h"
+
+#if defined(MOZ_WIDGET_GTK)
+#include "gfxPlatformGtk.h" // xxx - for UseFcFontList
+#endif
 
 #ifdef MOZ_WIDGET_ANDROID
 #include "TexturePoolOGL.h"
@@ -382,6 +386,48 @@ static const char *gPrefLangNames[] = {
     "x-unicode",
 };
 
+static nsIAtom* PrefLangToLangGroups(uint32_t aIndex)
+{
+    // This needs to match the list of pref font.default.xx entries listed in
+    // all.js! The order *must* match the order in eFontPrefLang.
+    //
+    // Having this array within a static function rather than at the top-level
+    // avoids a static constructor.
+    static nsIAtom* gPrefLangToLangGroups[] = {
+        nsGkAtoms::x_western,
+        nsGkAtoms::Japanese,
+        nsGkAtoms::Taiwanese,
+        nsGkAtoms::Chinese,
+        nsGkAtoms::HongKongChinese,
+        nsGkAtoms::ko,
+        nsGkAtoms::x_cyrillic,
+        nsGkAtoms::el,
+        nsGkAtoms::th,
+        nsGkAtoms::he,
+        nsGkAtoms::ar,
+        nsGkAtoms::x_devanagari,
+        nsGkAtoms::x_tamil,
+        nsGkAtoms::x_armn,
+        nsGkAtoms::x_beng,
+        nsGkAtoms::x_cans,
+        nsGkAtoms::x_ethi,
+        nsGkAtoms::x_geor,
+        nsGkAtoms::x_gujr,
+        nsGkAtoms::x_guru,
+        nsGkAtoms::x_khmr,
+        nsGkAtoms::x_mlym,
+        nsGkAtoms::x_orya,
+        nsGkAtoms::x_telu,
+        nsGkAtoms::x_knda,
+        nsGkAtoms::x_sinh,
+        nsGkAtoms::x_tibt,
+        nsGkAtoms::Unicode
+    };
+    return aIndex < ArrayLength(gPrefLangToLangGroups)
+         ? gPrefLangToLangGroups[aIndex]
+         : nsGkAtoms::Unicode;
+}
+
 gfxPlatform::gfxPlatform()
   : mTileWidth(-1)
   , mTileHeight(-1)
@@ -503,12 +549,19 @@ gfxPlatform::Init()
 
     nsresult rv;
 
-#if defined(XP_MACOSX) || defined(XP_WIN) || defined(ANDROID) // temporary, until this is implemented on others
-    rv = gfxPlatformFontList::Init();
-    if (NS_FAILED(rv)) {
-        NS_RUNTIMEABORT("Could not initialize gfxPlatformFontList");
-    }
+    bool usePlatformFontList = true;
+#if defined(MOZ_WIDGET_GTK)
+    usePlatformFontList = gfxPlatformGtk::UseFcFontList();
+#elif defined(MOZ_WIDGET_QT)
+    usePlatformFontList = false;
 #endif
+
+    if (usePlatformFontList) {
+        rv = gfxPlatformFontList::Init();
+        if (NS_FAILED(rv)) {
+            NS_RUNTIMEABORT("Could not initialize gfxPlatformFontList");
+        }
+    }
 
     gPlatform->mScreenReferenceSurface =
         gPlatform->CreateOffscreenSurface(IntSize(1, 1),
@@ -814,7 +867,8 @@ gfxPlatform::GetSourceSurfaceForSurface(DrawTarget *aTarget, gfxASurface *aSurfa
     SourceSurfaceUserData *surf = static_cast<SourceSurfaceUserData*>(userData);
 
     if (surf->mSrcSurface->IsValid() && surf->mBackendType == aTarget->GetBackendType()) {
-      return surf->mSrcSurface;
+      RefPtr<SourceSurface> srcSurface(surf->mSrcSurface);
+      return srcSurface.forget();
     }
     // We can just continue here as when setting new user data the destroy
     // function will be called for the old user data.
@@ -981,10 +1035,8 @@ gfxPlatform::GetScaledFontForFont(DrawTarget* aTarget, gfxFont *aFont)
   NativeFont nativeFont;
   nativeFont.mType = NativeFontType::CAIRO_FONT_FACE;
   nativeFont.mFont = aFont->GetCairoScaledFont();
-  RefPtr<ScaledFont> scaledFont =
-    Factory::CreateScaledFontForNativeFont(nativeFont,
-                                           aFont->GetAdjustedSize());
-  return scaledFont;
+  return Factory::CreateScaledFontForNativeFont(nativeFont,
+                                                aFont->GetAdjustedSize());
 }
 
 int
@@ -1472,6 +1524,16 @@ gfxPlatform::GetFontPrefLangFor(nsIAtom *aLang)
     nsAutoCString lang;
     aLang->ToUTF8String(lang);
     return GetFontPrefLangFor(lang.get());
+}
+
+nsIAtom*
+gfxPlatform::GetLangGroupForPrefLang(eFontPrefLang aLang)
+{
+    // the special CJK set pref lang should be resolved into separate
+    // calls to individual CJK pref langs before getting here
+    NS_ASSERTION(aLang != eFontPrefLang_CJKSet, "unresolved CJK set pref lang");
+
+    return PrefLangToLangGroups(uint32_t(aLang));
 }
 
 const char*
@@ -2186,6 +2248,7 @@ static bool sLayersSupportsD3D9 = false;
 static bool sLayersSupportsD3D11 = false;
 bool gANGLESupportsD3D11 = false;
 static bool sLayersSupportsHardwareVideoDecoding = false;
+static bool sLayersHardwareVideoDecodingFailed = false;
 static bool sBufferRotationCheckPref = true;
 static bool sPrefBrowserTabsRemoteAutostart = false;
 
@@ -2245,6 +2308,10 @@ InitLayersAccelerationPrefs()
       }
     }
 
+    Preferences::AddBoolVarCache(&sLayersHardwareVideoDecodingFailed,
+                                 "media.hardware-video-decoding.failed",
+                                 false);
+
     sLayersAccelerationPrefsInitialized = true;
   }
 }
@@ -2273,7 +2340,7 @@ gfxPlatform::CanUseHardwareVideoDecoding()
   // this function is called from the compositor thread, so it is not
   // safe to init the prefs etc. from here.
   MOZ_ASSERT(sLayersAccelerationPrefsInitialized);
-  return sLayersSupportsHardwareVideoDecoding;
+  return sLayersSupportsHardwareVideoDecoding && !sLayersHardwareVideoDecodingFailed;
 }
 
 bool
@@ -2387,7 +2454,7 @@ DetectBadApzWheelInputPrefs()
 void
 gfxPlatform::GetApzSupportInfo(mozilla::widget::InfoObject& aObj)
 {
-  if (!gfxPrefs::AsyncPanZoomEnabled()) {
+  if (!gfxPlatform::AsyncPanZoomEnabled()) {
     return;
   }
 
@@ -2405,3 +2472,17 @@ gfxPlatform::GetApzSupportInfo(mozilla::widget::InfoObject& aObj)
   }
 }
 
+/*static*/ bool
+gfxPlatform::AsyncPanZoomEnabled()
+{
+#if !defined(MOZ_B2G) && !defined(MOZ_WIDGET_ANDROID)
+  // For XUL applications (everything but B2G on mobile and desktop, and
+  // Firefox on Android) we only want to use APZ when E10S is enabled. If
+  // we ever get input events off the main thread we can consider relaxing
+  // this requirement.
+  if (!BrowserTabsRemoteAutostart()) {
+    return false;
+  }
+#endif
+  return gfxPrefs::AsyncPanZoomEnabledDoNotUseDirectly();
+}

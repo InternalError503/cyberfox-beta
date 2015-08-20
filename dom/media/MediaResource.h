@@ -9,11 +9,13 @@
 #include "mozilla/Mutex.h"
 #include "nsIChannel.h"
 #include "nsIURI.h"
+#include "nsISeekableStream.h"
 #include "nsIStreamingProtocolController.h"
 #include "nsIStreamListener.h"
 #include "nsIChannelEventSink.h"
 #include "nsIInterfaceRequestor.h"
 #include "MediaCache.h"
+#include "MediaData.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/TimeStamp.h"
 #include "nsThreadUtils.h"
@@ -156,8 +158,7 @@ public:
     return aByteRange.mStart >= mStart && aByteRange.mEnd <= mEnd;
   }
 
-  MediaByteRange Extents(const MediaByteRange& aByteRange) const
-  {
+  MediaByteRange Extents(const MediaByteRange& aByteRange) const {
     if (IsNull()) {
       return aByteRange;
     }
@@ -165,7 +166,9 @@ public:
                           std::max(mEnd, aByteRange.mEnd));
   }
 
-  int64_t Length() { return mEnd - mStart; }
+  int64_t Length() const {
+    return mEnd - mStart;
+  }
 
   int64_t mStart, mEnd;
 };
@@ -286,6 +289,48 @@ public:
   // results and requirements are the same as per the Read method.
   virtual nsresult ReadAt(int64_t aOffset, char* aBuffer,
                           uint32_t aCount, uint32_t* aBytes) = 0;
+  // This method returns nullptr if anything fails.
+  // Otherwise, it returns an owned buffer.
+  // MediaReadAt may return fewer bytes than requested if end of stream is
+  // encountered. There is no need to call it again to get more data.
+  virtual already_AddRefed<MediaByteBuffer> MediaReadAt(int64_t aOffset, uint32_t aCount)
+  {
+    nsRefPtr<MediaByteBuffer> bytes = new MediaByteBuffer();
+    bool ok = bytes->SetLength(aCount, fallible);
+    NS_ENSURE_TRUE(ok, nullptr);
+    char* curr = reinterpret_cast<char*>(bytes->Elements());
+    const char* start = curr;
+    while (aCount > 0) {
+      uint32_t bytesRead;
+      nsresult rv = ReadAt(aOffset, curr, aCount, &bytesRead);
+      NS_ENSURE_SUCCESS(rv, nullptr);
+      if (!bytesRead) {
+        break;
+      }
+      aOffset += bytesRead;
+      aCount -= bytesRead;
+      curr += bytesRead;
+    }
+    bytes->SetLength(curr - start);
+    return bytes.forget();
+  }
+
+  // ReadAt without side-effects. Given that our MediaResource infrastructure
+  // is very side-effecty, this accomplishes its job by checking the initial
+  // position and seeking back to it. If the seek were to fail, a side-effect
+  // might be observable.
+  //
+  // This method returns null if anything fails, including the failure to read
+  // aCount bytes. Otherwise, it returns an owned buffer.
+  virtual already_AddRefed<MediaByteBuffer> SilentReadAt(int64_t aOffset, uint32_t aCount)
+  {
+    int64_t pos = Tell();
+    nsRefPtr<MediaByteBuffer> bytes = MediaReadAt(aOffset, aCount);
+    Seek(nsISeekableStream::NS_SEEK_SET, pos);
+    NS_ENSURE_TRUE(bytes && bytes->Length() == aCount, nullptr);
+    return bytes.forget();
+  }
+
   // Seek to the given bytes offset in the stream. aWhence can be
   // one of:
   //   NS_SEEK_SET
@@ -427,6 +472,8 @@ public:
     return aMallocSizeOf(this) + SizeOfExcludingThis(aMallocSizeOf);
   }
 
+  const nsCString& GetContentURL() const { return EmptyCString(); }
+
 protected:
   virtual ~MediaResource() {};
 
@@ -459,6 +506,12 @@ public:
     return aMallocSizeOf(this) + SizeOfExcludingThis(aMallocSizeOf);
   }
 
+  // Returns the url of the resource. Safe to call from any thread?
+  const nsCString& GetContentURL() const
+  {
+    return mContentURL;
+  }
+
 protected:
   BaseMediaResource(MediaDecoder* aDecoder,
                     nsIChannel* aChannel,
@@ -472,6 +525,7 @@ protected:
   {
     MOZ_COUNT_CTOR(BaseMediaResource);
     NS_ASSERTION(!mContentType.IsEmpty(), "Must know content type");
+    mURI->GetSpec(mContentURL);
   }
   virtual ~BaseMediaResource()
   {
@@ -509,6 +563,9 @@ protected:
   // MediaResource is created. This is constant, so accessing from any thread
   // is safe.
   const nsAutoCString mContentType;
+
+  // Copy of the url of the channel resource.
+  nsAutoCString mContentURL;
 
   // True if SetLoadInBackground() has been called with
   // aLoadInBackground = true, i.e. when the document load event is not
@@ -597,6 +654,7 @@ public:
   virtual nsresult Read(char* aBuffer, uint32_t aCount, uint32_t* aBytes) override;
   virtual nsresult ReadAt(int64_t offset, char* aBuffer,
                           uint32_t aCount, uint32_t* aBytes) override;
+  virtual already_AddRefed<MediaByteBuffer> MediaReadAt(int64_t aOffset, uint32_t aCount) override;
   virtual nsresult Seek(int32_t aWhence, int64_t aOffset) override;
   virtual int64_t  Tell() override;
 

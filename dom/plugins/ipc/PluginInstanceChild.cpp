@@ -130,7 +130,7 @@ PluginInstanceChild::PluginInstanceChild(const NPPluginFuncs* aPluginIface,
     , mMode(aMode)
     , mNames(aNames)
     , mValues(aValues)
-#if defined(XP_MACOSX)
+#if defined(XP_DARWIN)
     , mContentsScaleFactor(1.0)
 #endif
     , mDrawingModel(kDefaultDrawingModel)
@@ -509,7 +509,7 @@ PluginInstanceChild::NPN_GetValue(NPNVariable aVar,
 #endif
 
     default:
-        PR_LOG(GetPluginLog(), PR_LOG_WARNING,
+        MOZ_LOG(GetPluginLog(), LogLevel::Warning,
                ("In PluginInstanceChild::NPN_GetValue: Unhandled NPNVariable %i (%s)",
                 (int) aVar, NPNVariableToString(aVar)));
         return NPERR_GENERIC_ERROR;
@@ -538,7 +538,7 @@ PluginInstanceChild::Invalidate()
 NPError
 PluginInstanceChild::NPN_SetValue(NPPVariable aVar, void* aValue)
 {
-    PR_LOG(GetPluginLog(), PR_LOG_DEBUG, ("%s (aVar=%i, aValue=%p)",
+    MOZ_LOG(GetPluginLog(), LogLevel::Debug, ("%s (aVar=%i, aValue=%p)",
                                       FULLFUNCTION, (int) aVar, aValue));
 
     AssertPluginThread();
@@ -627,7 +627,7 @@ PluginInstanceChild::NPN_SetValue(NPPVariable aVar, void* aValue)
 #endif
 
     default:
-        PR_LOG(GetPluginLog(), PR_LOG_WARNING,
+        MOZ_LOG(GetPluginLog(), LogLevel::Warning,
                ("In PluginInstanceChild::NPN_SetValue: Unhandled NPPVariable %i (%s)",
                 (int) aVar, NPPVariableToString(aVar)));
         return NPERR_GENERIC_ERROR;
@@ -1124,7 +1124,8 @@ void PluginInstanceChild::DeleteWindow()
 #endif
 
 bool
-PluginInstanceChild::AnswerNPP_SetWindow(const NPRemoteWindow& aWindow)
+PluginInstanceChild::AnswerNPP_SetWindow(const NPRemoteWindow& aWindow,
+                                         NPRemoteWindow* aChildWindowToBeAdopted)
 {
     PLUGIN_LOG_DEBUG(("%s (aWindow=<window: 0x%lx, x: %d, y: %d, width: %d, height: %d>)",
                       FULLFUNCTION,
@@ -1215,8 +1216,31 @@ PluginInstanceChild::AnswerNPP_SetWindow(const NPRemoteWindow& aWindow)
           if (!CreatePluginWindow())
               return false;
 
-          ReparentPluginWindow(reinterpret_cast<HWND>(aWindow.window));
           SizePluginWindow(aWindow.width, aWindow.height);
+
+          // If the window is not our parent set the return child window so that
+          // it can be re-parented in the chrome process. Re-parenting now
+          // happens there as we might not have sufficient permission.
+          // Also, this needs to be after SizePluginWindow because SetWindowPos
+          // relies on things that it sets.
+          HWND parentWindow = reinterpret_cast<HWND>(aWindow.window);
+          if (mPluginParentHWND != parentWindow  && IsWindow(parentWindow)) {
+              mPluginParentHWND = parentWindow;
+              aChildWindowToBeAdopted->window =
+                  reinterpret_cast<uint64_t>(mPluginWindowHWND);
+          } else {
+              // Now we know that the window has the correct parent we can show
+              // it. The actual visibility is controlled by its parent.
+              // First time round, these calls are made by our caller after the
+              // parent is set.
+              ShowWindow(mPluginWindowHWND, SW_SHOWNA);
+
+              // This used to be called in SizePluginWindow, but we need to make
+              // sure that mPluginWindowHWND has had it's parent set correctly,
+              // otherwise it can cause a focus issue.
+              SetWindowPos(mPluginWindowHWND, nullptr, 0, 0, aWindow.width,
+                           aWindow.height, SWP_NOZORDER | SWP_NOREPOSITION);
+          }
 
           mWindow.window = (void*)mPluginWindowHWND;
           mWindow.x = aWindow.x;
@@ -1281,6 +1305,8 @@ PluginInstanceChild::AnswerNPP_SetWindow(const NPRemoteWindow& aWindow)
     // TODO: Need Android impl
 #elif defined(MOZ_WIDGET_QT)
     // TODO: Need QT-nonX impl
+#elif defined(MOZ_WIDGET_UIKIT)
+    // Don't care
 #else
 #  error Implement me for your OS
 #endif
@@ -1404,33 +1430,12 @@ PluginInstanceChild::DestroyPluginWindow()
 }
 
 void
-PluginInstanceChild::ReparentPluginWindow(HWND hWndParent)
-{
-    if (hWndParent != mPluginParentHWND && IsWindow(hWndParent)) {
-        // Fix the child window's style to be a child window.
-        LONG_PTR style = GetWindowLongPtr(mPluginWindowHWND, GWL_STYLE);
-        style |= WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-        style &= ~WS_POPUP;
-        SetWindowLongPtr(mPluginWindowHWND, GWL_STYLE, style);
-
-        // Do the reparenting.
-        SetParent(mPluginWindowHWND, hWndParent);
-
-        // Make sure we're visible.
-        ShowWindow(mPluginWindowHWND, SW_SHOWNA);
-    }
-    mPluginParentHWND = hWndParent;
-}
-
-void
 PluginInstanceChild::SizePluginWindow(int width,
                                       int height)
 {
     if (mPluginWindowHWND) {
         mPluginSize.x = width;
         mPluginSize.y = height;
-        SetWindowPos(mPluginWindowHWND, nullptr, 0, 0, width, height,
-                     SWP_NOZORDER | SWP_NOREPOSITION);
     }
 }
 
@@ -1496,22 +1501,25 @@ PluginInstanceChild::PluginWindowProcInternal(HWND hWnd,
     }
 
     // The plugin received keyboard focus, let the parent know so the dom is up to date.
-    if (message == WM_MOUSEACTIVATE)
+    if (message == WM_MOUSEACTIVATE) {
       self->CallPluginFocusChange(true);
+    }
 
     // Prevent lockups due to plugins making rpc calls when the parent
     // is making a synchronous SendMessage call to the child window. Add
     // more messages as needed.
     if ((InSendMessageEx(nullptr)&(ISMEX_REPLIED|ISMEX_SEND)) == ISMEX_SEND) {
         switch(message) {
+            case WM_CHILDACTIVATE:
             case WM_KILLFOCUS:
             ReplyMessage(0);
             break;
         }
     }
 
-    if (message == WM_KILLFOCUS)
+    if (message == WM_KILLFOCUS) {
       self->CallPluginFocusChange(false);
+    }
 
     if (message == WM_USER+1 &&
         (self->GetQuirks() & PluginModuleChild::QUIRK_FLASH_THROTTLE_WMUSER_EVENTS)) {
@@ -1542,11 +1550,13 @@ PluginInstanceChild::PluginWindowProcInternal(HWND hWnd,
       }
     }
 
-    if (message == WM_CLOSE)
+    if (message == WM_CLOSE) {
         self->DestroyPluginWindow();
+    }
 
-    if (message == WM_NCDESTROY)
+    if (message == WM_NCDESTROY) {
         RemoveProp(hWnd, kPluginInstanceChildProperty);
+    }
 
     return res;
 }
@@ -1768,7 +1778,7 @@ PluginInstanceChild::SetCaptureHook(HWND aHwnd)
     wchar_t className[256] = {0};
     int numChars = GetClassNameW(aHwnd, className, ArrayLength(className));
     NS_NAMED_LITERAL_STRING(unityClassName, "Unity.WebPlayer");
-    if (numChars == unityClassName.Length() && unityClassName == className) {
+    if (numChars == unityClassName.Length() && unityClassName == wwc(className)) {
         sSetCaptureHookData = new SetCaptureHookData(aHwnd);
     }
     return sUser32SetCaptureHookStub(aHwnd);
@@ -2349,7 +2359,7 @@ PluginInstanceChild::FlashThrottleMessage(HWND aWnd,
 bool
 PluginInstanceChild::AnswerSetPluginFocus()
 {
-    PR_LOG(GetPluginLog(), PR_LOG_DEBUG, ("%s", FULLFUNCTION));
+    MOZ_LOG(GetPluginLog(), LogLevel::Debug, ("%s", FULLFUNCTION));
 
 #if defined(OS_WIN)
     // Parent is letting us know the dom set focus to the plugin. Note,
@@ -2372,7 +2382,7 @@ PluginInstanceChild::AnswerSetPluginFocus()
 bool
 PluginInstanceChild::AnswerUpdateWindow()
 {
-    PR_LOG(GetPluginLog(), PR_LOG_DEBUG, ("%s", FULLFUNCTION));
+    MOZ_LOG(GetPluginLog(), LogLevel::Debug, ("%s", FULLFUNCTION));
 
 #if defined(OS_WIN)
     if (mPluginWindowHWND) {
@@ -2933,7 +2943,7 @@ PluginInstanceChild::MaybeCreatePlatformHelperSurface(void)
 bool
 PluginInstanceChild::EnsureCurrentBuffer(void)
 {
-#ifndef XP_MACOSX
+#ifndef XP_DARWIN
     nsIntRect toInvalidate(0, 0, 0, 0);
     gfxIntSize winSize = gfxIntSize(mWindow.width, mWindow.height);
 
@@ -2979,7 +2989,7 @@ PluginInstanceChild::EnsureCurrentBuffer(void)
     }
 
     return true;
-#else // XP_MACOSX
+#elif defined(XP_MACOSX)
 
     if (!mDoubleBufferCARenderer.HasCALayer()) {
         void *caLayer = nullptr;
@@ -3033,9 +3043,8 @@ PluginInstanceChild::EnsureCurrentBuffer(void)
         nsIntRect toInvalidate(0, 0, mWindow.width, mWindow.height);
         mAccumulatedInvalidRect.UnionRect(mAccumulatedInvalidRect, toInvalidate);
     }
-  
-    return true;
 #endif
+    return true;
 }
 
 void

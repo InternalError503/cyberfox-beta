@@ -611,10 +611,10 @@ ConvertActorsToBlobs(IDBDatabase* aDatabase,
     for (uint32_t index = 0; index < count; index++) {
       BlobChild* actor = static_cast<BlobChild*>(blobs[index]);
 
-      nsRefPtr<FileImpl> blobImpl = actor->GetBlobImpl();
+      nsRefPtr<BlobImpl> blobImpl = actor->GetBlobImpl();
       MOZ_ASSERT(blobImpl);
 
-      nsRefPtr<File> blob = new File(aDatabase->GetOwner(), blobImpl);
+      nsRefPtr<Blob> blob = Blob::Create(aDatabase->GetOwner(), blobImpl);
 
       nsRefPtr<FileInfo> fileInfo;
       if (!fileInfos.IsEmpty()) {
@@ -631,7 +631,7 @@ ConvertActorsToBlobs(IDBDatabase* aDatabase,
       StructuredCloneFile* file = aFiles.AppendElement();
       MOZ_ASSERT(file);
 
-      file->mFile.swap(blob);
+      file->mBlob.swap(blob);
       file->mFileInfo.swap(fileInfo);
     }
   }
@@ -1262,14 +1262,26 @@ BackgroundFactoryRequestChild::HandleResponse(
     static_cast<BackgroundDatabaseChild*>(aResponse.databaseChild());
   MOZ_ASSERT(databaseActor);
 
-  databaseActor->EnsureDOMObject();
-
   IDBDatabase* database = databaseActor->GetDOMObject();
-  MOZ_ASSERT(database);
+  if (!database) {
+    databaseActor->EnsureDOMObject();
 
-  ResultHelper helper(mRequest, nullptr, database);
+    database = databaseActor->GetDOMObject();
+    MOZ_ASSERT(database);
 
-  DispatchSuccessEvent(&helper);
+    MOZ_ASSERT(!database->IsClosed());
+  }
+
+  if (database->IsClosed()) {
+    // If the database was closed already, which is only possible if we fired an
+    // "upgradeneeded" event, then we shouldn't fire a "success" event here.
+    // Instead we fire an error event with AbortErr.
+    DispatchErrorEvent(mRequest, NS_ERROR_DOM_INDEXEDDB_ABORT_ERR);
+  } else {
+    ResultHelper helper(mRequest, nullptr, database);
+
+    DispatchSuccessEvent(&helper);
+  }
 
   databaseActor->ReleaseDOMObject();
 

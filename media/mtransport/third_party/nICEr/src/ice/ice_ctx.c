@@ -54,6 +54,7 @@ static char *RCSSTRING __UNUSED__="$Id: ice_ctx.c,v 1.2 2008/04/28 17:59:01 ekr 
 #include "nr_crypto.h"
 #include "async_timer.h"
 #include "util.h"
+#include "nr_socket_local.h"
 
 
 int LOG_ICE = 0;
@@ -65,6 +66,14 @@ static int nr_ice_fetch_turn_servers(int ct, nr_ice_turn_server **out);
 #endif /* USE_TURN */
 static void nr_ice_ctx_destroy_cb(NR_SOCKET s, int how, void *cb_arg);
 static int nr_ice_ctx_pair_new_trickle_candidates(nr_ice_ctx *ctx, nr_ice_candidate *cand);
+static int no_op(void **obj) {
+  return 0;
+}
+
+static nr_socket_factory_vtbl default_socket_factory_vtbl = {
+  nr_socket_local_create,
+  no_op
+};
 
 int nr_ice_fetch_stun_servers(int ct, nr_ice_stun_server **out)
   {
@@ -229,6 +238,12 @@ int nr_ice_ctx_set_turn_tcp_socket_wrapper(nr_ice_ctx *ctx, nr_socket_wrapper_fa
     return(_status);
   }
 
+void nr_ice_ctx_set_socket_factory(nr_ice_ctx *ctx, nr_socket_factory *factory)
+  {
+    nr_socket_factory_destroy(&ctx->socket_factory);
+    ctx->socket_factory = factory;
+  }
+
 #ifdef USE_TURN
 int nr_ice_fetch_turn_servers(int ct, nr_ice_turn_server **out)
   {
@@ -334,10 +349,10 @@ int nr_ice_ctx_create(char *label, UINT4 flags, nr_ice_ctx **ctxp)
       ctx->stun_server_ct=0;
     }
 
-    /* 255 is the max for our priority algorithm */
-    if(ctx->stun_server_ct>255){
-      r_log(LOG_ICE,LOG_WARNING,"ICE(%s): Too many STUN servers specified: max=255", ctx->label);
-      ctx->stun_server_ct=255;
+    /* 31 is the max for our priority algorithm */
+    if(ctx->stun_server_ct>31){
+      r_log(LOG_ICE,LOG_WARNING,"ICE(%s): Too many STUN servers specified: max=31", ctx->label);
+      ctx->stun_server_ct=31;
     }
 
     if(ctx->stun_server_ct>0){
@@ -362,10 +377,10 @@ int nr_ice_ctx_create(char *label, UINT4 flags, nr_ice_ctx **ctxp)
     ctx->local_addrs=0;
     ctx->local_addr_ct=0;
 
-    /* 255 is the max for our priority algorithm */
-    if((ctx->stun_server_ct+ctx->turn_server_ct)>255){
-      r_log(LOG_ICE,LOG_WARNING,"ICE(%s): Too many STUN/TURN servers specified: max=255", ctx->label);
-      ctx->turn_server_ct=255-ctx->stun_server_ct;
+    /* 31 is the max for our priority algorithm */
+    if((ctx->stun_server_ct+ctx->turn_server_ct)>31){
+      r_log(LOG_ICE,LOG_WARNING,"ICE(%s): Too many STUN/TURN servers specified: max=31", ctx->label);
+      ctx->turn_server_ct=31-ctx->stun_server_ct;
     }
 
 #ifdef USE_TURN
@@ -380,6 +395,9 @@ int nr_ice_ctx_create(char *label, UINT4 flags, nr_ice_ctx **ctxp)
 
 
     ctx->Ta = 20;
+
+    if (r=nr_socket_factory_create_int(NULL, &default_socket_factory_vtbl, &ctx->socket_factory))
+      ABORT(r);
 
     STAILQ_INIT(&ctx->streams);
     STAILQ_INIT(&ctx->sockets);
@@ -439,6 +457,7 @@ static void nr_ice_ctx_destroy_cb(NR_SOCKET s, int how, void *cb_arg)
     nr_resolver_destroy(&ctx->resolver);
     nr_interface_prioritizer_destroy(&ctx->interface_prioritizer);
     nr_socket_wrapper_factory_destroy(&ctx->turn_tcp_socket_wrapper);
+    nr_socket_factory_destroy(&ctx->socket_factory);
 
     RFREE(ctx);
   }

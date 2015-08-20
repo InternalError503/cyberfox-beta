@@ -21,11 +21,12 @@ const kWhitelist = [
   {sourceName: /aboutaccounts\/(main|normalize)\.css/i},
   // TokBox SDK assets, see bug 1032469.
   {sourceName: /loop\/.*sdk-content\/.*\.css$/i},
+  // Loop standalone client CSS uses placeholder cross browser pseudo-element
+  {sourceName: /loop\/.*\.css/i,
+   errorMessage: /Unknown pseudo-class.*placeholder/i},
   // Highlighter CSS uses chrome-only pseudo-class, see bug 985597.
   {sourceName: /highlighter\.css/i,
    errorMessage: /Unknown pseudo-class.*moz-native-anonymous/i},
-  // Tracked in bug 1160629.
-  {sourceName: /pocket\/panels\/css\/.*\.css/i},
 ];
 
 let moduleLocation = gTestPath.replace(/\/[^\/]*$/i, "/parsingTestHelpers.jsm");
