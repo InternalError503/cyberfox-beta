@@ -845,7 +845,12 @@ nsSMILAnimationController::AddStyleUpdate(AnimationElementPtrKey* aKey,
 void
 nsSMILAnimationController::AddStyleUpdatesTo(RestyleTracker& aTracker)
 {
+  MOZ_ASSERT(mMightHavePendingStyleUpdates,
+             "Should only add style updates when we think we might have some");
+
   mAnimationElementTable.EnumerateEntries(AddStyleUpdate, &aTracker);
+
+  mMightHavePendingStyleUpdates = false;
 }
 
 //----------------------------------------------------------------------

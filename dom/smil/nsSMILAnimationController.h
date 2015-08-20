@@ -228,6 +228,9 @@ protected:
 
   // Are we registered with our document's refresh driver?
   bool                       mRegisteredWithRefreshDriver;
+  
+  // Have we updated animated values without adding them to the restyle tracker?
+  bool                       mMightHavePendingStyleUpdates;
 
   // Store raw ptr to mDocument.  It owns the controller, so controller
   // shouldn't outlive it

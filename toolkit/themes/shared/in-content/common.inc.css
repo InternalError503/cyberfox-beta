@@ -36,6 +36,7 @@
   --in-content-primary-button-background: #0095dd;
   --in-content-primary-button-background-hover: #008acb;
   --in-content-primary-button-background-active: #006b9d;
+  --in-content-secondary-button-background: #fbfbfb;
   --in-content-table-border-dark-color: #d1d1d1;
   --in-content-table-header-background: #0095dd;
   --in-content-help-button-background: #ffcb00;
@@ -131,7 +132,7 @@ xul|tabs {
   margin-bottom: 15px;
   border-top: 1px solid var(--in-content-box-border-color);
   border-bottom: 1px solid var(--in-content-box-border-color);
-  background-color: var(--in-content-page-background);
+  background-image: var(--in-content-page-background);
 }
 
 xul|*.tabs-left,
@@ -145,7 +146,7 @@ xul|tab {
   padding: 4px 20px;
   min-height: 44px;
   color: var(--in-content-tab-color);
-  background-color: var(--in-content-page-background);
+  background-image: var(--in-content-page-background);
   border-width: 0;
   transition: background-color 50ms ease 0s;
 }
@@ -181,13 +182,15 @@ xul|menulist {
   -moz-appearance: none;
   height: 30px;
   color: var(--in-content-text-color);
+  line-height: 20px;
+  text-shadow: 0 1px 1px #fefffe;
   border: 1px solid var(--in-content-box-border-color);
   -moz-border-top-colors: none !important;
   -moz-border-right-colors: none !important;
   -moz-border-bottom-colors: none !important;
   -moz-border-left-colors: none !important;
   border-radius: 2px;
-  background-color: var(--in-content-page-background);
+  background-color: var(--in-content-secondary-button-background);
 }
 
 html|button:enabled:hover,
@@ -422,6 +425,7 @@ xul|button[type="menu"] > xul|menupopup xul|menuseparator {
   height: 30px;
   color: var(--in-content-text-color);
   line-height: 20px;
+  text-shadow: 0 1px 1px #fefffe;
   padding-right: 10px;
   padding-left: 10px;
   border: 1px solid var(--in-content-box-border-color);
@@ -567,7 +571,10 @@ xul|radio:not([disabled="true"]):hover > xul|*.radio-check {
 }
 
 xul|*.radio-check[selected] {
-  list-style-image: url("chrome://global/skin/in-content/radio.svg#radio");
+  background-image: radial-gradient(circle, rgb(23,146,229),
+                    rgb(76,177,255) 5.5px, rgba(76,177,255,0.2) 6px,
+                    transparent 6px),
+                    linear-gradient(rgb(255,255,255), rgba(255,255,255,0.8));
 }
 
 xul|radio[disabled="true"] > xul|*.radio-check {
@@ -609,6 +616,7 @@ xul|*.category[selected] {
   color: var(--in-content-category-text-selected);
   -moz-padding-start: 11px; /* compensate the 4px border */
   -moz-border-start: solid 4px var(--in-content-border-highlight);
+  box-shadow: inset 4px 0 0 0 #ff9500;
 }
 
 xul|*#categories[keyboard-navigation="true"]:-moz-focusring > xul|*.category[current] {

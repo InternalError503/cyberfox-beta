@@ -9,23 +9,22 @@ Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 Components.utils.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
 Components.utils.import("resource:///modules/RecentWindow.jsm");
 
-XPCOMUtils.defineLazyModuleGetter(this, "NewTabURL",
-  "resource:///modules/NewTabURL.jsm");
-    const PREF = "browser.newtab.url";
+XPCOMUtils.defineLazyGetter(this, "BROWSER_NEW_TAB_URL", function () {
+  const PREF = "browser.newtab.url";
 
-this.__defineGetter__("BROWSER_NEW_TAB_URL", () => {
-  if (PrivateBrowsingUtils.isWindowPrivate(window) &&
-      !PrivateBrowsingUtils.permanentPrivateBrowsing &&
-      !Services.prefs.prefHasUserValue(PREF)) {
-    return "about:privatebrowsing";
-  }
+  function getNewTabPageURL() {
+    if (PrivateBrowsingUtils.isWindowPrivate(window) &&
+        !PrivateBrowsingUtils.permanentPrivateBrowsing &&
+        !Services.prefs.prefHasUserValue(PREF)) {
+      return "about:privatebrowsing";
+    }
 
     let url = Services.prefs.getComplexValue(PREF, Ci.nsISupportsString).data;
     return url || "about:blank";
   }
 
   function update() {
-    NewTabURL = NewTabURL.get();
+    BROWSER_NEW_TAB_URL = getNewTabPageURL();
   }
 
   Services.prefs.addObserver(PREF, update, false);
@@ -35,7 +34,7 @@ this.__defineGetter__("BROWSER_NEW_TAB_URL", () => {
     Services.prefs.removeObserver(PREF, update);
   });
 
-  return NewTabURL.get();
+  return getNewTabPageURL();
 });
 
 var TAB_DROP_TYPE = "application/x-moz-tabbrowser-tab";

@@ -54,8 +54,6 @@ XPCOMUtils.defineLazyModuleGetter(this, "LightweightThemeManager",
                                   "resource://gre/modules/LightweightThemeManager.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "Pocket",
                                   "resource:///modules/Pocket.jsm");
-XPCOMUtils.defineLazyModuleGetter(this, "NewTabURL",
-                                  "resource:///modules/NewTabURL.jsm");
 
 // Can't use XPCOMUtils for these because the scripts try to define the variables
 // on window, and so the defineProperty inside defineLazyGetter fails.
@@ -4027,10 +4025,6 @@ var XULBrowserWindow = {
     return true;
   },
 
-  shouldAddToSessionHistory: function(aDocShell, aURI) {
-    return aURI.spec != NewTabURL.get();
-  },
-
   onProgressChange: function (aWebProgress, aRequest,
                               aCurSelfProgress, aMaxSelfProgress,
                               aCurTotalProgress, aMaxTotalProgress) {
@@ -6691,7 +6685,7 @@ var gIdentityHandler = {
 
     // Chrome URIs however get special treatment. Some chrome URIs are
     // whitelisted to provide a positive security signal to the user.
-    let whitelist = /^about:(accounts|addons|app-manager|buildconfig|cache|config|customizing|downloads|home|license|logo|memory|networking|newaddon|permissions|plugins|preferences|privatebrowsing|rights|sessionrestore|support|welcomeback)/i;
+    let whitelist = /^about:(accounts|addons|app-manager|buildconfig|cache|config|customizing|downloads|home|license|logo|memory|networking|newaddon|permissions|plugins|preferences|privatebrowsing|rights|sessionrestore|support|serviceworkers|welcomeback)/i;
     let isChromeUI = uri.schemeIs("about") && whitelist.test(uri.spec);
     if (isChromeUI) {
       this.setMode(this.IDENTITY_MODE_CHROMEUI);
