@@ -1368,9 +1368,12 @@ pref("devtools.appmanager.enabled", true);
 pref("devtools.appmanager.lastTab", "help");
 pref("devtools.appmanager.manifestEditor.enabled", true);
 
-// Disable DevTools WebIDE by default (Extension only has x86 dll).
+// Disable DevTools WebIDE by default on 64bit (Extension only has x86 dll).
+#ifdef HAVE_64BIT_BUILD
 pref("devtools.webide.enabled", false);
-
+#else
+pref("devtools.webide.enabled", true);	
+#endif
 // Toolbox preferences
 pref("devtools.toolbox.footer.height", 250);
 pref("devtools.toolbox.sidebar.width", 500);
