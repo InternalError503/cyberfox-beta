@@ -565,7 +565,7 @@ gfxPlatform::Init()
 
     gPlatform->mScreenReferenceSurface =
         gPlatform->CreateOffscreenSurface(IntSize(1, 1),
-                                          gfxContentType::COLOR_ALPHA);
+                                          gfxImageFormat::ARGB32);
     if (!gPlatform->mScreenReferenceSurface) {
         NS_RUNTIMEABORT("Could not initialize mScreenReferenceSurface");
     }
@@ -781,7 +781,7 @@ cairo_user_data_key_t kDrawTarget;
 TemporaryRef<DrawTarget>
 gfxPlatform::CreateDrawTargetForSurface(gfxASurface *aSurface, const IntSize& aSize)
 {
-  SurfaceFormat format = Optimal2DFormatForContent(aSurface->GetContentType());
+  SurfaceFormat format = aSurface->GetSurfaceFormat();
   RefPtr<DrawTarget> drawTarget = Factory::CreateDrawTargetForCairoSurface(aSurface->CairoSurface(), aSize, &format);
   if (!drawTarget) {
     gfxWarning() << "gfxPlatform::CreateDrawTargetForSurface failed in CreateDrawTargetForCairoSurface";
@@ -874,14 +874,7 @@ gfxPlatform::GetSourceSurfaceForSurface(DrawTarget *aTarget, gfxASurface *aSurfa
     // function will be called for the old user data.
   }
 
-  SurfaceFormat format;
-  if (aSurface->GetContentType() == gfxContentType::ALPHA) {
-    format = SurfaceFormat::A8;
-  } else if (aSurface->GetContentType() == gfxContentType::COLOR) {
-    format = SurfaceFormat::B8G8R8X8;
-  } else {
-    format = SurfaceFormat::B8G8R8A8;
-  }
+  SurfaceFormat format = aSurface->GetSurfaceFormat();
 
   if (aTarget->GetBackendType() == BackendType::CAIRO) {
     // If we're going to be used with a CAIRO DrawTarget, then just create a
@@ -1214,8 +1207,7 @@ gfxPlatform::CreateDrawTargetForBackend(BackendType aBackend, const IntSize& aSi
   // CreateOffscreenSurface() and CreateDrawTargetForSurface() for all
   // backends).
   if (aBackend == BackendType::CAIRO) {
-    nsRefPtr<gfxASurface> surf = CreateOffscreenSurface(aSize,
-                                                        ContentForFormat(aFormat));
+    nsRefPtr<gfxASurface> surf = CreateOffscreenSurface(aSize, SurfaceFormatToImageFormat(aFormat));
     if (!surf || surf->CairoStatus()) {
       return nullptr;
     }
