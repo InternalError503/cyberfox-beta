@@ -110,6 +110,10 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
 	  {"rf-firefox.dll", MAKE_VERSION(7,6,1,0)},
 	  {"roboform.dll", MAKE_VERSION(7,6,1,0)},
 
+    // Crashes with RoboForm2Go written against old SDK, bug 988311/1196859
+    { "rf-firefox-22.dll", ALL_VERSIONS },
+    { "rf-firefox-40.dll", ALL_VERSIONS },
+
 	  // Topcrash with Babylon Toolbar on FF16+ (bug 721264)
 	  {"babyfox.dll", ALL_VERSIONS},
 
@@ -117,7 +121,9 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
 	  {"sprotector.dll", ALL_VERSIONS},
 
 	  // Topcrash with Websense Endpoint, bug 828184
-	  {"qipcap.dll", MAKE_VERSION(7, 6, 815, 1)},
+	  //Mass startup crash with Websense Endpoint set block too {ALL_VERSIONS} for now see if helps.
+	  {"qipcap.dll", ALL_VERSIONS},
+	  {"qipcap64.dll", ALL_VERSIONS},
 
 	  // leave these two in always for tests
 	  { "mozdllblockingtest.dll", ALL_VERSIONS },
@@ -156,9 +162,6 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
 	  { "libinject.dll", UNVERSIONED },
 	  { "libinject2.dll", 0x537DDC93, DllBlockInfo::USE_TIMESTAMP },
 	  { "libredir2.dll", 0x5385B7ED, DllBlockInfo::USE_TIMESTAMP },
-
-	  // Crashes with RoboForm2Go written against old SDK, bug 988311
-	  { "rf-firefox-22.dll", ALL_VERSIONS },
 
 	  // Crashes with DesktopTemperature, bug 1046382
 	  { "dtwxsvc.dll", ALL_VERSIONS },
@@ -229,9 +232,6 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
 
 	  // NetOp School, discontinued product, bug 763395
       { "nlsp.dll", MAKE_VERSION(6, 23, 2012, 19) },
-	  
-	  //Temp solution for mass startup crash with Websense Endpoint
-	  { "qipcap.dll", ALL_VERSIONS },
 
 	  { nullptr, 0 }
 };
