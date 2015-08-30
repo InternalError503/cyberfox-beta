@@ -178,14 +178,17 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
 	  { "trustedshopper.dll", ALL_VERSIONS }, 
 	  
 	  // bug  - OSD displays on browser windows
-	  // Must block the OSD overlay DLL
+	  // Must block the OSD overlay DLL (Include x64 DLL for OSD)
 	  { "rtsshooks.dll", ALL_VERSIONS },
+	  { "rtsshooks64.dll", ALL_VERSIONS },
 	  { "rtui.dll", ALL_VERSIONS },
 	  { "rtmui.dll", ALL_VERSIONS },
 	  { "rtfc.dll", ALL_VERSIONS }, 
 	  { "libmfxsw32.dll", ALL_VERSIONS },
+	  { "libmfxsw64.dll", ALL_VERSIONS },
 	  { "qsv.dll", ALL_VERSIONS }, 
-	  { "rtvcvfw32.dll", ALL_VERSIONS }, 
+	  { "rtvcvfw32.dll", ALL_VERSIONS },
+	  { "rtvcvfw64.dll", ALL_VERSIONS },	  
 	  
 	  //Ask toolbar
 	  { "genericasktoolbar.dll", ALL_VERSIONS },
