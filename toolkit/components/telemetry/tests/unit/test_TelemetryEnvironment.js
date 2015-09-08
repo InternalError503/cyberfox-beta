@@ -268,6 +268,14 @@ function checkSettingsSection(data) {
                  f + " must have the correct type.");
   }
 
+  // Check "addonCompatibilityCheckEnabled" separately, as it is not available
+  // on Gonk.
+  if (gIsGonk) {
+    Assert.ok(!("addonCompatibilityCheckEnabled" in data.settings), "Must not be available on Gonk.");
+  } else {
+    Assert.equal(data.settings.addonCompatibilityCheckEnabled, AddonManager.checkCompatibility);
+  }
+
   // Check "isDefaultBrowser" separately, as it is not available on Android an can either be
   // null or boolean on other platforms.
   if (gIsAndroid) {
@@ -457,7 +465,7 @@ function checkActiveAddon(data){
     hasBinaryComponents: "boolean",
     installDay: "number",
     updateDay: "number",
-    signedState: "number",
+    signedState: mozinfo.addon_signing ? "number" : "undefined",
   };
 
   for (let f in EXPECTED_ADDON_FIELDS_TYPES) {
@@ -874,7 +882,7 @@ add_task(function* test_addonsAndPlugins() {
     hasBinaryComponents: false,
     installDay: ADDON_INSTALL_DATE,
     updateDay: ADDON_INSTALL_DATE,
-    signedState: AddonManager.SIGNEDSTATE_MISSING,
+    signedState: mozinfo.addon_signing ? AddonManager.SIGNEDSTATE_MISSING : AddonManager.SIGNEDSTATE_NOT_REQUIRED,
   };
 
   const EXPECTED_PLUGIN_DATA = {
@@ -938,7 +946,7 @@ add_task(function* test_signedAddon() {
     hasBinaryComponents: false,
     installDay: ADDON_INSTALL_DATE,
     updateDay: ADDON_INSTALL_DATE,
-    signedState: AddonManager.SIGNEDSTATE_SIGNED,
+    signedState: mozinfo.addon_signing ? AddonManager.SIGNEDSTATE_SIGNED : AddonManager.SIGNEDSTATE_NOT_REQUIRED,
   };
 
   // Set the clock in the future so our changes don't get throttled.
