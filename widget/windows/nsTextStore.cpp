@@ -786,6 +786,10 @@ public:
 
   bool EnsureInitActiveTIPKeyboard();
 
+  /****************************************************************************
+   * Japanese TIP
+   ****************************************************************************/
+
   // Note that TIP name may depend on the language of the environment.
   // For example, some TIP may use localized name for its target language
   // environment but English name for the others.
@@ -803,6 +807,28 @@ public:
                             NS_LITERAL_STRING("ATOK "));
   }
 
+  /****************************************************************************
+   * Traditional Chinese TIP
+   ****************************************************************************/
+
+  bool IsMSChangJieActive() const
+  {
+    return mActiveTIPKeyboardDescription.EqualsLiteral("Microsoft ChangJie") ||
+      mActiveTIPKeyboardDescription.Equals(
+        NS_LITERAL_STRING("\x5FAE\x8F6F\x4ED3\x9889")) ||
+      mActiveTIPKeyboardDescription.Equals(
+        NS_LITERAL_STRING("\x5FAE\x8EDF\x5009\x9821"));
+  }
+
+  bool IsMSQuickQuickActive() const
+  {
+    return mActiveTIPKeyboardDescription.EqualsLiteral("Microsoft Quick") ||
+      mActiveTIPKeyboardDescription.Equals(
+        NS_LITERAL_STRING("\x5FAE\x8F6F\x901F\x6210")) ||
+      mActiveTIPKeyboardDescription.Equals(
+        NS_LITERAL_STRING("\x5FAE\x8EDF\x901F\x6210"));
+  }
+
   bool IsFreeChangJieActive() const
   {
     // FYI: The TIP name is misspelled...
@@ -815,6 +841,28 @@ public:
       mActiveTIPKeyboardDescription.Equals(
         NS_LITERAL_STRING(
           "\x4E2D\x6587 (\x7E41\x9AD4) - \x6613\x9821\x8F38\x5165\x6CD5"));
+  }
+
+  /****************************************************************************
+   * Simplified Chinese TIP
+   ****************************************************************************/
+
+  bool IsMSPinyinActive() const
+  {
+    return mActiveTIPKeyboardDescription.EqualsLiteral("Microsoft Pinyin") ||
+      mActiveTIPKeyboardDescription.Equals(
+        NS_LITERAL_STRING("\x5FAE\x8F6F\x62FC\x97F3")) ||
+      mActiveTIPKeyboardDescription.Equals(
+        NS_LITERAL_STRING("\x5FAE\x8EDF\x62FC\x97F3"));
+  }
+
+  bool IsMSWubiActive() const
+  {
+    return mActiveTIPKeyboardDescription.EqualsLiteral("Microsoft Wubi") ||
+      mActiveTIPKeyboardDescription.Equals(
+        NS_LITERAL_STRING("\x5FAE\x8F6F\x4E94\x7B14")) ||
+      mActiveTIPKeyboardDescription.Equals(
+        NS_LITERAL_STRING("\x5FAE\x8EDF\x4E94\x7B46"));
   }
 
 public: // ITfActiveLanguageProfileNotifySink
@@ -1216,6 +1264,8 @@ bool nsTextStore::sDoNotReturnNoLayoutErrorToFreeChangJie = false;
 bool nsTextStore::sDoNotReturnNoLayoutErrorToEasyChangjei = false;
 bool nsTextStore::sDoNotReturnNoLayoutErrorToGoogleJaInputAtFirstChar = false;
 bool nsTextStore::sDoNotReturnNoLayoutErrorToGoogleJaInputAtCaret = false;
+bool nsTextStore::sHackQueryInsertForMSSimplifiedTIP = false;
+bool nsTextStore::sHackQueryInsertForMSTraditionalTIP = false;
 
 #define TEXTSTORE_DEFAULT_VIEW (1)
 
@@ -1847,8 +1897,23 @@ nsTextStore::QueryInsert(LONG acpTestStart,
 
   // XXX need to adjust to cluster boundary
   // Assume we are given good offsets for now
-  *pacpResultStart = acpTestStart;
-  *pacpResultEnd = acpTestStart + cch;
+  const TSFStaticSink* kSink = TSFStaticSink::GetInstance();
+  if (IsWin8OrLater() && !mComposition.IsComposing() &&
+      ((sHackQueryInsertForMSTraditionalTIP &&
+         (kSink->IsMSChangJieActive() || kSink->IsMSQuickQuickActive())) ||
+       (sHackQueryInsertForMSSimplifiedTIP &&
+         (kSink->IsMSPinyinActive() || kSink->IsMSWubiActive())))) {
+    MOZ_LOG(sTextStoreLog, LogLevel::Warning,
+            ("TSF: 0x%p   nsTextStore::QueryInsert() WARNING using different "
+             "result for the TIP", this));
+    // Chinese TIPs of Microsoft assume that QueryInsert() returns selected
+    // range which should be removed.
+    *pacpResultStart = acpTestStart;
+    *pacpResultEnd = acpTestEnd;
+  } else {
+    *pacpResultStart = acpTestStart;
+    *pacpResultEnd = acpTestStart + cch;
+  }
 
   MOZ_LOG(sTextStoreLog, LogLevel::Info,
          ("TSF: 0x%p  nsTextStore::QueryInsert() succeeded: "
@@ -5037,6 +5102,12 @@ nsTextStore::Initialize()
     Preferences::GetBool(
       "intl.tsf.hack.google_ja_input.do_not_return_no_layout_error_at_caret",
       true);
+  sHackQueryInsertForMSSimplifiedTIP =
+    Preferences::GetBool(
+      "intl.tsf.hack.ms_simplified_chinese.query_insert_result", true);
+  sHackQueryInsertForMSTraditionalTIP =
+    Preferences::GetBool(
+      "intl.tsf.hack.ms_traditional_chinese.query_insert_result", true);
 
   MOZ_LOG(sTextStoreLog, LogLevel::Info,
     ("TSF:   nsTextStore::Initialize(), sThreadMgr=0x%p, "

@@ -406,7 +406,8 @@ public:
 NS_IMPL_ISUPPORTS(D3D9SharedTextureReporter, nsIMemoryReporter)
 
 gfxWindowsPlatform::gfxWindowsPlatform()
-  : mD3D11DeviceInitialized(false)
+  : mUseDirectWrite(false)
+  , mD3D11DeviceInitialized(false)
   , mIsWARP(false)
   , mHasDeviceReset(false)
   , mDoesD3D11TextureSharingWork(false)
@@ -508,7 +509,7 @@ gfxWindowsPlatform::UpdateRenderMode()
 
     bool isVistaOrHigher = IsVistaOrLater();
 
-    mUseDirectWrite = Preferences::GetBool("gfx.font_rendering.directwrite.enabled", false);
+    mUseDirectWrite = false;
 
 #ifdef CAIRO_HAS_D2D_SURFACE
     bool d2dDisabled = false;
@@ -1708,7 +1709,7 @@ gfxWindowsPlatform::GetDXGIAdapter()
   return mAdapter;
 }
 
-bool CouldD3D11DeviceWork()
+bool DoesD3D11DeviceWork()
 {
   static bool checked = false;
   static bool result = false;
@@ -1875,10 +1876,6 @@ gfxWindowsPlatform::InitD3D11Devices()
     return;
   }
 
-  if (!CouldD3D11DeviceWork()) {
-    return;
-  }
-
   bool useWARP = false;
   bool allowWARP = false;
 
@@ -1964,8 +1961,9 @@ gfxWindowsPlatform::InitD3D11Devices()
       adapter = nullptr;
     }
 
-    if (FAILED(hr)) {
+    if (FAILED(hr) || !DoesD3D11DeviceWork()) {
       gfxCriticalError() << "D3D11 device creation failed" << hexa(hr);
+      mD3D11Device = nullptr;
       if (gfxPrefs::LayersD3D11DisableWARP()) {
         return;
       }
@@ -2078,10 +2076,6 @@ gfxWindowsPlatform::InitD3D11Devices()
 TemporaryRef<ID3D11Device>
 gfxWindowsPlatform::CreateD3D11DecoderDevice()
 {
-  if (!CouldD3D11DeviceWork()) {
-    return nullptr;
-  }
-
   nsModuleHandle d3d11Module(LoadLibrarySystem32(L"d3d11.dll"));
   decltype(D3D11CreateDevice)* d3d11CreateDevice = (decltype(D3D11CreateDevice)*)
     GetProcAddress(d3d11Module, "D3D11CreateDevice");
@@ -2119,7 +2113,7 @@ gfxWindowsPlatform::CreateD3D11DecoderDevice()
     return nullptr;
   }
 
-  if (FAILED(hr)) {
+  if (FAILED(hr) || !DoesD3D11DeviceWork()) {
     return nullptr;
   }
 
