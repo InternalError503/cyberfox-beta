@@ -135,7 +135,7 @@ public:
     // Future: properly measure speex memory
     amount += aMallocSizeOf(mUpSampler);
     amount += aMallocSizeOf(mDownSampler);
-    amount += mBuffer.SizeOfExcludingThis(aMallocSizeOf);
+    amount += mBuffer.ShallowSizeOfExcludingThis(aMallocSizeOf);
     return amount;
   }
 
@@ -232,7 +232,7 @@ public:
       float* scaledSample = (float *)(aInput.mChannelData[i]);
       AudioBlockInPlaceScale(scaledSample, aInput.mVolume);
       const float* inputBuffer = static_cast<const float*>(scaledSample);
-      float* outputBuffer = const_cast<float*> (static_cast<const float*>(aOutput->mChannelData[i]));
+      float* outputBuffer = aOutput->ChannelFloatsForWrite(i);
       float* sampleBuffer;
 
       switch (mType) {
@@ -261,7 +261,7 @@ public:
   virtual size_t SizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const override
   {
     size_t amount = AudioNodeEngine::SizeOfExcludingThis(aMallocSizeOf);
-    amount += mCurve.SizeOfExcludingThis(aMallocSizeOf);
+    amount += mCurve.ShallowSizeOfExcludingThis(aMallocSizeOf);
     amount += mResampler.SizeOfExcludingThis(aMallocSizeOf);
     return amount;
   }
@@ -310,18 +310,28 @@ WaveShaperNode::WrapObject(JSContext *aCx, JS::Handle<JSObject*> aGivenProto)
 }
 
 void
-WaveShaperNode::SetCurve(const Nullable<Float32Array>& aCurve)
+WaveShaperNode::SetCurve(const Nullable<Float32Array>& aCurve, ErrorResult& aRv)
 {
   nsTArray<float> curve;
   if (!aCurve.IsNull()) {
     const Float32Array& floats = aCurve.Value();
 
-    mCurve = floats.Obj();
-
     floats.ComputeLengthAndData();
 
-    curve.SetLength(floats.Length());
+    uint32_t argLength = floats.Length();
+    if (argLength < 2) {
+      aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
+      return;
+    }
+
+    if (!curve.SetLength(argLength, fallible)) {
+      aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
+      return;
+    }
+
     PodCopy(curve.Elements(), floats.Data(), floats.Length());
+
+    mCurve = floats.Obj();
   } else {
     mCurve = nullptr;
   }
@@ -338,5 +348,5 @@ WaveShaperNode::SetOversample(OverSampleType aType)
   SendInt32ParameterToStream(WaveShaperNodeEngine::TYPE, static_cast<int32_t>(aType));
 }
 
-}
-}
+} // namespace dom
+} // namespace mozilla

@@ -25,7 +25,8 @@ loop.store.ActiveRoomStore = (function() {
     urls: "roomContextUrls",
     description: "roomDescription",
     roomInfoFailure: "roomInfoFailure",
-    roomName: "roomName"
+    roomName: "roomName",
+    roomState: "roomState"
   };
 
   /**
@@ -147,9 +148,13 @@ loop.store.ActiveRoomStore = (function() {
       console.error("Error in state `" + this._storeState.roomState + "`:",
         actionData.error);
 
+      var exitState = this._storeState.roomState !== ROOM_STATES.FAILED ?
+        this._storeState.roomState : this._storeState.failureExitState;
+
       this.setStoreState({
         error: actionData.error,
-        failureReason: getReason(actionData.error.errno)
+        failureReason: getReason(actionData.error.errno),
+        failureExitState: exitState
       });
 
       this._leaveRoom(actionData.error.errno === REST_ERRNOS.ROOM_FULL ?
@@ -157,12 +162,53 @@ loop.store.ActiveRoomStore = (function() {
     },
 
     /**
+     * Attempts to retry getting the room data if there has been a room failure.
+     */
+    retryAfterRoomFailure: function() {
+      if (this._storeState.failureReason === FAILURE_DETAILS.EXPIRED_OR_INVALID) {
+        console.error("Invalid retry attempt for expired or invalid url");
+        return;
+      }
+
+      switch (this._storeState.failureExitState) {
+        case ROOM_STATES.GATHER:
+          this.dispatchAction(new sharedActions.FetchServerData({
+            cryptoKey: this._storeState.roomCryptoKey,
+            token: this._storeState.roomToken,
+            windowType: "room"
+          }));
+          return;
+        case ROOM_STATES.INIT:
+        case ROOM_STATES.ENDED:
+        case ROOM_STATES.CLOSING:
+          console.error("Unexpected retry for exit state", this._storeState.failureExitState);
+          return;
+        default:
+          // For all other states, we simply join the room. We avoid dispatching
+          // another action here so that metrics doesn't get two notifications
+          // in a row (one for retry, one for the join).
+          this.joinRoom();
+          return;
+      }
+    },
+
+    /**
      * Registers the actions with the dispatcher that this store is interested
      * in after the initial setup has been performed.
      */
     _registerPostSetupActions: function() {
+      // Protect against calling this twice, as we don't want to register
+      // before we know what type we are, but in some cases we need to re-do
+      // an action (e.g. FetchServerData).
+      if (this._registeredActions) {
+        return;
+      }
+
+      this._registeredActions = true;
+
       this.dispatcher.register(this, [
         "roomFailure",
+        "retryAfterRoomFailure",
         "setupRoomInfo",
         "updateRoomInfo",
         "gotMediaPermission",
@@ -178,9 +224,9 @@ loop.store.ActiveRoomStore = (function() {
         "windowUnload",
         "leaveRoom",
         "feedbackComplete",
-        "localVideoEnabled",
-        "remoteVideoEnabled",
-        "remoteVideoDisabled",
+        "mediaStreamCreated",
+        "mediaStreamDestroyed",
+        "remoteVideoStatus",
         "videoDimensionsChanged",
         "startScreenShare",
         "endScreenShare",
@@ -256,8 +302,8 @@ loop.store.ActiveRoomStore = (function() {
 
       this.setStoreState({
         roomToken: actionData.token,
-        roomCryptoKey: actionData.cryptoKey,
-        roomState: ROOM_STATES.READY
+        roomState: ROOM_STATES.GATHER,
+        roomCryptoKey: actionData.cryptoKey
       });
 
       this._mozLoop.rooms.on("update:" + actionData.roomToken,
@@ -271,9 +317,10 @@ loop.store.ActiveRoomStore = (function() {
     _getRoomDataForStandalone: function() {
       this._mozLoop.rooms.get(this._storeState.roomToken, function(err, result) {
         if (err) {
-          // XXX Bug 1110937 will want to handle the error results here
-          // e.g. room expired/invalid.
-          console.error("Failed to get room data:", err);
+          this.dispatchAction(new sharedActions.RoomFailure({
+            error: err,
+            failedJoinRequest: false
+          }));
           return;
         }
 
@@ -281,6 +328,12 @@ loop.store.ActiveRoomStore = (function() {
           roomOwner: result.roomOwner,
           roomUrl: result.roomUrl
         });
+
+        // If we've got this far, then we want to go to the ready state
+        // regardless of success of failure. This is because failures of
+        // crypto don't stop the user using the room, they just stop
+        // us putting up the information.
+        roomInfoData.roomState = ROOM_STATES.READY;
 
         if (!result.context && !result.roomName) {
           roomInfoData.roomInfoFailure = ROOM_INFO_FAILURES.NO_DATA;
@@ -527,26 +580,15 @@ loop.store.ActiveRoomStore = (function() {
      * @param {sharedActions.ConnectionFailure} actionData
      */
     connectionFailure: function(actionData) {
-      /**
-       * XXX This is a workaround for desktop machines that do not have a
-       * camera installed. As we don't yet have device enumeration, when
-       * we do, this can be removed (bug 1138851), and the sdk should handle it.
-       */
-      if (this._isDesktop &&
-          actionData.reason === FAILURE_DETAILS.UNABLE_TO_PUBLISH_MEDIA &&
-          this.getStoreState().videoMuted === false) {
-        // We failed to publish with media, so due to the bug, we try again without
-        // video.
-        this.setStoreState({videoMuted: true});
-        this._sdkDriver.retryPublishWithoutVideo();
-        return;
-      }
+      var exitState = this._storeState.roomState === ROOM_STATES.FAILED ?
+        this._storeState.failureExitState : this._storeState.roomState;
 
       // Treat all reasons as something failed. In theory, clientDisconnected
       // could be a success case, but there's no way we should be intentionally
       // sending that and still have the window open.
       this.setStoreState({
-        failureReason: actionData.reason
+        failureReason: actionData.reason,
+        failureExitState: exitState
       });
 
       this._leaveRoom(ROOM_STATES.FAILED);
@@ -564,31 +606,52 @@ loop.store.ActiveRoomStore = (function() {
     },
 
     /**
-     * Records the local video object for the room.
+     * Handles a media stream being created. This may be a local or a remote stream.
      *
-     * @param {sharedActions.LocalVideoEnabled} actionData
+     * @param {sharedActions.MediaStreamCreated} actionData
      */
-    localVideoEnabled: function(actionData) {
-      this.setStoreState({localSrcVideoObject: actionData.srcVideoObject});
-    },
+    mediaStreamCreated: function(actionData) {
+      if (actionData.isLocal) {
+        this.setStoreState({
+          localVideoEnabled: actionData.hasVideo,
+          localSrcVideoObject: actionData.srcVideoObject
+        });
+        return;
+      }
 
-    /**
-     * Records the remote video object for the room.
-     *
-     * @param  {sharedActions.RemoteVideoEnabled} actionData
-     */
-    remoteVideoEnabled: function(actionData) {
       this.setStoreState({
-        remoteVideoEnabled: true,
+        remoteVideoEnabled: actionData.hasVideo,
         remoteSrcVideoObject: actionData.srcVideoObject
       });
     },
 
     /**
-     * Records when remote video is disabled (e.g. due to mute).
+     * Handles a media stream being destroyed. This may be a local or a remote stream.
+     *
+     * @param {sharedActions.MediaStreamDestroyed} actionData
      */
-    remoteVideoDisabled: function() {
-      this.setStoreState({remoteVideoEnabled: false});
+    mediaStreamDestroyed: function(actionData) {
+      if (actionData.isLocal) {
+        this.setStoreState({
+          localSrcVideoObject: null
+        });
+        return;
+      }
+
+      this.setStoreState({
+        remoteSrcVideoObject: null
+      });
+    },
+
+    /**
+     * Handles a remote stream having video enabled or disabled.
+     *
+     * @param {sharedActions.RemoteVideoStatus} actionData
+     */
+    remoteVideoStatus: function(actionData) {
+      this.setStoreState({
+        remoteVideoEnabled: actionData.videoEnabled
+      });
     },
 
     /**
@@ -720,9 +783,6 @@ loop.store.ActiveRoomStore = (function() {
         roomState: ROOM_STATES.HAS_PARTICIPANTS,
         used: true
       });
-
-      // We've connected with a third-party, therefore stop displaying the ToS etc.
-      this._mozLoop.setLoopPref("seenToS", "seen");
     },
 
     /**
@@ -732,6 +792,7 @@ loop.store.ActiveRoomStore = (function() {
      */
     remotePeerDisconnected: function() {
       this.setStoreState({
+        mediaConnected: false,
         roomState: ROOM_STATES.SESSION_CONNECTED,
         remoteSrcVideoObject: null
       });

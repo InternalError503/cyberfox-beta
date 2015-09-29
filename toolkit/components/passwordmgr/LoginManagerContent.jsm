@@ -188,6 +188,7 @@ var LoginManagerContent = {
         loginFormOrigin: msg.data.loginFormOrigin,
         loginsFound: jsLoginsToXPCOM(msg.data.logins),
         recipes: msg.data.recipes,
+        inputElement: msg.objects.inputElement,
       });
       return;
     }
@@ -445,25 +446,39 @@ var LoginManagerContent = {
    *            from the origin of the form used for the fill.
    *          recipes:
    *            Fill recipes transmitted together with the original message.
+   *          inputElement:
+   *            Optional input password element from the form we want to fill.
    *        }
    */
-  fillForm({ topDocument, loginFormOrigin, loginsFound, recipes }) {
+  fillForm({ topDocument, loginFormOrigin, loginsFound, recipes, inputElement }) {
     let topState = this.stateForDocument(topDocument);
     if (!topState.loginFormForFill) {
       log("fillForm: There is no login form anymore. The form may have been",
           "removed or the document may have changed.");
       return;
     }
-    if (LoginUtils._getPasswordOrigin(topDocument.documentURI) !=
-        loginFormOrigin) {
-      log("fillForm: The requested origin doesn't match the one form the",
-          "document. This may mean we navigated to a document from a different",
-          "site before we had a chance to indicate this change in the user",
-          "interface.");
-      return;
+    if (LoginUtils._getPasswordOrigin(topDocument.documentURI) != loginFormOrigin) {
+      if (!inputElement ||
+          LoginUtils._getPasswordOrigin(inputElement.ownerDocument.documentURI) != loginFormOrigin) {
+        log("fillForm: The requested origin doesn't match the one form the",
+            "document. This may mean we navigated to a document from a different",
+            "site before we had a chance to indicate this change in the user",
+            "interface.");
+        return;
+      }
     }
-    this._fillForm(topState.loginFormForFill, true, true, true, true,
-                   loginsFound, recipes);
+    let form = topState.loginFormForFill;
+    let clobberUsername = true;
+    let options = {
+      inputElement,
+    };
+
+    // If we have a target input, fills it's form.
+    if (inputElement) {
+      form = FormLikeFactory.createFromPasswordField(inputElement);
+      clobberUsername = false;
+    }
+    this._fillForm(form, true, clobberUsername, true, true, loginsFound, recipes, options);
   },
 
   loginsFound: function({ form, loginsFound, recipes }) {
@@ -506,10 +521,16 @@ var LoginManagerContent = {
 
     log("onUsernameInput from", event.type);
 
+    let doc = acForm.ownerDocument;
+    let messageManager = messageManagerFromWindow(doc.defaultView);
+    let recipes = messageManager.sendSyncMessage("RemoteLogins:findRecipes", {
+      formOrigin: LoginUtils._getPasswordOrigin(doc.documentURI),
+    })[0];
+
     // Make sure the username field fillForm will use is the
     // same field as the autocomplete was activated on.
     var [usernameField, passwordField, ignored] =
-        this._getFormFields(acForm, false);
+        this._getFormFields(acForm, false, recipes);
     if (usernameField == acInputField && passwordField) {
       this._getLoginDataFromParent(acForm, { showMasterPassword: false })
           .then(({ form, loginsFound, recipes }) => {
@@ -750,10 +771,9 @@ var LoginManagerContent = {
     let formSubmitURL = LoginUtils._getActionOrigin(form);
     let messageManager = messageManagerFromWindow(win);
 
-    let recipesArray = messageManager.sendSyncMessage("RemoteLogins:findRecipes", {
+    let recipes = messageManager.sendSyncMessage("RemoteLogins:findRecipes", {
       formOrigin: hostname,
     })[0];
-    let recipes = new Set(recipesArray);
 
     // Get the appropriate fields from the form.
     var [usernameField, newPasswordField, oldPasswordField] =
@@ -814,9 +834,11 @@ var LoginManagerContent = {
    *                             the user
    * @param {nsILoginInfo[]} foundLogins is an array of nsILoginInfo that could be used for the form
    * @param {Set} recipes that could be used to affect how the form is filled
+   * @param {Object} [options = {}] is a list of options for this method.
+            - [inputElement] is an optional target input element we want to fill
    */
   _fillForm : function (form, autofillForm, clobberUsername, clobberPassword,
-                        userTriggered, foundLogins, recipes) {
+                        userTriggered, foundLogins, recipes, {inputElement} = {}) {
     let ignoreAutocomplete = true;
     const AUTOFILL_RESULT = {
       FILLED: 0,
@@ -854,6 +876,17 @@ var LoginManagerContent = {
       // without need.
       var [usernameField, passwordField, ignored] =
             this._getFormFields(form, false, recipes);
+
+      // If we have a password inputElement parameter and it's not
+      // the same as the one heuristically found, use the parameter
+      // one instead.
+      if (inputElement) {
+        if (inputElement.type != "password") {
+          throw new Error("Unexpected input element type.");
+        }
+        passwordField = inputElement;
+        usernameField = null;
+      }
 
       // Need a valid password field to do anything.
       if (passwordField == null) {
@@ -1070,7 +1103,7 @@ function UserAutoCompleteResult (aSearchString, matchingLogins) {
     if (userA < userB)
       return -1;
 
-    if (userB > userA)
+    if (userA > userB)
       return  1;
 
     return 0;

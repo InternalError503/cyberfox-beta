@@ -16,7 +16,6 @@
 #include "nsAutoPtr.h"
 
 #include "nsWindowsDllInterceptor.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/WindowsVersion.h"
 #include "nsWindowsHelpers.h"
 
@@ -262,8 +261,6 @@ static DWORD sThreadLoadingXPCOMModule;
 static bool sBlocklistInitFailed;
 static bool sUser32BeforeBlocklist;
 
-static wchar_t sPreviouslyCrashedModule[MAX_PATH + 1];
-
 // Duplicated from xpcom glue. Ideally this should be shared.
 void
 printf_stderr(const char *fmt, ...)
@@ -492,12 +489,16 @@ DllBlockSet::Add(const char* name, unsigned long long version)
 void
 DllBlockSet::Write(HANDLE file)
 {
-  AutoCriticalSection lock(&sLock);
-  DWORD nBytes;
+  // It would be nicer to use AutoCriticalSection here. However, its destructor
+  // might not run if an exception occurs, in which case we would never leave
+  // the critical section. (MSVC warns about this possibility.) So we
+  // enter and leave manually.
+  ::EnterCriticalSection(&sLock);
 
   // Because this method is called after a crash occurs, and uses heap memory,
   // protect this entire block with a structured exception handler.
   MOZ_SEH_TRY {
+    DWORD nBytes;
     for (DllBlockSet* b = gFirst; b; b = b->mNext) {
       // write name[,v.v.v.v];
       WriteFile(file, b->mName, strlen(b->mName), &nBytes, nullptr);
@@ -521,6 +522,8 @@ DllBlockSet::Write(HANDLE file)
     }
   }
   MOZ_SEH_EXCEPT (EXCEPTION_EXECUTE_HANDLER) { }
+
+  ::LeaveCriticalSection(&sLock);
 }
 
 static
@@ -655,13 +658,6 @@ patched_LdrLoadDll (PWCHAR filePath, PULONG flags, PUNICODE_STRING moduleFileNam
     }
   }
 
-  if (sPreviouslyCrashedModule[0] &&
-      moduleFileName->Length < sizeof(sPreviouslyCrashedModule) &&
-      !wcsicmp(sPreviouslyCrashedModule, moduleFileName->Buffer)) {
-    printf_stderr("LdrLoadDll: Blocking load of previously crashed module '%s'\n", dllName);
-    return STATUS_DLL_NOT_FOUND;
-  }
-
   // then compare to everything on the blocklist
   info = &sWindowsDllBlocklist[0];
   while (info->name) {
@@ -767,47 +763,7 @@ continue_loading:
 
 WindowsDllInterceptor NtDllIntercept;
 
-void ReadPreviouslyCrashedModule()
-{
-  memset(sPreviouslyCrashedModule, 0, sizeof(sPreviouslyCrashedModule));
-
-  wchar_t tempPath[MAX_PATH];
-  if (!GetTempPathW(ArrayLength(tempPath), tempPath)) {
-    return;
-  }
-
-  if (wcscat_s(tempPath, ArrayLength(tempPath), L"CyberfoxBlockedDLL.txt")) {
-    return;
-  }
-
-  HANDLE inputFile = CreateFileW(tempPath,
-                                 GENERIC_READ,
-                                 FILE_SHARE_READ,
-                                 nullptr,
-                                 OPEN_EXISTING,
-                                 FILE_ATTRIBUTE_NORMAL,
-                                 nullptr);
-
-  if (inputFile == INVALID_HANDLE_VALUE) {
-    return;
-  }
-
-  DWORD nBytes = 0;
-  if (ReadFile(inputFile,
-               sPreviouslyCrashedModule,
-               sizeof(sPreviouslyCrashedModule) - sizeof(wchar_t),
-               &nBytes,
-               nullptr) &&
-      nBytes % 2 == 0) {
-    sPreviouslyCrashedModule[nBytes/2] = L'\0';
-  } else {
-    memset(sPreviouslyCrashedModule, 0, sizeof(sPreviouslyCrashedModule));
-  }
-
-  CloseHandle(inputFile);
-}
-
-} // anonymous namespace
+} // namespace
 
 NS_EXPORT void
 DllBlocklist_Initialize()
@@ -830,8 +786,6 @@ DllBlocklist_Initialize()
   if (GetModuleHandleA("user32.dll")) {
     sUser32BeforeBlocklist = true;
   }
-
-  ReadPreviouslyCrashedModule();
 
   NtDllIntercept.Init("ntdll.dll");
 

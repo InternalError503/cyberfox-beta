@@ -46,13 +46,13 @@ nsresult CentralizedAdminPrefManagerInit()
 
     // Create a sandbox.
     AutoSafeJSContext cx;
-    nsCOMPtr<nsIXPConnectJSObjectHolder> sandbox;
-    rv = xpc->CreateSandbox(cx, principal, getter_AddRefs(sandbox));
+    JS::Rooted<JSObject*> sandbox(cx);
+    rv = xpc->CreateSandbox(cx, principal, sandbox.address());
     NS_ENSURE_SUCCESS(rv, rv);
 
     // Unwrap, store and root the sandbox.
-    NS_ENSURE_STATE(sandbox->GetJSObject());
-    autoconfigSb.init(cx, js::UncheckedUnwrap(sandbox->GetJSObject()));
+    NS_ENSURE_STATE(sandbox);
+    autoconfigSb.init(cx, js::UncheckedUnwrap(sandbox));
 
     return NS_OK;
 }
@@ -107,7 +107,7 @@ nsresult EvaluateAdminConfigScript(const char *js_buffer, size_t length,
     nsAutoCString script(js_buffer, length);
     JS::RootedValue v(cx);
     rv = xpc->EvalInSandboxObject(NS_ConvertUTF8toUTF16(script), filename, cx,
-                                  autoconfigSb, &v);
+                                  autoconfigSb, JSVERSION_LATEST, &v);
     NS_ENSURE_SUCCESS(rv, rv);
 
     return NS_OK;

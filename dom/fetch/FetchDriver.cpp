@@ -16,6 +16,8 @@
 #include "nsIScriptSecurityManager.h"
 #include "nsIThreadRetargetableRequest.h"
 #include "nsIUploadChannel2.h"
+#include "nsIInterfaceRequestorUtils.h"
+#include "nsIPipe.h"
 
 #include "nsContentPolicyUtils.h"
 #include "nsCORSListenerProxy.h"
@@ -666,7 +668,7 @@ public:
 };
 
 NS_IMPL_ISUPPORTS(FillResponseHeaders, nsIHttpHeaderVisitor)
-} // anonymous namespace
+} // namespace
 
 NS_IMETHODIMP
 FetchDriver::OnStartRequest(nsIRequest* aRequest,
@@ -962,5 +964,6 @@ FetchDriver::SetDocument(nsIDocument* aDocument)
   MOZ_ASSERT(mFetchRecursionCount == 0);
   mDocument = aDocument;
 }
+
 } // namespace dom
 } // namespace mozilla

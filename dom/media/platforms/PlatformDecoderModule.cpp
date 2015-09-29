@@ -24,18 +24,24 @@
 #include "GMPDecoderModule.h"
 
 #include "mozilla/Preferences.h"
+#include "mozilla/TaskQueue.h"
+
 #ifdef MOZ_EME
 #include "EMEDecoderModule.h"
 #include "mozilla/CDMProxy.h"
 #endif
-#include "SharedThreadPool.h"
-#include "MediaTaskQueue.h"
+#include "mozilla/SharedThreadPool.h"
 
 #include "MediaInfo.h"
 #include "H264Converter.h"
 
+#include "OpusDecoder.h"
+#include "VorbisDecoder.h"
+#include "VPXDecoder.h"
+
 namespace mozilla {
 
+extern already_AddRefed<PlatformDecoderModule> CreateAgnosticDecoderModule();
 extern already_AddRefed<PlatformDecoderModule> CreateBlankDecoderModule();
 
 bool PlatformDecoderModule::sUseBlankDecoder = false;
@@ -89,9 +95,7 @@ PlatformDecoderModule::Init()
 #ifdef MOZ_EME
 /* static */
 already_AddRefed<PlatformDecoderModule>
-PlatformDecoderModule::CreateCDMWrapper(CDMProxy* aProxy,
-                                        bool aHasAudio,
-                                        bool aHasVideo)
+PlatformDecoderModule::CreateCDMWrapper(CDMProxy* aProxy)
 {
   bool cdmDecodesAudio;
   bool cdmDecodesVideo;
@@ -101,14 +105,11 @@ PlatformDecoderModule::CreateCDMWrapper(CDMProxy* aProxy,
     cdmDecodesVideo = caps.CanDecryptAndDecodeVideo();
   }
 
-  nsRefPtr<PlatformDecoderModule> pdm;
-  if ((!cdmDecodesAudio && aHasAudio) || (!cdmDecodesVideo && aHasVideo)) {
-    // The CDM itself can't decode. We need to wrap a PDM to decode the
-    // decrypted output of the CDM.
-    pdm = Create();
-    if (!pdm) {
-      return nullptr;
-    }
+  // We always create a default PDM in order to decode
+  // non-encrypted tracks.
+  nsRefPtr<PlatformDecoderModule> pdm = Create();
+  if (!pdm) {
+    return nullptr;
   }
 
   nsRefPtr<PlatformDecoderModule> emepdm(
@@ -128,7 +129,7 @@ PlatformDecoderModule::Create()
   if (m && NS_SUCCEEDED(m->Startup())) {
     return m.forget();
   }
-  return nullptr;
+  return CreateAgnosticDecoderModule();
 }
 
 /* static */
@@ -181,17 +182,29 @@ PlatformDecoderModule::CreatePDM()
 
 already_AddRefed<MediaDataDecoder>
 PlatformDecoderModule::CreateDecoder(const TrackInfo& aConfig,
-                                     FlushableMediaTaskQueue* aTaskQueue,
+                                     FlushableTaskQueue* aTaskQueue,
                                      MediaDataDecoderCallback* aCallback,
                                      layers::LayersBackend aLayersBackend,
                                      layers::ImageContainer* aImageContainer)
 {
   nsRefPtr<MediaDataDecoder> m;
 
+  bool hasPlatformDecoder = SupportsMimeType(aConfig.mMimeType);
+
   if (aConfig.GetAsAudioInfo()) {
-    m = CreateAudioDecoder(*aConfig.GetAsAudioInfo(),
-                           aTaskQueue,
-                           aCallback);
+    if (!hasPlatformDecoder && VorbisDataDecoder::IsVorbis(aConfig.mMimeType)) {
+      m = new VorbisDataDecoder(*aConfig.GetAsAudioInfo(),
+                                aTaskQueue,
+                                aCallback);
+    } else if (!hasPlatformDecoder && OpusDataDecoder::IsOpus(aConfig.mMimeType)) {
+      m = new OpusDataDecoder(*aConfig.GetAsAudioInfo(),
+                              aTaskQueue,
+                              aCallback);
+    } else {
+      m = CreateAudioDecoder(*aConfig.GetAsAudioInfo(),
+                             aTaskQueue,
+                             aCallback);
+    }
     return m.forget();
   }
 
@@ -206,6 +219,11 @@ PlatformDecoderModule::CreateDecoder(const TrackInfo& aConfig,
                           aImageContainer,
                           aTaskQueue,
                           aCallback);
+  } else if (!hasPlatformDecoder && VPXDecoder::IsVPX(aConfig.mMimeType)) {
+    m = new VPXDecoder(*aConfig.GetAsVideoInfo(),
+                       aImageContainer,
+                       aTaskQueue,
+                       aCallback);
   } else {
     m = CreateVideoDecoder(*aConfig.GetAsVideoInfo(),
                            aLayersBackend,
@@ -223,5 +241,15 @@ PlatformDecoderModule::SupportsMimeType(const nsACString& aMimeType)
     aMimeType.EqualsLiteral("video/mp4") ||
     aMimeType.EqualsLiteral("video/avc");
 }
+
+/* static */
+bool
+PlatformDecoderModule::AgnosticMimeType(const nsACString& aMimeType)
+{
+  return VPXDecoder::IsVPX(aMimeType) ||
+    OpusDataDecoder::IsOpus(aMimeType) ||
+    VorbisDataDecoder::IsVorbis(aMimeType);
+}
+
 
 } // namespace mozilla

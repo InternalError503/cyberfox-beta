@@ -891,7 +891,7 @@ media::TimeIntervals GStreamerReader::GetBuffered()
   if (resource->IsDataCachedToEndOfResource(0)) {
     /* fast path for local or completely cached files */
     gint64 duration =
-      mDuration.ReadOnWrongThread().refOr(media::TimeUnit::FromMicroseconds(0)).ToMicroseconds();
+       mDuration.Ref().refOr(media::TimeUnit::FromMicroseconds(0)).ToMicroseconds();
     LOG(LogLevel::Debug, "complete range [0, %f] for [0, %li]",
         (double) duration / GST_MSECOND, GetDataLength());
     buffered +=
