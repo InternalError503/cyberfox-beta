@@ -50,6 +50,7 @@ let gCustomize = {
     button.setAttribute("active", "true");
     setTimeout(() => {
       // Wait for display update to take place, then animate.
+      overlay.style.background = "black";
       overlay.style.opacity = 0.8;
     }, 0);
 
