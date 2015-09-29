@@ -24,6 +24,9 @@
 #include "nsIHttpAuthenticableChannel.h"
 #include "nsIURI.h"
 #include "nsContentUtils.h"
+#include "nsServiceManagerUtils.h"
+#include "nsILoadContext.h"
+#include "nsIURL.h"
 
 namespace mozilla {
 namespace net {
@@ -67,15 +70,15 @@ nsHttpChannelAuthProvider::~nsHttpChannelAuthProvider()
 }
 
 uint32_t nsHttpChannelAuthProvider::sAuthAllowPref =
-    SUBRESOURCE_AUTH_DIALOG_ALLOW_ALL;
+    SUBRESOURCE_AUTH_DIALOG_DISALLOW_CROSS_ORIGIN;
 
 void
 nsHttpChannelAuthProvider::InitializePrefs()
 {
   MOZ_ASSERT(NS_IsMainThread());
   mozilla::Preferences::AddUintVarCache(&sAuthAllowPref,
-                                        "network.auth.subresource-http-auth-allow",
-                                        SUBRESOURCE_AUTH_DIALOG_ALLOW_ALL);
+                                        "network.auth.allow-subresource-auth",
+                                        SUBRESOURCE_AUTH_DIALOG_DISALLOW_CROSS_ORIGIN);
 }
 
 NS_IMETHODIMP
@@ -1424,5 +1427,5 @@ nsHttpChannelAuthProvider::GetCurrentPath(nsACString &path)
 NS_IMPL_ISUPPORTS(nsHttpChannelAuthProvider, nsICancelable,
                   nsIHttpChannelAuthProvider, nsIAuthPromptCallback)
 
-} // namespace mozilla::net
+} // namespace net
 } // namespace mozilla

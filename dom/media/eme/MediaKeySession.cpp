@@ -62,7 +62,7 @@ MediaKeySession::MediaKeySession(JSContext* aCx,
   if (aRv.Failed()) {
     return;
   }
-  mClosed = MakePromise(aRv);
+  mClosed = MakePromise(aRv, NS_LITERAL_CSTRING("MediaKeys.createSession"));
 }
 
 void MediaKeySession::SetSessionId(const nsAString& aSessionId)
@@ -171,7 +171,8 @@ MediaKeySession::GenerateRequest(const nsAString& aInitDataType,
                                  const ArrayBufferViewOrArrayBuffer& aInitData,
                                  ErrorResult& aRv)
 {
-  nsRefPtr<DetailedPromise> promise(MakePromise(aRv));
+  nsRefPtr<DetailedPromise> promise(MakePromise(aRv,
+    NS_LITERAL_CSTRING("MediaKeySession.generateRequest")));
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -228,7 +229,8 @@ MediaKeySession::GenerateRequest(const nsAString& aInitDataType,
 already_AddRefed<Promise>
 MediaKeySession::Load(const nsAString& aSessionId, ErrorResult& aRv)
 {
-  nsRefPtr<DetailedPromise> promise(MakePromise(aRv));
+  nsRefPtr<DetailedPromise> promise(MakePromise(aRv,
+    NS_LITERAL_CSTRING("MediaKeySession.load")));
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -271,7 +273,8 @@ MediaKeySession::Load(const nsAString& aSessionId, ErrorResult& aRv)
 already_AddRefed<Promise>
 MediaKeySession::Update(const ArrayBufferViewOrArrayBuffer& aResponse, ErrorResult& aRv)
 {
-  nsRefPtr<DetailedPromise> promise(MakePromise(aRv));
+  nsRefPtr<DetailedPromise> promise(MakePromise(aRv,
+    NS_LITERAL_CSTRING("MediaKeySession.update")));
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -322,7 +325,8 @@ MediaKeySession::Update(const ArrayBufferViewOrArrayBuffer& aResponse, ErrorResu
 already_AddRefed<Promise>
 MediaKeySession::Close(ErrorResult& aRv)
 {
-  nsRefPtr<DetailedPromise> promise(MakePromise(aRv));
+  nsRefPtr<DetailedPromise> promise(MakePromise(aRv,
+    NS_LITERAL_CSTRING("MediaKeySession.close")));
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -364,7 +368,8 @@ MediaKeySession::IsClosed() const
 already_AddRefed<Promise>
 MediaKeySession::Remove(ErrorResult& aRv)
 {
-  nsRefPtr<DetailedPromise> promise(MakePromise(aRv));
+  nsRefPtr<DetailedPromise> promise(MakePromise(aRv,
+    NS_LITERAL_CSTRING("MediaKeySession.remove")));
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -449,7 +454,7 @@ MediaKeySession::Token() const
 }
 
 already_AddRefed<DetailedPromise>
-MediaKeySession::MakePromise(ErrorResult& aRv)
+MediaKeySession::MakePromise(ErrorResult& aRv, const nsACString& aName)
 {
   nsCOMPtr<nsIGlobalObject> global = do_QueryInterface(GetParentObject());
   if (!global) {
@@ -457,7 +462,7 @@ MediaKeySession::MakePromise(ErrorResult& aRv)
     aRv.Throw(NS_ERROR_UNEXPECTED);
     return nullptr;
   }
-  return DetailedPromise::Create(global, aRv);
+  return DetailedPromise::Create(global, aRv, aName);
 }
 
 } // namespace dom

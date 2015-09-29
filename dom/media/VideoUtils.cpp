@@ -3,19 +3,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "VideoUtils.h"
+
+#include "mozilla/Preferences.h"
+#include "mozilla/Base64.h"
+#include "mozilla/TaskQueue.h"
+#include "mozilla/Telemetry.h"
+
 #include "MediaResource.h"
 #include "TimeUnits.h"
 #include "nsMathUtils.h"
 #include "nsSize.h"
 #include "VorbisUtils.h"
 #include "ImageContainer.h"
-#include "SharedThreadPool.h"
-#include "mozilla/Preferences.h"
-#include "mozilla/Base64.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/SharedThreadPool.h"
 #include "nsIRandomGenerator.h"
 #include "nsIServiceManager.h"
-#include "MediaTaskQueue.h"
 
 #include <stdint.h>
 
@@ -29,10 +31,19 @@ CheckedInt64 FramesToUsecs(int64_t aFrames, uint32_t aRate) {
   return (CheckedInt64(aFrames) * USECS_PER_S) / aRate;
 }
 
+media::TimeUnit FramesToTimeUnit(int64_t aFrames, uint32_t aRate) {
+  return (media::TimeUnit::FromMicroseconds(aFrames) * USECS_PER_S) / aRate;
+}
+
 // Converts from microseconds to number of audio frames, given the specified
 // audio rate.
 CheckedInt64 UsecsToFrames(int64_t aUsecs, uint32_t aRate) {
   return (CheckedInt64(aUsecs) * aRate) / USECS_PER_S;
+}
+
+// Format TimeUnit as number of frames at given rate.
+CheckedInt64 TimeUnitToFrames(const media::TimeUnit& aTime, uint32_t aRate) {
+  return UsecsToFrames(aTime.ToMicroseconds(), aRate);
 }
 
 nsresult SecondsToUsecs(double aSeconds, int64_t& aOutUsecs) {
@@ -201,7 +212,7 @@ IsValidVideoRegion(const nsIntSize& aFrame, const nsIntRect& aPicture,
     aDisplay.width * aDisplay.height != 0;
 }
 
-TemporaryRef<SharedThreadPool> GetMediaThreadPool(MediaThreadType aType)
+already_AddRefed<SharedThreadPool> GetMediaThreadPool(MediaThreadType aType)
 {
   const char *name;
   switch (aType) {
@@ -316,46 +327,20 @@ GenerateRandomPathName(nsCString& aOutSalt, uint32_t aLength)
   return NS_OK;
 }
 
-class CreateTaskQueueTask : public nsRunnable {
-public:
-  NS_IMETHOD Run() {
-    MOZ_ASSERT(NS_IsMainThread());
-    mTaskQueue =
-      new MediaTaskQueue(GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER));
-    return NS_OK;
-  }
-  nsRefPtr<MediaTaskQueue> mTaskQueue;
-};
-
-class CreateFlushableTaskQueueTask : public nsRunnable {
-public:
-  NS_IMETHOD Run() {
-    MOZ_ASSERT(NS_IsMainThread());
-    mTaskQueue =
-      new FlushableMediaTaskQueue(GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER));
-    return NS_OK;
-  }
-  nsRefPtr<FlushableMediaTaskQueue> mTaskQueue;
-};
-
-already_AddRefed<MediaTaskQueue>
+already_AddRefed<TaskQueue>
 CreateMediaDecodeTaskQueue()
 {
-  // We must create the MediaTaskQueue/SharedThreadPool on the main thread.
-  nsRefPtr<CreateTaskQueueTask> t(new CreateTaskQueueTask());
-  nsresult rv = NS_DispatchToMainThread(t, NS_DISPATCH_SYNC);
-  NS_ENSURE_SUCCESS(rv, nullptr);
-  return t->mTaskQueue.forget();
+  nsRefPtr<TaskQueue> queue = new TaskQueue(
+    GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER));
+  return queue.forget();
 }
 
-already_AddRefed<FlushableMediaTaskQueue>
+already_AddRefed<FlushableTaskQueue>
 CreateFlushableMediaDecodeTaskQueue()
 {
-  // We must create the MediaTaskQueue/SharedThreadPool on the main thread.
-  nsRefPtr<CreateFlushableTaskQueueTask> t(new CreateFlushableTaskQueueTask());
-  nsresult rv = NS_DispatchToMainThread(t, NS_DISPATCH_SYNC);
-  NS_ENSURE_SUCCESS(rv, nullptr);
-  return t->mTaskQueue.forget();
+  nsRefPtr<FlushableTaskQueue> queue = new FlushableTaskQueue(
+    GetMediaThreadPool(MediaThreadType::PLATFORM_DECODER));
+  return queue.forget();
 }
 
 } // end namespace mozilla

@@ -61,7 +61,7 @@ static const uint32_t NodeIdSaltLength = 32;
 already_AddRefed<GeckoMediaPluginServiceParent>
 GeckoMediaPluginServiceParent::GetSingleton()
 {
-  MOZ_ASSERT(XRE_GetProcessType() == GeckoProcessType_Default);
+  MOZ_ASSERT(XRE_IsParentProcess());
   nsRefPtr<GeckoMediaPluginService> service(
     GeckoMediaPluginServiceParent::GetGeckoMediaPluginService());
 #ifdef DEBUG
@@ -148,7 +148,7 @@ GeckoMediaPluginServiceParent::InitStorage()
   MOZ_ASSERT(NS_IsMainThread());
 
   // GMP storage should be used in the chrome process only.
-  if (XRE_GetProcessType() != GeckoProcessType_Default) {
+  if (!XRE_IsParentProcess()) {
     return NS_OK;
   }
 
@@ -426,47 +426,29 @@ GeckoMediaPluginServiceParent::AsyncShutdownPluginStates::Update(const nsCString
   state->mStateSequence += aId;
   state->mLastStateDescription = aState;
   note += '{';
-  mStates.EnumerateRead(EnumReadPlugins, &note);
+  bool firstPlugin = true;
+  for (auto pluginIt = mStates.ConstIter(); !pluginIt.Done(); pluginIt.Next()) {
+    if (!firstPlugin) { note += ','; } else { firstPlugin = false; }
+    note += pluginIt.Key();
+    note += ":{";
+    bool firstInstance = true;
+    for (auto instanceIt = pluginIt.UserData()->ConstIter(); !instanceIt.Done(); instanceIt.Next()) {
+      if (!firstInstance) { note += ','; } else { firstInstance = false; }
+      note += instanceIt.Key();
+      note += ":\"";
+      note += instanceIt.UserData()->mStateSequence;
+      note += '=';
+      note += instanceIt.UserData()->mLastStateDescription;
+      note += '"';
+    }
+    note += '}';
+  }
   note += '}';
   LOGD(("%s::%s states[%s][%s]='%c'/'%s' -> %s", __CLASS__, __FUNCTION__,
         aPlugin.get(), aInstance.get(), aId, aState.get(), note.get()));
   CrashReporter::AnnotateCrashReport(
     NS_LITERAL_CSTRING("AsyncPluginShutdownStates"),
     note);
-}
-
-// static
-PLDHashOperator
-GeckoMediaPluginServiceParent::AsyncShutdownPluginStates::EnumReadPlugins(
-  StateInstancesByPlugin::KeyType aKey,
-  StateInstancesByPlugin::UserDataType aData,
-  void* aUserArg)
-{
-  nsCString& note = *static_cast<nsCString*>(aUserArg);
-  if (note.Last() != '{') { note += ','; }
-  note += aKey;
-  note += ":{";
-  aData->EnumerateRead(EnumReadInstances, &note);
-  note += '}';
-  return PL_DHASH_NEXT;
-}
-
-// static
-PLDHashOperator
-GeckoMediaPluginServiceParent::AsyncShutdownPluginStates::EnumReadInstances(
-  StatesByInstance::KeyType aKey,
-  StatesByInstance::UserDataType aData,
-  void* aUserArg)
-{
-  nsCString& note = *static_cast<nsCString*>(aUserArg);
-  if (note.Last() != '{') { note += ','; }
-  note += aKey;
-  note += ":\"";
-  note += aData->mStateSequence;
-  note += '=';
-  note += aData->mLastStateDescription;
-  note += '"';
-  return PL_DHASH_NEXT;
 }
 #endif // MOZ_CRASHREPORTER
 

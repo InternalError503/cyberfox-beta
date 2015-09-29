@@ -10,6 +10,7 @@ STAGE_SSH_KEY = "~/.ssh/ffxbld_rsa"
 HG_SHARE_BASE_DIR = "/builds/hg-shared"
 
 config = {
+    "branch": BRANCH,
     "log_name": "single_locale",
     "objdir": OBJDIR,
     "is_automation": True,
@@ -26,7 +27,6 @@ config = {
     "tooltool_config": {
         "manifest": "mobile/android/config/tooltool-manifests/android/releng.manifest",
         "output_dir": "%(abs_work_dir)s/" + MOZILLA_DIR,
-        "bootstrap_cmd": ["bash", "-xe", "setup.sh"],
     },
     "exes": {
         'tooltool.py': '/tools/tooltool.py',
@@ -74,6 +74,9 @@ config = {
     "mozilla_dir": MOZILLA_DIR,
     "mozconfig": "%s/mobile/android/config/mozconfigs/android-api-11/l10n-nightly" % MOZILLA_DIR,
     "signature_verification_script": "tools/release/signing/verify-android-signature.sh",
+    "stage_product": "mobile",
+    "platform": "android",
+    "build_type": "api-11-opt",
 
     # Balrog
     "build_target": "Android_arm-eabi-gcc3",
@@ -102,5 +105,6 @@ config = {
                       ],
     "mock_files": [
         ("/home/cltbld/.ssh", "/home/mock_mozilla/.ssh"),
+        ('/usr/local/lib/hgext', '/usr/local/lib/hgext'),
     ],
 }

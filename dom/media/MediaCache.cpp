@@ -391,7 +391,7 @@ size_t MediaCacheStream::SizeOfExcludingThis(
   // Looks like these are not owned:
   // - mClient
   // - mPrincipal
-  size_t size = mBlocks.SizeOfExcludingThis(aMallocSizeOf);
+  size_t size = mBlocks.ShallowSizeOfExcludingThis(aMallocSizeOf);
   size += mReadaheadBlocks.SizeOfExcludingThis(aMallocSizeOf);
   size += mMetadataBlocks.SizeOfExcludingThis(aMallocSizeOf);
   size += mPlayedBlocks.SizeOfExcludingThis(aMallocSizeOf);
@@ -403,8 +403,7 @@ size_t MediaCacheStream::SizeOfExcludingThis(
 size_t MediaCacheStream::BlockList::SizeOfExcludingThis(
                                 MallocSizeOf aMallocSizeOf) const
 {
-  return mEntries.SizeOfExcludingThis(/* sizeOfEntryExcludingThis = */ nullptr,
-                                      aMallocSizeOf);
+  return mEntries.ShallowSizeOfExcludingThis(aMallocSizeOf);
 }
 
 void MediaCacheStream::BlockList::AddFirstBlock(int32_t aBlock)
@@ -1409,8 +1408,14 @@ MediaCache::QueueUpdate()
   if (mUpdateQueued)
     return;
   mUpdateQueued = true;
-  nsCOMPtr<nsIRunnable> event = new UpdateEvent();
-  NS_DispatchToMainThread(event);
+  // XXX MediaCache does updates when decoders are still running at
+  // shutdown and get freed in the final cycle-collector cleanup.  So
+  // don't leak a runnable in that case.
+  nsCOMPtr<nsIThread> mainThread = do_GetMainThread();
+  if (mainThread) {
+    nsCOMPtr<nsIRunnable> event = new UpdateEvent();
+    mainThread->Dispatch(event.forget(), NS_DISPATCH_NORMAL);
+  }
 }
 
 void

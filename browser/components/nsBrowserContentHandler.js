@@ -45,9 +45,6 @@ const NS_BINDING_ABORTED = Components.results.NS_BINDING_ABORTED;
 const NS_ERROR_WONT_HANDLE_CONTENT = 0x805d0001;
 const NS_ERROR_ABORT = Components.results.NS_ERROR_ABORT;
 
-const URI_INHERITS_SECURITY_CONTEXT = Components.interfaces.nsIHttpProtocolHandler
-                                        .URI_INHERITS_SECURITY_CONTEXT;
-
 function shouldLoadURI(aURI) {
   if (aURI && !aURI.schemeIs("chrome"))
     return true;
@@ -234,34 +231,22 @@ function openWindow(parent, url, target, features, args, noExternalArgs) {
 }
 
 function openPreferences() {
-  if (Services.prefs.getBoolPref("browser.preferences.inContent")) { 
-    var sa = Components.classes["@mozilla.org/supports-array;1"]
-                       .createInstance(Components.interfaces.nsISupportsArray);
+  var sa = Components.classes["@mozilla.org/supports-array;1"]
+                     .createInstance(Components.interfaces.nsISupportsArray);
 
-    var wuri = Components.classes["@mozilla.org/supports-string;1"]
-                         .createInstance(Components.interfaces.nsISupportsString);
-    wuri.data = "about:preferences";
+  var wuri = Components.classes["@mozilla.org/supports-string;1"]
+                       .createInstance(Components.interfaces.nsISupportsString);
+  wuri.data = "about:preferences";
 
-    sa.AppendElement(wuri);
+  sa.AppendElement(wuri);
 
-    var wwatch = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
-                           .getService(nsIWindowWatcher);
+  var wwatch = Components.classes["@mozilla.org/embedcomp/window-watcher;1"]
+                         .getService(nsIWindowWatcher);
 
-    wwatch.openWindow(null, gBrowserContentHandler.chromeURL,
-                      "_blank",
-                      "chrome,dialog=no,all",
-                      sa);
-  } else {
-    var features = "chrome,titlebar,toolbar,centerscreen,dialog=no";
-    var url = "chrome://browser/content/preferences/preferences.xul";
-    
-    var win = getMostRecentWindow("Browser:Preferences");
-    if (win) {
-      win.focus();
-    } else {
-      openWindow(null, url, "_blank", features);
-    }
-  }
+  wwatch.openWindow(null, gBrowserContentHandler.chromeURL,
+                    "_blank",
+                    "chrome,dialog=no,all",
+                    sa);
 }
 
 function getMostRecentWindow(aType) {
@@ -390,19 +375,26 @@ nsBrowserContentHandler.prototype = {
 
       // Handle old preference dialog URLs.
       if (chromeParam == "chrome://browser/content/pref/pref.xul" ||
-          (Services.prefs.getBoolPref("browser.preferences.inContent") &&
-           chromeParam == "chrome://browser/content/preferences/preferences.xul")) {
+          chromeParam == "chrome://browser/content/preferences/preferences.xul") {
         openPreferences();
         cmdLine.preventDefault = true;
       } else try {
-        // only load URIs which do not inherit chrome privs
-        var features = "chrome,dialog=no,all" + this.getFeatures(cmdLine);
         var uri = resolveURIInternal(cmdLine, chromeParam);
-        var netutil = Components.classes["@mozilla.org/network/util;1"]
-                                .getService(nsINetUtil);
-        if (!netutil.URIChainHasFlags(uri, URI_INHERITS_SECURITY_CONTEXT)) {
+        let isLocal = (uri) => {
+          let localSchemes = new Set(["chrome", "file", "resource"]);
+          if (uri instanceof Components.interfaces.nsINestedURI) {
+            uri = uri.QueryInterface(Components.interfaces.nsINestedURI).innerMostURI;
+          }
+          return localSchemes.has(uri.scheme);
+        };
+        if (isLocal(uri)) {
+          // If the URI is local, we are sure it won't wrongly inherit chrome privs
+          var features = "chrome,dialog=no,all" + this.getFeatures(cmdLine);
           openWindow(null, uri.spec, "_blank", features);
           cmdLine.preventDefault = true;
+        } else {
+          dump("*** Preventing load of web URI as chrome\n");
+          dump("    If you're trying to load a webpage, do not pass --chrome.\n");
         }
       }
       catch (e) {
@@ -650,7 +642,7 @@ nsBrowserContentHandler.prototype = {
         throw NS_ERROR_ABORT;
       var isDefault = false;
       try {
-        var url = Services.urlFormatter.formatURLPref("app.helpdoc.baseURL") +
+        var url = Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") +
                   "win10-default-browser";
         if (urlParam == url) {
           var shellSvc = Components.classes["@mozilla.org/browser/shell-service;1"]

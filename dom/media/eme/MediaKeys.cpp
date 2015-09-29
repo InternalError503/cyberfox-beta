@@ -150,8 +150,8 @@ MediaKeys::GetKeySystem(nsString& aOutKeySystem) const
 already_AddRefed<DetailedPromise>
 MediaKeys::SetServerCertificate(const ArrayBufferViewOrArrayBuffer& aCert, ErrorResult& aRv)
 {
-  nsRefPtr<DetailedPromise>
-    promise(MakePromise(aRv));
+  nsRefPtr<DetailedPromise> promise(MakePromise(aRv,
+    NS_LITERAL_CSTRING("MediaKeys.setServerCertificate")));
   if (aRv.Failed()) {
     return nullptr;
   }
@@ -175,7 +175,7 @@ MediaKeys::SetServerCertificate(const ArrayBufferViewOrArrayBuffer& aCert, Error
 }
 
 already_AddRefed<DetailedPromise>
-MediaKeys::MakePromise(ErrorResult& aRv)
+MediaKeys::MakePromise(ErrorResult& aRv, const nsACString& aName)
 {
   nsCOMPtr<nsIGlobalObject> global = do_QueryInterface(GetParentObject());
   if (!global) {
@@ -183,7 +183,7 @@ MediaKeys::MakePromise(ErrorResult& aRv)
     aRv.Throw(NS_ERROR_UNEXPECTED);
     return nullptr;
   }
-  return DetailedPromise::Create(global, aRv);
+  return DetailedPromise::Create(global, aRv, aName);
 }
 
 PromiseId
@@ -298,8 +298,8 @@ MediaKeys::ResolvePromise(PromiseId aId)
 already_AddRefed<DetailedPromise>
 MediaKeys::Init(ErrorResult& aRv)
 {
-  nsRefPtr<DetailedPromise>
-    promise(MakePromise(aRv));
+  nsRefPtr<DetailedPromise> promise(MakePromise(aRv,
+    NS_LITERAL_CSTRING("MediaKeys::Init()")));
   if (aRv.Failed()) {
     return nullptr;
   }

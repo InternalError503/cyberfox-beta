@@ -5,6 +5,7 @@
 
 Components.utils.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
 Components.utils.import("resource://gre/modules/InlineSpellChecker.jsm");
+Components.utils.import("resource://gre/modules/LoginManagerContextMenu.jsm");
 Components.utils.import("resource://gre/modules/BrowserUtils.jsm");
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -12,6 +13,8 @@ XPCOMUtils.defineLazyModuleGetter(this, "CustomizableUI",
   "resource:///modules/CustomizableUI.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "Pocket",
   "resource:///modules/Pocket.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "LoginHelper",
+  "resource://gre/modules/LoginHelper.jsm");
 
 var gContextMenuContentData = null;
 
@@ -67,6 +70,7 @@ nsContextMenu.prototype = {
     InlineSpellCheckerUI.clearSuggestionsFromMenu();
     InlineSpellCheckerUI.clearDictionaryListFromMenu();
     InlineSpellCheckerUI.uninit();
+    LoginManagerContextMenu.clearLoginsFromMenu(document);
 
     // This handler self-deletes, only run it if it is still there:
     if (this._onPopupHiding) {
@@ -86,6 +90,7 @@ nsContextMenu.prototype = {
     this.initMediaPlayerItems();
     this.initLeaveDOMFullScreenItems();
     this.initClickToPlayItems();
+    this.initPasswordManagerItems();
   },
 
   initPageMenuSeparator: function CM_initPageMenuSeparator() {
@@ -507,6 +512,33 @@ nsContextMenu.prototype = {
     this.showItem("context-sep-ctp", this.onCTPPlugin);
   },
 
+  initPasswordManagerItems: function() {
+    let showFillPassword = this.onPassword;
+    let disableFillPassword = !Services.logins.isLoggedIn || this.target.disabled || this.target.readOnly;
+    this.showItem("fill-login-separator", showFillPassword);
+    this.showItem("fill-login", showFillPassword);
+    this.setItemAttr("fill-login", "disabled", disableFillPassword);
+
+    if (!showFillPassword || disableFillPassword) {
+      return;
+    }
+    let documentURI = gContextMenuContentData.documentURIObject;
+    let fragment = LoginManagerContextMenu.addLoginsToMenu(this.target, this.browser, documentURI);
+
+    this.showItem("fill-login-no-logins", !fragment);
+
+    if (!fragment) {
+      return;
+    }
+    let popup = document.getElementById("fill-login-popup");
+    let insertBeforeElement = document.getElementById("fill-login-no-logins");
+    popup.insertBefore(fragment, insertBeforeElement);
+  },
+
+  openPasswordManager: function() {
+    LoginHelper.openPasswordManager(window, gContextMenuContentData.documentURIObject.host);
+  },
+
   inspectNode: function CM_inspectNode() {
     let {devtools} = Cu.import("resource://gre/modules/devtools/Loader.jsm", {});
     let gBrowser = this.browser.ownerDocument.defaultView.gBrowser;
@@ -578,6 +610,7 @@ nsContextMenu.prototype = {
     this.isDesignMode      = false;
     this.onCTPPlugin       = false;
     this.canSpellCheck     = false;
+    this.onPassword        = false;
 
     if (this.isRemote) {
       this.selectionInfo = gContextMenuContentData.selectionInfo;
@@ -675,6 +708,7 @@ nsContextMenu.prototype = {
         this.onTextInput = (editFlags & SpellCheckHelper.TEXTINPUT) !== 0;
         this.onNumeric = (editFlags & SpellCheckHelper.NUMERIC) !== 0;
         this.onEditableArea = (editFlags & SpellCheckHelper.EDITABLE) !== 0;
+        this.onPassword = (editFlags & SpellCheckHelper.PASSWORD) !== 0;
         if (this.onEditableArea) {
           if (this.isRemote) {
             InlineSpellCheckerUI.initFromRemote(gContextMenuContentData.spellInfo);
@@ -1058,7 +1092,8 @@ nsContextMenu.prototype = {
   },
 
   viewFrameInfo: function() {
-    BrowserPageInfo(this.target.ownerDocument);
+    BrowserPageInfo(this.target.ownerDocument, null, null,
+                    this.frameOuterWindowID);
   },
 
   reloadImage: function() {
@@ -1676,7 +1711,7 @@ nsContextMenu.prototype = {
   },
 
   savePageAs: function CM_savePageAs() {
-    saveDocument(this.browser.contentDocumentAsCPOW);
+    saveBrowser(this.browser);
   },
 
   saveLinkToPocket: function CM_saveLinkToPocket() {
@@ -1688,7 +1723,7 @@ nsContextMenu.prototype = {
   },
 
   printFrame: function CM_printFrame() {
-    PrintUtils.print(this.target.ownerDocument.defaultView, this.browser);
+    PrintUtils.printWindow(this.frameOuterWindowID, this.browser);
   },
 
   switchPageDirection: function CM_switchPageDirection() {

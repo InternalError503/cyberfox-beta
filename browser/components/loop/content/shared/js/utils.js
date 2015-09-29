@@ -399,40 +399,25 @@ var inChrome = typeof Components != "undefined" && "utils" in Components;
     }
 
     var subject, body;
-    var brandShortname = mozL10n.get("brandShortname");
-    var clientShortname2 = mozL10n.get("clientShortname2");
-    var clientSuperShortname = mozL10n.get("clientSuperShortname");
-    var learnMoreUrl = mozLoop.getLoopPref("learnMoreUrl");
+    var footer = mozL10n.get("share_email_footer");
 
     if (contextDescription) {
-      subject = mozL10n.get("share_email_subject_context", {
-        clientShortname2: clientShortname2,
-        title: contextDescription
-      });
-      body = mozL10n.get("share_email_body_context", {
+      subject = mozL10n.get("share_email_subject6");
+      body = mozL10n.get("share_email_body_context2", {
         callUrl: callUrl,
-        brandShortname: brandShortname,
-        clientShortname2: clientShortname2,
-        clientSuperShortname: clientSuperShortname,
-        learnMoreUrl: learnMoreUrl,
         title: contextDescription
       });
     } else {
-      subject = mozL10n.get("share_email_subject5", {
-        clientShortname2: clientShortname2
-      });
-      body = mozL10n.get("share_email_body5", {
-        callUrl: callUrl,
-        brandShortname: brandShortname,
-        clientShortname2: clientShortname2,
-        clientSuperShortname: clientSuperShortname,
-        learnMoreUrl: learnMoreUrl
+      subject = mozL10n.get("share_email_subject6");
+      body = mozL10n.get("share_email_body6", {
+        callUrl: callUrl
       });
     }
-
+    var bodyFooter =  body + footer;
+    bodyFooter = bodyFooter.replace(/\r\n/g, "\n").replace(/\n/g, "\r\n");
     mozLoop.composeEmail(
       subject,
-      body.replace(/\r\n/g, "\n").replace(/\n/g, "\r\n"),
+      bodyFooter,
       recipient
     );
 
@@ -447,7 +432,11 @@ var inChrome = typeof Components != "undefined" && "utils" in Components;
   // We can alias `subarray` to `slice` when the latter is not available, because
   // they're semantically identical.
   if (!Uint8Array.prototype.slice) {
+    /* eslint-disable */
+    // Eslint disabled for no-extend-native; Specific override needed for Firefox 37
+    // and earlier, also for other browsers.
     Uint8Array.prototype.slice = Uint8Array.prototype.subarray;
+    /* eslint-enable */
   }
 
   /**

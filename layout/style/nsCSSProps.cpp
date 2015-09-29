@@ -745,6 +745,7 @@ const KTableValue nsCSSProps::kAppearanceKTable[] = {
   eCSSKeyword__moz_mac_vibrancy_dark,         NS_THEME_MAC_VIBRANCY_DARK,
   eCSSKeyword__moz_mac_disclosure_button_open,   NS_THEME_MAC_DISCLOSURE_BUTTON_OPEN,
   eCSSKeyword__moz_mac_disclosure_button_closed, NS_THEME_MAC_DISCLOSURE_BUTTON_CLOSED,
+  eCSSKeyword__moz_gtk_info_bar,              NS_THEME_GTK_INFO_BAR,
   eCSSKeyword_UNKNOWN,-1
 };
 
@@ -893,6 +894,12 @@ const KTableValue nsCSSProps::kBoxSizingKTable[] = {
 };
 
 const KTableValue nsCSSProps::kCaptionSideKTable[] = {
+  eCSSKeyword_block_start,          NS_STYLE_CAPTION_SIDE_BSTART,
+  eCSSKeyword_block_end,            NS_STYLE_CAPTION_SIDE_BEND,
+  eCSSKeyword_inline_start,         NS_STYLE_CAPTION_SIDE_ISTART,
+  eCSSKeyword_inline_end,           NS_STYLE_CAPTION_SIDE_IEND,
+  eCSSKeyword_block_start_outside,  NS_STYLE_CAPTION_SIDE_BSTART_OUTSIDE,
+  eCSSKeyword_block_end_outside,    NS_STYLE_CAPTION_SIDE_BEND_OUTSIDE,
   eCSSKeyword_top,                  NS_STYLE_CAPTION_SIDE_TOP,
   eCSSKeyword_right,                NS_STYLE_CAPTION_SIDE_RIGHT,
   eCSSKeyword_bottom,               NS_STYLE_CAPTION_SIDE_BOTTOM,
@@ -954,6 +961,7 @@ const KTableValue nsCSSProps::kColorKTable[] = {
   eCSSKeyword__moz_dialog, LookAndFeel::eColorID__moz_dialog,
   eCSSKeyword__moz_dialogtext, LookAndFeel::eColorID__moz_dialogtext,
   eCSSKeyword__moz_dragtargetzone, LookAndFeel::eColorID__moz_dragtargetzone,
+  eCSSKeyword__moz_gtk_info_bar_text, LookAndFeel::eColorID__moz_gtk_info_bar_text,
   eCSSKeyword__moz_hyperlinktext, NS_COLOR_MOZ_HYPERLINKTEXT,
   eCSSKeyword__moz_html_cellhighlight, LookAndFeel::eColorID__moz_html_cellhighlight,
   eCSSKeyword__moz_html_cellhighlighttext, LookAndFeel::eColorID__moz_html_cellhighlighttext,
@@ -2372,12 +2380,12 @@ static const nsCSSProperty gBorderColorSubpropTable[] = {
   eCSSProperty_UNKNOWN
 };
 
-static const nsCSSProperty gBorderEndSubpropTable[] = {
+static const nsCSSProperty gBorderInlineEndSubpropTable[] = {
   // Declaration.cpp output the subproperties in this order.
   // It also depends on the color being third.
-  eCSSProperty_border_end_width,
-  eCSSProperty_border_end_style,
-  eCSSProperty_border_end_color,
+  eCSSProperty_border_inline_end_width,
+  eCSSProperty_border_inline_end_style,
+  eCSSProperty_border_inline_end_color,
   eCSSProperty_UNKNOWN
 };
 
@@ -2399,12 +2407,12 @@ static const nsCSSProperty gBorderRightSubpropTable[] = {
   eCSSProperty_UNKNOWN
 };
 
-static const nsCSSProperty gBorderStartSubpropTable[] = {
+static const nsCSSProperty gBorderInlineStartSubpropTable[] = {
   // Declaration.cpp outputs the subproperties in this order.
   // It also depends on the color being third.
-  eCSSProperty_border_start_width,
-  eCSSProperty_border_start_style,
-  eCSSProperty_border_start_color,
+  eCSSProperty_border_inline_start_width,
+  eCSSProperty_border_inline_start_style,
+  eCSSProperty_border_inline_start_color,
   eCSSProperty_UNKNOWN
 };
 

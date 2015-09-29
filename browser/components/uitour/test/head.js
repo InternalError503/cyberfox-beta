@@ -123,6 +123,12 @@ function waitForPopupAtAnchor(popup, anchorNode, nextTest, msg) {
                    "Timeout waiting for popup at anchor: " + msg);
 }
 
+function getConfigurationPromise(configName) {
+  return new Promise(resolve => {
+    gContentAPI.getConfiguration(configName, data => resolve(data));
+  });
+}
+
 function hideInfoPromise(...args) {
   let popup = document.getElementById("UITourTooltip");
   gContentAPI.hideInfo.apply(gContentAPI, args);
@@ -161,12 +167,13 @@ function promisePanelShown(win) {
 function promisePanelElementEvent(win, aPanel, aEvent) {
   let deferred = Promise.defer();
   let timeoutId = win.setTimeout(() => {
-    deferred.reject("Panel did not show within 5 seconds.");
+    deferred.reject("Event did not happen within 5 seconds.");
   }, 5000);
   aPanel.addEventListener(aEvent, function onPanelEvent(e) {
     aPanel.removeEventListener(aEvent, onPanelEvent);
     win.clearTimeout(timeoutId);
-    deferred.resolve();
+    // Wait one tick to let UITour.jsm process the event as well.
+    executeSoon(deferred.resolve);
   });
   return deferred.promise;
 }
@@ -199,7 +206,7 @@ function promisePageEvent() {
   });
 }
 
-function loadUITourTestPage(callback, host = "https://example.com/") {
+function loadUITourTestPage(callback, host = "https://example.org/") {
   if (gTestTab)
     gBrowser.removeTab(gTestTab);
 
@@ -221,21 +228,22 @@ function loadUITourTestPage(callback, host = "https://example.com/") {
 
 function UITourTest() {
   Services.prefs.setBoolPref("browser.uitour.enabled", true);
-  let testUri = Services.io.newURI("http://example.com", null, null);
-  Services.perms.add(testUri, "uitour", Services.perms.ALLOW_ACTION);
+  let testHttpsUri = Services.io.newURI("https://example.org", null, null);
+  let testHttpUri = Services.io.newURI("http://example.org", null, null);
+  Services.perms.add(testHttpsUri, "uitour", Services.perms.ALLOW_ACTION);
+  Services.perms.add(testHttpUri, "uitour", Services.perms.ALLOW_ACTION);
 
   waitForExplicitFinish();
 
   registerCleanupFunction(function() {
-    delete window.UITour;
-    delete window.UITourMetricsProvider;
     delete window.gContentWindow;
     delete window.gContentAPI;
     if (gTestTab)
       gBrowser.removeTab(gTestTab);
     delete window.gTestTab;
     Services.prefs.clearUserPref("browser.uitour.enabled", true);
-    Services.perms.remove("example.com", "uitour");
+    Services.perms.remove(testHttpsUri, "uitour");
+    Services.perms.remove(testHttpUri, "uitour");
   });
 
   function done() {

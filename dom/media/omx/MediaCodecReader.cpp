@@ -25,18 +25,18 @@
 #include <stagefright/MetaData.h>
 #include <stagefright/Utils.h>
 
+#include "mozilla/TaskQueue.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/layers/GrallocTextureClient.h"
 
 #include "gfx2DGlue.h"
 
 #include "MediaStreamSource.h"
-#include "MediaTaskQueue.h"
 #include "MP3FrameParser.h"
 #include "nsMimeTypes.h"
 #include "nsThreadUtils.h"
 #include "ImageContainer.h"
-#include "SharedThreadPool.h"
+#include "mozilla/SharedThreadPool.h"
 #include "VideoFrameContainer.h"
 #include "VideoUtils.h"
 
@@ -683,7 +683,7 @@ MediaCodecReader::AsyncReadMetadata()
 
   nsRefPtr<MediaCodecReader> self = this;
   mMediaResourceRequest.Begin(CreateMediaCodecs()
-    ->Then(TaskQueue(), __func__,
+    ->Then(OwnerThread(), __func__,
       [self] (bool) -> void {
         self->mMediaResourceRequest.Complete();
         self->HandleResourceAllocated();
@@ -743,10 +743,8 @@ MediaCodecReader::HandleResourceAllocated()
   // Video track's frame sizes will not overflow. Activate the video track.
   VideoFrameContainer* container = mDecoder->GetVideoFrameContainer();
   if (container) {
-    container->SetCurrentFrame(
-      gfxIntSize(mInfo.mVideo.mDisplay.width, mInfo.mVideo.mDisplay.height),
-      nullptr,
-      mozilla::TimeStamp::Now());
+    container->ClearCurrentFrame(
+      gfxIntSize(mInfo.mVideo.mDisplay.width, mInfo.mVideo.mDisplay.height));
   }
 
   nsRefPtr<MetadataHolder> metadata = new MetadataHolder();
@@ -1055,14 +1053,6 @@ MediaCodecReader::Seek(int64_t aTime, int64_t aEndTime)
     mVideoTrack.mInputEndOfStream = false;
     mVideoTrack.mOutputEndOfStream = false;
     mVideoTrack.mFlushed = false;
-
-    VideoFrameContainer* videoframe = mDecoder->GetVideoFrameContainer();
-    if (videoframe) {
-      layers::ImageContainer* image = videoframe->GetImageContainer();
-      if (image) {
-        image->ClearAllImagesExceptFront();
-      }
-    }
 
     MediaBuffer* source_buffer = nullptr;
     MediaSource::ReadOptions options;

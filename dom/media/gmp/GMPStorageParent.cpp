@@ -99,7 +99,13 @@ public:
 
   ~GMPDiskStorage() {
     // Close all open file handles.
-    mRecords.EnumerateRead(&CloseAllFiles, nullptr);
+    for (auto iter = mRecords.ConstIter(); !iter.Done(); iter.Next()) {
+      Record* record = iter.UserData();
+      if (record->mFileDesc) {
+        PR_Close(record->mFileDesc);
+        record->mFileDesc = nullptr;
+      }
+    }
   }
 
   nsresult Init() {
@@ -307,7 +313,9 @@ public:
 
   GMPErr GetRecordNames(nsTArray<nsCString>& aOutRecordNames) override
   {
-    mRecords.EnumerateRead(&AccumulateRecordNames, &aOutRecordNames);
+    for (auto iter = mRecords.ConstIter(); !iter.Done(); iter.Next()) {
+      aOutRecordNames.AppendElement(iter.UserData()->mRecordName);
+    }
     return GMPNoErr;
   }
 
@@ -479,24 +487,6 @@ private:
     PRFileDesc* mFileDesc;
   };
 
-  static PLDHashOperator
-  CloseAllFiles(const nsACString& aKey, Record* aRecord, void *aContext)
-  {
-    if (aRecord->mFileDesc) {
-      PR_Close(aRecord->mFileDesc);
-      aRecord->mFileDesc = nullptr;
-    }
-    return PL_DHASH_NEXT;
-  }
-
-  static PLDHashOperator
-  AccumulateRecordNames(const nsACString& aKey, Record* aRecord, void *aContext)
-  {
-    nsTArray<nsCString>* recordNames = static_cast<nsTArray<nsCString>*>(aContext);
-    recordNames->AppendElement(aKey);
-    return PL_DHASH_NEXT;
-  }
-
   // Hash record name to record data.
   nsClassHashtable<nsCStringHashKey, Record> mRecords;
   const nsAutoCString mNodeId;
@@ -549,7 +539,9 @@ public:
 
   GMPErr GetRecordNames(nsTArray<nsCString>& aOutRecordNames) override
   {
-    mRecords.EnumerateRead(&AccumulateRecordNames, &aOutRecordNames);
+    for (auto iter = mRecords.ConstIter(); !iter.Done(); iter.Next()) {
+      aOutRecordNames.AppendElement(iter.Key());
+    }
     return GMPNoErr;
   }
 
@@ -574,14 +566,6 @@ private:
     nsTArray<uint8_t> mData;
     bool mIsOpen;
   };
-
-  static PLDHashOperator
-  AccumulateRecordNames(const nsACString& aKey, Record* aRecord, void *aContext)
-  {
-    nsTArray<nsCString>* recordNames = static_cast<nsTArray<nsCString>*>(aContext);
-    recordNames->AppendElement(aKey);
-    return PL_DHASH_NEXT;
-  }
 
   nsClassHashtable<nsCStringHashKey, Record> mRecords;
 };
