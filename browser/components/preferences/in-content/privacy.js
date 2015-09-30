@@ -40,7 +40,7 @@ var gPrivacyPane = {
    */
   _initTrackingProtectionPBM: function () {
     let link = document.getElementById("trackingProtectionPBMLearnMore");
-    let url = Services.urlFormatter.formatURLPref("app.support.baseURL") + "tracking-protection-pbm";
+    let url = Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "tracking-protection-pbm";
     link.setAttribute("href", url);
   },
 
