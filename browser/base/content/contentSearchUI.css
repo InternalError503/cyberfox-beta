@@ -65,8 +65,8 @@
 }
 
 .contentSearchSuggestionRow.selected {
-  background-color: Highlight;
-  color: HighlightText;
+  background-color: hsl(203,75%,55%);
+  color: hsl(0,0%,100%);
 }
 
 .contentSearchHeader,
@@ -125,7 +125,7 @@
 }
 
 .contentSearchOneOffItem.selected {
-  background-color: Highlight;
+  background-color: hsl(203,75%,55%);
   background-image: none;
 }
 
