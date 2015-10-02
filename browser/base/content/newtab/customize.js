@@ -52,7 +52,7 @@ let gCustomize = {
     if (Services.prefs.getBoolPref("browser.newtab.overlay.enabled")){
 		setTimeout(() => {
 		  // Wait for display update to take place, then animate.
-		  overlay.style.background = "black";
+		  overlay.style.background = Services.prefs.getCharPref("browser.newtab.overlay.color");
 		  overlay.style.opacity = 0.8;
 		}, 0);
     }

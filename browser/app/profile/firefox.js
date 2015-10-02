@@ -2050,6 +2050,7 @@ pref("browser.selfsupport.url", "");
 // Defines the url to be used for new tabs.
 pref("browser.newtab.url", "about:newtab");
 pref("browser.newtab.overlay.enabled", true);
+pref("browser.newtab.overlay.color", "#000000");
 
 // Toggles between the two Preferences implementations, pop-up window and in-content
 pref("browser.preferences.inContent", true);
