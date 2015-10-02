@@ -969,6 +969,7 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY newtabpage.label "NewTab Page:">
 <!ENTITY newtabthumbnail.label "Disable thumbnail capturing on newtab page.">
 <!ENTITY aboutnewtab.pageTitle "About:NewTab">
+<!ENTITY incontent.label "Show preferences in tab.">
 <!-- End Features Tab Tweak -->
 
 <!-- Tabs Features -->

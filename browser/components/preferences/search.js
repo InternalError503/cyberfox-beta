@@ -12,12 +12,6 @@ XPCOMUtils.defineLazyModuleGetter(this, "Task",
 
 const ENGINE_FLAVOR = "text/x-moz-search-engine";
 
-document.addEventListener("Initialized", () => {
-  if (!AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
-    document.getElementById("redirectSearchCheckbox").hidden = true;
-  }
-});
-
 var gEngineView = null;
 
 var gSearchPane = {
@@ -47,17 +41,14 @@ var gSearchPane = {
     document.getElementById("engineList").view = gEngineView;
     this.buildDefaultEngineDropDown();
 
-    window.addEventListener("click", this, false);
-    window.addEventListener("command", this, false);
-    window.addEventListener("dragstart", this, false);
-    window.addEventListener("keypress", this, false);
-    window.addEventListener("select", this, false);
-    window.addEventListener("blur", this, true);
-
     Services.obs.addObserver(this, "browser-search-engine-modified", false);
     window.addEventListener("unload", () => {
       Services.obs.removeObserver(this, "browser-search-engine-modified", false);
     });
+
+  if (!AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
+    document.getElementById("redirectSearchCheckbox").hidden = true;
+  }
 
     this._initAutocomplete();
 
@@ -105,55 +96,6 @@ var gSearchPane = {
     });
   },
 
-  handleEvent: function(aEvent) {
-    switch (aEvent.type) {
-      case "click":
-        if (aEvent.target.id == "addEngines" && aEvent.button == 0) {
-          Services.wm.getMostRecentWindow('navigator:browser')
-                     .BrowserSearch.loadAddEngines();
-        }
-        break;
-      case "command":
-        switch (aEvent.target.id) {
-          case "":
-            if (aEvent.target.parentNode &&
-                aEvent.target.parentNode.parentNode &&
-                aEvent.target.parentNode.parentNode.id == "defaultEngine") {
-              gSearchPane.setDefaultEngine();
-            }
-            break;
-          case "restoreDefaultSearchEngines":
-            gSearchPane.onRestoreDefaults();
-            break;
-          case "removeEngineButton":
-            gSearchPane.remove();
-            break;
-        }
-        break;
-      case "dragstart":
-        if (aEvent.target.id == "engineChildren") {
-          onDragEngineStart(aEvent);
-        }
-        break;
-      case "keypress":
-        if (aEvent.target.id == "engineList") {
-          gSearchPane.onTreeKeyPress(aEvent);
-        }
-        break;
-      case "select":
-        if (aEvent.target.id == "engineList") {
-          gSearchPane.onTreeSelect();
-        }
-        break;
-      case "blur":
-        if (aEvent.target.id == "engineList" &&
-            aEvent.target.inputField == document.getBindingParent(aEvent.originalTarget)) {
-          gSearchPane.onInputBlur();
-        }
-        break;
-    }
-  },
-
   observe: function(aEngine, aTopic, aVerb) {
     if (aTopic == "browser-search-engine-modified") {
       aEngine.QueryInterface(Components.interfaces.nsISearchEngine);
@@ -174,11 +116,6 @@ var gSearchPane = {
         break;
       }
     }
-  },
-
-  onInputBlur: function() {
-    let tree = document.getElementById("engineList");
-    tree.stopEditing(false);
   },
 
   onTreeSelect: function() {
@@ -273,8 +210,15 @@ var gSearchPane = {
   },
 
   setDefaultEngine: function () {
-    Services.search.currentEngine =
-      document.getElementById("defaultEngine").selectedItem.engine;
+    if (document.documentElement.instantApply) {
+      Services.search.currentEngine =
+        document.getElementById("defaultEngine").selectedItem.engine;
+    }
+  },
+
+  loadAddEngines: function () {
+    window.opener.BrowserSearch.loadAddEngines();
+    window.document.documentElement.acceptDialog();
   }
 };
 
@@ -289,6 +233,64 @@ function onDragEngineStart(event) {
   }
 }
 
+// "Operation" objects
+function EngineMoveOp(aEngineClone, aNewIndex) {
+  if (!aEngineClone)
+    throw new Error("bad args to new EngineMoveOp!");
+  this._engine = aEngineClone.originalEngine;
+  this._newIndex = aNewIndex;
+}
+EngineMoveOp.prototype = {
+  _engine: null,
+  _newIndex: null,
+  commit: function EMO_commit() {
+    Services.search.moveEngine(this._engine, this._newIndex);
+  }
+};
+
+function EngineRemoveOp(aEngineClone) {
+  if (!aEngineClone)
+    throw new Error("bad args to new EngineRemoveOp!");
+  this._engine = aEngineClone.originalEngine;
+}
+EngineRemoveOp.prototype = {
+  _engine: null,
+  commit: function ERO_commit() {
+    Services.search.removeEngine(this._engine);
+  }
+};
+
+function EngineUnhideOp(aEngineClone, aNewIndex) {
+  if (!aEngineClone)
+    throw new Error("bad args to new EngineUnhideOp!");
+  this._engine = aEngineClone.originalEngine;
+  this._newIndex = aNewIndex;
+}
+EngineUnhideOp.prototype = {
+  _engine: null,
+  _newIndex: null,
+  commit: function EUO_commit() {
+    this._engine.hidden = false;
+    Services.search.moveEngine(this._engine, this._newIndex);
+  }
+};
+
+function EngineChangeOp(aEngineClone, aProp, aValue) {
+  if (!aEngineClone)
+    throw new Error("bad args to new EngineChangeOp!");
+
+  this._engine = aEngineClone.originalEngine;
+  this._prop = aProp;
+  this._newValue = aValue;
+}
+EngineChangeOp.prototype = {
+  _engine: null,
+  _prop: null,
+  _newValue: null,
+  commit: function ECO_commit() {
+    this._engine[this._prop] = this._newValue;
+  }
+};
 
 function EngineStore() {
   let pref = document.getElementById("browser.search.hiddenOneOffs").value;
@@ -297,6 +299,18 @@ function EngineStore() {
   this._engines = Services.search.getVisibleEngines().map(this._cloneEngine, this);
   this._defaultEngines = Services.search.getDefaultEngines().map(this._cloneEngine, this);
 
+  if (document.documentElement.instantApply) {
+    this._ops = {
+      push: function(op) { op.commit(); }
+    };
+  }
+  else {
+    this._ops = [];
+    document.documentElement.addEventListener("beforeaccept", () => {
+      gEngineView._engineStore.commit();
+    });
+  }
+
   // check if we need to disable the restore defaults button
   var someHidden = this._defaultEngines.some(function (e) e.hidden);
   gSearchPane.showRestoreDefaults(someHidden);
@@ -304,6 +318,7 @@ function EngineStore() {
 EngineStore.prototype = {
   _engines: null,
   _defaultEngines: null,
+  _ops: null,
 
   get engines() {
     return this._engines;
@@ -339,6 +354,14 @@ EngineStore.prototype = {
     return aEngineClone.originalEngine == this.originalEngine;
   },
 
+  commit: function ES_commit() {
+    for (op of this._ops)
+      op.commit();
+
+    Services.search.currentEngine =
+      document.getElementById("defaultEngine").selectedItem.engine;
+  },
+
   addEngine: function ES_addEngine(aEngine) {
     this._engines.push(this._cloneEngine(aEngine));
   },
@@ -357,7 +380,7 @@ EngineStore.prototype = {
     var removedEngine = this._engines.splice(index, 1)[0];
     this._engines.splice(aNewIndex, 0, removedEngine);
 
-    Services.search.moveEngine(aEngine.originalEngine, aNewIndex);
+    this._ops.push(new EngineMoveOp(aEngine, aNewIndex));
   },
 
   removeEngine: function ES_removeEngine(aEngine) {
@@ -366,8 +389,7 @@ EngineStore.prototype = {
       throw new Error("invalid engine?");
 
     this._engines.splice(index, 1);
-    Services.search.removeEngine(aEngine.originalEngine);
-
+    this._ops.push(new EngineRemoveOp(aEngine));
     if (this._defaultEngines.some(this._isSameEngine, aEngine))
       gSearchPane.showRestoreDefaults(true);
     gSearchPane.buildDefaultEngineDropDown();
@@ -390,9 +412,7 @@ EngineStore.prototype = {
         e.alias = "";
 
         this._engines.splice(i, 0, e);
-        let engine = e.originalEngine;
-        engine.hidden = false;
-        Services.search.moveEngine(engine, i);
+        this._ops.push(new EngineUnhideOp(e, i));
         added++;
       }
     }
@@ -407,7 +427,7 @@ EngineStore.prototype = {
       throw new Error("invalid engine?");
 
     this._engines[index][aProp] = aNewValue;
-    aEngine.originalEngine[aProp] = aNewValue;
+    this._ops.push(new EngineChangeOp(aEngine, aProp, aNewValue));
   },
 
   reloadIcons: function ES_reloadIcons() {

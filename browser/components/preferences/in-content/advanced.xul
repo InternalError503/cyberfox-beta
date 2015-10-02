@@ -52,6 +52,9 @@
 						   type="bool"/>			  
 	  <preference id="browser.download.useToolkitUI"
 						   name="browser.download.useToolkitUI"
+						   type="bool"/>
+	  <preference id="browser.preferences.inContent"
+						   name="browser.preferences.inContent"
 						   type="bool"/>	
 	  <preference id="browser.restart.purgecache" 
 						   name="browser.restart.purgecache" 
@@ -474,7 +477,9 @@
 		
 			<!-- General Settings -->
 			<groupbox id="alternateOptionsGeneral" orient="vertical">
-				<caption label="&cyberfoxOptions.label;"/>		
+				<caption label="&cyberfoxOptions.label;"/>				          	              	
+					<checkbox id="browser.preferences.inContent" label="&incontent.label;"
+							preference="browser.preferences.inContent"/>
  					<checkbox id="loop.enabled" label="&enablehellochat.label;"
 							preference="loop.enabled" 
 							tooltiptext="&restartRequiredMSG.label;" />								

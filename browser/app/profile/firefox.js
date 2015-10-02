@@ -848,11 +848,7 @@ pref("plugin.state.npnisp", 2);
 pref("plugin.state.iprint", 2);
 #endif
 
-#ifdef XP_MACOSX
 pref("browser.preferences.animateFadeIn", true);
-#else
-pref("browser.preferences.animateFadeIn", false);
-#endif
 
 #ifdef XP_WIN
 pref("browser.preferences.instantApply", false);
@@ -2060,3 +2056,6 @@ pref("browser.selfsupport.url", "");
 
 // Defines the url to be used for new tabs.
 pref("browser.newtab.url", "about:newtab");
+
+// Toggles between the two Preferences implementations, pop-up window and in-content
+pref("browser.preferences.inContent", true);
