@@ -297,6 +297,8 @@ pref("media.hardware-video-decoding.enabled", true);
 pref("media.decoder.heuristic.dormant.enabled", true);
 pref("media.decoder.heuristic.dormant.timeout", 60000);
 
+pref("media.gmp.kill-hung-plugins", true);
+
 #ifdef MOZ_WMF
 pref("media.wmf.decoder.thread-count", -1);
 #endif
@@ -681,7 +683,7 @@ pref("gfx.content.azure.backends", "direct2d1.1,direct2d,cairo");
 pref("gfx.content.azure.backends", "cg");
 pref("gfx.canvas.azure.backends", "skia");
 // Accelerated cg canvas where available (10.7+)
-pref("gfx.canvas.azure.accelerated", true);
+pref("gfx.canvas.azure.accelerated", false);
 #else
 pref("gfx.canvas.azure.backends", "cairo");
 pref("gfx.content.azure.backends", "cairo");

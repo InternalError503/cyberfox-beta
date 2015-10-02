@@ -1919,13 +1919,6 @@ pref("view_source.tab", false);
 pref("view_source.tab", true);
 #endif
 
-// Enable ServiceWorkers for Push API consumers.
-// Interception is still disabled.
-pref("dom.serviceWorkers.enabled", true);
-
-// Enable Push API.
-pref("dom.push.enabled", true);
-
 //Minimize ram useage on browser minimizes to taskbar
 pref("config.trim_on_minimize", true);
 
