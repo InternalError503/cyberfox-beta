@@ -12,6 +12,10 @@ window.addEventListener("pageshow", function () {
   fitToWidth();
   setupSearch();
   window.addEventListener("resize", fitToWidth);
+
+  // Load complete.
+  var event = new CustomEvent("AboutHomeLoad", {bubbles:true});
+  document.dispatchEvent(event);
 });
 
 window.addEventListener("pagehide", function() {
