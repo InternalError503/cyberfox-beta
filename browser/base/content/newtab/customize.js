@@ -48,12 +48,15 @@ let gCustomize = {
     overlay.style.display = "block";
     panel.setAttribute("open", "true");
     button.setAttribute("active", "true");
-    setTimeout(() => {
-      // Wait for display update to take place, then animate.
-      overlay.style.background = "black";
-      overlay.style.opacity = 0.8;
-    }, 0);
-
+	
+    if (Services.prefs.getBoolPref("browser.newtab.overlay.enabled")){
+		setTimeout(() => {
+		  // Wait for display update to take place, then animate.
+		  overlay.style.background = "black";
+		  overlay.style.opacity = 0.8;
+		}, 0);
+    }
+	
     document.addEventListener("click", this);
     document.addEventListener("keydown", this);
 
