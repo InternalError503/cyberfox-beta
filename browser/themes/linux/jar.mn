@@ -512,7 +512,6 @@ browser.jar:
 #Browser Theme Core Menu
   skin/classic/browser/appmenu-icons.png
   skin/classic/browser/appmenu-icons-cf.png
-  skin/classic/browser/places/bookmark.png                     (places/bookmark.png)
 # Browser downloads
 	skin/classic/browser/downloads/downloadsWindow.css   (downloads/downloadsWindow.css)  
 
