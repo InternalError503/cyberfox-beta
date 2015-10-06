@@ -524,12 +524,9 @@ var gCyberfoxCustom = {
         if (Services.prefs.getBoolPref("app.update.autocheck")) {
 
             try {
-
-			//Only run start-up once daily to reduce server load.
-			var curTime = new Date();
 			
                 //Set Global to disable update checks entirely 
-                if (Services.prefs.getBoolPref("app.update.check.enabled") && Services.prefs.getIntPref("app.update.check.lastcheck") != curTime.getDate()) {
+                if (Services.prefs.getBoolPref("app.update.check.enabled")) {
 														
 						//Get Latest Browser Version
 						//Unfortunately same origin policy's prevent us using HTTPS here.
@@ -569,8 +566,6 @@ var gCyberfoxCustom = {
 
 							if (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString()) === false && aBoolean === true) {
 								try {
-									//Set last check date.
-									Services.prefs.setIntPref("app.update.check.lastcheck", curTime.getDate());
 									//Set update available
 									Services.prefs.setBoolPref("app.update.available", true);
 									gCyberfoxCustom.updateNotification();
