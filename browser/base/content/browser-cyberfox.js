@@ -609,7 +609,7 @@ window.addEventListener("load", function() {
 					// prevents runtime error on platforms that don't implement nsIAlertsService
 			}				
 		}else{Services.prefs.setBoolPref("app.update.available", false);}
-	},6000);	
+	},Services.prefs.getIntPref("app.update.startup-delay"));	
 }, false);
 
 
