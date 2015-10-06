@@ -479,6 +479,19 @@ var gCyberfoxCustom = {
         }
     },
 	
+	updateNotification: function(){
+		if (Services.prefs.getBoolPref("app.update.autocheck") && 
+			Services.prefs.getBoolPref("app.update.available") && 
+			Services.prefs.getBoolPref("app.update.check.enabled")){
+			try {
+				Cc['@mozilla.org/alerts-service;1'].getService(Ci.nsIAlertsService)
+					.showAlertNotification('chrome://branding/content/icon48.png', "Cyberfox Update", "New cyberfox update available!", false,  '',  null, '');
+				} catch(e) {
+					// prevents runtime error on platforms that don't implement nsIAlertsService
+			}
+		}else{Services.prefs.setBoolPref("app.update.available", false);}		
+	},
+	
 	startupUpdateCheck: function(aBoolean){
 		
 		if (Services.prefs.getBoolPref("app.update.startup.check") === false) {
@@ -538,13 +551,11 @@ var gCyberfoxCustom = {
 
 							if (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString()) === false && aBoolean === true) {
 								try {
-									Cc['@mozilla.org/alerts-service;1']
-											  .getService(Ci.nsIAlertsService)
-											  .showAlertNotification('chrome://branding/content/icon48.png', "Cyberfox Update", "New cyberfox update available!", false,  '',  null, '');
 									//Set last check date.
 									Services.prefs.setIntPref("app.update.check.lastcheck", curTime.getDate());
 									//Set update available
 									Services.prefs.setBoolPref("app.update.available", true);
+									gCyberfoxCustom.updateNotification();
 								  } catch(e) {
 									// prevents runtime error on platforms that don't implement nsIAlertsService
 								  }								
@@ -599,16 +610,7 @@ window.addEventListener("load", function() {
 	window.removeEventListener("load",gCyberfoxCustom.startupUpdateCheck(), false);
 	window.setTimeout(function(){
 		gCyberfoxCustom.startupUpdateCheck(true);
-		if (Services.prefs.getBoolPref("app.update.autocheck") && 
-			Services.prefs.getBoolPref("app.update.available") && 
-			Services.prefs.getBoolPref("app.update.check.enabled")){		
-				try {
-					Cc['@mozilla.org/alerts-service;1'].getService(Ci.nsIAlertsService)
-						.showAlertNotification('chrome://branding/content/icon48.png', "Cyberfox Update", "New cyberfox update available!", false,  '',  null, '');
-				} catch(e) {
-					// prevents runtime error on platforms that don't implement nsIAlertsService
-			}				
-		}else{Services.prefs.setBoolPref("app.update.available", false);}
+		gCyberfoxCustom.updateNotification();
 	},Services.prefs.getIntPref("app.update.startup-delay"));	
 }, false);
 
