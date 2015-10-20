@@ -133,9 +133,10 @@ let ReaderParent = {
 
   updateReaderButton: function(browser) {
     let win = browser.ownerDocument.defaultView;
-    if (browser != win.gBrowser.selectedBrowser) {
-      return;
-    }
+	if (win.gBrowser &&  typeof(win.gBrowser)  == "undefined" || win.gBrowser  == null || 
+		browser != win.gBrowser.selectedBrowser){
+	  return;
+	}
 
     let button = win.document.getElementById("reader-mode-button");
     let command = win.document.getElementById("View:ReaderView");
