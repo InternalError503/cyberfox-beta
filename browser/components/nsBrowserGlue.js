@@ -25,8 +25,15 @@ XPCOMUtils.defineLazyModuleGetter(this, "UITour",
 
 XPCOMUtils.defineLazyModuleGetter(this, "AddonManager",
                                   "resource://gre/modules/AddonManager.jsm");
+
+XPCOMUtils.defineLazyModuleGetter(this, "ContentClick",
+                                  "resource:///modules/ContentClick.jsm");
+
 XPCOMUtils.defineLazyModuleGetter(this, "NetUtil",
                                   "resource://gre/modules/NetUtil.jsm");
+								  
+XPCOMUtils.defineLazyModuleGetter(this, "UserAgentOverrides",
+                                  "resource://gre/modules/UserAgentOverrides.jsm");
 
 XPCOMUtils.defineLazyModuleGetter(this, "FileUtils",
                                   "resource://gre/modules/FileUtils.jsm");
@@ -627,7 +634,7 @@ BrowserGlue.prototype = {
 
     // handle any UI migration
     this._migrateUI();
-
+    UserAgentOverrides.init();
     this._syncSearchEngines();
 
     WebappManager.init();
@@ -646,6 +653,7 @@ BrowserGlue.prototype = {
     ContentSearch.init();
     FormValidationHandler.init();
 
+    ContentClick.init();
     RemotePrompt.init();
     Feeds.init();
     ContentPrefServiceParent.init();
@@ -900,6 +908,7 @@ BrowserGlue.prototype = {
       SignInToWebsiteUX.uninit();
     }
 #endif
+    UserAgentOverrides.uninit();
     webrtcUI.uninit();
     FormValidationHandler.uninit();
 #ifdef NIGHTLY_BUILD

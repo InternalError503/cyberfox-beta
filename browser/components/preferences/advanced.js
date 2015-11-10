@@ -474,10 +474,9 @@ var gAdvancedPane = {
                    manageCapability : Components.interfaces.nsIPermissionManager.DENY_ACTION,
                    windowTitle      : bundlePreferences.getString("offlinepermissionstitle"),
                    introText        : bundlePreferences.getString("offlinepermissionstext") };
-    document.documentElement.openWindow("chrome://browser/content/preferences/permissions.xul",
-               "Browser:Permissions",
-               "resizable",
-               params);
+    document.documentElement.openWindow("Browser:Permissions",
+                                        "chrome://browser/content/preferences/permissions.xul",
+                                        "resizable", params);
   },
 
   // XXX: duplicated in browser.js
@@ -804,9 +803,9 @@ var gAdvancedPane = {
    */
   showCertificates: function ()
   {
-    document.documentElement.openWindow("chrome://pippki/content/certManager.xul",
-               "mozilla:certmanager",
-               "", null);
+    document.documentElement.openWindow("mozilla:certmanager",
+                                        "chrome://pippki/content/certManager.xul",
+                                        "", null);
   },
 
   /**
@@ -814,9 +813,9 @@ var gAdvancedPane = {
    */
   showSecurityDevices: function ()
   {
-    document.documentElement.openWindow("chrome://pippki/content/device_manager.xul",
-               "mozilla:devicemanager",
-               "", null);
+    document.documentElement.openWindow("mozilla:devicemanager",
+                                        "chrome://pippki/content/device_manager.xul",
+                                        "", null);
   },
 
 #ifdef MOZ_UPDATER
