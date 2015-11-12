@@ -75,12 +75,13 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
  * This is thrown by |TelemetryStorage.loadPingFile| when reading the ping
  * from the disk fails.
  */
-function PingReadError(message="Error reading the ping file") {
+function PingReadError(message="Error reading the ping file", becauseNoSuchFile = false) {
   Error.call(this, message);
   let error = new Error();
   this.name = "PingReadError";
   this.message = message;
   this.stack = error.stack;
+  this.becauseNoSuchFile = becauseNoSuchFile;
 }
 PingReadError.prototype = Object.create(Error.prototype);
 PingReadError.prototype.constructor = PingReadError;
@@ -102,7 +103,7 @@ PingParseError.prototype.constructor = PingParseError;
 /**
  * This is a policy object used to override behavior for testing.
  */
-let Policy = {
+var Policy = {
   now: () => new Date(),
   getArchiveQuota: () => ARCHIVE_QUOTA_BYTES,
   getPendingPingsQuota: () => (AppConstants.platform in ["android", "gonk"])
@@ -543,7 +544,7 @@ SaveSerializer.prototype = {
   },
 };
 
-let TelemetryStorageImpl = {
+var TelemetryStorageImpl = {
   _logger: null,
   // Used to serialize aborted session ping writes to disk.
   _abortedSessionSerializer: new SaveSerializer(),
@@ -1445,7 +1446,7 @@ let TelemetryStorageImpl = {
       array = yield OS.File.read(aFilePath, options);
     } catch(e) {
       this._log.trace("loadPingfile - unreadable ping " + aFilePath, e);
-      throw new PingReadError(e.message);
+      throw new PingReadError(e.message, e.becauseNoSuchFile);
     }
 
     let decoder = new TextDecoder();
@@ -1642,7 +1643,7 @@ function getArchivedPingPath(aPingId, aDate, aType) {
  * Get the size of the ping file on the disk.
  * @return {Integer} The file size, in bytes, of the ping file or 0 on errors.
  */
-let getArchivedPingSize = Task.async(function*(aPingId, aDate, aType) {
+var getArchivedPingSize = Task.async(function*(aPingId, aDate, aType) {
   const path = getArchivedPingPath(aPingId, aDate, aType);
   let filePaths = [ path + "lz4", path ];
 
@@ -1660,7 +1661,7 @@ let getArchivedPingSize = Task.async(function*(aPingId, aDate, aType) {
  * Get the size of the pending ping file on the disk.
  * @return {Integer} The file size, in bytes, of the ping file or 0 on errors.
  */
-let getPendingPingSize = Task.async(function*(aPingId) {
+var getPendingPingSize = Task.async(function*(aPingId) {
   const path = OS.Path.join(TelemetryStorage.pingDirectoryPath, aPingId)
   try {
     return (yield OS.File.stat(path)).size;

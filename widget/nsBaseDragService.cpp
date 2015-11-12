@@ -356,8 +356,9 @@ nsBaseDragService::EndDragSession(bool aDoneDrag)
     return NS_ERROR_FAILURE;
   }
 
-  if (aDoneDrag && !mSuppressLevel)
-    FireDragEventAtSource(NS_DRAGDROP_END);
+  if (aDoneDrag && !mSuppressLevel) {
+    FireDragEventAtSource(eDragEnd);
+  }
 
   if (mDragPopup) {
     nsXULPopupManager* pm = nsXULPopupManager::GetInstance();
@@ -395,7 +396,7 @@ nsBaseDragService::EndDragSession(bool aDoneDrag)
 }
 
 NS_IMETHODIMP
-nsBaseDragService::FireDragEventAtSource(uint32_t aMsg)
+nsBaseDragService::FireDragEventAtSource(EventMessage aEventMessage)
 {
   if (mSourceNode && !mSuppressLevel) {
     nsCOMPtr<nsIDocument> doc = do_QueryInterface(mSourceDocument);
@@ -403,9 +404,9 @@ nsBaseDragService::FireDragEventAtSource(uint32_t aMsg)
       nsCOMPtr<nsIPresShell> presShell = doc->GetShell();
       if (presShell) {
         nsEventStatus status = nsEventStatus_eIgnore;
-        WidgetDragEvent event(true, aMsg, nullptr);
+        WidgetDragEvent event(true, aEventMessage, nullptr);
         event.inputSource = mInputSource;
-        if (aMsg == NS_DRAGDROP_END) {
+        if (aEventMessage == eDragEnd) {
           event.refPoint.x = mEndDragPoint.x;
           event.refPoint.y = mEndDragPoint.y;
           event.userCancelled = mUserCancelled;
@@ -430,7 +431,10 @@ nsBaseDragService::DragMoved(int32_t aX, int32_t aY)
   if (mDragPopup) {
     nsIFrame* frame = mDragPopup->GetPrimaryFrame();
     if (frame && frame->GetType() == nsGkAtoms::menuPopupFrame) {
-      (static_cast<nsMenuPopupFrame *>(frame))->MoveTo(aX - mImageX, aY - mImageY, true);
+      nsPresContext* presContext = frame->PresContext();
+      int32_t x = presContext->DevPixelsToIntCSSPixels(aX - mImageX);
+      int32_t y = presContext->DevPixelsToIntCSSPixels(aY - mImageY);
+      (static_cast<nsMenuPopupFrame *>(frame))->MoveTo(x, y, true);
     }
   }
 

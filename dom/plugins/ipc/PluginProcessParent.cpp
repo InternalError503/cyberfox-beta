@@ -67,7 +67,7 @@ AddSandboxAllowedFile(vector<std::wstring>& aAllowedFiles, nsIProperties* aDirSv
     if (!aSuffix.IsEmpty()) {
         userDirPath.Append(aSuffix);
     }
-    aAllowedFiles.push_back(userDirPath.get());
+    aAllowedFiles.push_back(std::wstring(userDirPath.get()));
     return;
 }
 
@@ -102,8 +102,8 @@ AddSandboxAllowedFiles(int32_t aSandboxLevel,
     AddSandboxAllowedFile(aAllowedFilesReadWrite, dirSvc, NS_WIN_APPDATA_DIR,
                           NS_LITERAL_STRING("\\Adobe\\Flash Player\\*"));
 
-    // Write access to the Temp directory is used to turn off protected mode
-    // and is needed in some mochitest crash tests.
+    // Write access to the Temp directory is needed in some mochitest crash
+    // tests.
     // Bug 1171393 tracks removing this requirement.
     AddSandboxAllowedFile(aAllowedFilesReadWrite, dirSvc, NS_OS_TEMP_DIR,
                           NS_LITERAL_STRING("\\*"));
