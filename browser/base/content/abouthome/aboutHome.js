@@ -20,7 +20,6 @@ window.addEventListener("pageshow", function () {
 });
 
 window.addEventListener("pagehide", function() {
-  window.gObserver.disconnect();
   window.removeEventListener("resize", fitToWidth);
 });
 
