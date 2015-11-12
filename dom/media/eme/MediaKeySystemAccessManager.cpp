@@ -183,7 +183,6 @@ MediaKeySystemAccessManager::Request(DetailedPromise* aPromise,
    if (ShouldTrialCreateGMP(keySystem)) {
       // Ensure we have tried creating a GMPVideoDecoder for this
       // keySystem, and that we can use it to decode. This ensures that we only
-      // report that we support this keySystem when the CDM us usable (i.e.
       // report that we support this keySystem when the CDM us usable.
       mTrialCreator->MaybeAwaitTrialCreate(keySystem, access, aPromise, mWindow);
       return;

@@ -10,10 +10,6 @@
 #include "nsMimeTypes.h"
 #include "mozilla/Preferences.h"
 
-#ifdef MOZ_ANDROID_OMX
-#include "AndroidMediaPluginHost.h"
-#endif
-
 #include "OggDecoder.h"
 #include "OggReader.h"
 #ifdef MOZ_WAVE
@@ -34,7 +30,6 @@
 #include "GStreamerReader.h"
 #endif
 #ifdef MOZ_ANDROID_OMX
-#include "AndroidMediaPluginHost.h"
 #include "AndroidMediaDecoder.h"
 #include "AndroidMediaReader.h"
 #include "AndroidMediaPluginHost.h"
@@ -226,6 +221,7 @@ static const char* const gOmxTypes[] = {
   "audio/3gpp",
   "audio/flac",
   "video/mp4",
+  "video/x-m4v",
   "video/3gpp",
   "video/3gpp2",
   "video/quicktime",
@@ -332,7 +328,7 @@ IsAndroidMediaType(const nsACString& aType)
   }
 
   static const char* supportedTypes[] = {
-    "audio/mpeg", "audio/mp4", "video/mp4", nullptr
+    "audio/mpeg", "audio/mp4", "video/mp4", "video/x-m4v", nullptr
   };
   return CodecListContains(supportedTypes, aType);
 }
@@ -353,8 +349,7 @@ IsMP4SupportedType(const nsACString& aType,
 {
   // MP4Decoder/Reader is currently used for MSE and mp4 files local playback.
   bool haveAAC, haveMP3, haveH264;
-  return Preferences::GetBool("media.fragmented-mp4.exposed", false) &&
-         MP4Decoder::CanHandleMediaType(aType, aCodecs, haveAAC, haveH264, haveMP3);
+  return MP4Decoder::CanHandleMediaType(aType, aCodecs, haveAAC, haveH264, haveMP3);
 }
 #endif
 

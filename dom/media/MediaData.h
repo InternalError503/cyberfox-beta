@@ -134,7 +134,7 @@ public:
   static const Type sType = AUDIO_DATA;
   static const char* sTypeName;
 
-  // Creates a new VideoData identical to aOther, but with a different
+  // Creates a new AudioData identical to aOther, but with a different
   // specified timestamp and duration. All data from aOther is copied
   // into the new AudioData but the audio data which is transferred.
   // After such call, the original aOther is unusable.
@@ -308,7 +308,7 @@ public:
             bool aKeyframe,
             int64_t aTimecode,
             IntSize aDisplay,
-            int32_t aFrameID);
+            uint32_t aFrameID);
 
 protected:
   ~VideoData();

@@ -14,6 +14,7 @@
 #include "mozilla/CDMProxy.h"
 #endif
 #include "mozilla/Logging.h"
+#include "nsMimeTypes.h"
 
 #ifdef XP_WIN
 #include "mozilla/WindowsVersion.h"
@@ -23,6 +24,10 @@
 #include "AndroidBridge.h"
 #endif
 #include "mozilla/layers/LayersTypes.h"
+
+#ifdef MOZ_FFMPEG
+#include "FFmpegRuntimeLinker.h"
+#endif
 
 namespace mozilla {
 
@@ -141,7 +146,12 @@ MP4Decoder::CanHandleMediaType(const nsACString& aType,
                                   aOutContainsMP3));
   }
 
-  if (!aType.EqualsASCII("video/mp4") ||
+#ifdef MOZ_GONK_MEDIACODEC
+  if (aType.EqualsASCII(VIDEO_3GPP)) {
+    return Preferences::GetBool("media.fragmented-mp4.gonk.enabled", false);
+  }
+#endif
+  if ((!aType.EqualsASCII("video/mp4") && !aType.EqualsASCII("video/x-m4v")) ||
       !MP4Decoder::CanCreateH264Decoder()) {
     return false;
   }
@@ -178,7 +188,11 @@ IsFFmpegAvailable()
 #ifndef MOZ_FFMPEG
   return false;
 #else
-  return Preferences::GetBool("media.fragmented-mp4.ffmpeg.enabled", false);
+  if (!Preferences::GetBool("media.fragmented-mp4.ffmpeg.enabled", false)) {
+    return  false;
+  }
+  nsRefPtr<PlatformDecoderModule> m = FFmpegRuntimeLinker::CreateDecoderModule();
+  return !!m;
 #endif
 }
 
@@ -278,22 +292,20 @@ CreateTestH264Decoder(layers::LayersBackend aBackend,
   if (!decoder) {
     return nullptr;
   }
-  nsresult rv = decoder->Init();
-  NS_ENSURE_SUCCESS(rv, nullptr);
 
   return decoder.forget();
 }
 
 /* static */ bool
-MP4Decoder::IsVideoAccelerated(layers::LayersBackend aBackend)
+MP4Decoder::IsVideoAccelerated(layers::LayersBackend aBackend, nsACString& aFailureReason)
 {
   VideoInfo config;
   nsRefPtr<MediaDataDecoder> decoder(CreateTestH264Decoder(aBackend, config));
   if (!decoder) {
+    aFailureReason.AssignLiteral("Failed to create H264 decoder");
     return false;
   }
-  bool result = decoder->IsHardwareAccelerated();
-  decoder->Shutdown();
+  bool result = decoder->IsHardwareAccelerated(aFailureReason);
   return result;
 }
 
@@ -336,8 +348,6 @@ CreateTestAACDecoder(AudioInfo& aConfig)
   if (!decoder) {
     return nullptr;
   }
-  nsresult rv = decoder->Init();
-  NS_ENSURE_SUCCESS(rv, nullptr);
 
   return decoder.forget();
 }
@@ -376,7 +386,6 @@ MP4Decoder::CanCreateAACDecoder()
                                     MOZ_ARRAY_LENGTH(sTestAACExtraData));
   nsRefPtr<MediaDataDecoder> decoder(CreateTestAACDecoder(config));
   if (decoder) {
-    decoder->Shutdown();
     result = true;
   }
   haveCachedResult = true;
