@@ -1079,8 +1079,6 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY turnoffcontextabout.label "Turn on about:config context menu item.">
 <!-- about:config Menu Tweak -->
 <!ENTITY turnoffmenuabout.label "Turn on about:config menu item.">
-<!-- one click search Tweak -->
-<!ENTITY turnoffoneclicksearch.label "Turn on one click search.">
 
 <!-- Loop Toggle Tweak -->
 <!ENTITY enablehellochat.label "Enable hello chat.">
