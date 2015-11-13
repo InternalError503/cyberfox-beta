@@ -223,14 +223,6 @@
         <image class="fxaSyncIllustration"/>
       </vbox>
     </hbox>
-    <label class="fxaMobilePromo">
-        &mobilePromo.start;<!-- We put these comments to avoid inserting white spaces
-        --><image class="androidLogo"/><!--
-        --><label class="androidLink text-link" href="https://www.mozilla.org/firefox/android/"><!--
-        -->&mobilePromo.androidLink;</label><!--
-        -->&mobilePromo.end;
-    </label>
-    <label class="androidAttribution">&androidAttribution;</label>
   </vbox>
 
   <vbox id="hasFxaAccount">
@@ -355,14 +347,6 @@
         </hbox>
       </hbox>
     </groupbox>
-    <spacer class="separator"/>
-    <label class="fxaMobilePromo">
-        &mobilePromo.start;<!-- We put these comments to avoid inserting white spaces
-        --><image class="androidLogo"/><!--
-        --><label class="androidLink text-link" href="https://www.mozilla.org/firefox/android/"><!--
-        -->&mobilePromo.androidLink;</label><!--
-        -->&mobilePromo.end;
-    </label>
     <spacer flex="1"/>
     <vbox id="tosPP-small" align="start">
       <label id="tosPP-small-ToS" class="text-link">
@@ -372,6 +356,5 @@
         &fxaPrivacyNotice.link.label;
       </label>
     </vbox>
-    <label class="androidAttribution">&androidAttribution;</label>
   </vbox>
 </deck>
