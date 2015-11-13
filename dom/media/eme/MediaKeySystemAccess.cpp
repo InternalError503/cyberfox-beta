@@ -31,6 +31,8 @@
 #include "nsDirectoryServiceUtils.h"
 #include "nsDirectoryServiceDefs.h"
 #include "nsXULAppAPI.h"
+#include "gmp-audio-decode.h"
+#include "gmp-video-decode.h"
 
 #if defined(XP_WIN) || defined(XP_MACOSX)
 #define PRIMETIME_EME_SUPPORTED 1
@@ -50,10 +52,12 @@ NS_INTERFACE_MAP_END
 
 MediaKeySystemAccess::MediaKeySystemAccess(nsPIDOMWindow* aParent,
                                            const nsAString& aKeySystem,
-                                           const nsAString& aCDMVersion)
+                                           const nsAString& aCDMVersion,
+                                           const MediaKeySystemConfiguration& aConfig)
   : mParent(aParent)
   , mKeySystem(aKeySystem)
   , mCDMVersion(aCDMVersion)
+  , mConfig(aConfig)
 {
 }
 
@@ -77,6 +81,12 @@ void
 MediaKeySystemAccess::GetKeySystem(nsString& aOutKeySystem) const
 {
   ConstructKeySystem(mKeySystem, mCDMVersion, aOutKeySystem);
+}
+
+void
+MediaKeySystemAccess::GetConfiguration(MediaKeySystemConfiguration& aConfig)
+{
+  aConfig = mConfig;
 }
 
 already_AddRefed<Promise>
@@ -297,58 +307,188 @@ MediaKeySystemAccess::GetKeySystemStatus(const nsAString& aKeySystem,
 }
 
 static bool
-IsPlayableWithGMP(mozIGeckoMediaPluginService* aGMPS,
-                  const nsAString& aKeySystem,
-                  const nsAString& aContentType)
+GMPDecryptsAndDecodesAAC(mozIGeckoMediaPluginService* aGMPS,
+                         const nsAString& aKeySystem)
 {
-#ifdef MOZ_FMP4
-  nsContentTypeParser parser(aContentType);
-  nsAutoString mimeType;
-  nsresult rv = parser.GetType(mimeType);
-  if (NS_FAILED(rv)) {
-    return false;
-  }
-
-  if (!mimeType.EqualsLiteral("audio/mp4") &&
-      !mimeType.EqualsLiteral("audio/x-m4a") &&
-      !mimeType.EqualsLiteral("video/mp4")) {
-    return false;
-  }
-
-  nsAutoString codecs;
-  parser.GetParameter("codecs", codecs);
-
-  NS_ConvertUTF16toUTF8 mimeTypeUTF8(mimeType);
-  bool hasAAC = false;
-  bool hasH264 = false;
-  bool hasMP3 = false;
-  if (!MP4Decoder::CanHandleMediaType(mimeTypeUTF8,
-                                      codecs,
-                                      hasAAC,
-                                      hasH264,
-                                      hasMP3) ||
-      hasMP3) {
-    return false;
-  }
-  return (!hasAAC ||
-          !HaveGMPFor(aGMPS,
-                      NS_ConvertUTF16toUTF8(aKeySystem),
-                      NS_LITERAL_CSTRING(GMP_API_DECRYPTOR),
-                      NS_LITERAL_CSTRING("aac"))) &&
-         (!hasH264 ||
-          !HaveGMPFor(aGMPS,
-                     NS_ConvertUTF16toUTF8(aKeySystem),
-                     NS_LITERAL_CSTRING(GMP_API_DECRYPTOR),
-                     NS_LITERAL_CSTRING("h264")));
-#else
-  return false;
-#endif
+  MOZ_ASSERT(HaveGMPFor(aGMPS,
+                        NS_ConvertUTF16toUTF8(aKeySystem),
+                        NS_LITERAL_CSTRING(GMP_API_DECRYPTOR)));
+  return HaveGMPFor(aGMPS,
+                    NS_ConvertUTF16toUTF8(aKeySystem),
+                    NS_LITERAL_CSTRING(GMP_API_AUDIO_DECODER),
+                    NS_LITERAL_CSTRING("aac"));
 }
 
+static bool
+GMPDecryptsAndDecodesH264(mozIGeckoMediaPluginService* aGMPS,
+                          const nsAString& aKeySystem)
+{
+  MOZ_ASSERT(HaveGMPFor(aGMPS,
+                        NS_ConvertUTF16toUTF8(aKeySystem),
+                        NS_LITERAL_CSTRING(GMP_API_DECRYPTOR)));
+  return HaveGMPFor(aGMPS,
+                    NS_ConvertUTF16toUTF8(aKeySystem),
+                    NS_LITERAL_CSTRING(GMP_API_AUDIO_DECODER),
+                    NS_LITERAL_CSTRING("aac"));
+}
+
+// If this keysystem's CDM explicitly says it doesn't support decoding,
+// that means it's OK with passing the decrypted samples back to Gecko
+// for decoding. Note we special case Clearkey on Windows, where we need
+// to check for whether WMF is usable because the CDM uses that
+// to decode.
+static bool
+GMPDecryptsAndGeckoDecodesH264(mozIGeckoMediaPluginService* aGMPService,
+                               const nsAString& aKeySystem,
+                               const nsAString& aContentType)
+{
+  MOZ_ASSERT(HaveGMPFor(aGMPService,
+                        NS_ConvertUTF16toUTF8(aKeySystem),
+                        NS_LITERAL_CSTRING(GMP_API_DECRYPTOR)));
+  MOZ_ASSERT(IsH264ContentType(aContentType));
+  return
+    (!HaveGMPFor(aGMPService,
+                 NS_ConvertUTF16toUTF8(aKeySystem),
+                 NS_LITERAL_CSTRING(GMP_API_VIDEO_DECODER),
+                 NS_LITERAL_CSTRING("h264"))
+#ifdef XP_WIN
+    // Clearkey on Windows XP can't decode, but advertises that it can
+    // in its GMP info file.
+    || (aKeySystem.EqualsLiteral("org.w3.clearkey") && !IsVistaOrLater())
+#endif
+    ) && MP4Decoder::CanHandleMediaType(aContentType);
+}
+
+static bool
+GMPDecryptsAndGeckoDecodesAAC(mozIGeckoMediaPluginService* aGMPService,
+                              const nsAString& aKeySystem,
+                              const nsAString& aContentType)
+{
+  MOZ_ASSERT(HaveGMPFor(aGMPService,
+                        NS_ConvertUTF16toUTF8(aKeySystem),
+                        NS_LITERAL_CSTRING(GMP_API_DECRYPTOR)));
+  MOZ_ASSERT(IsAACContentType(aContentType));
+  return
+    (!HaveGMPFor(aGMPService,
+                 NS_ConvertUTF16toUTF8(aKeySystem),
+                 NS_LITERAL_CSTRING(GMP_API_AUDIO_DECODER),
+                 NS_LITERAL_CSTRING("aac"))
+#ifdef XP_WIN
+    // Clearkey on Windows XP can't decode, but advertises that it can
+    // in its GMP info file.
+    || (aKeySystem.EqualsLiteral("org.w3.clearkey") && !IsVistaOrLater())
+#endif
+    ) && MP4Decoder::CanHandleMediaType(aContentType);
+}
+
+static bool
+IsSupportedAudio(mozIGeckoMediaPluginService* aGMPService,
+                 const nsAString& aKeySystem,
+                 const nsAString& aAudioType)
+{
+  return IsAACContentType(aAudioType) &&
+         (GMPDecryptsAndDecodesAAC(aGMPService, aKeySystem) ||
+          GMPDecryptsAndGeckoDecodesAAC(aGMPService, aKeySystem, aAudioType));
+}
+
+static bool
+IsSupportedVideo(mozIGeckoMediaPluginService* aGMPService,
+                 const nsAString& aKeySystem,
+                 const nsAString& aVideoType)
+{
+  return IsH264ContentType(aVideoType) &&
+         (GMPDecryptsAndDecodesH264(aGMPService, aKeySystem) ||
+          GMPDecryptsAndGeckoDecodesH264(aGMPService, aKeySystem, aVideoType));
+}
+
+static bool
+IsSupported(mozIGeckoMediaPluginService* aGMPService,
+            const nsAString& aKeySystem,
+            const MediaKeySystemConfiguration& aConfig)
+{
+  if (aConfig.mInitDataType.IsEmpty() &&
+      aConfig.mAudioType.IsEmpty() &&
+      aConfig.mVideoType.IsEmpty()) {
+    // Not an old-style request.
+    return false;
+  }
+
+  // Backwards compatibility with legacy MediaKeySystemConfiguration method.
+  if (!aConfig.mInitDataType.IsEmpty() &&
+      !aConfig.mInitDataType.EqualsLiteral("cenc")) {
+    return false;
+  }
+  if (!aConfig.mAudioType.IsEmpty() &&
+      !IsSupportedAudio(aGMPService, aKeySystem, aConfig.mAudioType)) {
+    return false;
+  }
+  if (!aConfig.mVideoType.IsEmpty() &&
+      !IsSupportedVideo(aGMPService, aKeySystem, aConfig.mVideoType)) {
+    return false;
+  }
+
+  return true;
+}
+
+static bool
+GetSupportedConfig(mozIGeckoMediaPluginService* aGMPService,
+                   const nsAString& aKeySystem,
+                   const MediaKeySystemConfiguration& aCandidate,
+                   MediaKeySystemConfiguration& aOutConfig)
+{
+  MediaKeySystemConfiguration config;
+  config.mLabel = aCandidate.mLabel;
+  if (aCandidate.mInitDataTypes.WasPassed()) {
+    nsTArray<nsString> initDataTypes;
+    for (const nsString& candidate : aCandidate.mInitDataTypes.Value()) {
+      if (candidate.EqualsLiteral("cenc")) {
+        initDataTypes.AppendElement(candidate);
+      }
+    }
+    if (initDataTypes.IsEmpty()) {
+      return false;
+    }
+    config.mInitDataTypes.Construct();
+    config.mInitDataTypes.Value().Assign(initDataTypes);
+  }
+  if (aCandidate.mAudioCapabilities.WasPassed()) {
+    nsTArray<MediaKeySystemMediaCapability> caps;
+    for (const MediaKeySystemMediaCapability& cap : aCandidate.mAudioCapabilities.Value()) {
+      if (IsSupportedAudio(aGMPService, aKeySystem, cap.mContentType)) {
+        caps.AppendElement(cap);
+      }
+    }
+    if (caps.IsEmpty()) {
+      return false;
+    }
+    config.mAudioCapabilities.Construct();
+    config.mAudioCapabilities.Value().Assign(caps);
+  }
+  if (aCandidate.mVideoCapabilities.WasPassed()) {
+    nsTArray<MediaKeySystemMediaCapability> caps;
+    for (const MediaKeySystemMediaCapability& cap : aCandidate.mVideoCapabilities.Value()) {
+      if (IsSupportedVideo(aGMPService, aKeySystem, cap.mContentType)) {
+        caps.AppendElement(cap);
+      }
+    }
+    if (caps.IsEmpty()) {
+      return false;
+    }
+    config.mVideoCapabilities.Construct();
+    config.mVideoCapabilities.Value().Assign(caps);
+  }
+
+  aOutConfig = config;
+
+  return true;
+}
+
+// Backwards compatibility with legacy requestMediaKeySystemAccess with fields
+// from old MediaKeySystemOptions dictionary.
 /* static */
 bool
 MediaKeySystemAccess::IsSupported(const nsAString& aKeySystem,
-                                  const Sequence<MediaKeySystemOptions>& aOptions)
+                                  const Sequence<MediaKeySystemConfiguration>& aConfigs)
 {
   nsCOMPtr<mozIGeckoMediaPluginService> mps =
     do_GetService("@mozilla.org/gecko-media-plugin-service;1");
@@ -356,35 +496,47 @@ MediaKeySystemAccess::IsSupported(const nsAString& aKeySystem,
     return false;
   }
 
-  for (size_t i = 0; i < aOptions.Length(); i++) {
-    const MediaKeySystemOptions& options = aOptions[i];
-    if (!options.mInitDataType.EqualsLiteral("cenc")) {
-      continue;
-    }
-    if (!options.mAudioCapability.IsEmpty() ||
-        !options.mVideoCapability.IsEmpty()) {
-      // Don't support any capabilites until we know we have a CDM with
-      // capabilities...
-      continue;
-    }
-    if (!options.mAudioType.IsEmpty() &&
-        !IsPlayableWithGMP(mps, aKeySystem, options.mAudioType)) {
-      continue;
-    }
-    if (!options.mVideoType.IsEmpty() &&
-        !IsPlayableWithGMP(mps, aKeySystem, options.mVideoType)) {
-      continue;
-    }
+  if (!HaveGMPFor(mps,
+                  NS_ConvertUTF16toUTF8(aKeySystem),
+                  NS_LITERAL_CSTRING(GMP_API_DECRYPTOR))) {
+    return false;
+  }
 
-    // Our sandbox provides an origin specific unique identifier, and the
-    // ability to persist data. We don't yet have a way to turn those off
-    // and on for specific GMPs/CDMs, so we don't check the uniqueidentifier
-    // and stateful attributes here.
-
-    return true;
+  for (const MediaKeySystemConfiguration& config : aConfigs) {
+    if (mozilla::dom::IsSupported(mps, aKeySystem, config)) {
+      return true;
+    }
   }
   return false;
 }
+
+/* static */
+bool
+MediaKeySystemAccess::GetSupportedConfig(const nsAString& aKeySystem,
+                                         const Sequence<MediaKeySystemConfiguration>& aConfigs,
+                                         MediaKeySystemConfiguration& aOutConfig)
+{
+  nsCOMPtr<mozIGeckoMediaPluginService> mps =
+    do_GetService("@mozilla.org/gecko-media-plugin-service;1");
+  if (NS_WARN_IF(!mps)) {
+    return false;
+  }
+
+  if (!HaveGMPFor(mps,
+                  NS_ConvertUTF16toUTF8(aKeySystem),
+                  NS_LITERAL_CSTRING(GMP_API_DECRYPTOR))) {
+    return false;
+  }
+
+  for (const MediaKeySystemConfiguration& config : aConfigs) {
+    if (mozilla::dom::GetSupportedConfig(mps, aKeySystem, config, aOutConfig)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 
 /* static */
 void

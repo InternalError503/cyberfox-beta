@@ -346,6 +346,11 @@ function SetupEME(test, token, params)
     });
   }
 
+  function streamType(type) {
+    var x = test.tracks.find(o => o.name == type);
+    return x ? x.type : undefined;
+  }
+
   // All 'initDataType's should be the same.
   // null indicates no 'encrypted' event received yet.
   var initDataType = null;
@@ -364,14 +369,15 @@ function SetupEME(test, token, params)
         })
       }
 
-      var options = [
-         {
-           initDataType: ev.initDataType,
-           videoType: test.type,
-           audioType: test.type,
-         }
-       ];
-      var p = navigator.requestMediaKeySystemAccess(KEYSYSTEM_TYPE, options);
+      var options = { initDataTypes: [ev.initDataType] };
+      if (streamType("video")) {
+        options.videoCapabilities = [{contentType: streamType("video")}];
+      }
+      if (streamType("audio")) {
+        options.audioCapabilities = [{contentType: streamType("audio")}];
+      }
+
+      var p = navigator.requestMediaKeySystemAccess(KEYSYSTEM_TYPE, [options]);
       var r = bail(token + " Failed to request key system access.");
       chain(p, r)
       .then(function(keySystemAccess) {
