@@ -404,6 +404,7 @@ nsWindow::nsWindow()
     mIsTopLevel          = false;
     mIsDestroyed         = false;
     mListenForResizes    = false;
+    mNeedsDispatchResized = false;
     mIsShown             = false;
     mNeedsShow           = false;
     mEnabled             = true;
@@ -514,13 +515,23 @@ nsWindow::DispatchDeactivateEvent(void)
 }
 
 void
-nsWindow::DispatchResized(int32_t aWidth, int32_t aHeight)
+nsWindow::DispatchResized()
 {
+    mNeedsDispatchResized = false;
     if (mWidgetListener) {
-        mWidgetListener->WindowResized(this, aWidth, aHeight);
+        mWidgetListener->WindowResized(this, mBounds.width, mBounds.height);
     }
     if (mAttachedWidgetListener) {
-        mAttachedWidgetListener->WindowResized(this, aWidth, aHeight);
+        mAttachedWidgetListener->WindowResized(this,
+                                               mBounds.width, mBounds.height);
+    }
+}
+
+void
+nsWindow::MaybeDispatchResized()
+{
+    if (mNeedsDispatchResized && !mIsDestroyed) {
+        DispatchResized();
     }
 }
 
@@ -1072,7 +1083,7 @@ nsWindow::Resize(double aWidth, double aHeight, bool aRepaint)
 
     // send a resize notification if this is a toplevel
     if (mIsTopLevel || mListenForResizes) {
-        DispatchResized(width, height);
+        DispatchResized();
     }
 
     return NS_OK;
@@ -1103,7 +1114,7 @@ nsWindow::Resize(double aX, double aY, double aWidth, double aHeight,
     ResizePluginSocketWidget();
 
     if (mIsTopLevel || mListenForResizes) {
-        DispatchResized(width, height);
+        DispatchResized();
     }
 
     return NS_OK;
@@ -2046,6 +2057,10 @@ gboolean
 nsWindow::OnExposeEvent(cairo_t *cr)
 #endif
 {
+    // Send any pending resize events so that layout can update.
+    // May run event loop.
+    MaybeDispatchResized();
+
     if (mIsDestroyed) {
         return FALSE;
     }
@@ -2401,10 +2416,12 @@ nsWindow::OnSizeAllocate(GtkAllocation *aAllocation)
 
     mBounds.SizeTo(size);
 
-    if (!mGdkWindow)
-        return;
-
-    DispatchResized(size.width, size.height);
+    // Gecko permits running nested event loops during processing of events,
+    // GtkWindow callers of gtk_widget_size_allocate expect the signal
+    // handlers to return sometime in the near future.
+    mNeedsDispatchResized = true;
+    auto r = NS_NewRunnableMethod(this, &nsWindow::MaybeDispatchResized);
+    NS_DispatchToCurrentThread(r);
 }
 
 void
@@ -3297,7 +3314,7 @@ nsWindow::ThemeChanged()
 }
 
 void
-nsWindow::DispatchDragEvent(EventMessage aMsg, const nsIntPoint& aRefPoint,
+nsWindow::DispatchDragEvent(EventMessage aMsg, const LayoutDeviceIntPoint& aRefPoint,
                             guint aTime)
 {
     WidgetDragEvent event(true, aMsg, this);
@@ -3306,7 +3323,7 @@ nsWindow::DispatchDragEvent(EventMessage aMsg, const nsIntPoint& aRefPoint,
         InitDragEvent(event);
     }
 
-    event.refPoint = LayoutDeviceIntPoint::FromUntyped(aRefPoint);
+    event.refPoint = aRefPoint;
     event.time = aTime;
     event.timeStamp = GetEventTimeStamp(aTime);
 
@@ -5860,9 +5877,11 @@ drag_motion_event_cb(GtkWidget *aWidget,
 
     LOGDRAG(("nsWindow drag-motion signal for %p\n", (void*)innerMostWindow));
 
+    LayoutDeviceIntPoint point = window->GdkPointToDevicePixels({ retx, rety });
+
     return nsDragService::GetInstance()->
         ScheduleMotionEvent(innerMostWindow, aDragContext,
-                            nsIntPoint(retx, rety), aTime);
+                            point, aTime);
 }
 
 static void
@@ -5930,9 +5949,11 @@ drag_drop_event_cb(GtkWidget *aWidget,
 
     LOGDRAG(("nsWindow drag-drop signal for %p\n", (void*)innerMostWindow));
 
+    LayoutDeviceIntPoint point = window->GdkPointToDevicePixels({ retx, rety });
+
     return nsDragService::GetInstance()->
         ScheduleDropEvent(innerMostWindow, aDragContext,
-                          nsIntPoint(retx, rety), aTime);
+                          point, aTime);
 }
 
 static void

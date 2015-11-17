@@ -260,7 +260,7 @@ public:
     bool               IsDestroyed() { return mIsDestroyed; }
 
     void               DispatchDragEvent(mozilla::EventMessage aMsg,
-                                         const nsIntPoint& aRefPoint,
+                                         const mozilla::LayoutDeviceIntPoint& aRefPoint,
                                          guint aTime);
     static void        UpdateDragStatus (GdkDragContext *aDragContext,
                                          nsIDragService *aDragService);
@@ -332,7 +332,8 @@ protected:
     // event handling code
     void DispatchActivateEvent(void);
     void DispatchDeactivateEvent(void);
-    void DispatchResized(int32_t aWidth, int32_t aHeight);
+    void DispatchResized();
+    void MaybeDispatchResized();
 
     // Helper for SetParent and ReparentNativeWidget.
     void ReparentNativeWidgetInternal(nsIWidget* aNewParent,
@@ -351,6 +352,8 @@ protected:
 
     // Should we send resize events on all resizes?
     bool                mListenForResizes;
+    // Does WindowResized need to be called on listeners?
+    bool                mNeedsDispatchResized;
     // This flag tracks if we're hidden or shown.
     bool                mIsShown;
     bool                mNeedsShow;
@@ -520,7 +523,9 @@ private:
 
     // From GDK
     int GdkCoordToDevicePixels(gint coord);
+public:
     mozilla::LayoutDeviceIntPoint GdkPointToDevicePixels(GdkPoint point);
+private:
     mozilla::LayoutDeviceIntPoint GdkEventCoordsToDevicePixels(gdouble x, gdouble y);
     nsIntRect GdkRectToDevicePixels(GdkRectangle rect);
 };
