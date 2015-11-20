@@ -64,7 +64,7 @@ function init() {
     anchor.addEventListener("click", evt => window.close(), false);
   }
 
-  let sumoLink = Services.urlFormatter.formatURLPref("app.support.baseURL");
+  let sumoLink = Services.urlFormatter.formatURLPref("app.helpdoc.baseURI");
   document.getElementById("help-section").addEventListener("click", function() {
     window.open(sumoLink, "_blank");
   }, false);

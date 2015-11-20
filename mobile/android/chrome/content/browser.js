@@ -5957,7 +5957,7 @@ var XPInstallObserver = {
         buttons: [Strings.browser.GetStringFromName("addonError.learnMore")]
       }).show((data) => {
         if (data.button === 0) {
-          let url = Services.urlFormatter.formatURLPref("app.support.baseURL") + "unsigned-addons";
+          let url = Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "unsigned-addons";
           BrowserApp.addTab(url, { parentId: BrowserApp.selectedTab.id });
         }
       });

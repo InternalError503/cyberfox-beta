@@ -383,7 +383,7 @@ var ViewSourceContent = {
       } else if (target == errorDoc.getElementById("reportButton")) {
         // This is the "Why is this site blocked" button. We redirect
         // to the generic page describing phishing/malware protection.
-        let URL = Services.urlFormatter.formatURLPref("app.support.baseURL");
+        let URL = Services.urlFormatter.formatURLPref("app.helpdoc.baseURI");
         sendAsyncMessage("ViewSource:OpenURL", { URL })
       } else if (target == errorDoc.getElementById("ignoreWarningButton")) {
         // Allow users to override and continue through to the site

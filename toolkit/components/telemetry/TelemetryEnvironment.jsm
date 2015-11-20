@@ -86,7 +86,7 @@ const RECORD_PREF_STATE = TelemetryEnvironment.RECORD_PREF_STATE;
 const RECORD_PREF_VALUE = TelemetryEnvironment.RECORD_PREF_VALUE;
 const DEFAULT_ENVIRONMENT_PREFS = new Map([
   ["app.feedback.baseURL", {what: RECORD_PREF_VALUE}],
-  ["app.support.baseURL", {what: RECORD_PREF_VALUE}],
+  ["app.helpdoc.baseURI", {what: RECORD_PREF_VALUE}],
   ["accessibility.browsewithcaret", {what: RECORD_PREF_VALUE}],
   ["accessibility.force_disabled", {what:  RECORD_PREF_VALUE}],
   ["app.update.auto", {what: RECORD_PREF_VALUE}],

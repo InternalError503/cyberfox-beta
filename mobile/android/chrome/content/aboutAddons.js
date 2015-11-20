@@ -280,7 +280,7 @@ var Addons = {
     document.getElementById("enable-btn").addEventListener("click", Addons.enable.bind(this), false);
 
     document.getElementById("unsigned-learn-more").addEventListener("click", function() {
-      openLink(Services.urlFormatter.formatURLPref("app.support.baseURL") + "unsigned-addons");
+      openLink(Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "unsigned-addons");
     }, false);
   },
 
