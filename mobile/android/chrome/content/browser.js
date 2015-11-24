@@ -830,6 +830,7 @@ var BrowserApp = {
       NativeWindow.contextmenus._disableRestricted("BOOKMARK", NativeWindow.contextmenus.linkBookmarkableContext),
       function(aTarget) {
         UITelemetry.addEvent("action.1", "contextmenu", null, "web_bookmark");
+        UITelemetry.addEvent("save.1", "contextmenu", null, "bookmark");
 
         let url = NativeWindow.contextmenus._getLinkURL(aTarget);
         let title = aTarget.textContent || aTarget.title || url;
@@ -6046,9 +6047,9 @@ var ViewportHandler = {
 
     if (aData) {
       let scrollChange = JSON.parse(aData);
-      let win = BrowserApp.selectedTab.browser.contentWindow;
-      let windowUtils = win.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
+      let windowUtils = window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindowUtils);
       windowUtils.setNextPaintSyncId(scrollChange.id);
+      let win = BrowserApp.selectedTab.browser.contentWindow;
       win.scrollBy(scrollChange.x, scrollChange.y);
     }
   },
