@@ -233,7 +233,10 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
 	  { "vwcsource.ax", MAKE_VERSION(1, 5, 0, 0) },
 
 	  // NetOp School, discontinued product, bug 763395
-      { "nlsp.dll", MAKE_VERSION(6, 23, 2012, 19) },
+	  { "nlsp.dll", MAKE_VERSION(6, 23, 2012, 19) },
+
+	  // AdMuncher, bug 1222933
+	  { "am32-34121.dll", MAKE_VERSION(4, 73, 0, 30530) },
 
 	  { nullptr, 0 }
 };
