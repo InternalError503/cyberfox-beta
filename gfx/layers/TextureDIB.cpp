@@ -338,6 +338,11 @@ DIBTextureHost::UpdatedInternal(const nsIntRegion* aRegion)
     mTextureSource = mCompositor->CreateDataTextureSource(mFlags);
   }
 
+  if (mSurface->CairoStatus()) {
+    gfxWarning() << "Bad Cairo surface internal update " << mSurface->CairoStatus();
+    mTextureSource = nullptr;
+    return;
+  }
   nsRefPtr<gfxImageSurface> imgSurf = mSurface->GetAsImageSurface();
 
   RefPtr<DataSourceSurface> surf = Factory::CreateWrappingDataSourceSurface(imgSurf->Data(), imgSurf->Stride(), mSize, mFormat);

@@ -507,12 +507,19 @@ status_t MPEG4Extractor::readMetaData() {
     CHECK_NE(err, (status_t)NO_INIT);
 
     // copy pssh data into file metadata
-    int psshsize = 0;
+    uint64_t psshsize = 0;
     for (size_t i = 0; i < mPssh.Length(); i++) {
         psshsize += 20 + mPssh[i].datalen;
+        if (mPssh[i].datalen > kMAX_ALLOCATION - 20 ||
+            psshsize > kMAX_ALLOCATION) {
+            return ERROR_MALFORMED;
+        }
     }
     if (psshsize) {
         char *buf = (char*)malloc(psshsize);
+        if (!buf) {
+            return ERROR_MALFORMED;
+        }
         char *ptr = buf;
         for (size_t i = 0; i < mPssh.Length(); i++) {
             memcpy(ptr, mPssh[i].uuid, 20); // uuid + length
@@ -1999,12 +2006,15 @@ status_t MPEG4Extractor::parseChunk(off64_t *offset, int depth) {
             if (mFileMetaData != NULL) {
                 ALOGV("chunk_data_size = %lld and data_offset = %lld",
                         chunk_data_size, data_offset);
+                const int kSkipBytesOfDataBox = 16;
+                if (chunk_data_size <= kSkipBytesOfDataBox) {
+                  return ERROR_MALFORMED;
+                }
                 sp<ABuffer> buffer = new ABuffer(chunk_data_size + 1);
                 if (mDataSource->readAt(
                     data_offset, buffer->data(), chunk_data_size) != (ssize_t)chunk_data_size) {
                     return ERROR_IO;
                 }
-                const int kSkipBytesOfDataBox = 16;
                 mFileMetaData->setData(
                     kKeyAlbumArt, MetaData::TYPE_NONE,
                     buffer->data() + kSkipBytesOfDataBox, chunk_data_size - kSkipBytesOfDataBox);
