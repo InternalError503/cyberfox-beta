@@ -1,5 +1,5 @@
 @echo Off
-title Build Cyberfox Portable V1.7
+title Build Cyberfox Portable V1.8
 ECHO.
 (set /P Version=
 )<Version\Version.txt
@@ -31,6 +31,10 @@ echo. Building Intel 86 bit portable package
 call %Delete% "%BuildFolderPathIntel%Other\Source\win64.txt" "win64.txt not found!"
 call %Delete% "%BuildFolderPathIntel%CyberfoxPortable.exe" "CyberfoxPortable.exe not found!"
 copy /y "%BuildFolderPath%_CyberfoxPortable\BlankConfig\intel86\UpdateConfig.ini" "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable\App\AppInfo\"
+
+copy /y "%BuildFolderPath%_CyberfoxPortable\Shared\intel86\appinfo.ini" "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable\App\AppInfo\"
+GetHash-CL.exe --file=%BuildFolderPath%_CyberfoxPortable\Shared\intel86\appinfo.ini --version=%Version% --rsum=%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable\App\AppInfo\appinfo.ini
+
 call %DeleteDir% "%BuildFolderPathIntel%App\Cyberfox" "%BuildFolderPathIntel%App\Cyberfox not found!"
 mkdir "%BuildFolderPathIntel%App\Cyberfox"
 @echo on
@@ -50,6 +54,10 @@ echo. Building Amd 86 bit portable package!
 call %Delete% "%BuildFolderPathAmd%Other\Source\win64.txt" "win64.txt not found!"
 call %Delete% "%BuildFolderPathAmd%CyberfoxPortable.exe" "CyberfoxPortable.exe not found!"
 copy /y "%BuildFolderPath%_CyberfoxPortable\BlankConfig\amd86\UpdateConfig.ini" "%BuildFolderPathAmd%App\AppInfo\"
+
+copy /y "%BuildFolderPath%_CyberfoxPortable\Shared\amd86\appinfo.ini" "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable\App\AppInfo\"
+GetHash-CL.exe --file=%BuildFolderPath%_CyberfoxPortable\Shared\amd86\appinfo.ini --version=%Version% --rsum=%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable\App\AppInfo\appinfo.ini
+
 call %DeleteDir% "%BuildFolderPathAmd%App\Cyberfox" "%BuildFolderPathAmd%App\Cyberfox not found!"
 mkdir "%BuildFolderPathAmd%App\Cyberfox"
 @echo on
@@ -64,6 +72,8 @@ xcopy /e /v "%BuildFolderPath%_CyberCTR\distribution" "%BuildFolderPathAmd%App\C
 %NSISCompiler% %Argos% "%BuildFolderPathAmd%Other\Source\CyberfoxPortableU.nsi" > "%BuildFolderPath%_CyberfoxPortable\logs\build_amd86.log" && type "%BuildFolderPath%_CyberfoxPortable\logs\build_amd86.log"
 @echo off
 echo. Build Amd 86 bit portable package complete!
+echo. Please sign files.
+::SignTool goes here.
 goto :Compile-Package-86-Portable
 
 :Compile-Package-64
@@ -77,6 +87,10 @@ break>"%BuildFolderPathIntel%Other\Source\win64.txt"
 )
 call %Delete% "%BuildFolderPathIntel%CyberfoxPortable.exe" "CyberfoxPortable.exe not found!"
 copy /y "%BuildFolderPath%_CyberfoxPortable\BlankConfig\intel64\UpdateConfig.ini" "%BuildFolderPathIntel%App\AppInfo\"
+
+copy /y "%BuildFolderPath%_CyberfoxPortable\Shared\intel64\appinfo.ini" "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable\App\AppInfo\"
+GetHash-CL.exe --file=%BuildFolderPath%_CyberfoxPortable\Shared\intel64\appinfo.ini --version=%Version% --rsum=%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable\App\AppInfo\appinfo.ini
+
 call %DeleteDir% "%BuildFolderPathIntel%App\Cyberfox" "%BuildFolderPathIntel%App\Cyberfox not found!"
 mkdir "%BuildFolderPathIntel%App\Cyberfox"
 @echo on
@@ -98,6 +112,10 @@ break>"%BuildFolderPathAmd%Other\Source\win64.txt"
 )
 call %Delete% "%BuildFolderPathAmd%CyberfoxPortable.exe" "CyberfoxPortable.exe not found!"
 copy /y "%BuildFolderPath%_CyberfoxPortable\BlankConfig\amd64\UpdateConfig.ini" "%BuildFolderPathAmd%App\AppInfo\"
+
+copy /y "%BuildFolderPath%_CyberfoxPortable\Shared\amd64\appinfo.ini" "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable\App\AppInfo\"
+GetHash-CL.exe --file=%BuildFolderPath%_CyberfoxPortable\Shared\amd64\appinfo.ini --version=%Version% --rsum=%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable\App\AppInfo\appinfo.ini
+
 call %DeleteDir% "%BuildFolderPathAmd%App\Cyberfox" "%BuildFolderPathAmd%App\Cyberfox not found!"
 mkdir "%BuildFolderPathAmd%App\Cyberfox"
 @echo on
@@ -112,6 +130,8 @@ xcopy /e /v "%BuildFolderPath%_CyberCTR\distribution" "%BuildFolderPathAmd%App\C
 %NSISCompiler% %Argos% "%BuildFolderPathAmd%Other\Source\CyberfoxPortableU.nsi" > "%BuildFolderPath%_CyberfoxPortable\logs\build_amd64.log" && type "%BuildFolderPath%_CyberfoxPortable\logs\build_amd64.log" 
 @echo off
 echo. Build Amd 64 bit portable package complete!
+echo. Please sign files.
+::SignTool goes here.
 goto :Compile-Package-64-Portable
 
 :Compile-Package-86-Portable
@@ -172,7 +192,7 @@ set PortableAppsZippedOutput="%BuildFolderPath%_Installation"
 
 echo. Compilation of %Version% zipped installation medium is starting!
 echo. Building amd 86 bit zipped package!
-%SevenZip% a -mx9 -t7z "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable_%Version%_English.Amd.86.7z" "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable"
+%SevenZip% a -mmt -mx9 -t7z "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable_%Version%_English.Amd.86.7z" "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable"
 echo. Build amd 86 bit package complete!
 if not exist "%BuildFolderPath%_Installation" (
 mkdir "%BuildFolderPath%_Installation"
@@ -180,7 +200,7 @@ mkdir "%BuildFolderPath%_Installation"
 copy /y "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable_%Version%_English.Amd.86.7z" "%PortableAppsZippedOutput%"
 call %Delete% "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable_%Version%_English.Amd.86.7z" "CyberfoxPortable_%Version%_English.Amd.86.7z not found!"
 echo. Building intel 86 bit zipped package
-%SevenZip% a -mx9 -t7z  "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable_%Version%_English.Intel.86.7z" "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable"
+%SevenZip% a -mmt -mx9 -t7z  "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable_%Version%_English.Intel.86.7z" "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable"
 echo. Build intel 86 bit zipped package complete!
 copy /y "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable_%Version%_English.Intel.86.7z" "%PortableAppsZippedOutput%"
 call %Delete% "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable_%Version%_English.Intel.86.7z" "CyberfoxPortable_%Version%_English.Intel.86.7z not found!"
@@ -195,7 +215,7 @@ set PortableAppsZippedOutput="%BuildFolderPath%_Installation"
 
 echo. Compilation 0f %Version% zipped installation medium is starting!
 echo. Building amd 64 bit zipped package!
-%SevenZip% a -mx9 -t7z "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable_%Version%_English.Amd.7z" "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable"
+%SevenZip% a -mmt -mx9 -t7z "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable_%Version%_English.Amd.7z" "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable"
 echo. Build Amd 64 bit package complete!
 if not exist "%BuildFolderPath%_Installation" (
 mkdir "%BuildFolderPath%_Installation"
@@ -203,7 +223,7 @@ mkdir "%BuildFolderPath%_Installation"
 copy /y "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable_%Version%_English.Amd.7z" "%PortableAppsZippedOutput%"
 call %Delete% "%BuildFolderPath%_CyberfoxPortable\Amd\CyberfoxPortable_%Version%_English.Amd.7z" "CyberfoxPortable_%Version%_English.Amd.7z not found!"
 echo. Building intel 64 bit zipped package
-%SevenZip% a -mx9 -t7z  "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable_%Version%_English.Intel.7z" "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable"
+%SevenZip% a -mmt -mx9 -t7z  "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable_%Version%_English.Intel.7z" "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable"
 echo. Build intel 64 bit zipped package complete!
 copy /y "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable_%Version%_English.Intel.7z" "%PortableAppsZippedOutput%"
 call %Delete% "%BuildFolderPath%_CyberfoxPortable\Intel\CyberfoxPortable_%Version%_English.Intel.7z" "CyberfoxPortable_%Version%_English.Intel.7z not found!"
