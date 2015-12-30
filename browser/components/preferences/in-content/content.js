@@ -90,7 +90,7 @@ var gContentPane = {
     if (!emeUIEnabled) {
       // Don't want to rely on .hidden for the toplevel groupbox because
       // of the pane hiding/showing code potentially interfering:
-      document.getElementById("playDRMContentRow").setAttribute("style", "display: none !important");
+      document.getElementById("drmGroup").setAttribute("style", "display: none !important");
     }
   },
 
