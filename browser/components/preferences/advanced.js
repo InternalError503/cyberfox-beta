@@ -351,7 +351,9 @@ var gAdvancedPane = {
       ])
     };
 
-    actualSizeLabel.textContent = prefStrBundle.getString("actualDiskCacheSizeCalculated");
+    try{
+        actualSizeLabel.textContent = prefStrBundle.getString("actualDiskCacheSizeCalculated");
+    } catch (e) {}
 
     try {
       var cacheService =

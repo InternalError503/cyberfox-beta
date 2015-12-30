@@ -31,6 +31,11 @@ var gContentPane = {
     if (Services.prefs.getBoolPref(prefName)) {
       let row = document.getElementById("translationBox");
       row.removeAttribute("hidden");
+      // Showing attribution only for Bing Translator.
+      Components.utils.import("resource:///modules/translation/Translation.jsm");
+      if (Translation.translationEngine == "bing") {
+        document.getElementById("bingAttribution").removeAttribute("hidden");
+      }
     }
 
     let doNotDisturbAlertsEnabled = false;
@@ -49,7 +54,7 @@ var gContentPane = {
       Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "push";
     document.getElementById("notificationsPolicyLearnMore").setAttribute("href",
                                                                          notificationInfoURL);
-																		 
+
     let drmInfoURL =
       Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "drm-content";
     document.getElementById("playDRMContentLink").setAttribute("href", drmInfoURL);
@@ -138,6 +143,7 @@ var gContentPane = {
                     "resizable=yes", params);
   },
 
+
   // POP-UPS
 
   /**
@@ -148,7 +154,8 @@ var gContentPane = {
   showPopupExceptions: function ()
   {
     var bundlePreferences = document.getElementById("bundlePreferences");
-    var params = { blockVisible: false, sessionVisible: false, allowVisible: true, prefilledHost: "", permissionType: "popup" };
+    var params = { blockVisible: false, sessionVisible: false, allowVisible: true,
+                   prefilledHost: "", permissionType: "popup" }
     params.windowTitle = bundlePreferences.getString("popuppermissionstitle");
     params.introText = bundlePreferences.getString("popuppermissionstext");
     document.documentElement.openWindow("Browser:Permissions",
