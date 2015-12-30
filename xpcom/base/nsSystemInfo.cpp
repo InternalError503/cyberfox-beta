@@ -191,7 +191,7 @@ nsresult GetInstallYear(uint32_t& aYear)
   time_t raw_time = 0;
   DWORD time_size = sizeof(time_t);
 
-  status = RegQueryValueExW(hKey, NS_LITERAL_STRING("InstallDate").get(),
+  status = RegQueryValueExW(hKey, L"InstallDate",
                             nullptr, &type, (LPBYTE)&raw_time, &time_size);
 
   if (status != ERROR_SUCCESS) {
@@ -743,6 +743,8 @@ nsSystemInfo::Init()
   if (__system_property_get("ro.build.characteristics", characteristics)) {
     if (!strcmp(characteristics, "tablet")) {
       SetPropertyAsBool(NS_LITERAL_STRING("tablet"), true);
+    } else if (!strcmp(characteristics, "tv")) {
+      SetPropertyAsBool(NS_LITERAL_STRING("tv"), true);
     }
   }
 

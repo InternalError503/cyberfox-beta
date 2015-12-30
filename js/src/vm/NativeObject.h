@@ -556,8 +556,13 @@ class NativeObject : public JSObject
     bool shadowingShapeChange(ExclusiveContext* cx, const Shape& shape);
     bool clearFlag(ExclusiveContext* cx, BaseShape::Flag flag);
 
+    // The maximum number of slots in an object.
+    // |MAX_SLOTS_COUNT * sizeof(JS::Value)| shouldn't overflow
+    // int32_t (see slotsSizeMustNotOverflow).
+    static const uint32_t MAX_SLOTS_COUNT = (1 << 28) - 1;
+
     static void slotsSizeMustNotOverflow() {
-        static_assert((NativeObject::NELEMENTS_LIMIT - 1) <= INT32_MAX / sizeof(JS::Value),
+        static_assert(NativeObject::MAX_SLOTS_COUNT <= INT32_MAX / sizeof(JS::Value),
                       "every caller of this method requires that a slot "
                       "number (or slot count) count multiplied by "
                       "sizeof(Value) can't overflow uint32_t (and sometimes "
@@ -713,7 +718,7 @@ class NativeObject : public JSObject
                         JSGetterOp getter, JSSetterOp setter, uint32_t slot, unsigned attrs,
                         unsigned flags, ShapeTable::Entry* entry, bool allowDictionary);
 
-    void fillInAfterSwap(JSContext* cx, const Vector<Value>& values, void* priv);
+    bool fillInAfterSwap(JSContext* cx, const Vector<Value>& values, void* priv);
 
   public:
     // Return true if this object has been converted from shared-immutable
@@ -882,11 +887,19 @@ class NativeObject : public JSObject
 
     /* Elements accessors. */
 
-    /* Upper bound on the number of elements in an object. */
-    static const uint32_t NELEMENTS_LIMIT = JS_BIT(28);
+    // The maximum size, in sizeof(Value), of the allocation used for an
+    // object's dense elements.  (This includes space used to store an
+    // ObjectElements instance.)
+    // |MAX_DENSE_ELEMENTS_ALLOCATION * sizeof(JS::Value)| shouldn't overflow
+    // int32_t (see elementsSizeMustNotOverflow).
+    static const uint32_t MAX_DENSE_ELEMENTS_ALLOCATION = (1 << 28) - 1;
+
+    // The maximum number of usable dense elements in an object.
+    static const uint32_t MAX_DENSE_ELEMENTS_COUNT =
+        MAX_DENSE_ELEMENTS_ALLOCATION - ObjectElements::VALUES_PER_HEADER;
 
     static void elementsSizeMustNotOverflow() {
-        static_assert((NativeObject::NELEMENTS_LIMIT - 1) <= INT32_MAX / sizeof(JS::Value),
+        static_assert(NativeObject::MAX_DENSE_ELEMENTS_COUNT <= INT32_MAX / sizeof(JS::Value),
                       "every caller of this method require that an element "
                       "count multiplied by sizeof(Value) can't overflow "
                       "uint32_t (and sometimes int32_t ,too)");
@@ -904,7 +917,8 @@ class NativeObject : public JSObject
         return true;
     }
 
-    static uint32_t goodAllocated(uint32_t n, uint32_t length);
+    static bool goodElementsAllocationAmount(ExclusiveContext* cx, uint32_t reqAllocated,
+                                             uint32_t length, uint32_t* goodAmount);
     bool growElements(ExclusiveContext* cx, uint32_t newcap);
     void shrinkElements(ExclusiveContext* cx, uint32_t cap);
     void setDynamicElements(ObjectElements* header) {
@@ -932,8 +946,8 @@ class NativeObject : public JSObject
             const Value& v = elements_[start + i];
             if (v.isObject() && IsInsideNursery(&v.toObject())) {
                 JS::shadow::Runtime* shadowRuntime = shadowRuntimeFromMainThread();
-                shadowRuntime->gcStoreBufferPtr()->putSlotFromAnyThread(this, HeapSlot::Element,
-                                                                        start + i, count - i);
+                shadowRuntime->gcStoreBufferPtr()->putSlot(this, HeapSlot::Element,
+                                                           start + i, count - i);
                 return;
             }
         }
@@ -1148,7 +1162,7 @@ class NativeObject : public JSObject
         MOZ_ASSERT(*cellp);
         gc::StoreBuffer* storeBuffer = (*cellp)->storeBuffer();
         if (storeBuffer)
-            storeBuffer->putCellFromAnyThread(cellp);
+            storeBuffer->putCell(cellp);
     }
 
     /* Private data accessors. */
@@ -1313,8 +1327,8 @@ NativeGetElement(JSContext* cx, HandleNativeObject obj, uint32_t index, MutableH
 }
 
 bool
-SetPropertyByDefining(JSContext* cx, HandleObject obj, HandleId id, HandleValue v,
-                      HandleValue receiver, ObjectOpResult& result);
+SetPropertyByDefining(JSContext* cx, HandleId id, HandleValue v, HandleValue receiver,
+                      ObjectOpResult& result);
 
 bool
 SetPropertyOnProto(JSContext* cx, HandleObject obj, HandleId id, HandleValue v,

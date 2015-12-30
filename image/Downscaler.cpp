@@ -107,7 +107,7 @@ Downscaler::BeginFrame(const nsIntSize& aOriginalSize,
   // Allocate the buffer, which contains scanlines of the original image.
   // pad by 15 to handle overreads by the simd code
   size_t bufferLen = mOriginalSize.width * sizeof(uint32_t) + 15;
-  mRowBuffer = MakeUnique<uint8_t[]>(bufferLen);
+  mRowBuffer.reset(new (fallible) uint8_t[bufferLen]);
   if (MOZ_UNLIKELY(!mRowBuffer)) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
@@ -115,12 +115,11 @@ Downscaler::BeginFrame(const nsIntSize& aOriginalSize,
   // Zero buffer to keep valgrind happy.
   memset(mRowBuffer.get(), 0, bufferLen);
 
-
   // Allocate the window, which contains horizontally downscaled scanlines. (We
   // can store scanlines which are already downscale because our downscaling
   // filter is separable.)
   mWindowCapacity = mYFilter->max_filter();
-  mWindow = MakeUnique<uint8_t*[]>(mWindowCapacity);
+  mWindow.reset(new (fallible) uint8_t*[mWindowCapacity]);
   if (MOZ_UNLIKELY(!mWindow)) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
@@ -129,7 +128,7 @@ Downscaler::BeginFrame(const nsIntSize& aOriginalSize,
   // pad by 15 to handle overreads by the simd code
   const int rowSize = mTargetSize.width * sizeof(uint32_t) + 15;
   for (int32_t i = 0; i < mWindowCapacity; ++i) {
-    mWindow[i] = new uint8_t[rowSize];
+    mWindow[i] = new (fallible) uint8_t[rowSize];
     anyAllocationFailed = anyAllocationFailed || mWindow[i] == nullptr;
   }
 

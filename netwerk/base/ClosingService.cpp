@@ -6,6 +6,9 @@
 
 #include "ClosingService.h"
 #include "nsIOService.h"
+#ifdef MOZ_NUWA_PROCESS
+#include "ipc/Nuwa.h"
+#endif
 
 class ClosingLayerSecret
 {
@@ -20,7 +23,7 @@ public:
     mClosingService = nullptr;
   }
 
-  nsRefPtr<mozilla::net::ClosingService> mClosingService;
+  RefPtr<mozilla::net::ClosingService> mClosingService;
 };
 
 namespace mozilla {
@@ -184,6 +187,11 @@ ClosingService::ShutdownInternal()
 {
   {
     mozilla::MonitorAutoLock mon(mMonitor);
+    if (mShutdown) {
+      // This should not happen.
+      return;
+    }
+
     mShutdown = true;
     // If it is waiting on the empty queue, wake it up.
     if (mQueue.Length() == 0) {
@@ -200,6 +208,13 @@ ClosingService::ShutdownInternal()
 void
 ClosingService::ThreadFunc()
 {
+  PR_SetCurrentThreadName("Closing Service");
+#ifdef MOZ_NUWA_PROCESS
+  if (IsNuwaProcess()) {
+    NuwaMarkCurrentThread(nullptr, nullptr);
+  }
+#endif
+
   for (;;) {
     PRFileDesc *fd;
     {

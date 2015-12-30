@@ -227,6 +227,35 @@ this.PushDB.prototype = {
     );
   },
 
+  getAllByOrigin: function(origin, originAttributes) {
+    debug("getAllByOrigin()");
+
+    return new Promise((resolve, reject) =>
+      this.newTxn(
+        "readonly",
+        this._dbStoreName,
+        (aTxn, aStore) => {
+          aTxn.result = [];
+
+          let index = aStore.index("identifiers");
+          let range = IDBKeyRange.bound(
+            [origin, originAttributes],
+            [origin + "\x7f", originAttributes]
+          );
+          index.openCursor(range).onsuccess = event => {
+            let cursor = event.target.result;
+            if (cursor) {
+              aTxn.result.push(this.toPushRecord(cursor.value));
+              cursor.continue();
+            }
+          };
+        },
+        resolve,
+        reject
+      )
+    );
+  },
+
   // Perform a unique match against { scope, originAttributes }
   getByIdentifiers: function(aPageRecord) {
     debug("getByIdentifiers() { " + aPageRecord.scope + ", " +
@@ -370,7 +399,8 @@ this.PushDB.prototype = {
             }
             let newRecord = aUpdateFunc(this.toPushRecord(record));
             if (!this.isValidRecord(newRecord)) {
-              debug("update: Ignoring invalid update for key ID " + aKeyID);
+              debug("update: Ignoring invalid update for key ID " + aKeyID +
+                ": " + JSON.stringify(newRecord));
               return;
             }
             aStore.put(newRecord).onsuccess = aEvent => {

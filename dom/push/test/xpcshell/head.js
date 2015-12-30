@@ -221,6 +221,7 @@ function setPrefs(prefs = {}) {
     'http2.retryInterval': 500,
     'http2.reset_retry_count_after_ms': 60000,
     maxQuotaPerSubscription: 16,
+    quotaUpdateDelay: 3000,
   }, prefs);
   for (let pref in defaultPrefs) {
     servicePrefs.set(pref, defaultPrefs[pref]);
@@ -279,7 +280,7 @@ MockWebSocket.prototype = {
     return this._originalURI;
   },
 
-  asyncOpen(uri, origin, listener, context) {
+  asyncOpen(uri, origin, windowId, listener, context) {
     this._listener = listener;
     this._context = context;
     waterfall(() => this._listener.onStart(this._context));
@@ -378,7 +379,11 @@ MockWebSocket.prototype = {
       () => this._listener.onServerClose(this._context, statusCode, reason),
       () => this._listener.onStop(this._context, Cr.NS_BASE_STREAM_CLOSED)
     );
-  }
+  },
+
+  serverInterrupt(result = Cr.NS_ERROR_NET_RESET) {
+    waterfall(() => this._listener.onStop(this._context, result));
+  },
 };
 
 /**

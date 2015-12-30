@@ -38,13 +38,13 @@ namespace widget {
  * IMEHandler
  ******************************************************************************/
 
+bool IMEHandler::sPluginHasFocus = false;
 InputContextAction::Cause IMEHandler::sLastContextActionCause =
   InputContextAction::CAUSE_UNKNOWN;
 
 #ifdef NS_ENABLE_TSF
 bool IMEHandler::sIsInTSFMode = false;
 bool IMEHandler::sIsIMMEnabled = true;
-bool IMEHandler::sPluginHasFocus = false;
 bool IMEHandler::sShowingOnScreenKeyboard = false;
 decltype(SetInputScopes)* IMEHandler::sSetInputScopes = nullptr;
 #endif // #ifdef NS_ENABLE_TSF
@@ -301,6 +301,12 @@ IMEHandler::NotifyIME(nsWindow* aWindow,
 nsIMEUpdatePreference
 IMEHandler::GetUpdatePreference()
 {
+  // While a plugin has focus, neither TSFTextStore nor IMMHandler needs
+  // notifications.
+  if (sPluginHasFocus) {
+    return nsIMEUpdatePreference();
+  }
+
 #ifdef NS_ENABLE_TSF
   if (IsTSFAvailable()) {
     return TSFTextStore::GetIMEUpdatePreference();

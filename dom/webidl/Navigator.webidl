@@ -389,7 +389,8 @@ partial interface Navigator {
   readonly attribute MediaDevices mediaDevices;
 
   // Deprecated. Use mediaDevices.getUserMedia instead.
-  [Throws, Func="Navigator::HasUserMediaSupport", UnsafeInPrerendering]
+  [Deprecated="NavigatorGetUserMedia", Throws,
+   Func="Navigator::HasUserMediaSupport", UnsafeInPrerendering]
   void mozGetUserMedia(MediaStreamConstraints constraints,
                        NavigatorUserMediaSuccessCallback successCallback,
                        NavigatorUserMediaErrorCallback errorCallback);
@@ -432,7 +433,7 @@ partial interface Navigator {
 };
 
 partial interface Navigator {
-  [Throws, Pref="dom.presentation.enabled", CheckAnyPermissions="presentation", AvailableIn="PrivilegedApps", SameObject]
+  [Throws, Pref="dom.presentation.enabled", Func="Navigator::HasPresentationSupport", SameObject]
   readonly attribute Presentation? presentation;
 };
 

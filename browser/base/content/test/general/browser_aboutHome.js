@@ -275,7 +275,7 @@ var gTests = [
       Services.obs.removeObserver(searchObserver, "browser-search-engine-modified");
     });
     Services.search.addEngine("http://test:80/browser/browser/base/content/test/general/POSTSearchEngine.xml",
-                              Ci.nsISearchEngine.DATA_XML, null, false);
+                              null, null, false);
     return deferred.promise;
   }
 },
@@ -473,15 +473,24 @@ var gTests = [
   })
 },
 {
-  desc: "Sync button should open about:accounts page with `abouthome` entrypoint",
+  desc: "Sync button should open about:preferences#sync",
   setup: function () {},
   run: Task.async(function* () {
     let syncButton = gBrowser.selectedBrowser.contentDocument.getElementById("sync");
+    let oldOpenPrefs = window.openPreferences;
+    let openPrefsPromise = new Promise(resolve => {
+      window.openPreferences = function (pane, params) {
+        resolve({ pane: pane, params: params });
+      };
+    });
+
     yield EventUtils.synthesizeMouseAtCenter(syncButton, {}, gBrowser.contentWindow);
 
-    yield promiseTabLoadEvent(gBrowser.selectedTab, null, "load");
-    is(gBrowser.currentURI.spec, "about:accounts?entrypoint=abouthome",
-      "Entry point should be `abouthome`.");
+    let result = yield openPrefsPromise;
+    window.openPreferences = oldOpenPrefs;
+
+    is(result.pane, "paneSync", "openPreferences should be called with paneSync");
+    is(result.params.urlParams.entrypoint, "abouthome", "openPreferences should be called with abouthome entrypoint");
   })
 },
 {
@@ -679,7 +688,7 @@ function promiseNewEngine(basename) {
   info("Waiting for engine to be added: " + basename);
   let addDeferred = Promise.defer();
   let url = getRootDirectory(gTestPath) + basename;
-  Services.search.addEngine(url, Ci.nsISearchEngine.TYPE_MOZSEARCH, "", false, {
+  Services.search.addEngine(url, null, "", false, {
     onSuccess: function (engine) {
       info("Search engine added: " + basename);
       registerCleanupFunction(() => {

@@ -24,7 +24,9 @@
 
 #ifdef CAIRO_HAS_QUARTZ_SURFACE
 #include "cairo-quartz.h"
+#ifdef MOZ_WIDGET_COCOA
 #include <ApplicationServices/ApplicationServices.h>
+#endif
 #endif
 
 #ifdef CAIRO_HAS_XLIB_SURFACE
@@ -220,7 +222,6 @@ CopyToImageSurface(unsigned char *aData,
   // investigation hasn't been done to determine the underlying cause.  We
   // will just handle the failure to allocate the surface to avoid a crash.
   if (cairo_surface_status(surf)) {
-    gfxWarning() << "Invalid surface DTC " << cairo_surface_status(surf);
     return nullptr;
   }
 
@@ -598,15 +599,8 @@ DrawTargetCairo::~DrawTargetCairo()
   cairo_destroy(mContext);
   if (mSurface) {
     cairo_surface_destroy(mSurface);
-    mSurface = nullptr;
   }
   MOZ_ASSERT(!mLockedBits);
-}
-
-bool
-DrawTargetCairo::IsValid() const
-{
-  return mSurface && !cairo_surface_status(mSurface);
 }
 
 DrawTargetType
@@ -677,7 +671,7 @@ GfxFormatForCairoSurface(cairo_surface_t* surface)
   // xlib is currently the only Cairo backend that creates 16bpp surfaces
   if (type == CAIRO_SURFACE_TYPE_XLIB &&
       cairo_xlib_surface_get_depth(surface) == 16) {
-    return SurfaceFormat::R5G6B5;
+    return SurfaceFormat::R5G6B5_UINT16;
   }
 #endif
   return CairoContentToGfxFormat(cairo_surface_get_content(surface));
@@ -686,10 +680,6 @@ GfxFormatForCairoSurface(cairo_surface_t* surface)
 already_AddRefed<SourceSurface>
 DrawTargetCairo::Snapshot()
 {
-  if (!IsValid()) {
-    gfxCriticalNote << "DrawTargetCairo::Snapshot with bad surface " << cairo_surface_status(mSurface);
-    return nullptr;
-  }
   if (mSnapshot) {
     RefPtr<SourceSurface> snapshot(mSnapshot);
     return snapshot.forget();
@@ -785,11 +775,6 @@ DrawTargetCairo::DrawSurface(SourceSurface *aSurface,
                              const DrawSurfaceOptions &aSurfOptions,
                              const DrawOptions &aOptions)
 {
-  if (!IsValid()) {
-    gfxCriticalNote << "DrawSurface with bad surface " << cairo_surface_status(mSurface);
-    return;
-  }
-
   AutoPrepareForDrawing prep(this, mContext);
   AutoClearDeviceOffset clear(aSurface);
 
@@ -1037,7 +1022,7 @@ DrawTargetCairo::CopySurfaceInternal(cairo_surface_t* aSurface,
                                      const IntPoint &aDest)
 {
   if (cairo_surface_status(aSurface)) {
-    gfxWarning() << "Invalid surface" << cairo_surface_status(aSurface);
+    gfxWarning() << "Invalid surface";
     return;
   }
 
@@ -1117,7 +1102,7 @@ DrawTargetCairo::ClearRect(const Rect& aRect)
   if (!mContext || aRect.Width() <= 0 || aRect.Height() <= 0 ||
       !IsFinite(aRect.X()) || !IsFinite(aRect.Width()) ||
       !IsFinite(aRect.Y()) || !IsFinite(aRect.Height())) {
-    gfxCriticalError(CriticalLog::DefaultOptions(false)) << "ClearRect with invalid argument " << gfx::hexa(mContext) << " with " << aRect.Width() << "x" << aRect.Height() << " [" << aRect.X() << ", " << aRect.Y() << "]";
+    gfxCriticalNote << "ClearRect with invalid argument " << gfx::hexa(mContext) << " with " << aRect.Width() << "x" << aRect.Height() << " [" << aRect.X() << ", " << aRect.Y() << "]";
   }
 
   cairo_set_antialias(mContext, CAIRO_ANTIALIAS_NONE);
@@ -1208,11 +1193,6 @@ DrawTargetCairo::FillGlyphs(ScaledFont *aFont,
                             const DrawOptions &aOptions,
                             const GlyphRenderingOptions*)
 {
-  if (!IsValid()) {
-    gfxDebug() << "FillGlyphs bad surface " << cairo_surface_status(mSurface);
-    return;
-  }
-
   AutoPrepareForDrawing prep(this, mContext);
   AutoClearDeviceOffset clear(aPattern);
 
@@ -1245,10 +1225,6 @@ DrawTargetCairo::FillGlyphs(ScaledFont *aFont,
   }
 
   cairo_show_glyphs(mContext, &glyphs[0], aBuffer.mNumGlyphs);
-
-  if (mSurface && cairo_surface_status(mSurface)) {
-    gfxDebug() << "Ending FillGlyphs with a bad surface " << cairo_surface_status(mSurface);
-  }
 }
 
 void
@@ -1594,7 +1570,7 @@ bool
 DrawTargetCairo::InitAlreadyReferenced(cairo_surface_t* aSurface, const IntSize& aSize, SurfaceFormat* aFormat)
 {
   if (cairo_surface_status(aSurface)) {
-    gfxCriticalNote
+    gfxCriticalError(CriticalLog::DefaultOptions(Factory::ReasonableSurfaceSize(aSize)))
       << "Attempt to create DrawTarget for invalid surface. "
       << aSize << " Cairo Status: " << cairo_surface_status(aSurface);
     cairo_surface_destroy(aSurface);

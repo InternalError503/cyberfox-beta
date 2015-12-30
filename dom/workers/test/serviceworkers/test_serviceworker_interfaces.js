@@ -118,6 +118,8 @@ var interfaceNamesInGlobalScope =
 // IMPORTANT: Do not change this list without review from a DOM peer!
     "ExtendableEvent",
 // IMPORTANT: Do not change this list without review from a DOM peer!
+    "ExtendableMessageEvent",
+// IMPORTANT: Do not change this list without review from a DOM peer!
     "FetchEvent",
 // IMPORTANT: Do not change this list without review from a DOM peer!
     "File",
@@ -195,12 +197,6 @@ var interfaceNamesInGlobalScope =
     "TextDecoder",
 // IMPORTANT: Do not change this list without review from a DOM peer!
     "TextEncoder",
-// IMPORTANT: Do not change this list without review from a DOM peer!
-    "XMLHttpRequest",
-// IMPORTANT: Do not change this list without review from a DOM peer!
-    "XMLHttpRequestEventTarget",
-// IMPORTANT: Do not change this list without review from a DOM peer!
-    "XMLHttpRequestUpload",
 // IMPORTANT: Do not change this list without review from a DOM peer!
     "URL",
 // IMPORTANT: Do not change this list without review from a DOM peer!

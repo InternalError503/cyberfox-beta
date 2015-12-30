@@ -99,7 +99,8 @@ CtypesKernelHelpers.prototype = {
   finalize() {
     this._structs = {};
     this._functions = {};
-    for each (let lib in this._libs) {
+    for (let key in this._libs) {
+      let lib = this._libs[key];
       try {
         lib.close();
       } catch (ex) {}
@@ -143,12 +144,6 @@ CtypesKernelHelpers.prototype = {
 function CtypesVaultHelpers() {
   this._structs = {};
   this._functions = {};
-  // the size of the vault handle in 32 bits version is 32 and 64 in 64 bits version
-  if (wintypes.VOIDP.size == 4) {
-    this._vaultHandleType = wintypes.DWORD;
-  } else {
-    this._vaultHandleType = wintypes.DWORDLONG;
-  }
 
   this._structs.GUID = new ctypes.StructType("GUID", [
     {id: wintypes.DWORD.array(4)},
@@ -205,13 +200,13 @@ function CtypesVaultHelpers() {
                                 // Flags
                                 wintypes.DWORD,
                                 // Vault Handle
-                                this._vaultHandleType.ptr);
+                                wintypes.VOIDP.ptr);
     this._functions.VaultEnumerateItems =
       this._vaultcliLib.declare("VaultEnumerateItems",
                                 ctypes.winapi_abi,
                                 wintypes.DWORD,
                                 // Vault Handle
-                                this._vaultHandleType,
+                                wintypes.VOIDP,
                                 // Flags
                                 wintypes.DWORD,
                                 // Items Count
@@ -223,13 +218,13 @@ function CtypesVaultHelpers() {
                                 ctypes.winapi_abi,
                                 wintypes.DWORD,
                                 // Vault Handle
-                                this._vaultHandleType);
+                                wintypes.VOIDP);
     this._functions.VaultGetItem =
       this._vaultcliLib.declare("VaultGetItem",
                                 ctypes.winapi_abi,
                                 wintypes.DWORD,
                                 // Vault Handle
-                                this._vaultHandleType,
+                                wintypes.VOIDP,
                                 // Schema Id
                                 this._structs.GUID.ptr,
                                 // Resource
@@ -325,9 +320,13 @@ function Bookmarks(migrationType) {
 Bookmarks.prototype = {
   type: MigrationUtils.resourceTypes.BOOKMARKS,
 
-  get exists() !!this._favoritesFolder,
+  get exists() {
+    return !!this._favoritesFolder;
+  },
 
-  get importedAppLabel() this._migrationType == MSMigrationUtils.MIGRATION_TYPE_IE ? "IE" : "Edge",
+  get importedAppLabel() {
+    return this._migrationType == MSMigrationUtils.MIGRATION_TYPE_IE ? "IE" : "Edge";
+  },
 
   __favoritesFolder: null,
   get _favoritesFolder() {
@@ -659,17 +658,33 @@ Cookies.prototype = {
    *  - Creation time least significant integer
    *  - Record delimiter "*"
    *
+   * Unfortunately, "*" can also occur inside the value of the cookie, so we
+   * can't rely exclusively on it as a record separator.
+   *
    * @note All the times are in FILETIME format.
    */
   _parseCookieBuffer(aTextBuffer) {
-    // Note the last record is an empty string.
-    let records = [r for each (r in aTextBuffer.split("*\n")) if (r)];
+    // Note the last record is an empty string...
+    let records = [];
+    let lines = aTextBuffer.split("\n");
+    while (lines.length > 0) {
+      let record = lines.splice(0, 9);
+      // ... which means this is going to be a 1-element array for that record
+      if (record.length > 1) {
+        records.push(record);
+      }
+    }
     for (let record of records) {
       let [name, value, hostpath, flags,
-           expireTimeLo, expireTimeHi] = record.split("\n");
+           expireTimeLo, expireTimeHi] = record;
 
       // IE stores deleted cookies with a zero-length value, skip them.
       if (value.length == 0)
+        continue;
+
+      // IE sometimes has cookies created by apps that use "~~local~~/local/file/path"
+      // as the hostpath, ignore those:
+      if (hostpath.startsWith("~~local~~"))
         continue;
 
       let hostLen = hostpath.indexOf("/");
@@ -686,8 +701,9 @@ Cookies.prototype = {
           host = "." + host;
       }
 
-      // Fallback: expire in 1h
-      let expireTime = (Date.now() + 3600 * 1000) * 1000;
+      // Fallback: expire in 1h (NB: time is in seconds since epoch, so we have
+      // to divide the result of Date.now() (which is in milliseconds) by 1000).
+      let expireTime = Math.floor(Date.now() / 1000) + 3600;
       try {
         expireTime = this.ctypesKernelHelpers.fileTimeToSecondsSinceEpoch(Number(expireTimeHi),
                                                                           Number(expireTimeLo));
@@ -751,10 +767,14 @@ function getTypedURLs(registryKeyPath) {
           try {
             let hi = parseInt(urlTimeHex.slice(0, 4).join(''), 16);
             let lo = parseInt(urlTimeHex.slice(4, 8).join(''), 16);
+            // Convert to seconds since epoch:
             timeTyped = cTypes.fileTimeToSecondsSinceEpoch(hi, lo);
             // Callers expect PRTime, which is microseconds since epoch:
             timeTyped *= 1000 * 1000;
-          } catch (ex) {}
+          } catch (ex) {
+            // Ignore conversion exceptions. Callers will have to deal
+            // with the fallback value (0).
+          }
         }
       }
       typedURLs.set(url, timeTyped);
@@ -819,7 +839,7 @@ WindowsVaultFormPasswords.prototype = {
       let vaultCount = new wintypes.DWORD;
       error = new wintypes.DWORD;
       // web credentials vault
-      vault = new ctypesVaultHelpers._vaultHandleType;
+      vault = new wintypes.VOIDP;
       // open the current vault using the vaultGuid
       error = ctypesVaultHelpers._functions.VaultOpenVault(vaultGuid.address(), 0, vault.address());
       if (error != RESULT_SUCCESS) {
@@ -862,9 +882,16 @@ WindowsVaultFormPasswords.prototype = {
           }
 
           let password = credential.contents.pAuthenticatorElement.contents.itemValue.readString();
-          let creation = ctypesKernelHelpers.
+          let creation = Date.now();
+          try {
+            // login manager wants time in milliseconds since epoch, so convert
+            // to seconds since epoch and multiply to get milliseconds:
+            creation = ctypesKernelHelpers.
                          fileTimeToSecondsSinceEpoch(item.contents.highLastModified,
                                                      item.contents.lowLastModified) * 1000;
+          } catch (ex) {
+            // Ignore exceptions in the dates and just create the login for right now.
+          }
           // create a new login
           let login = {
             username, password,

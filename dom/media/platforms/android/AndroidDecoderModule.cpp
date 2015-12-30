@@ -19,7 +19,6 @@
 #include "nsPromiseFlatString.h"
 
 #include <jni.h>
-#include <string.h>
 
 using namespace mozilla;
 using namespace mozilla::gl;
@@ -27,17 +26,28 @@ using namespace mozilla::widget::sdk;
 
 namespace mozilla {
 
-#define ENVOKE_CALLBACK(Func, ...) \
+#define INVOKE_CALLBACK(Func, ...) \
   if (mCallback) { \
     mCallback->Func(__VA_ARGS__); \
   } else { \
     NS_WARNING("callback not set"); \
   }
 
+static const char* TranslateMimeType(const nsACString& aMimeType)
+{
+  if (aMimeType.EqualsLiteral("video/webm; codecs=vp8")) {
+    return "video/x-vnd.on2.vp8";
+  } else if (aMimeType.EqualsLiteral("video/webm; codecs=vp9")) {
+    return "video/x-vnd.on2.vp9";
+  }
+  return PromiseFlatCString(aMimeType).get();
+}
+
 static MediaCodec::LocalRef CreateDecoder(const nsACString& aMimeType)
 {
   MediaCodec::LocalRef codec;
-  NS_ENSURE_SUCCESS(MediaCodec::CreateDecoderByType(PromiseFlatCString(aMimeType).get(), &codec), nullptr);
+  NS_ENSURE_SUCCESS(MediaCodec::CreateDecoderByType(TranslateMimeType(aMimeType),
+                    &codec), nullptr);
   return codec;
 }
 
@@ -53,7 +63,7 @@ public:
 
   }
 
-  nsRefPtr<InitPromise> Init() override {
+  RefPtr<InitPromise> Init() override {
     mSurfaceTexture = AndroidSurfaceTexture::Create();
     if (!mSurfaceTexture) {
       NS_WARNING("Failed to create SurfaceTexture for video decode\n");
@@ -71,13 +81,15 @@ public:
     mGLContext = nullptr;
   }
 
-  virtual nsresult Input(MediaRawData* aSample) override {
+  nsresult Input(MediaRawData* aSample) override {
     return MediaCodecDataDecoder::Input(aSample);
   }
 
   bool WantCopy() {
-    // Allocating a texture is incredibly slow on PowerVR
-    return mGLContext->Vendor() != GLVendor::Imagination;
+    // Allocating a texture is incredibly slow on PowerVR and may fail on
+    // emulators, see bug 1190379.
+    return mGLContext->Vendor() != GLVendor::Imagination &&
+           mGLContext->Renderer() != GLRenderer::AndroidEmulator;
   }
 
   EGLImage CopySurface(layers::Image* img) {
@@ -100,7 +112,7 @@ public:
       LOCAL_EGL_NONE, LOCAL_EGL_NONE
     };
 
-    EGLContext eglContext = static_cast<GLContextEGL*>(mGLContext.get())->GetEGLContext();
+    EGLContext eglContext = static_cast<GLContextEGL*>(mGLContext.get())->mContext;
     EGLImage eglImage = sEGLLibrary.fCreateImage(EGL_DISPLAY(), eglContext,
                                                  LOCAL_EGL_GL_TEXTURE_2D_KHR,
                                                  (EGLClientBuffer)tex, attribs);
@@ -109,13 +121,13 @@ public:
     return eglImage;
   }
 
-  virtual nsresult PostOutput(BufferInfo::Param aInfo, MediaFormat::Param aFormat,
-                              const media::TimeUnit& aDuration) override {
+  nsresult PostOutput(BufferInfo::Param aInfo, MediaFormat::Param aFormat,
+                      const media::TimeUnit& aDuration) override {
     if (!EnsureGLContext()) {
       return NS_ERROR_FAILURE;
     }
 
-    nsRefPtr<layers::Image> img = mImageContainer->CreateImage(ImageFormat::SURFACE_TEXTURE);
+    RefPtr<layers::Image> img = mImageContainer->CreateImage(ImageFormat::SURFACE_TEXTURE);
     layers::SurfaceTextureImage::Data data;
     data.mSurfTex = mSurfaceTexture.get();
     data.mSize = mConfig.mDisplay;
@@ -168,7 +180,7 @@ public:
     int64_t presentationTimeUs;
     NS_ENSURE_SUCCESS(rv = aInfo->PresentationTimeUs(&presentationTimeUs), rv);
 
-    nsRefPtr<VideoData> v =
+    RefPtr<VideoData> v =
       VideoData::CreateFromImage(mConfig,
                                  mImageContainer,
                                  offset,
@@ -180,7 +192,7 @@ public:
                                  gfx::IntRect(0, 0,
                                               mConfig.mDisplay.width,
                                               mConfig.mDisplay.height));
-    ENVOKE_CALLBACK(Output, v);
+    INVOKE_CALLBACK(Output, v);
     return NS_OK;
   }
 
@@ -197,7 +209,7 @@ protected:
   layers::ImageContainer* mImageContainer;
   const VideoInfo& mConfig;
   RefPtr<AndroidSurfaceTexture> mSurfaceTexture;
-  nsRefPtr<GLContext> mGLContext;
+  RefPtr<GLContext> mGLContext;
 };
 
 class AudioDataDecoder : public MediaCodecDataDecoder {
@@ -253,13 +265,13 @@ public:
     int64_t presentationTimeUs;
     NS_ENSURE_SUCCESS(rv = aInfo->PresentationTimeUs(&presentationTimeUs), rv);
 
-    nsRefPtr<AudioData> data = new AudioData(0, presentationTimeUs,
+    RefPtr<AudioData> data = new AudioData(0, presentationTimeUs,
                                            aDuration.ToMicroseconds(),
                                            numFrames,
                                            audio,
                                            numChannels,
                                            sampleRate);
-    ENVOKE_CALLBACK(Output, data);
+    INVOKE_CALLBACK(Output, data);
     return NS_OK;
   }
 };
@@ -295,12 +307,12 @@ AndroidDecoderModule::CreateVideoDecoder(
   MediaFormat::LocalRef format;
 
   NS_ENSURE_SUCCESS(MediaFormat::CreateVideoFormat(
-      aConfig.mMimeType,
+      TranslateMimeType(aConfig.mMimeType),
       aConfig.mDisplay.width,
       aConfig.mDisplay.height,
       &format), nullptr);
 
-  nsRefPtr<MediaDataDecoder> decoder =
+  RefPtr<MediaDataDecoder> decoder =
     new VideoDataDecoder(aConfig, format, aCallback, aImageContainer);
 
   return decoder.forget();
@@ -321,7 +333,7 @@ AndroidDecoderModule::CreateAudioDecoder(const AudioInfo& aConfig,
       aConfig.mChannels,
       &format), nullptr);
 
-  nsRefPtr<MediaDataDecoder> decoder =
+  RefPtr<MediaDataDecoder> decoder =
     new AudioDataDecoder(aConfig, format, aCallback);
 
   return decoder.forget();
@@ -361,7 +373,7 @@ MediaCodecDataDecoder::~MediaCodecDataDecoder()
   Shutdown();
 }
 
-nsRefPtr<MediaDataDecoder::InitPromise> MediaCodecDataDecoder::Init()
+RefPtr<MediaDataDecoder::InitPromise> MediaCodecDataDecoder::Init()
 {
   nsresult rv = InitDecoder(nullptr);
 
@@ -378,7 +390,7 @@ nsresult MediaCodecDataDecoder::InitDecoder(Surface::Param aSurface)
 {
   mDecoder = CreateDecoder(mMimeType);
   if (!mDecoder) {
-    ENVOKE_CALLBACK(Error);
+    INVOKE_CALLBACK(Error);
     return NS_ERROR_FAILURE;
   }
 
@@ -402,10 +414,10 @@ nsresult MediaCodecDataDecoder::InitDecoder(Surface::Param aSurface)
   if (NS_FAILED(res)) { \
     NS_WARNING("exiting decoder loop due to exception"); \
     if (mDraining) { \
-      ENVOKE_CALLBACK(DrainComplete); \
+      INVOKE_CALLBACK(DrainComplete); \
       mDraining = false; \
     } \
-    ENVOKE_CALLBACK(Error); \
+    INVOKE_CALLBACK(Error); \
     break; \
   }
 
@@ -440,7 +452,7 @@ void MediaCodecDataDecoder::DecoderLoop()
   bool waitingEOF = false;
 
   AutoLocalJNIFrame frame(jni::GetEnvForThread(), 1);
-  nsRefPtr<MediaRawData> sample;
+  RefPtr<MediaRawData> sample;
 
   MediaFormat::LocalRef outputFormat(frame.GetEnv());
   nsresult res;
@@ -451,7 +463,7 @@ void MediaCodecDataDecoder::DecoderLoop()
       while (!mStopping && !mDraining && !mFlushing && mQueue.empty()) {
         if (mQueue.empty()) {
           // We could be waiting here forever if we don't signal that we need more input
-          ENVOKE_CALLBACK(InputExhausted);
+          INVOKE_CALLBACK(InputExhausted);
         }
         lock.Wait();
       }
@@ -469,13 +481,13 @@ void MediaCodecDataDecoder::DecoderLoop()
         continue;
       }
 
-      if (mDraining && !sample && !waitingEOF) {
-        draining = true;
-      }
-
       // We're not stopping or draining, so try to get a sample
       if (!mQueue.empty()) {
         sample = mQueue.front();
+      }
+
+      if (mDraining && !sample && !waitingEOF) {
+        draining = true;
       }
     }
 
@@ -548,7 +560,7 @@ void MediaCodecDataDecoder::DecoderLoop()
         HANDLE_DECODER_ERROR();
       } else if (outputStatus < 0) {
         NS_WARNING("unknown error from decoder!");
-        ENVOKE_CALLBACK(Error);
+        INVOKE_CALLBACK(Error);
 
         // Don't break here just in case it's recoverable. If it's not, others stuff will fail later and
         // we'll bail out.
@@ -568,7 +580,7 @@ void MediaCodecDataDecoder::DecoderLoop()
             mMonitor.Notify();
             mMonitor.Unlock();
 
-            ENVOKE_CALLBACK(DrainComplete);
+            INVOKE_CALLBACK(DrainComplete);
           }
 
           mDecoder->ReleaseOutputBuffer(outputStatus, false);

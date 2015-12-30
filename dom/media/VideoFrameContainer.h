@@ -42,11 +42,11 @@ public:
                       already_AddRefed<ImageContainer> aContainer);
 
   // Call on any thread
-  B2G_ACL_EXPORT void SetCurrentFrame(const gfxIntSize& aIntrinsicSize, Image* aImage,
+  B2G_ACL_EXPORT void SetCurrentFrame(const gfx::IntSize& aIntrinsicSize, Image* aImage,
                        const TimeStamp& aTargetTime);
-  void SetCurrentFrames(const gfxIntSize& aIntrinsicSize,
+  void SetCurrentFrames(const gfx::IntSize& aIntrinsicSize,
                         const nsTArray<ImageContainer::NonOwningImage>& aImages);
-  void ClearCurrentFrame(const gfxIntSize& aIntrinsicSize)
+  void ClearCurrentFrame(const gfx::IntSize& aIntrinsicSize)
   {
     SetCurrentFrames(aIntrinsicSize, nsTArray<ImageContainer::NonOwningImage>());
   }
@@ -79,13 +79,13 @@ public:
   void ForgetElement() { mElement = nullptr; }
 
 protected:
-  void SetCurrentFramesLocked(const gfxIntSize& aIntrinsicSize,
+  void SetCurrentFramesLocked(const gfx::IntSize& aIntrinsicSize,
                               const nsTArray<ImageContainer::NonOwningImage>& aImages);
 
   // Non-addreffed pointer to the element. The element calls ForgetElement
   // to clear this reference when the element is destroyed.
   dom::HTMLMediaElement* mElement;
-  nsRefPtr<ImageContainer> mImageContainer;
+  RefPtr<ImageContainer> mImageContainer;
 
   // mMutex protects all the fields below.
   Mutex mMutex;
@@ -94,7 +94,7 @@ protected:
   // This can differ from the Image's actual size when the media resource
   // specifies that the Image should be stretched to have the correct aspect
   // ratio.
-  gfxIntSize mIntrinsicSize;
+  gfx::IntSize mIntrinsicSize;
   // We maintain our own mFrameID which is auto-incremented at every
   // SetCurrentFrame() or NewFrameID() call.
   ImageContainer::FrameID mFrameID;

@@ -11,7 +11,6 @@ import java.lang.reflect.Proxy;
 import java.util.concurrent.SynchronousQueue;
 
 import org.mozilla.gecko.AppConstants.Versions;
-import org.mozilla.gecko.gfx.InputConnectionHandler;
 import org.mozilla.gecko.util.Clipboard;
 import org.mozilla.gecko.util.GamepadUtils;
 import org.mozilla.gecko.util.ThreadUtils;
@@ -41,7 +40,7 @@ import android.view.inputmethod.InputMethodManager;
 
 class GeckoInputConnection
     extends BaseInputConnection
-    implements InputConnectionHandler, GeckoEditableListener {
+    implements InputConnectionListener, GeckoEditableListener {
 
     private static final boolean DEBUG = false;
     protected static final String LOGTAG = "GeckoInputConnection";
@@ -142,12 +141,14 @@ class GeckoInputConnection
             runOnIcThread(icHandler, runnable);
         }
 
-        public void sendEventFromUiThread(final Handler uiHandler,
-                                          final GeckoEditableClient client,
-                                          final GeckoEvent event) {
+        public void sendKeyEventFromUiThread(final Handler uiHandler,
+                                             final GeckoEditableClient client,
+                                             final KeyEvent event,
+                                             final int action,
+                                             final int metaState) {
             runOnIcThread(uiHandler, client, new Runnable() {
                 @Override public void run() {
-                    client.sendEvent(event);
+                    client.sendKeyEvent(event, action, metaState);
                 }
             });
         }
@@ -854,8 +855,8 @@ class GeckoInputConnection
 
         View view = getView();
         if (view == null) {
-            InputThreadUtils.sInstance.sendEventFromUiThread(ThreadUtils.getUiHandler(),
-                mEditableClient, GeckoEvent.createKeyEvent(event, action, 0));
+            InputThreadUtils.sInstance.sendKeyEventFromUiThread(
+                    ThreadUtils.getUiHandler(), mEditableClient, event, action, /* metaState */ 0);
             return true;
         }
 
@@ -866,14 +867,18 @@ class GeckoInputConnection
         Editable uiEditable = InputThreadUtils.sInstance.
             getEditableForUiThread(uiHandler, mEditableClient);
         boolean skip = shouldSkipKeyListener(keyCode, event);
+
         if (down) {
             mEditableClient.setSuppressKeyUp(true);
         }
         if (skip ||
             (down && !keyListener.onKeyDown(view, uiEditable, keyCode, event)) ||
             (!down && !keyListener.onKeyUp(view, uiEditable, keyCode, event))) {
-            InputThreadUtils.sInstance.sendEventFromUiThread(uiHandler, mEditableClient,
-                GeckoEvent.createKeyEvent(event, action, TextKeyListener.getMetaState(uiEditable)));
+
+            InputThreadUtils.sInstance.sendKeyEventFromUiThread(
+                    uiHandler, mEditableClient,
+                    event, action, TextKeyListener.getMetaState(uiEditable));
+
             if (skip && down) {
                 // Usually, the down key listener call above adjusts meta states for us.
                 // However, if we skip that call above, we have to manually adjust meta
@@ -1049,7 +1054,7 @@ final class DebugGeckoInputConnection
     public static GeckoEditableListener create(View targetView,
                                                GeckoEditableClient editable) {
         final Class<?>[] PROXY_INTERFACES = { InputConnection.class,
-                InputConnectionHandler.class,
+                InputConnectionListener.class,
                 GeckoEditableListener.class };
         DebugGeckoInputConnection dgic =
                 new DebugGeckoInputConnection(targetView, editable);

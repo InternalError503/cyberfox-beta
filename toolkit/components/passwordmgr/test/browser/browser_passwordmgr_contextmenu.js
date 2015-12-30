@@ -24,7 +24,7 @@ function test() {
         new nsLoginInfo(urls[3], urls[3], null, "array of", "logins", "u4", "p4"),
         new nsLoginInfo(urls[4], urls[4], null, "then", "i wrote the test", "u5", "p5")
     ];
-    logins.forEach(function (login) Services.logins.addLogin(login));
+    logins.forEach(login => Services.logins.addLogin(login));
 
     // Open the password manager dialog
     const PWMGR_DLG = "chrome://passwordmgr/content/passwordManager.xul";
@@ -50,7 +50,7 @@ function test() {
             assertMenuitemEnabled("copyusername", false, "empty username");
             assertMenuitemEnabled("editusername", true);
             assertMenuitemEnabled("copypassword", true);
-            assertMenuitemEnabled("editpassword", false, "password column hidden");
+            assertMenuitemEnabled("editpassword", true);
 
             info("Clear the selection");
             selection.clearSelection();
@@ -61,7 +61,6 @@ function test() {
 
             info("Select the third row and making the password column visible");
             selection.select(2);
-            doc.getElementById("passwordCol").hidden = false;
             assertMenuitemEnabled("copyusername", true);
             assertMenuitemEnabled("editusername", true);
             assertMenuitemEnabled("copypassword", true);
@@ -80,7 +79,6 @@ function test() {
             Services.ww.registerNotification(function (aSubject, aTopic, aData) {
                 Services.ww.unregisterNotification(arguments.callee);
                 Services.logins.removeAllLogins();
-                doc.getElementById("passwordCol").hidden = true;
                 finish();
             });
             pwmgrdlg.close();

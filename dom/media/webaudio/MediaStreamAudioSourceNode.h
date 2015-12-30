@@ -44,7 +44,8 @@ class MediaStreamAudioSourceNode : public AudioNode,
                                    public DOMMediaStream::PrincipalChangeObserver
 {
 public:
-  MediaStreamAudioSourceNode(AudioContext* aContext, DOMMediaStream* aMediaStream);
+  MediaStreamAudioSourceNode(AudioContext* aContext,
+                             DOMMediaStream* aMediaStream);
 
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_CYCLE_COLLECTION_CLASS_INHERITED(MediaStreamAudioSourceNode, AudioNode)
@@ -69,8 +70,8 @@ protected:
   virtual ~MediaStreamAudioSourceNode();
 
 private:
-  nsRefPtr<MediaInputPort> mInputPort;
-  nsRefPtr<DOMMediaStream> mInputStream;
+  RefPtr<MediaInputPort> mInputPort;
+  RefPtr<DOMMediaStream> mInputStream;
 };
 
 } // namespace dom

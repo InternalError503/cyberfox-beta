@@ -30,9 +30,11 @@ import org.mozilla.gecko.tabqueue.TabQueueHelper;
 import org.mozilla.gecko.updater.UpdateServiceHelper;
 import org.mozilla.gecko.util.ActivityResultHandler;
 import org.mozilla.gecko.util.ActivityUtils;
+import org.mozilla.gecko.util.BundleEventListener;
 import org.mozilla.gecko.util.EventCallback;
 import org.mozilla.gecko.util.FileUtils;
 import org.mozilla.gecko.util.GeckoEventListener;
+import org.mozilla.gecko.util.GeckoRequest;
 import org.mozilla.gecko.util.HardwareUtils;
 import org.mozilla.gecko.util.NativeEventListener;
 import org.mozilla.gecko.util.NativeJSObject;
@@ -70,6 +72,8 @@ import android.os.Process;
 import android.os.StrictMode;
 import android.provider.ContactsContract;
 import android.provider.MediaStore.Images.Media;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Base64;
@@ -118,6 +122,7 @@ import java.util.Set;
 public abstract class GeckoApp
     extends GeckoActivity
     implements
+    BundleEventListener,
     ContextGetter,
     GeckoAppShell.GeckoInterface,
     GeckoEventListener,
@@ -164,7 +169,7 @@ public abstract class GeckoApp
     // after a version upgrade.
     private static final int CLEANUP_DEFERRAL_SECONDS = 15;
 
-    protected OuterLayout mRootLayout;
+    protected RelativeLayout mRootLayout;
     protected RelativeLayout mMainLayout;
 
     protected RelativeLayout mGeckoLayout;
@@ -638,11 +643,21 @@ public abstract class GeckoApp
                 final String url = ReaderModeUtils.stripAboutReaderUrl(tab.getURL());
                 text += "\n\n" + url;
             }
-            GeckoAppShell.openUriExternal(text, "text/plain", "", "", Intent.ACTION_SEND, title);
+            GeckoAppShell.openUriExternal(text, "text/plain", "", "", Intent.ACTION_SEND, title, false);
 
             // Context: Sharing via chrome list (no explicit session is active)
             Telemetry.sendUIEvent(TelemetryContract.Event.SHARE, TelemetryContract.Method.LIST, "text");
 
+        } else if ("Snackbar:Show".equals(event)) {
+            final String msg = message.getString("message");
+            final int duration = message.getInt("duration");
+
+            NativeJSObject action = message.optObject("action", null);
+
+            showSnackbar(msg,
+                    duration,
+                    action != null ? action.optString("label", null) : null,
+                    callback);
         } else if ("SystemUI:Visibility".equals(event)) {
             setSystemUiVisible(message.getBoolean("visible"));
 
@@ -709,6 +724,24 @@ public abstract class GeckoApp
             }
         } catch (Exception e) {
             Log.e(LOGTAG, "Exception handling message \"" + event + "\":", e);
+        }
+    }
+
+    @Override
+    public void handleMessage(final String event, final Bundle message, final EventCallback callback) {
+        if ("History:GetPrePathLastVisitedTimeMilliseconds".equals(event)) {
+            if (callback == null) {
+                Log.e(LOGTAG, "callback must not be null in " + event);
+                return;
+            }
+            final String prePath = message.getString("prePath");
+            if (prePath == null) {
+                callback.sendError("prePath must not be null in " + event);
+                return;
+            }
+            // We're on a background thread, so we can be synchronous.
+            final long millis = mProfile.getDB().getPrePathLastVisitedTimeMilliseconds(getContentResolver(), prePath);
+            callback.sendSuccess(millis);
         }
     }
 
@@ -830,6 +863,48 @@ public abstract class GeckoApp
         mToast = new ButtonToast(toastStub.inflate());
 
         return mToast;
+    }
+
+    void showSnackbar(final String message, final int duration, final String action, final EventCallback callback) {
+        final Snackbar snackbar = Snackbar.make(mRootLayout, message, duration);
+
+        if (!TextUtils.isEmpty(action)) {
+            final SnackbarEventCallback snackbarCallback = new SnackbarEventCallback(callback);
+
+            snackbar.setAction(action, snackbarCallback);
+            snackbar.setActionTextColor(ContextCompat.getColor(this, R.color.fennec_ui_orange));
+            snackbar.setCallback(snackbarCallback);
+        }
+
+        snackbar.show();
+    }
+
+    private static class SnackbarEventCallback extends Snackbar.Callback implements View.OnClickListener {
+        private EventCallback callback;
+
+        public SnackbarEventCallback(EventCallback callback) {
+            this.callback = callback;
+        }
+
+        @Override
+        public synchronized void onClick(View view) {
+            if (callback == null) {
+                return;
+            }
+
+            callback.sendSuccess(null);
+            callback = null;
+        }
+
+        @Override
+        public synchronized void onDismissed(Snackbar snackbar, int event) {
+            if (callback == null || event == Snackbar.Callback.DISMISS_EVENT_ACTION) {
+                return;
+            }
+
+            callback.sendError(null);
+            callback = null;
+        }
     }
 
     void showButtonToast(final String message, final String duration,
@@ -1227,7 +1302,6 @@ public abstract class GeckoApp
             final String uri = getURIFromIntent(intent);
 
             GeckoThread.ensureInit(args, action,
-                    TextUtils.isEmpty(uri) ? null : uri,
                     /* debugging */ ACTION_DEBUG.equals(action));
 
             if (!TextUtils.isEmpty(uri)) {
@@ -1259,6 +1333,7 @@ public abstract class GeckoApp
             "PrivateBrowsing:Data",
             "Session:StatePurged",
             "Share:Text",
+            "Snackbar:Show",
             "SystemUI:Visibility",
             "Toast:Show",
             "ToggleChrome:Focus",
@@ -1267,6 +1342,9 @@ public abstract class GeckoApp
             "Update:Check",
             "Update:Download",
             "Update:Install");
+
+        EventDispatcher.getInstance().registerBackgroundThreadListener((BundleEventListener) this,
+                "History:GetPrePathLastVisitedTimeMilliseconds");
 
         if (mWebappEventListener == null) {
             mWebappEventListener = new EventListener();
@@ -1298,7 +1376,7 @@ public abstract class GeckoApp
         setContentView(getLayout());
 
         // Set up Gecko layout.
-        mRootLayout = (OuterLayout) findViewById(R.id.root_layout);
+        mRootLayout = (RelativeLayout) findViewById(R.id.root_layout);
         mGeckoLayout = (RelativeLayout) findViewById(R.id.gecko_layout);
         mMainLayout = (RelativeLayout) findViewById(R.id.main_layout);
         mLayerView = (LayerView) findViewById(R.id.layer_view);
@@ -2074,6 +2152,7 @@ public abstract class GeckoApp
             "PrivateBrowsing:Data",
             "Session:StatePurged",
             "Share:Text",
+            "Snackbar:Show",
             "SystemUI:Visibility",
             "Toast:Show",
             "ToggleChrome:Focus",
@@ -2082,6 +2161,9 @@ public abstract class GeckoApp
             "Update:Check",
             "Update:Download",
             "Update:Install");
+
+        EventDispatcher.getInstance().unregisterBackgroundThreadListener((BundleEventListener) this,
+                "History:GetPrePathLastVisitedTimeMilliseconds");
 
         if (mWebappEventListener != null) {
             mWebappEventListener.unregisterEvents();
@@ -2345,31 +2427,57 @@ public abstract class GeckoApp
             return;
         }
 
-        Tabs tabs = Tabs.getInstance();
-        Tab tab = tabs.getSelectedTab();
+        final Tabs tabs = Tabs.getInstance();
+        final Tab tab = tabs.getSelectedTab();
         if (tab == null) {
             moveTaskToBack(true);
             return;
         }
 
-        if (tab.doBack())
-            return;
+        // Give Gecko a chance to handle the back press first, then fallback to the Java UI.
+        GeckoAppShell.sendRequestToGecko(new GeckoRequest("Browser:OnBackPressed", null) {
+            @Override
+            public void onResponse(NativeJSObject nativeJSObject) {
+                if (!nativeJSObject.getBoolean("handled")) {
+                    // Default behavior is Gecko didn't prevent.
+                    onDefault();
+                }
+            }
 
-        if (tab.isExternal()) {
-            moveTaskToBack(true);
-            tabs.closeTab(tab);
-            return;
-        }
+            @Override
+            public void onError(NativeJSObject error) {
+                // Default behavior is Gecko didn't prevent, via failure.
+                onDefault();
+            }
 
-        int parentId = tab.getParentId();
-        Tab parent = tabs.getTab(parentId);
-        if (parent != null) {
-            // The back button should always return to the parent (not a sibling).
-            tabs.closeTab(tab, parent);
-            return;
-        }
+            // Return from Gecko thread, then back-press through the Java UI.
+            private void onDefault() {
+                ThreadUtils.postToUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (tab.doBack()) {
+                            return;
+                        }
 
-        moveTaskToBack(true);
+                        if (tab.isExternal()) {
+                            moveTaskToBack(true);
+                            tabs.closeTab(tab);
+                            return;
+                        }
+
+                        final int parentId = tab.getParentId();
+                        final Tab parent = tabs.getTab(parentId);
+                        if (parent != null) {
+                            // The back button should always return to the parent (not a sibling).
+                            tabs.closeTab(tab, parent);
+                            return;
+                        }
+
+                        moveTaskToBack(true);
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -2459,7 +2567,6 @@ public abstract class GeckoApp
     public static class MainLayout extends RelativeLayout {
         private TouchEventInterceptor mTouchEventInterceptor;
         private MotionEventInterceptor mMotionEventInterceptor;
-        private LayoutInterceptor mLayoutInterceptor;
 
         public MainLayout(Context context, AttributeSet attrs) {
             super(context, attrs);
@@ -2468,13 +2575,6 @@ public abstract class GeckoApp
         @Override
         protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
             super.onLayout(changed, left, top, right, bottom);
-            if (mLayoutInterceptor != null) {
-                mLayoutInterceptor.onLayout();
-            }
-        }
-
-        public void setLayoutInterceptor(LayoutInterceptor interceptor) {
-            mLayoutInterceptor = interceptor;
         }
 
         public void setTouchEventInterceptor(TouchEventInterceptor interceptor) {
