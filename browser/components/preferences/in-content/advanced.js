@@ -34,11 +34,6 @@ var gAdvancedPane = {
 		Services.prefs.setBoolPref("app.update.check.enabled", false);		
 	}	
 
-    //If windows vista disable & hide Hardware acceleration.
-  if (AppConstants.platform == "win" && !AppConstants.isPlatformAndVersionAtLeast("win", "6.0")) {
-		  document.getElementById('allowHWAccel').hidden=true;	
-	}
-	
     var preference = document.getElementById("browser.preferences.advanced.selectedTabIndex");
     if (preference.value !== null)
         advancedPrefs.selectedIndex = preference.value;

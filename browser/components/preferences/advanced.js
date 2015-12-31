@@ -30,12 +30,7 @@ var gAdvancedPane = {
 		Services.prefs.setBoolPref("app.update.autocheck", false);
 		Services.prefs.setBoolPref("app.update.check.enabled", false);		
 	}
-	
-    //If windows vista disable & hide Hardware acceleration.
-    if (AppConstants.platform == "win" && !AppConstants.isPlatformAndVersionAtLeast("win", "6.0")) {
-		  document.getElementById('allowHWAccel').hidden=true;	
-	}
-  
+
     var extraArgs = window.arguments[1];
     if (extraArgs && extraArgs["advancedTab"]){
       advancedPrefs.selectedTab = document.getElementById(extraArgs["advancedTab"]);
