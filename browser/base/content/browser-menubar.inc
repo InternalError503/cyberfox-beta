@@ -524,6 +524,7 @@
                         accesskey="&addons.accesskey;"
                         key="key_openAddons"
                         command="Tools:Addons"/>
+
               <menuitem id="menu_openLoop"
                         label="&loopMenuItem.label;"
                         accesskey = "&loopMenuItem.accesskey;"
