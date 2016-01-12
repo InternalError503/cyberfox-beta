@@ -33,7 +33,6 @@ var AboutHome = {
     "AboutHome:Downloads",
     "AboutHome:Bookmarks",
     "AboutHome:History",
-    "AboutHome:Apps",
     "AboutHome:Addons",
     "AboutHome:Sync",
     "AboutHome:Settings",
@@ -79,10 +78,6 @@ var AboutHome = {
 
       case "AboutHome:History":
         window.PlacesCommandHook.showPlacesOrganizer("History");
-        break;
-
-      case "AboutHome:Apps":
-        window.BrowserOpenApps();
         break;
 
       case "AboutHome:Addons":
