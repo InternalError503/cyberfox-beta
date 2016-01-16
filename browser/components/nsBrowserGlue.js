@@ -114,9 +114,6 @@ XPCOMUtils.defineLazyModuleGetter(this, "SelfSupportBackend",
 XPCOMUtils.defineLazyModuleGetter(this, "SessionStore",
                                   "resource:///modules/sessionstore/SessionStore.jsm");
 
-XPCOMUtils.defineLazyModuleGetter(this, "BrowserUITelemetry",
-                                  "resource:///modules/BrowserUITelemetry.jsm");
-
 XPCOMUtils.defineLazyModuleGetter(this, "AsyncShutdown",
                                   "resource://gre/modules/AsyncShutdown.jsm");
 
@@ -650,7 +647,7 @@ BrowserGlue.prototype = {
 #endif
     webrtcUI.init();
     AboutHome.init();
-	NewTabUtils.init();
+    NewTabUtils.init();
     AboutNewTab.init();
 
     if(!AppConstants.RELEASE_BUILD) {
@@ -659,7 +656,6 @@ BrowserGlue.prototype = {
     }
 
     SessionStore.init();
-    BrowserUITelemetry.init();
     ContentSearch.init();
     FormValidationHandler.init();
 
@@ -724,37 +720,6 @@ BrowserGlue.prototype = {
     }
   },
 
-  _showSlowStartupNotification: function () {
-    let win = RecentWindow.getMostRecentBrowserWindow();
-    if (!win)
-      return;
-
-    let productName = gBrandBundle.GetStringFromName("brandFullName");
-    let message = win.gNavigatorBundle.getFormattedString("slowStartup.message", [productName]);
-
-    let buttons = [
-      {
-        label:     win.gNavigatorBundle.getString("slowStartup.helpButton.label"),
-        accessKey: win.gNavigatorBundle.getString("slowStartup.helpButton.accesskey"),
-        callback: function () {
-          win.openUILinkIn("https://support.mozilla.org/kb/reset-firefox-easily-fix-most-problems", "tab");
-        }
-      },
-      {
-        label:     win.gNavigatorBundle.getString("slowStartup.disableNotificationButton.label"),
-        accessKey: win.gNavigatorBundle.getString("slowStartup.disableNotificationButton.accesskey"),
-        callback: function () {
-          Services.prefs.setBoolPref("browser.slowStartup.notificationDisabled", true);
-        }
-      }
-    ];
-
-    let nb = win.document.getElementById("global-notificationbox");
-    nb.appendNotification(message, "slow-startup",
-                          "chrome://browser/skin/slowStartup-16.png",
-                          nb.PRIORITY_INFO_LOW, buttons);
-  },
-
   /**
    * Show a notification bar offering a reset if the profile has been unused for some time.
    */
@@ -807,21 +772,6 @@ BrowserGlue.prototype = {
     let nb = win.document.getElementById("high-priority-global-notificationbox");
     nb.appendNotification(message, "unsigned-addons-disabled", "",
                           nb.PRIORITY_WARNING_MEDIUM, buttons);
-  },
-
-  _firstWindowTelemetry: function(aWindow) {
-#ifdef XP_WIN
-    let SCALING_PROBE_NAME = "DISPLAY_SCALING_MSWIN";
-#elifdef XP_MACOSX
-    let SCALING_PROBE_NAME = "DISPLAY_SCALING_OSX";
-#elifdef XP_LINUX
-    let SCALING_PROBE_NAME = "DISPLAY_SCALING_LINUX";
-#else
-    let SCALING_PROBE_NAME = "";
-#endif
-    if (SCALING_PROBE_NAME) {
-      let scaling = aWindow.devicePixelRatio * 100;
-    }
   },
 
   // the first browser window has finished initializing
@@ -888,8 +838,6 @@ BrowserGlue.prototype = {
       this._resetUnusedProfileNotification();
     }
 
-
-    this._firstWindowTelemetry(aWindow);
     this._firstWindowLoaded();
   },
 
@@ -1627,13 +1575,19 @@ BrowserGlue.prototype = {
     const UI_VERSION = 34;
     const BROWSER_DOCURL = "chrome://browser/content/browser.xul";
     let currentUIVersion = 0;
+
+    let xulStore = Cc["@mozilla.org/xul/xulstore;1"].getService(Ci.nsIXULStore);
+
+    // Unconditionally remove this for Fx44 so we don't interfere with the UI version
+    xulStore.removeValue("chrome://passwordmgr/content/passwordManager.xul",
+                         "passwordCol",
+                         "hidden");
+
     try {
       currentUIVersion = Services.prefs.getIntPref("browser.migration.version");
     } catch(ex) {}
     if (currentUIVersion >= UI_VERSION)
       return;
-
-    let xulStore = Cc["@mozilla.org/xul/xulstore;1"].getService(Ci.nsIXULStore);
 
     if (currentUIVersion < 2) {
       // This code adds the customizable bookmarks button.
