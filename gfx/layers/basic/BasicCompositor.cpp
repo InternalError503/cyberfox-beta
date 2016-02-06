@@ -148,7 +148,7 @@ BasicCompositor::CreateRenderTargetFromSource(const IntRect &aRect,
                                               const CompositingRenderTarget *aSource,
                                               const IntPoint &aSourcePoint)
 {
-  MOZ_CRASH("Shouldn't be called!");
+  MOZ_CRASH("GFX: Shouldn't be called!");
   return nullptr;
 }
 
@@ -352,7 +352,6 @@ BasicCompositor::DrawQuad(const gfx::Rect& aRect,
   // |dest| is a temporary surface.
   RefPtr<DrawTarget> dest = buffer;
 
-  buffer->PushClipRect(aClipRect);
   AutoRestoreTransform autoRestoreTransform(dest);
 
   Matrix newTransform;
@@ -375,6 +374,10 @@ BasicCompositor::DrawQuad(const gfx::Rect& aRect,
     transformBounds = aTransform.TransformAndClipBounds(aRect, Rect(offset.x, offset.y, buffer->GetSize().width, buffer->GetSize().height));
     transformBounds.RoundOut();
 
+    if (transformBounds.IsEmpty()) {
+      return;
+    }
+
     // Propagate the coordinate offset to our 2D draw target.
     newTransform = Matrix::Translation(transformBounds.x, transformBounds.y);
 
@@ -382,6 +385,8 @@ BasicCompositor::DrawQuad(const gfx::Rect& aRect,
     // surface, so undo the coordinate offset.
     new3DTransform = Matrix4x4::Translation(aRect.x, aRect.y, 0) * aTransform;
   }
+
+  buffer->PushClipRect(aClipRect);
 
   newTransform.PostTranslate(-offset.x, -offset.y);
   buffer->SetTransform(newTransform);
@@ -506,7 +511,7 @@ BasicCompositor::BeginFrame(const nsIntRegion& aInvalidRegion,
                             gfx::Rect *aClipRectOut /* = nullptr */,
                             gfx::Rect *aRenderBoundsOut /* = nullptr */)
 {
-  mWidgetSize = mWidget->GetClientSize();
+  mWidgetSize = mWidget->GetClientSize().ToUnknownSize();
   IntRect intRect = gfx::IntRect(IntPoint(), mWidgetSize);
   Rect rect = Rect(0, 0, intRect.width, intRect.height);
 
@@ -587,7 +592,7 @@ BasicCompositor::EndFrame()
     float g = float(rand()) / RAND_MAX;
     float b = float(rand()) / RAND_MAX;
     // We're still clipped to mInvalidRegion, so just fill the bounds.
-    mRenderTarget->mDrawTarget->FillRect(ToRect(mInvalidRegion.GetBounds()),
+    mRenderTarget->mDrawTarget->FillRect(IntRectToRect(mInvalidRegion.GetBounds()),
                                          ColorPattern(Color(r, g, b, 0.2f)));
   }
 

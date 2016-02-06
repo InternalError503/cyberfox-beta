@@ -221,8 +221,6 @@ const static js::Class sNPObjectJSWrapperClass =
     nullptr,                                                /* trace */
     JS_NULL_CLASS_SPEC,
     {
-      nullptr,                                              /* outerObject */
-      nullptr,                                              /* innerObject */
       false,                                                /* isWrappedNative */
       nullptr,                                              /* weakmapKeyDelegateOp */
       NPObjWrapper_ObjectMoved
@@ -1680,6 +1678,8 @@ NPObjWrapper_Resolve(JSContext *cx, JS::Handle<JSObject*> obj, JS::Handle<jsid> 
   if (JSID_IS_SYMBOL(id))
     return true;
 
+  PROFILER_LABEL_FUNC(js::ProfileEntry::Category::JS);
+
   NPObject *npobj = GetNPObject(cx, obj);
 
   if (!npobj || !npobj->_class || !npobj->_class->hasProperty ||
@@ -2144,6 +2144,8 @@ static bool
 NPObjectMember_GetProperty(JSContext *cx, JS::HandleObject obj, JS::HandleId id,
                            JS::MutableHandleValue vp)
 {
+  PROFILER_LABEL_FUNC(js::ProfileEntry::Category::OTHER);
+
   if (JSID_IS_SYMBOL(id)) {
     JS::RootedSymbol sym(cx, JSID_TO_SYMBOL(id));
     if (JS::GetSymbolCode(sym) == JS::SymbolCode::toPrimitive) {

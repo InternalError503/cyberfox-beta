@@ -143,6 +143,7 @@ class MessageChannel : HasResultCodes
         return !mCxxStackFrames.empty();
     }
 
+    bool IsInTransaction() const { return mCurrentTransaction != 0; }
     void CancelCurrentTransaction();
 
     /**
@@ -249,7 +250,7 @@ class MessageChannel : HasResultCodes
     bool InterruptEventOccurred();
     bool HasPendingEvents();
 
-    void ProcessPendingRequests();
+    void ProcessPendingRequests(int transaction, int prio);
     bool ProcessPendingRequest(const Message &aUrgent);
 
     void MaybeUndeferIncall();
@@ -524,16 +525,22 @@ class MessageChannel : HasResultCodes
     class AutoSetValue {
       public:
         explicit AutoSetValue(T &var, const T &newValue)
-          : mVar(var), mPrev(var)
+          : mVar(var), mPrev(var), mNew(newValue)
         {
             mVar = newValue;
         }
         ~AutoSetValue() {
-            mVar = mPrev;
+            // The value may have been zeroed if the transaction was
+            // canceled. In that case we shouldn't return it to its previous
+            // value.
+            if (mVar == mNew) {
+                mVar = mPrev;
+            }
         }
       private:
         T& mVar;
         T mPrev;
+        T mNew;
     };
 
     // Worker thread only.

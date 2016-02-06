@@ -25,7 +25,7 @@
 
 using mozilla::dom::ContentParent;
 using mozilla::dom::ContentChild;
-using mozilla::unused;
+using mozilla::Unused;
 
 #include "nsWindow.h"
 
@@ -58,6 +58,7 @@ using mozilla::unused;
 #include "mozilla/layers/LayerManagerComposite.h"
 #include "mozilla/layers/AsyncCompositionManager.h"
 #include "mozilla/layers/APZCTreeManager.h"
+#include "mozilla/layers/APZEventState.h"
 #include "mozilla/layers/APZThreadUtils.h"
 #include "GLContext.h"
 #include "GLContextProvider.h"
@@ -78,6 +79,7 @@ using mozilla::unused;
 #include "nsString.h"
 #include "GeckoProfiler.h" // For PROFILER_LABEL
 #include "nsIXULRuntime.h"
+#include "nsPrintfCString.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -117,7 +119,7 @@ public:
         if (!strcmp(aTopic, "ipc:content-created")) {
             nsCOMPtr<nsIObserver> cpo = do_QueryInterface(aSubject);
             ContentParent* cp = static_cast<ContentParent*>(cpo.get());
-            unused << cp->SendScreenSizeChanged(gAndroidScreenBounds);
+            Unused << cp->SendScreenSizeChanged(gAndroidScreenBounds);
         } else if (!strcmp(aTopic, "xpcom-shutdown")) {
             nsCOMPtr<nsIObserverService> obs =
                 mozilla::services::GetObserverService();
@@ -206,8 +208,6 @@ class nsWindow::Natives final
             // Events that result in user-visible changes count as UI events.
             if (Base::lambda.IsTarget(&Natives::OnKeyEvent) ||
                 Base::lambda.IsTarget(&Natives::OnImeReplaceText) ||
-                Base::lambda.IsTarget(&Natives::OnImeSetSelection) ||
-                Base::lambda.IsTarget(&Natives::OnImeRemoveComposition) ||
                 Base::lambda.IsTarget(&Natives::OnImeUpdateComposition))
             {
                 return nsAppShell::Event::Type::kUIActivity;
@@ -241,7 +241,7 @@ public:
         , mIMEMaskEventsCount(1) // Mask IME events since there's no focus yet
         , mIMEUpdatingContext(false)
         , mIMESelectionChanged(false)
-        , mIMEMaskSelectionUpdate(false)
+        , mIMETextChangedDuringFlush(false)
     {}
 
     ~Natives();
@@ -279,8 +279,8 @@ private:
 
         * Gecko controls the text content, and Java shadows the Gecko text
            through text updates
-        * Java controls the selection, and Gecko shadows the Java selection
-           through set selection events
+        * Gecko and Java maintain separate selections, and synchronize when
+           needed through selection updates and set-selection events
         * Java controls the composition, and Gecko shadows the Java
            composition through update composition events
     */
@@ -317,12 +317,17 @@ private:
     int32_t mIMEMaskEventsCount; // Mask events when > 0
     bool mIMEUpdatingContext;
     bool mIMESelectionChanged;
-    bool mIMEMaskSelectionUpdate;
+    bool mIMETextChangedDuringFlush;
 
     void SendIMEDummyKeyEvents();
     void AddIMETextChange(const IMETextChange& aChange);
+
+    enum FlushChangesFlag {
+        FLUSH_FLAG_NONE,
+        FLUSH_FLAG_RETRY
+    };
     void PostFlushIMEChanges();
-    void FlushIMEChanges();
+    void FlushIMEChanges(FlushChangesFlag aFlags = FLUSH_FLAG_NONE);
 
 public:
     bool NotifyIME(const IMENotification& aIMENotification);
@@ -345,13 +350,7 @@ public:
 
     // Replace a range of text with new text.
     void OnImeReplaceText(int32_t aStart, int32_t aEnd,
-                          jni::String::Param aText, bool aComposing);
-
-    // Set selection to a certain range.
-    void OnImeSetSelection(int32_t aStart, int32_t aEnd);
-
-    // Remove any active composition.
-    void OnImeRemoveComposition();
+                          jni::String::Param aText);
 
     // Add styling for a range within the active composition.
     void OnImeAddCompositionRange(int32_t aStart, int32_t aEnd,
@@ -533,10 +532,10 @@ nsWindow::IsTopLevel()
 }
 
 NS_IMETHODIMP
-nsWindow::Create(nsIWidget *aParent,
+nsWindow::Create(nsIWidget* aParent,
                  nsNativeWidget aNativeParent,
-                 const nsIntRect &aRect,
-                 nsWidgetInitData *aInitData)
+                 const LayoutDeviceIntRect& aRect,
+                 nsWidgetInitData* aInitData)
 {
     ALOG("nsWindow[%p]::Create %p [%d %d %d %d]", (void*)this, (void*)aParent, aRect.x, aRect.y, aRect.width, aRect.height);
     nsWindow *parent = (nsWindow*) aParent;
@@ -548,7 +547,7 @@ nsWindow::Create(nsIWidget *aParent,
         }
     }
 
-    mBounds = aRect;
+    mBounds = aRect.ToUnknownRect();
 
     // for toplevel windows, bounds are fixed to full screen size
     if (!parent) {
@@ -558,7 +557,8 @@ nsWindow::Create(nsIWidget *aParent,
         mBounds.height = gAndroidBounds.height;
     }
 
-    BaseCreate(nullptr, mBounds, aInitData);
+    BaseCreate(nullptr, LayoutDeviceIntRect::FromUnknownRect(mBounds),
+               aInitData);
 
     NS_ASSERTION(IsTopLevel() || parent, "non top level windowdoesn't have a parent!");
 
@@ -879,7 +879,7 @@ nsWindow::IsEnabled() const
 }
 
 NS_IMETHODIMP
-nsWindow::Invalidate(const nsIntRect &aRect)
+nsWindow::Invalidate(const LayoutDeviceIntRect& aRect)
 {
     return NS_OK;
 }
@@ -962,7 +962,7 @@ nsWindow::BringToFront()
 }
 
 NS_IMETHODIMP
-nsWindow::GetScreenBounds(nsIntRect &aRect)
+nsWindow::GetScreenBounds(LayoutDeviceIntRect& aRect)
 {
     LayoutDeviceIntPoint p = WidgetToScreenOffset();
 
@@ -1134,7 +1134,7 @@ nsWindow::OnGlobalAndroidEvent(AndroidGeckoEvent *ae)
             nsTArray<ContentParent*> cplist;
             ContentParent::GetAll(cplist);
             for (uint32_t i = 0; i < cplist.Length(); ++i)
-                unused << cplist[i]->SendScreenSizeChanged(gAndroidScreenBounds);
+                Unused << cplist[i]->SendScreenSizeChanged(gAndroidScreenBounds);
 
             if (gContentCreationNotifier)
                 break;
@@ -1161,6 +1161,7 @@ nsWindow::OnGlobalAndroidEvent(AndroidGeckoEvent *ae)
 
             WidgetTouchEvent touchEvent = ae->MakeTouchEvent(win);
             win->ProcessUntransformedAPZEvent(&touchEvent, ae->ApzGuid(), ae->ApzInputBlockId(), ae->ApzEventStatus());
+            win->DispatchHitTest(touchEvent);
             break;
         }
         case AndroidGeckoEvent::MOTION_EVENT: {
@@ -1238,11 +1239,10 @@ nsWindow::OnSizeChanged(const gfx::IntSize& aSize)
 }
 
 void
-nsWindow::InitEvent(WidgetGUIEvent& event, nsIntPoint* aPoint)
+nsWindow::InitEvent(WidgetGUIEvent& event, LayoutDeviceIntPoint* aPoint)
 {
     if (aPoint) {
-        event.refPoint.x = aPoint->x;
-        event.refPoint.y = aPoint->y;
+        event.refPoint = *aPoint;
     } else {
         event.refPoint.x = 0;
         event.refPoint.y = 0;
@@ -1270,6 +1270,11 @@ nsWindow::GetNativeData(uint32_t aDataType)
 
         case NS_NATIVE_WIDGET:
             return (void *) this;
+
+        case NS_RAW_NATIVE_IME_CONTEXT:
+            // We assume that there is only one context per process on Android
+            return NS_ONLY_ONE_NATIVE_IME_CONTEXT;
+
     }
 
     return nullptr;
@@ -1349,6 +1354,28 @@ nsWindow::OnLongTapEvent(AndroidGeckoEvent *ae)
     DispatchEvent(&event);
 }
 
+void
+nsWindow::DispatchHitTest(const WidgetTouchEvent& aEvent)
+{
+    if (aEvent.mMessage == eTouchStart && aEvent.touches.Length() == 1) {
+        // Since touch events don't get retargeted by PositionedEventTargeting.cpp
+        // code on Fennec, we dispatch a dummy mouse event that *does* get
+        // retargeted. The Fennec browser.js code can use this to activate the
+        // highlight element in case the this touchstart is the start of a tap.
+        WidgetMouseEvent hittest(true, eMouseHitTest, this,
+                                 WidgetMouseEvent::eReal);
+        hittest.refPoint = aEvent.touches[0]->mRefPoint;
+        hittest.ignoreRootScrollFrame = true;
+        hittest.inputSource = nsIDOMMouseEvent::MOZ_SOURCE_TOUCH;
+        nsEventStatus status;
+        DispatchEvent(&hittest, status);
+
+        if (mAPZEventState && hittest.hitCluster) {
+            mAPZEventState->ProcessClusterHit();
+        }
+    }
+}
+
 bool nsWindow::OnMultitouchEvent(AndroidGeckoEvent *ae)
 {
     RefPtr<nsWindow> kungFuDeathGrip(this);
@@ -1379,19 +1406,7 @@ bool nsWindow::OnMultitouchEvent(AndroidGeckoEvent *ae)
         isDownEvent = (event.mMessage == eTouchStart);
     }
 
-    if (isDownEvent && event.touches.Length() == 1) {
-        // Since touch events don't get retargeted by PositionedEventTargeting.cpp
-        // code on Fennec, we dispatch a dummy mouse event that *does* get
-        // retargeted. The Fennec browser.js code can use this to activate the
-        // highlight element in case the this touchstart is the start of a tap.
-        WidgetMouseEvent hittest(true, eMouseHitTest, this,
-                                 WidgetMouseEvent::eReal);
-        hittest.refPoint = event.touches[0]->mRefPoint;
-        hittest.ignoreRootScrollFrame = true;
-        hittest.inputSource = nsIDOMMouseEvent::MOZ_SOURCE_TOUCH;
-        nsEventStatus status;
-        DispatchEvent(&hittest, status);
-    }
+    DispatchHitTest(event);
 
     // if the last event we got was a down event, then by now we know for sure whether
     // this block has been default-prevented or not. if we haven't already sent the
@@ -1914,18 +1929,6 @@ ConvertAndroidColor(uint32_t aArgb)
                    (aArgb & 0xff000000) >> 24);
 }
 
-class AutoIMEMask {
-private:
-    bool mOldMask, *mMask;
-public:
-    AutoIMEMask(bool &aMask) : mOldMask(aMask), mMask(&aMask) {
-        aMask = true;
-    }
-    ~AutoIMEMask() {
-        *mMask = mOldMask;
-    }
-};
-
 /*
  * Get the current composition object, if any.
  */
@@ -1984,6 +1987,10 @@ void
 nsWindow::Natives::AddIMETextChange(const IMETextChange& aChange)
 {
     mIMETextChanges.AppendElement(aChange);
+
+    // We may not be in the middle of flushing,
+    // in which case this flag is meaningless.
+    mIMETextChangedDuringFlush = true;
 
     // Now that we added a new range we need to go back and
     // update all the ranges before that.
@@ -2061,7 +2068,7 @@ nsWindow::Natives::PostFlushIMEChanges()
 }
 
 void
-nsWindow::Natives::FlushIMEChanges()
+nsWindow::Natives::FlushIMEChanges(FlushChangesFlag aFlags)
 {
     // Only send change notifications if we are *not* masking events,
     // i.e. if we have a focused editor,
@@ -2077,9 +2084,37 @@ nsWindow::Natives::FlushIMEChanges()
     RefPtr<nsWindow> kungFuDeathGrip(&window);
     window.UserActivity();
 
-    for (uint32_t i = 0; i < mIMETextChanges.Length(); i++) {
-        IMETextChange &change = mIMETextChanges[i];
+    struct TextRecord {
+        nsString text;
+        int32_t start;
+        int32_t oldEnd;
+        int32_t newEnd;
+    };
+    nsAutoTArray<TextRecord, 4> textTransaction;
+    if (mIMETextChanges.Length() > textTransaction.Capacity()) {
+        textTransaction.SetCapacity(mIMETextChanges.Length());
+    }
 
+    mIMETextChangedDuringFlush = false;
+
+    auto shouldAbort = [=] () -> bool {
+        if (!mIMETextChangedDuringFlush) {
+            return false;
+        }
+        // A query event could have triggered more text changes to come in, as
+        // indicated by our flag. If that happens, try flushing IME changes
+        // again.
+        if (aFlags != FLUSH_FLAG_RETRY) {
+            FlushIMEChanges(FLUSH_FLAG_RETRY);
+        } else {
+            // Don't retry if already retrying, to avoid infinite loops.
+            __android_log_print(ANDROID_LOG_WARN, "GeckoViewSupport",
+                    "Already retrying IME flush");
+        }
+        return true;
+    };
+
+    for (const IMETextChange &change : mIMETextChanges) {
         if (change.mStart == change.mOldEnd &&
                 change.mStart == change.mNewEnd) {
             continue;
@@ -2096,10 +2131,17 @@ nsWindow::Natives::FlushIMEChanges()
             NS_ENSURE_TRUE_VOID(event.mReply.mContentsRoot == imeRoot.get());
         }
 
-        mEditable->OnTextChange(event.mReply.mString, change.mStart,
-                                change.mOldEnd, change.mNewEnd);
+        if (shouldAbort()) {
+            return;
+        }
+
+        textTransaction.AppendElement(
+                TextRecord{event.mReply.mString, change.mStart,
+                           change.mOldEnd, change.mNewEnd});
     }
-    mIMETextChanges.Clear();
+
+    int32_t selStart;
+    int32_t selEnd;
 
     if (mIMESelectionChanged) {
         WidgetQueryContentEvent event(true, eQuerySelectedText, &window);
@@ -2109,9 +2151,25 @@ nsWindow::Natives::FlushIMEChanges()
         NS_ENSURE_TRUE_VOID(event.mSucceeded);
         NS_ENSURE_TRUE_VOID(event.mReply.mContentsRoot == imeRoot.get());
 
-        mEditable->OnSelectionChange(int32_t(event.GetSelectionStart()),
-                                     int32_t(event.GetSelectionEnd()));
+        if (shouldAbort()) {
+            return;
+        }
+
+        selStart = int32_t(event.GetSelectionStart());
+        selEnd = int32_t(event.GetSelectionEnd());
+    }
+
+    // Commit the text change and selection change transaction.
+    mIMETextChanges.Clear();
+
+    for (const TextRecord& record : textTransaction) {
+        mEditable->OnTextChange(record.text, record.start,
+                                record.oldEnd, record.newEnd);
+    }
+
+    if (mIMESelectionChanged) {
         mIMESelectionChanged = false;
+        mEditable->OnSelectionChange(selStart, selEnd);
     }
 }
 
@@ -2164,10 +2222,6 @@ nsWindow::Natives::NotifyIME(const IMENotification& aIMENotification)
         }
 
         case NOTIFY_IME_OF_SELECTION_CHANGE: {
-            if (mIMEMaskSelectionUpdate) {
-                return true;
-            }
-
             ALOGIME("IME: NOTIFY_IME_OF_SELECTION_CHANGE");
 
             PostFlushIMEChanges();
@@ -2257,8 +2311,6 @@ nsWindow::Natives::GetInputContext()
 {
     InputContext context = mInputContext;
     context.mIMEState.mOpen = IMEState::OPEN_STATE_NOT_SUPPORTED;
-    // We assume that there is only one context per process on Android
-    context.mNativeIMEContext = nullptr;
     return context;
 }
 
@@ -2274,7 +2326,6 @@ nsWindow::Natives::OnImeSynchronize()
 void
 nsWindow::Natives::OnImeAcknowledgeFocus()
 {
-    MOZ_ASSERT(!mIMEMaskSelectionUpdate);
     MOZ_ASSERT(mIMEMaskEventsCount > 0);
 
     if (--mIMEMaskEventsCount > 0) {
@@ -2300,10 +2351,8 @@ nsWindow::Natives::OnImeAcknowledgeFocus()
 
 void
 nsWindow::Natives::OnImeReplaceText(int32_t aStart, int32_t aEnd,
-                                    jni::String::Param aText, bool aComposing)
+                                    jni::String::Param aText)
 {
-    MOZ_ASSERT(!mIMEMaskSelectionUpdate);
-
     if (mIMEMaskEventsCount > 0) {
         // Not focused; still reply to events, but don't do anything else.
         return OnImeSynchronize();
@@ -2311,12 +2360,8 @@ nsWindow::Natives::OnImeReplaceText(int32_t aStart, int32_t aEnd,
 
     /*
         Replace text in Gecko thread from aStart to aEnd with the string text.
-
-        Selection updates are masked so the result of our temporary
-          selection event is not passed on to Java
     */
     RefPtr<nsWindow> kungFuDeathGrip(&window);
-    AutoIMEMask selMask(mIMEMaskSelectionUpdate);
     nsString string(aText);
 
     const auto composition(window.GetIMEComposition());
@@ -2338,6 +2383,7 @@ nsWindow::Natives::OnImeReplaceText(int32_t aStart, int32_t aEnd,
             event.mOffset = uint32_t(aStart);
             event.mLength = uint32_t(aEnd - aStart);
             event.mExpandToClusterBoundary = false;
+            event.mReason = nsISelectionListener::IME_REASON;
             window.DispatchEvent(&event);
         }
 
@@ -2379,25 +2425,37 @@ nsWindow::Natives::OnImeReplaceText(int32_t aStart, int32_t aEnd,
         AddIMETextChange(dummyChange);
     }
 
+    const bool composing = !mIMERanges->IsEmpty();
+
     // Previous events may have destroyed our composition; bail in that case.
     if (window.GetIMEComposition()) {
         WidgetCompositionEvent event(true, eCompositionChange, &window);
         window.InitEvent(event, nullptr);
         event.mData = string;
 
-        // Include proper text ranges to make the editor happy.
-        TextRange range;
-        range.mStartOffset = 0;
-        range.mEndOffset = event.mData.Length();
-        range.mRangeType = NS_TEXTRANGE_RAWINPUT;
-        event.mRanges = new TextRangeArray();
-        event.mRanges->AppendElement(range);
+        if (composing) {
+            event.mRanges = new TextRangeArray();
+            mIMERanges.swap(event.mRanges);
+
+        } else if (event.mData.Length()) {
+            // Include proper text ranges to make the editor happy.
+            TextRange range;
+            range.mStartOffset = 0;
+            range.mEndOffset = event.mData.Length();
+            range.mRangeType = NS_TEXTRANGE_RAWINPUT;
+            event.mRanges = new TextRangeArray();
+            event.mRanges->AppendElement(range);
+        }
 
         window.DispatchEvent(&event);
+
+    } else if (composing) {
+        // Ensure IME ranges are empty.
+        mIMERanges->Clear();
     }
 
     // Don't end composition when composing text or composition was destroyed.
-    if (!aComposing) {
+    if (!composing) {
         window.RemoveIMEComposition();
     }
 
@@ -2408,78 +2466,11 @@ nsWindow::Natives::OnImeReplaceText(int32_t aStart, int32_t aEnd,
 }
 
 void
-nsWindow::Natives::OnImeSetSelection(int32_t aStart, int32_t aEnd)
-{
-    MOZ_ASSERT(!mIMEMaskSelectionUpdate);
-
-    if (mIMEMaskEventsCount > 0) {
-        // Not focused.
-        return;
-    }
-
-    /*
-        Set Gecko selection to aStart to aEnd.
-
-        Selection updates are masked to prevent Java from being
-          notified of the new selection
-    */
-    RefPtr<nsWindow> kungFuDeathGrip(&window);
-    AutoIMEMask selMask(mIMEMaskSelectionUpdate);
-    WidgetSelectionEvent selEvent(true, eSetSelection, &window);
-
-    window.InitEvent(selEvent, nullptr);
-    window.RemoveIMEComposition();
-
-    if (aStart < 0 || aEnd < 0) {
-        WidgetQueryContentEvent event(true, eQuerySelectedText, &window);
-        window.InitEvent(event, nullptr);
-        window.DispatchEvent(&event);
-        MOZ_ASSERT(event.mSucceeded);
-
-        if (aStart < 0)
-            aStart = int32_t(event.GetSelectionStart());
-        if (aEnd < 0)
-            aEnd = int32_t(event.GetSelectionEnd());
-    }
-
-    selEvent.mOffset = std::min(aStart, aEnd);
-    selEvent.mLength = std::max(aStart, aEnd) - selEvent.mOffset;
-    selEvent.mReversed = aStart > aEnd;
-    selEvent.mExpandToClusterBoundary = false;
-
-    window.DispatchEvent(&selEvent);
-}
-
-void
-nsWindow::Natives::OnImeRemoveComposition()
-{
-    MOZ_ASSERT(!mIMEMaskSelectionUpdate);
-
-    if (mIMEMaskEventsCount > 0) {
-        // Not focused.
-        return;
-    }
-
-    /*
-     *  Remove any previous composition.  This is only used for
-     *    visual indication and does not affect the text content.
-     *
-     *  Selection updates are masked so the result of
-     *    temporary events are not passed on to Java
-     */
-    AutoIMEMask selMask(mIMEMaskSelectionUpdate);
-    window.RemoveIMEComposition();
-    mIMERanges->Clear();
-}
-
-void
 nsWindow::Natives::OnImeAddCompositionRange(
         int32_t aStart, int32_t aEnd, int32_t aRangeType, int32_t aRangeStyle,
         int32_t aRangeLineStyle, bool aRangeBoldLine, int32_t aRangeForeColor,
         int32_t aRangeBackColor, int32_t aRangeLineColor)
 {
-    MOZ_ASSERT(!mIMEMaskSelectionUpdate);
-
     if (mIMEMaskEventsCount > 0) {
         // Not focused.
         return;
@@ -2504,10 +2495,26 @@ nsWindow::Natives::OnImeAddCompositionRange(
 void
 nsWindow::Natives::OnImeUpdateComposition(int32_t aStart, int32_t aEnd)
 {
-    MOZ_ASSERT(!mIMEMaskSelectionUpdate);
-
     if (mIMEMaskEventsCount > 0) {
         // Not focused.
+        return;
+    }
+
+    // A composition with no ranges means we want to set the selection.
+    if (mIMERanges->IsEmpty()) {
+        MOZ_ASSERT(aStart >= 0 && aEnd >= 0);
+        window.RemoveIMEComposition();
+
+        WidgetSelectionEvent selEvent(true, eSetSelection, &window);
+        window.InitEvent(selEvent, nullptr);
+
+        selEvent.mOffset = std::min(aStart, aEnd);
+        selEvent.mLength = std::max(aStart, aEnd) - selEvent.mOffset;
+        selEvent.mReversed = aStart > aEnd;
+        selEvent.mExpandToClusterBoundary = false;
+        selEvent.mReason = nsISelectionListener::IME_REASON;
+
+        window.DispatchEvent(&selEvent);
         return;
     }
 
@@ -2518,12 +2525,8 @@ nsWindow::Natives::OnImeUpdateComposition(int32_t aStart, int32_t aEnd)
           Only the offsets are specified and not the text content
           to eliminate the possibility of this event altering the
           text content unintentionally.
-
-        Selection updates are masked so the result of
-          temporary events are not passed on to Java
     */
     RefPtr<nsWindow> kungFuDeathGrip(&window);
-    AutoIMEMask selMask(mIMEMaskSelectionUpdate);
     const auto composition(window.GetIMEComposition());
     MOZ_ASSERT(!composition || !composition->IsEditorHandlingEvent());
 
@@ -2548,6 +2551,7 @@ nsWindow::Natives::OnImeUpdateComposition(int32_t aStart, int32_t aEnd)
             event.mOffset = uint32_t(aStart);
             event.mLength = uint32_t(aEnd - aStart);
             event.mExpandToClusterBoundary = false;
+            event.mReason = nsISelectionListener::IME_REASON;
             window.DispatchEvent(&event);
         }
 
@@ -2667,7 +2671,8 @@ nsWindow::GetIMEUpdatePreference()
 }
 
 void
-nsWindow::DrawWindowUnderlay(LayerManagerComposite* aManager, nsIntRect aRect)
+nsWindow::DrawWindowUnderlay(LayerManagerComposite* aManager,
+                             LayoutDeviceIntRect aRect)
 {
     GeckoLayerClient::LocalRef client = AndroidBridge::Bridge()->GetLayerClient();
     if (!client) {
@@ -2702,7 +2707,8 @@ nsWindow::DrawWindowUnderlay(LayerManagerComposite* aManager, nsIntRect aRect)
 }
 
 void
-nsWindow::DrawWindowOverlay(LayerManagerComposite* aManager, nsIntRect aRect)
+nsWindow::DrawWindowOverlay(LayerManagerComposite* aManager,
+                            LayoutDeviceIntRect aRect)
 {
     PROFILER_LABEL("nsWindow", "DrawWindowOverlay",
         js::ProfileEntry::Category::GRAPHICS);

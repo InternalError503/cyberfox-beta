@@ -34,9 +34,9 @@ public:
   static void Terminate();
 
   /**
-   * Returns TSF related native data.
+   * Returns TSF related native data or native IME context.
    */
-  static void* GetNativeData(uint32_t aDataType);
+  static void* GetNativeData(nsWindow* aWindow, uint32_t aDataType);
 
   /**
    * ProcessRawKeyMessage() message is called before calling TranslateMessage()
@@ -111,9 +111,10 @@ public:
 #endif // #ifdef DEBUG
 
 private:
-  static bool sPluginHasFocus;
-
+  static nsWindow* sFocusedWindow;
   static InputContextAction::Cause sLastContextActionCause;
+
+  static bool sPluginHasFocus;
 
 #ifdef NS_ENABLE_TSF
   static decltype(SetInputScopes)* sSetInputScopes;

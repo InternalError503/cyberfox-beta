@@ -545,9 +545,6 @@ SaveWin8RegistryHashes(bool aCheckAllTypes, bool* aIsDefaultBrowser)
 static bool
 RestoreWin8RegistryHashes(bool aClaimAllTypes)
 {
-  // Disabled due to bug 1240892.
-  return false;
-
   RefPtr<IApplicationAssociationRegistration> pAAR;
   HRESULT hr = CoCreateInstance(CLSID_ApplicationAssociationRegistration,
                                 nullptr,
@@ -988,47 +985,6 @@ nsWindowsShellService::SetDefaultBrowser(bool aClaimAllTypes, bool aForAllUsers)
 }
 
 NS_IMETHODIMP
-nsWindowsShellService::GetShouldSkipCheckDefaultBrowser(bool* aResult)
-{
-  NS_ENSURE_ARG_POINTER(aResult);
-
-  nsresult rv;
-  nsCOMPtr<nsIPrefBranch> prefs(do_GetService(NS_PREFSERVICE_CONTRACTID, &rv));
-  if (NS_FAILED(rv)) {
-    return rv;
-  }
-
-  rv = prefs->GetBoolPref(PREF_SKIPDEFAULTBROWSERCHECK, aResult);
-  if (NS_FAILED(rv)) {
-    return rv;
-  }
-  if (*aResult) {
-    // Only skip the default browser check once. The next attempt in
-    // a new session should proceed.
-    return prefs->SetBoolPref(PREF_SKIPDEFAULTBROWSERCHECK, false);
-  }
-
-  int32_t defaultBrowserCheckCount;
-  rv = prefs->GetIntPref(PREF_DEFAULTBROWSERCHECKCOUNT,
-                         &defaultBrowserCheckCount);
-  if (NS_FAILED(rv)) {
-    return rv;
-  }
-  if (defaultBrowserCheckCount < 4) {
-    *aResult = false;
-    return prefs->SetIntPref(PREF_DEFAULTBROWSERCHECKCOUNT,
-                             defaultBrowserCheckCount + 1);
-  }
-
-  // Disable the default browser check after three attempts.
-  // Don't modify PREF_CHECKDEFAULTBROWSER since that is a
-  // user-initiated action and it shouldn't get re-enabled
-  // if it has been user disabled.
-  *aResult = true;
-  return rv;
-}
-
-NS_IMETHODIMP
 nsWindowsShellService::GetShouldCheckDefaultBrowser(bool* aResult)
 {
   NS_ENSURE_ARG_POINTER(aResult);
@@ -1041,18 +997,6 @@ nsWindowsShellService::GetShouldCheckDefaultBrowser(bool* aResult)
   }
 
   nsresult rv;
-#ifndef RELEASE_BUILD
-  bool skipDefaultBrowserCheck;
-  rv = GetShouldSkipCheckDefaultBrowser(&skipDefaultBrowserCheck);
-  if (NS_FAILED(rv)) {
-    return rv;
-  }
-  if (skipDefaultBrowserCheck) {
-    *aResult = false;
-    return rv;
-  }
-#endif
-
   nsCOMPtr<nsIPrefBranch> prefs(do_GetService(NS_PREFSERVICE_CONTRACTID, &rv));
   if (NS_FAILED(rv)) {
     return rv;

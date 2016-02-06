@@ -1793,8 +1793,12 @@ this.UITour = {
         appinfo["defaultBrowser"] = isDefaultBrowser;
 
         let canSetDefaultBrowserInBackground = true;
-        if (AppConstants.isPlatformAndVersionAtLeast("win", "6.2") ||
-            AppConstants.isPlatformAndVersionAtLeast("macosx", "10.10")) {
+        if (AppConstants.isPlatformAndVersionAtLeast("win", "6.2")) {
+          let prefBranch =
+            Services.prefs.getBranch("browser.shell.associationHash");
+          let prefChildren = prefBranch.getChildList("");
+          canSetDefaultBrowserInBackground = prefChildren.length > 0;
+        } else if (AppConstants.isPlatformAndVersionAtLeast("macosx", "10.10")) {
           canSetDefaultBrowserInBackground = false;
         } else if (AppConstants.platform == "linux") {
           // The ShellService may not exist on some versions of Linux.
@@ -2157,8 +2161,8 @@ if (AppConstants.MOZ_SERVICES_HEALTHREPORT) {
     _serializeJSONDaily: function(data) {
       let result = {_v: this.version };
 
-      for (let [field, data] of data) {
-        result[field] = data;
+      for (let [field, value] of data) {
+        result[field] = value;
       }
 
       return result;
