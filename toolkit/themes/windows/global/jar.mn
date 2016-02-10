@@ -11,6 +11,7 @@ toolkit.jar:
   skin/classic/global/checkbox.css
   skin/classic/global/dropmarker.css
   skin/classic/global/groupbox.css
+* skin/classic/global/inContentUI.css
 * skin/classic/global/menu.css
   skin/classic/global/menulist.css
 * skin/classic/global/popup.css
@@ -96,18 +97,6 @@ toolkit.jar:
   skin/classic/global/tree/twisty.svg                            (tree/twisty.svg)
   skin/classic/global/tree/twisty-XP.svg                         (tree/twisty-XP.svg)
   skin/classic/global/tree/twisty-Vista78.svg                    (tree/twisty-Vista78.svg)
-
-# Add Files For Cyberfox
-#Browser Theme Core Preferences
-* skin/classic/global/inContentUI.css
-  skin/classic/global/in-content/check.png                    			(../../shared/in-content/check.png)
-  skin/classic/global/in-content/check@2x.png						(../../shared/in-content/check@2x.png)
-  skin/classic/global/in-content/header.png							(../../shared/in-content/header.png)
-  skin/classic/global/in-content/header@2x.png						(../../shared/in-content/header@2x.png)	
-  skin/classic/global/in-content/dropdown.png						(../../shared/in-content/dropdown.png)
-  skin/classic/global/in-content/dropdown@2x.png 					(../../shared/in-content/dropdown@2x.png)
-  skin/classic/global/in-content/dropdown-disabled.png			(../../shared/in-content/dropdown-disabled.png)
-  skin/classic/global/in-content/dropdown-disabled@2x.png	(../../shared/in-content/dropdown-disabled@2x.png)
 
 #if MOZ_BUILD_APP == browser
 [browser/extensions/{972ce4c6-7e08-4474-a285-3208198ce6fd}] chrome.jar:
