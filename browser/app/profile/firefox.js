@@ -1614,6 +1614,8 @@ pref("toolkit.pageThumbs.minHeight", 190);
 pref("media.webspeech.synth.enabled", true);
 #endif
 
+pref("browser.esedbreader.loglevel", "Error");
+
 //Minimize ram useage on browser minimizes to taskbar
 pref("config.trim_on_minimize", true);
 

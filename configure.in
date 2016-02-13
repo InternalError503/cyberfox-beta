@@ -941,7 +941,7 @@ MOZ_FS_LAYOUT=unix
 
 USE_DEPENDENT_LIBS=1
 
-_PLATFORM_DEFAULT_TOOLKIT=cairo-gtk3
+_PLATFORM_DEFAULT_TOOLKIT=cairo-gtk2
 
 if test -n "$CROSS_COMPILE"; then
     OS_TARGET="${target_os}"
@@ -4625,6 +4625,7 @@ dnl ========================================================
 
 MOZ_ANDROID_GOOGLE_PLAY_SERVICES
 MOZ_ANDROID_GOOGLE_CLOUD_MESSAGING
+MOZ_ANDROID_INSTALL_TRACKING
 
 
 dnl ========================================================
