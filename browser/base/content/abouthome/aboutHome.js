@@ -78,7 +78,7 @@ function setupSearch()
 }
 
 function fitToWidth() {
-  if (window.scrollMaxX != window.scrollMinX) {
+  if (document.documentElement.scrollWidth > window.innerWidth) {
     document.body.setAttribute("narrow", "true");
   } else if (document.body.hasAttribute("narrow")) {
     document.body.removeAttribute("narrow");
