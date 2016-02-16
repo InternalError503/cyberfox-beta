@@ -1,0 +1,110 @@
+@import url(appbutton2.css);
+@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);
+
+@-moz-document url(chrome://browser/content/browser.xul) {
+ 
+	#ctraddon_appbutton2 .toolbarbutton-text {
+	  visibility: hidden !important;  
+	}
+    #ctraddon_appbutton2 > .toolbarbutton-icon {
+	  list-style-image: url("chrome://classic_theme_restorer/content/images/appbutton-inv.png") !important;
+      padding: 0 9px !important;
+      margin-top: -0.5px !important;
+      margin-bottom: -0.5px !important;
+	}
+	
+	#ctraddon_appbutton2{
+	  width: 32px !important;
+	}
+
+	#ctraddon_appbutton2:-moz-locale-dir(ltr) > label{
+	  -moz-appearance: none !important;
+      margin: 0px -26px 0 -34px !important;
+	}
+	#ctraddon_appbutton2:-moz-locale-dir(rtl) > label{
+	  -moz-appearance: none !important;
+      margin: 0px -34px 0 -26px !important;
+	}
+	
+	#main-window[sizemode="maximized"] #ctraddon_appbutton2:-moz-locale-dir(ltr) > label{
+	  -moz-appearance: none !important;
+      margin: -1px -26px 0 -34px !important;
+	}
+	#main-window[sizemode="maximized"] #ctraddon_appbutton2:-moz-locale-dir(rtl) > label{
+	  -moz-appearance: none !important;
+      margin: -1px -34px 0 -26px !important;
+	}
+	
+	@media (-moz-os-version: windows-win8) {
+		#main-window[tabsintitlebar][sizemode="maximized"] #ctraddon_appbutton2 > .toolbarbutton-icon {
+		  padding: 1px 9px !important;
+		}
+	}
+	
+	@media (-moz-os-version: windows-win10) {
+		#ctraddon_appbutton2 > .toolbarbutton-icon {
+		  padding: 1px 9px !important;
+		}
+	}
+	
+	@media (min-resolution: 1.1dppx) {
+	
+	  @media (-moz-os-version: windows-win8) {
+		#main-window[tabsintitlebar][sizemode="maximized"][fx40plus="true"] #ctraddon_appbutton2 > .toolbarbutton-icon {
+			margin-top:-1.5px !important;
+		}
+	  }
+
+	  @media (-moz-os-version: windows-win10) {
+		#main-window[tabsintitlebar][sizemode="maximized"][fx40plus="true"] #ctraddon_appbutton2 > .toolbarbutton-icon {
+		  margin-top:-1.5px !important;
+		}
+	  }
+
+	}
+
+	#ctraddon_appbutton2 > .toolbarbutton-menu-dropmarker{
+      visibility: collapse !important;
+	}
+	
+	#main-window[tabsintitlebar]:not([tabsontop="false"]) #titlebar:not([hidden]) ~ * #toolbar-menubar {
+	  -moz-margin-start: 34px !important;
+	}
+
+	#main-window[tabsintitlebar][customizing]:not([tabsontop="false"]) #titlebar:not([hidden]) ~ * #toolbar-menubar {
+	  -moz-margin-start: 0px !important;
+	}
+
+	#main-window[tabsintitlebar][chromehidden~="menubar"]:not([inFullscreen]) #toolbar-menubar ~ #TabsToolbar,
+	#main-window[tabsintitlebar]:not([tabsontop="false"]):not([inFullscreen]) #toolbar-menubar[autohide="true"][inactive] ~ #TabsToolbar {
+	  -moz-margin-start: 32px;
+	}
+	
+	#main-window:not([tabsintitlebar])[tabsontop="false"] #titlebar-buttonbox-container{
+	  -moz-appearance: none !important;
+	  visibility:collapse !important;
+	}
+	
+	#main-window[tabsintitlebar][tabsontop="false"] #titlebar:not([hidden]) ~ * #toolbar-menubar {
+	  -moz-margin-start: 34px !important;
+	}
+
+	#main-window[tabsintitlebar][customizing][sizemode="maximized"][tabsontop="false"] #titlebar:not([hidden]) ~ * #toolbar-menubar {
+	  -moz-margin-start: 0px !important;
+	}
+
+	/* Fix up application button in title bar for nautipolis theme */
+	#main-window[currenttheme^="nautipolis"] #ctraddon_appbutton2 {
+		  -moz-padding-start: 13px !important;
+	}
+	
+	#main-window[currenttheme^="nautipolis"][tabsintitlebar][sizemode="maximized"]:not([tabsontop="false"]) #TabsToolbar {
+		margin-top: -5px!important;
+		padding-top: 8px!important;
+	}
+	
+	#main-window[currenttheme^="nautipolis"][tabsintitlebar][sizemode="maximized"]:not([tabsontop="false"]) #ctraddon_appbutton2 {
+		margin-top: 7px!important;
+	}
+
+}
