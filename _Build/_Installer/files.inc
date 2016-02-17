@@ -24,7 +24,8 @@ Source: "{content}\browser\{#PackageType}\plugin-container.exe"; DestDir: "{app}
 Source: "{content}\browser\{#PackageType}\plugin-hang-ui.exe"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\precomplete"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\removed-files"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "{content}\browser\{#PackageType}\sandboxbroker.dll"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "{content}\browser\{#PackageType}\sandboxbroker.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{content}\browser\{#PackageType}\SHA512SUMS"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{content}\browser\{#PackageType}\softokn3.chk"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\softokn3.dll"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\xul.dll"; DestDir: "{app}"; Flags: ignoreversion 
