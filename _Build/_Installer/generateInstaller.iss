@@ -2,11 +2,7 @@
 #include "setup.inc"
 #include "languages.inc"
 #include "messages.inc"
-#if Arch == "i368"
-#include "customMessages.86.inc"
-#elif Arch == "amd64"
-#include "customMessages.64.inc"
-#endif
+#include "customMessages.inc"
 #include "tasks.inc"
 #include "files.inc"
 #include "installDelete.inc"
