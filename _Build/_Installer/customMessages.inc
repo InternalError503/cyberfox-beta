@@ -422,7 +422,7 @@ pt.LoopInstallGroupDescription=Firefox hello
 ;Russian
 ru.ProcessName={#MyAppName}
 ru.IsAppRunning= уже запущен, закройте {#MyAppName} и запустите программу установки повторно.
-ru.Isx64BitOS=We are sorry!, But you can not install {#MyAppName} x64 bit on windows x86 OS.
+ru.Isx64BitOS=Простите, но Вы не можете установить 64-битную версию {#MyAppName} в 32-битной ОС.
 ru.IsAppRunningUninstall= уже запущен, закройте {#MyAppName} и запустите программу удаления повторно.
 ru.CyberCTRInstallDescription=Установить CyberCTR или сохранить оригинальный australis (выборочно)
 ru.CyberCTRInstallGroupDescription=Выбор оформления интерфейса
@@ -432,7 +432,7 @@ ru.DeleteProfileData=Вы ходите удалить Ваши личные да
 ru.ConfirmDeleteProfileData=Вы уверены? Эта операция не может быть отменена!
 ru.CleanInstallDescription=Выполнить чистую установку.
 ru.CleanInstallGroupDescription=Настройки установки
-ru.LoopInstallDescription=Install firefox hello chat (Optional)
+ru.LoopInstallDescription=Установить чат Firefox hello (необязательно)
 ru.LoopInstallGroupDescription=Firefox hello
 ;SerbianCyrillic
 sbc.ProcessName={#MyAppName}
