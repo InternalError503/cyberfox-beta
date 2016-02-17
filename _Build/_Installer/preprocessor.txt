@@ -5,6 +5,7 @@ messages.inc
 customMessages.64.inc
 tasks.inc
 files.inc
+installDelete.inc
 icons.inc
 registry.registry
 code.inc
