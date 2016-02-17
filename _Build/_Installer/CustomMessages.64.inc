@@ -12,6 +12,8 @@ en.DeleteProfileData=Do you want to delete your profile data?
 en.ConfirmDeleteProfileData=Are you sure this can not be undone!
 en.CleanInstallDescription=Perform clean installation.
 en.CleanInstallGroupDescription=Installation Options
+en.LoopInstallDescription=Install firefox hello chat (Optional)
+en.LoopInstallGroupDescription=Firefox hello
 ;Albanian
 al.ProcessName={#MyAppName}
 al.IsAppRunning= tashmë është i rrjedhshëm, Ju lutemi mbyllni {#MyAppName} pastaj të drejtuar installer përsëri.
@@ -25,6 +27,8 @@ al.DeleteProfileData=A dëshironi të fshini të dhënat e profilit tuaj?
 al.ConfirmDeleteProfileData=A jeni i sigurt se kjo nuk mund të zhbëhet!
 al.CleanInstallDescription=Perform clean installation.
 al.CleanInstallGroupDescription=Installation Options
+al.LoopInstallDescription=Install firefox hello chat (Optional)
+al.LoopInstallGroupDescription=Firefox hello
 ;Afrikaans
 af.ProcessName={#MyAppName}
 af.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -38,6 +42,8 @@ af.DeleteProfileData=Do you want to delete your profile data?
 af.ConfirmDeleteProfileData=Are you sure this can not be undone!
 af.CleanInstallDescription=Perform clean installation.
 af.CleanInstallGroupDescription=Installation Options
+af.LoopInstallDescription=Install firefox hello chat (Optional)
+af.LoopInstallGroupDescription=Firefox hello
 ;Arabic
 ar.ProcessName={#MyAppName}
 ar.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -51,6 +57,8 @@ ar.DeleteProfileData=Do you want to delete your profile data?
 ar.ConfirmDeleteProfileData=Are you sure this can not be undone!
 ar.CleanInstallDescription=Perform clean installation.
 ar.CleanInstallGroupDescription=Installation Options
+ar.LoopInstallDescription=Install firefox hello chat (Optional)
+ar.LoopInstallGroupDescription=Firefox hello
 ;Bengali
 be.ProcessName={#MyAppName}
 be.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -64,6 +72,8 @@ be.DeleteProfileData=Do you want to delete your profile data?
 be.ConfirmDeleteProfileData=Are you sure this can not be undone!
 be.CleanInstallDescription=Perform clean installation.
 be.CleanInstallGroupDescription=Installation Options
+be.LoopInstallDescription=Install firefox hello chat (Optional)
+be.LoopInstallGroupDescription=Firefox hello
 ;Bosnian
 bo.ProcessName={#MyAppName}
 bo.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -77,6 +87,8 @@ bo.DeleteProfileData=Do you want to delete your profile data?
 bo.ConfirmDeleteProfileData=Are you sure this can not be undone!
 bo.CleanInstallDescription=Perform clean installation.
 bo.CleanInstallGroupDescription=Installation Options
+bo.LoopInstallDescription=Install firefox hello chat (Optional)
+bo.LoopInstallGroupDescription=Firefox hello
 ;BrazilianPortuguese
 br_pt.ProcessName={#MyAppName}
 br_pt.IsAppRunning= já está em execução, feche {#MyAppName} em seguida, execute o instalador novamente.
@@ -90,6 +102,8 @@ br_pt.DeleteProfileData=Você quer apagar os dados do perfil?
 br_pt.ConfirmDeleteProfileData=Você está certo de que este não pode ser desfeita!
 br_pt.CleanInstallDescription=Perform clean installation.
 br_pt.CleanInstallGroupDescription=Installation Options
+br_pt.LoopInstallDescription=Install firefox hello chat (Optional)
+br_pt.LoopInstallGroupDescription=Firefox hello
 ;Catalan
 ca.ProcessName={#MyAppName}
 ca.IsAppRunning= ja s'està executant, tancament{#MyAppName} a continuació, executeu el programa d'instal · lació de nou.
@@ -103,6 +117,8 @@ ca.DeleteProfileData=Vols eliminar les seves dades del perfil?
 ca.ConfirmDeleteProfileData=Està vostè segur que això no es pot desfer!
 ca.CleanInstallDescription=Perform clean installation.
 ca.CleanInstallGroupDescription=Installation Options
+ca.LoopInstallDescription=Install firefox hello chat (Optional)
+ca.LoopInstallGroupDescription=Firefox hello
 ;Chinese (Simplified)
 cns.ProcessName={#MyAppName}
 cns.IsAppRunning= 已经在运行，请关闭 {#MyAppName} 然后再次运行安装程序。
@@ -116,6 +132,8 @@ cns.DeleteProfileData=你想删除您的个人资料数据？
 cns.ConfirmDeleteProfileData=你确定这不能撤消！
 cns.CleanInstallDescription=Perform clean installation.
 cns.CleanInstallGroupDescription=Installation Options
+cns.LoopInstallDescription=Install firefox hello chat (Optional)
+cns.LoopInstallGroupDescription=Firefox hello
 ;Corsican
 cr.ProcessName={#MyAppName}
 cr.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -129,6 +147,8 @@ cr.DeleteProfileData=Do you want to delete your profile data?
 cr.ConfirmDeleteProfileData=Are you sure this can not be undone!
 cr.CleanInstallDescription=Perform clean installation.
 cr.CleanInstallGroupDescription=Installation Options
+cr.LoopInstallDescription=Install firefox hello chat (Optional)
+cr.LoopInstallGroupDescription=Firefox hello
 ;Croatian
 cro.ProcessName={#MyAppName}
 cro.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -142,6 +162,8 @@ cro.DeleteProfileData=Do you want to delete your profile data?
 cro.ConfirmDeleteProfileData=Are you sure this can not be undone!
 cro.CleanInstallDescription=Perform clean installation.
 cro.CleanInstallGroupDescription=Installation Options
+cro.LoopInstallDescription=Install firefox hello chat (Optional)
+cro.LoopInstallGroupDescription=Firefox hello
 ;Czech
 cz.ProcessName={#MyAppName}
 cz.IsAppRunning= je již spuštěna, prosím zavřete {#MyAppName} spusťte instalační program znovu.
@@ -155,6 +177,8 @@ cz.DeleteProfileData=Chcete-li odstranit data profilu?
 cz.ConfirmDeleteProfileData=Jsi si jistý, že to nelze vrátit zpět!
 cz.CleanInstallDescription=Perform clean installation.
 cz.CleanInstallGroupDescription=Installation Options
+cz.LoopInstallDescription=Install firefox hello chat (Optional)
+cz.LoopInstallGroupDescription=Firefox hello
 ;Danish
 da.ProcessName={#MyAppName}
 da.IsAppRunning= allerede kører, Luk {#MyAppName} derefter køre installationsprogrammet igen.
@@ -168,6 +192,8 @@ da.DeleteProfileData=Ønsker du at slette din profil data?
 da.ConfirmDeleteProfileData=Er du sikker på, det kan ikke fortrydes!
 da.CleanInstallDescription=Perform clean installation.
 da.CleanInstallGroupDescription=Installation Options
+da.LoopInstallDescription=Install firefox hello chat (Optional)
+da.LoopInstallGroupDescription=Firefox hello
 ;German
 de.ProcessName={#MyAppName}
 de.IsAppRunning= läuft noch. Bitte schliessen sie {#MyAppName} und starten sie den Installationsprozess erneut.
@@ -181,6 +207,8 @@ de.DeleteProfileData=Möchten Sie Ihre Profildaten löschen?
 de.ConfirmDeleteProfileData=Sind Sie sicher, das kann nicht rückgängig gemacht werden!
 de.CleanInstallDescription=Perform clean installation.
 de.CleanInstallGroupDescription=Installation Options
+de.LoopInstallDescription=Install firefox hello chat (Optional)
+de.LoopInstallGroupDescription=Firefox hello
 ;Dutch
 nl.ProcessName={#MyAppName}
 nl.IsAppRunning= wordt al uitgevoerd, Sluit {#MyAppName} dan weer het installatieprogramma.
@@ -194,6 +222,8 @@ nl.DeleteProfileData=Wilt u uw profiel gegevens te verwijderen?
 nl.ConfirmDeleteProfileData=Bent u zeker dat dit kan niet ongedaan gemaakt worden!
 nl.CleanInstallDescription=Perform clean installation.
 nl.CleanInstallGroupDescription=Installation Options
+nl.LoopInstallDescription=Install firefox hello chat (Optional)
+nl.LoopInstallGroupDescription=Firefox hello
 ;Finnish
 fi.ProcessName={#MyAppName}
 fi.IsAppRunning= on jo käynnissä, sulje {#MyAppName} suorita sitten asennusohjelma uudelleen.
@@ -207,6 +237,8 @@ fi.DeleteProfileData=Haluatko poistaa profiilisi tietoja?
 fi.ConfirmDeleteProfileData=Oletko varma, että tämä ei voi perua!
 fi.CleanInstallDescription=Perform clean installation.
 fi.CleanInstallGroupDescription=Installation Options
+fi.LoopInstallDescription=Install firefox hello chat (Optional)
+fi.LoopInstallGroupDescription=Firefox hello
 ;French
 fr.ProcessName={#MyAppName}
 fr.IsAppRunning= est en cours d’exécution. Veuillez fermer {#MyAppName} puis redémarrer de nouveau le programme d’installation.
@@ -220,6 +252,8 @@ fr.DeleteProfileData=Voulez-vous effacer les données personnelles de votre prof
 fr.ConfirmDeleteProfileData=Êtes-vous certain ? Cette opération ne peut être annulée !
 fr.CleanInstallDescription=Perform clean installation.
 fr.CleanInstallGroupDescription=Installation Options
+fr.LoopInstallDescription=Install firefox hello chat (Optional)
+fr.LoopInstallGroupDescription=Firefox hello
 ;Greek
 gr.ProcessName={#MyAppName}
 gr.IsAppRunning= εκτελείται ήδη, παρακαλώ κλείστε {#MyAppName} Στη συνέχεια, εκτελέστε ξανά το πρόγραμμα εγκατάστασης.
@@ -233,6 +267,8 @@ gr.DeleteProfileData=Μήπως θέλετε να διαγράψετε τα δε
 gr.ConfirmDeleteProfileData=Είσαι σίγουρος ότι αυτό δεν μπορεί να αναιρεθεί!
 gr.CleanInstallDescription=Perform clean installation.
 gr.CleanInstallGroupDescription=Installation Options
+gr.LoopInstallDescription=Install firefox hello chat (Optional)
+gr.LoopInstallGroupDescription=Firefox hello
 ;Hebrew
 he.ProcessName={#MyAppName}
 he.IsAppRunning= כבר פועל, אנא סגור {#MyAppName} לאחר מכן הפעל שוב את תוכנית ההתקנה.
@@ -246,6 +282,8 @@ he.DeleteProfileData=האם ברצונך למחוק את נתוני הפרופי
 he.ConfirmDeleteProfileData=האם אתה בטוח שזה לא ניתן לבטל!
 he.CleanInstallDescription=Perform clean installation.
 he.CleanInstallGroupDescription=Installation Options
+he.LoopInstallDescription=Install firefox hello chat (Optional)
+he.LoopInstallGroupDescription=Firefox hello
 ;Hindi
 hi.ProcessName={#MyAppName}
 hi.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -259,6 +297,8 @@ hi.DeleteProfileData=Do you want to delete your profile data?
 hi.ConfirmDeleteProfileData=Are you sure this can not be undone!
 hi.CleanInstallDescription=Perform clean installation.
 hi.CleanInstallGroupDescription=Installation Options
+hi.LoopInstallDescription=Install firefox hello chat (Optional)
+hi.LoopInstallGroupDescription=Firefox hello
 ;Hungarian
 hu.ProcessName={#MyAppName}
 hu.IsAppRunning= már fut, zárja {#MyAppName} majd futtassa újra a telepítőt.
@@ -272,6 +312,8 @@ hu.DeleteProfileData=Szeretné törölni a profil adatait?
 hu.ConfirmDeleteProfileData=Biztos benne, hogy ez nem lehet visszavonni!
 hu.CleanInstallDescription=Perform clean installation.
 hu.CleanInstallGroupDescription=Installation Options
+hu.LoopInstallDescription=Install firefox hello chat (Optional)
+hu.LoopInstallGroupDescription=Firefox hello
 ;Indonesian
 in.ProcessName={#MyAppName}
 in.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -285,6 +327,8 @@ in.DeleteProfileData=Do you want to delete your profile data?
 in.ConfirmDeleteProfileData=Are you sure this can not be undone!
 in.CleanInstallDescription=Perform clean installation.
 in.CleanInstallGroupDescription=Installation Options
+in.LoopInstallDescription=Install firefox hello chat (Optional)
+in.LoopInstallGroupDescription=Firefox hello
 ;Italian
 it.ProcessName={#MyAppName}
 it.IsAppRunning= è già in esecuzione, chiudere {#MyAppName} quindi eseguire nuovamente il programma di installazione.
@@ -298,6 +342,8 @@ it.DeleteProfileData=Vuoi eliminare i dati del tuo profilo?
 it.ConfirmDeleteProfileData=Sei sicuro che questo non può essere annullata!
 it.CleanInstallDescription=Perform clean installation.
 it.CleanInstallGroupDescription=Installation Options
+it.LoopInstallDescription=Install firefox hello chat (Optional)
+it.LoopInstallGroupDescription=Firefox hello
 ;Korean
 kor.ProcessName={#MyAppName}
 kor.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -311,6 +357,8 @@ kor.DeleteProfileData=Do you want to delete your profile data?
 kor.ConfirmDeleteProfileData=Are you sure this can not be undone!
 kor.CleanInstallDescription=Perform clean installation.
 kor.CleanInstallGroupDescription=Installation Options
+kor.LoopInstallDescription=Install firefox hello chat (Optional)
+kor.LoopInstallGroupDescription=Firefox hello
 ;Japanese
 ja.ProcessName={#MyAppName}
 ja.IsAppRunning= はすでに実行されています。{#MyAppName} を閉じて、もう一度インストーラーを実行してください。
@@ -324,6 +372,8 @@ ja.DeleteProfileData=プロファイル データを削除しますか？
 ja.ConfirmDeleteProfileData=元に戻すことはできませんがよろしいですか？
 ja.CleanInstallDescription=クリーン インストールを実行する
 ja.CleanInstallGroupDescription=インストール オプション
+ja.LoopInstallDescription=Install firefox hello chat (Optional)
+ja.LoopInstallGroupDescription=Firefox hello
 ;Norwegian
 nr.ProcessName={#MyAppName}
 nr.IsAppRunning= er allerede i gang, Vennligst lukk {#MyAppName} deretter kjøre installasjonsprogrammet på nytt.
@@ -337,6 +387,8 @@ nr.DeleteProfileData=Ønsker du å slette din profil data?
 nr.ConfirmDeleteProfileData=Er du sikker på at dette kan ikke angres!
 nr.CleanInstallDescription=Perform clean installation.
 nr.CleanInstallGroupDescription=Installation Options
+nr.LoopInstallDescription=Install firefox hello chat (Optional)
+nr.LoopInstallGroupDescription=Firefox hello
 ;Polish
 pl.ProcessName={#MyAppName}
 pl.IsAppRunning= już działa, proszę zamknąć {#MyAppName} następnie ponownie uruchom program instalacyjny.
@@ -350,6 +402,8 @@ pl.DeleteProfileData=Czy chcesz usunąć swoje dane w profilu użytkownika?
 pl.ConfirmDeleteProfileData=Czy jesteś pewien, że to nie może być cofnięte!
 pl.CleanInstallDescription=Perform clean installation.
 pl.CleanInstallGroupDescription=Installation Options
+pl.LoopInstallDescription=Install firefox hello chat (Optional)
+pl.LoopInstallGroupDescription=Firefox hello
 ;Portuguese
 pt.ProcessName={#MyAppName}
 pt.IsAppRunning= já está em execução, feche {#MyAppName} em seguida, execute o instalador novamente.
@@ -363,6 +417,8 @@ pt.DeleteProfileData=Você quer apagar os dados do perfil?
 pt.ConfirmDeleteProfileData=Você está certo de que este não pode ser desfeita!
 pt.CleanInstallDescription=Perform clean installation.
 pt.CleanInstallGroupDescription=Installation Options
+pt.LoopInstallDescription=Install firefox hello chat (Optional)
+pt.LoopInstallGroupDescription=Firefox hello
 ;Russian
 ru.ProcessName={#MyAppName}
 ru.IsAppRunning= уже запущен, закройте {#MyAppName} и запустите программу установки повторно.
@@ -376,6 +432,8 @@ ru.DeleteProfileData=Вы ходите удалить Ваши личные да
 ru.ConfirmDeleteProfileData=Вы уверены? Эта операция не может быть отменена!
 ru.CleanInstallDescription=Выполнить чистую установку.
 ru.CleanInstallGroupDescription=Настройки установки
+ru.LoopInstallDescription=Install firefox hello chat (Optional)
+ru.LoopInstallGroupDescription=Firefox hello
 ;SerbianCyrillic
 sbc.ProcessName={#MyAppName}
 sbc.IsAppRunning= је већ покренут, затворите Молимо {#MyAppName} затим покрените инсталер поново.
@@ -389,6 +447,8 @@ sbc.DeleteProfileData=Да ли желите да избришете подат�
 sbc.ConfirmDeleteProfileData=Да ли сте сигурни да не може да се опозове!
 sbc.CleanInstallDescription=Perform clean installation.
 sbc.CleanInstallGroupDescription=Installation Options
+sbc.LoopInstallDescription=Install firefox hello chat (Optional)
+sbc.LoopInstallGroupDescription=Firefox hello
 ;SerbianLatin
 sbl.ProcessName={#MyAppName}
 sbl.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -402,6 +462,8 @@ sbl.DeleteProfileData=Do you want to delete your profile data?
 sbl.ConfirmDeleteProfileData=Are you sure this can not be undone!
 sbl.CleanInstallDescription=Perform clean installation.
 sbl.CleanInstallGroupDescription=Installation Options
+sbl.LoopInstallDescription=Install firefox hello chat (Optional)
+sbl.LoopInstallGroupDescription=Firefox hello
 ;Slovenian
 sl.ProcessName={#MyAppName}
 sl.IsAppRunning= že teče, Prosimo, zaprite {#MyAppName} nato ponovno zaženite namestitveni program.
@@ -415,6 +477,8 @@ sl.DeleteProfileData=Ali želite izbrisati podatke profila?
 sl.ConfirmDeleteProfileData=Ali ste prepričani, da to ni mogoče razveljaviti!
 sl.CleanInstallDescription=Perform clean installation.
 sl.CleanInstallGroupDescription=Installation Options
+sl.LoopInstallDescription=Install firefox hello chat (Optional)
+sl.LoopInstallGroupDescription=Firefox hello
 ;Swedish
 sw.ProcessName={#MyAppName}
 sw.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -428,6 +492,8 @@ sw.DeleteProfileData=Do you want to delete your profile data?
 sw.ConfirmDeleteProfileData=Are you sure this can not be undone!
 sw.CleanInstallDescription=Perform clean installation.
 sw.CleanInstallGroupDescription=Installation Options
+sw.LoopInstallDescription=Install firefox hello chat (Optional)
+sw.LoopInstallGroupDescription=Firefox hello
 ;Turkish
 tr.ProcessName={#MyAppName}
 tr.IsAppRunning= zaten çalışıyor, Lütfen {#MyAppName} kapatın ve kurulumu tekrar çalıştırın.
@@ -441,6 +507,8 @@ tr.DeleteProfileData=Profil verilerinizi de silmek istiyor musunuz?
 tr.ConfirmDeleteProfileData=Emin misiniz bu işlem geri alınamaz!
 tr.CleanInstallDescription=Temiz Bir Kurulum Gerçekleştir.
 tr.CleanInstallGroupDescription=Kurulum Seçenekleri
+tr.LoopInstallDescription=Install firefox hello chat (Optional)
+tr.LoopInstallGroupDescription=Firefox hello
 ;Spanish
 en_es.ProcessName={#MyAppName}
 en_es.IsAppRunning= ya se está ejecutando, cierre {#MyAppName} a continuación, ejecute el programa de instalación de nuevo.
@@ -454,6 +522,8 @@ en_es.DeleteProfileData=¿Quieres eliminar sus datos del perfil?
 en_es.ConfirmDeleteProfileData=¿Está usted seguro de que esto no se puede deshacer!
 en_es.CleanInstallDescription=Perform clean installation.
 en_es.CleanInstallGroupDescription=Installation Options
+en_es.LoopInstallDescription=Install firefox hello chat (Optional)
+en_es.LoopInstallGroupDescription=Firefox hello
 ;Ukrainian
 ukr.ProcessName={#MyAppName}
 ukr.IsAppRunning= вже запущений, закрийте {#MyAppName} потім запустити програму установки ще раз.
@@ -467,3 +537,5 @@ ukr.DeleteProfileData=Ви хочете видалити дані профілю
 ukr.ConfirmDeleteProfileData=Are you sure this can not be undone!
 ukr.CleanInstallDescription=Perform clean installation.
 ukr.CleanInstallGroupDescription=Installation Options
+ukr.LoopInstallDescription=Install firefox hello chat (Optional)
+ukr.LoopInstallGroupDescription=Firefox hello
