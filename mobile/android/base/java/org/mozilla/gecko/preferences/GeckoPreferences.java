@@ -825,6 +825,12 @@ OnSharedPreferenceChangeListener
                         i--;
                         continue;
                     }
+                } else if (PREFS_ZOOMED_VIEW_ENABLED.equals(key)) {
+                    if (!AppConstants.NIGHTLY_BUILD) {
+                        preferences.removePreference(pref);
+                        i--;
+                        continue;
+                    }
                 } else if (PREFS_VOICE_INPUT_ENABLED.equals(key)) {
                     if (!InputOptionsUtils.supportsVoiceRecognizer(getApplicationContext(), getResources().getString(R.string.voicesearch_prompt))) {
                         // Remove UI for voice input on non nightly builds.

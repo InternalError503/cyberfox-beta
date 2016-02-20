@@ -184,6 +184,8 @@ pref("xpinstall.whitelist.fileRequest", false);
 pref("xpinstall.whitelist.add", "https://addons.mozilla.org");
 pref("xpinstall.whitelist.add.180", "https://marketplace.firefox.com");
 
+pref("xpinstall.signatures.required", false);
+
 pref("extensions.enabledScopes", 1);
 pref("extensions.autoupdate.enabled", true);
 pref("extensions.autoupdate.interval", 86400);
@@ -269,8 +271,8 @@ pref("browser.search.order.1", "chrome://browser/locale/region.properties");
 pref("browser.search.order.2", "chrome://browser/locale/region.properties");
 pref("browser.search.order.3", "chrome://browser/locale/region.properties");
 
-// Market-specific search defaults (US market only) //
-pref("browser.search.geoSpecificDefaults", false);
+// Market-specific search defaults
+pref("browser.search.geoSpecificDefaults", true);
 pref("browser.search.geoSpecificDefaults.url", "https://search.services.mozilla.com/1/%APP%/%VERSION%/%CHANNEL%/%LOCALE%/%REGION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%");
 
 // US specific default (used as a fallback if the geoSpecificDefaults request fails).
@@ -418,7 +420,13 @@ pref("font.size.inflation.minTwips", 0);
 // When true, zooming will be enabled on all sites, even ones that declare user-scalable=no.
 pref("browser.ui.zoom.force-user-scalable", false);
 
+// When removing this Nightly flag, also remember to remove the flags surrounding this feature
+// in GeckoPreferences and BrowserApp (see bug 1245930).
+#ifdef NIGHTLY_BUILD
 pref("ui.zoomedview.enabled", true);
+#else
+pref("ui.zoomedview.enabled", false);
+#endif
 pref("ui.zoomedview.keepLimitSize", 16); // value in layer pixels, used to not keep the large elements in the cluster list (Bug 1191041)
 pref("ui.zoomedview.limitReadableSize", 8); // value in layer pixels
 pref("ui.zoomedview.defaultZoomFactor", 2);
@@ -431,7 +439,7 @@ pref("ui.touch.radius.rightmm", 3);
 pref("ui.touch.radius.bottommm", 2);
 pref("ui.touch.radius.visitedWeight", 120);
 
-pref("ui.mouse.radius.enabled", true);
+pref("ui.mouse.radius.enabled", false);
 pref("ui.mouse.radius.leftmm", 3);
 pref("ui.mouse.radius.topmm", 5);
 pref("ui.mouse.radius.rightmm", 3);
@@ -827,7 +835,7 @@ pref("snav.enabled", true);
 // This url, if changed, MUST continue to point to an https url. Pulling arbitrary content to inject into
 // this page over http opens us up to a man-in-the-middle attack that we'd rather not face. If you are a downstream
 // repackager of this code using an alternate snippet url, please keep your users safe
-pref("browser.snippets.updateUrl", "https://snippets.mozilla.com/json/%SNIPPETS_VERSION%/%NAME%/%VERSION%/%APPBUILDID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/");
+pref("browser.snippets.updateUrl", "https://snippets.cdn.mozilla.net/json/%SNIPPETS_VERSION%/%NAME%/%VERSION%/%APPBUILDID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/");
 
 // How frequently we check for new snippets, in seconds (1 day)
 pref("browser.snippets.updateInterval", 86400);
