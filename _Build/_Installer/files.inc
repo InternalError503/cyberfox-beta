@@ -1,7 +1,10 @@
 [Files]
 Source: "{content}\browser\{#PackageType}\application.ini"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\Cyberfox.exe"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "{content}\browser\{#PackageType}\d3dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "{content}\browser\{#PackageType}\d3dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion
+#if PackageType == "amd86" || PackageType == "intel86"
+Source: "{content}\browser\{#PackageType}\D3DCompiler_43.dll"; DestDir: "{app}"; Flags: ignoreversion
+#endif 
 Source: "{content}\browser\{#PackageType}\dependentlibs.list"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\freebl3.chk"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\freebl3.dll"; DestDir: "{app}"; Flags: ignoreversion 
