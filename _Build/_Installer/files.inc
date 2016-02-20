@@ -45,3 +45,6 @@ Source: "{content}\browser\{#PackageType}\dictionaries\en-US.dic"; DestDir: "{ap
 Source: "{content}\browser\{#PackageType}\gmp-clearkey\0.1\clearkey.dll"; DestDir: "{app}\gmp-clearkey\0.1"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\gmp-clearkey\0.1\clearkey.info"; DestDir: "{app}\gmp-clearkey\0.1"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\uninstall\helper.exe"; DestDir: "{app}\uninstall"; Flags: ignoreversion
+#if PackageType == "amd86" || PackageType == "amd64"
+Source: "{content}\browser\{#PackageType}\vcomp120.dll"; DestDir: "{app}"; Flags: ignoreversion 
+#endif
