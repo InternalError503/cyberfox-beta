@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 #filter substitution
-# -*- Mode: HTML -*-
 <html>
 <head>
   <meta charset="UTF-8">
@@ -19,8 +18,10 @@
 </head>
 <body class="aboutPageWideContainer">
 <h1>about:buildconfig</h1>
-<h2>Source</h2>
-#include SourceCodeURL.inc
+	<h2>Source</h2>
+		<p>Built from <a href="__SOURCEURL__">__SOURCEURLNAME__</a></p>
+		<p>SHA512:__HASHSUM__</p>
+		<p>Using cyberfox source code repository <a href="__GITURL__">__GITURL__</a></p>
 <h2>Build platform</h2>
 <table>
   <tbody>
