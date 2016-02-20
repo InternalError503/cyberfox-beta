@@ -15,8 +15,8 @@ Source: "{content}\browser\{#PackageType}\lgpllibs.dll"; DestDir: "{app}"; Flags
 Source: "{content}\browser\{#PackageType}\libEGL.dll"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\libGLESv2.dll"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\mozglue.dll"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "{content}\browser\{#PackageType}\msvcp120.dll"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "{content}\browser\{#PackageType}\msvcr120.dll"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "{content}\browser\{#PackageType}\msvcp*.dll"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "{content}\browser\{#PackageType}\msvcr*.dll"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\nss3.dll"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\nssckbi.dll"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\nssdbm3.chk"; DestDir: "{app}"; Flags: ignoreversion 
@@ -49,5 +49,5 @@ Source: "{content}\browser\{#PackageType}\gmp-clearkey\0.1\clearkey.dll"; DestDi
 Source: "{content}\browser\{#PackageType}\gmp-clearkey\0.1\clearkey.info"; DestDir: "{app}\gmp-clearkey\0.1"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\uninstall\helper.exe"; DestDir: "{app}\uninstall"; Flags: ignoreversion
 #if PackageType == "amd86" || PackageType == "amd64"
-Source: "{content}\browser\{#PackageType}\vcomp120.dll"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "{content}\browser\{#PackageType}\vcomp*.dll"; DestDir: "{app}"; Flags: ignoreversion 
 #endif
