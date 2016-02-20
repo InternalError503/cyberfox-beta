@@ -8,9 +8,9 @@ Source: "{content}\browser\{#PackageType}\D3DCompiler_43.dll"; DestDir: "{app}";
 Source: "{content}\browser\{#PackageType}\dependentlibs.list"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\freebl3.chk"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\freebl3.dll"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "{content}\browser\{#PackageType}\icudt56.dll"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "{content}\browser\{#PackageType}\icuin56.dll"; DestDir: "{app}"; Flags: ignoreversion 
-Source: "{content}\browser\{#PackageType}\icuuc56.dll"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "{content}\browser\{#PackageType}\icudt*.dll"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "{content}\browser\{#PackageType}\icuin*.dll"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "{content}\browser\{#PackageType}\icuuc*.dll"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\lgpllibs.dll"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\libEGL.dll"; DestDir: "{app}"; Flags: ignoreversion 
 Source: "{content}\browser\{#PackageType}\libGLESv2.dll"; DestDir: "{app}"; Flags: ignoreversion 
