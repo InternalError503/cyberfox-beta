@@ -57,7 +57,9 @@
 <!ENTITY Ctr_square_edges	"使分頁標籤四角為嚴格直角">
 <!ENTITY Ctr_tttitlebar		"將分頁標題文字顯示於 &brandShortName; 標題列">
 <!ENTITY Ctr_tabinsertion	"在網頁上點選連結時，將新分頁開啟於目前分頁的旁邊，即把預設行為 [a][b][c][1][2][3] 改為 [a][1][2][3][b][c] (about:config » browser.tabs.insertRelatedAfterCurrent)">
-<!ENTITY Ctr_emptyfavicon	"開啟的網頁若未提供網站圖示，仍在該分頁顯示空圖示">
+<!ENTITY Ctr_emptytfavico	"Show favicon (if a site does not offer one)">
+<!ENTITY Ctr_emptytfavico_n	"None">
+<!ENTITY Ctr_emptytfavico_g	"Generic">
 <!ENTITY Ctr_noemptypticon	"從釘選分頁移除空圖示">
 <!ENTITY Ctr_e10stab_notd	"e10s 分頁: 移除底線">
 <!ENTITY Ctr_closetab_0		"關閉按鈕">
@@ -69,6 +71,7 @@
 <!ENTITY Ctr_closetab_hfot	"只有一個分頁時，則隱藏關閉按鈕">
 <!ENTITY Ctr_closei_def		"預設圖示">
 <!ENTITY Ctr_closeonleft	"關閉按鈕置於分頁左側">
+<!ENTITY Ctr_closetabbig	"Bigger icon (20x20px)">
 <!ENTITY Ctr_close_wwltab	"關閉最後一個分頁時，也關閉視窗 (about:config)">
 
 <!ENTITY Ctr_hctpinfotab	"一些分頁設定不相容於 Hide Caption Titlebar Plus 擴充套件。">
@@ -82,8 +85,9 @@
 <!ENTITY Ctr_appbutton2h	"顯示在標題列 (隱藏)">
 <!ENTITY Ctr_appbutton2io	"顯示在標題列 (僅圖示)">
 <!ENTITY Ctr_paneluibtweak	"橘色面板選單按鈕顯示在分頁列">
-<!ENTITY Ctr_paneluibtweak2	" ">
-<!ENTITY Ctr_appbuttonc_o	"橙色按鈕 (預設值)">
+<!ENTITY Ctr_paneluibtweak2	"橘色面板選單按鈕顯示在分頁列 (僅圖示)">
+<!ENTITY Ctr_paneluibtweak3	" ">
+<!ENTITY Ctr_appbuttonc_o	"橙色按鈕 (Firefox)">
 <!ENTITY Ctr_appbuttonc_a	"藍色按鈕 (Aurora)">
 <!ENTITY Ctr_appbuttonc_n	"黑色按鈕 (Nightly)">
 <!ENTITY Ctr_appbuttonc_t	"透明按鈕">
@@ -127,7 +131,7 @@
 <!ENTITY Ctr_wincontrols	"可移動的全螢幕視窗控制項">
 <!ENTITY Ctr_oldtoplevimg	"「頂層網域」圖示: 經典外觀">
 <!ENTITY Ctr_altalertbox	"「警示方塊」: 換個外觀">
-<!ENTITY Ctr_emptyfavicon2	"以白紙圖示取代空圖示">
+<!ENTITY Ctr_emptygfavico	"Replace generic favicon">
 <!ENTITY Ctr_mstatusbar		"使狀態列可移動">
 <!ENTITY Ctr_mstatusbars4e	"狀態列由 Status-4-Evar 控制">
 <!ENTITY Ctr_mstatusbartpp	"狀態列由 The Puzzle Piece 控制">
@@ -167,11 +171,15 @@
 <!ENTITY Ctr_am_compact		"附加元件清單: 緊湊風格">
 <!ENTITY Ctr_am_compact2	"緊湊風格 +">
 <!ENTITY Ctr_am_highlight	"Add-on lists: highlight entry on hover">
+<!ENTITY Ctr_am_buticons	"Add-on lists: replace button labels with icons">
+<!ENTITY Ctr_am_hovshowb	"Add-on lists: only show buttons on 'hover'">
 <!ENTITY Ctr_addonversion	"附加元件清單: 顯示附加元件版本號">
 <!ENTITY Ctr_xpinstallui	"使用傳統彈出式的附加元件安裝視窗 (about:config)">
 <!ENTITY Ctr_bmbutton		"書籤選單按鈕">
+<!ENTITY Ctr_hiderecentbm	"Bookmarks popup: hide recently added bookmarks">
 <!ENTITY Ctr_bmbutpanelm	"彈出式書籤選單: 書籤選單使用和面板選單同風格的外觀">
 <!ENTITY Ctr_bmbunsortbm	"彈出式書籤選單: 「未排序書籤」項目附加子選單">
+<!ENTITY Ctr_bmbunsortbm2	"Menu above bookmarks">
 <!ENTITY Ctr_bmbviewbmtb	"彈出式書籤選單: 顯示「檢視書籤工具列」項目">
 <!ENTITY Ctr_bmbnounsort	"彈出式書籤選單: 隱藏「未排序書籤」項目">
 <!ENTITY Ctr_bmbutnotext	"當此按鈕位於書籤列時，隱藏按鈕文字標籤">
@@ -222,9 +230,11 @@
 <!ENTITY Ctr_starinurlinfo	"原書籤按鈕將被隱藏">
 <!ENTITY Ctr_feedinurl		"網址列中顯示消息來源訂閱按鈕">
 <!ENTITY Ctr_hideurelstop	"隱藏網址列中的停止與重新載入按鈕">
+<!ENTITY Ctr_hideurelstop2	"Always show 'go' button">
 <!ENTITY Ctr_hideurlgo		"隱藏「衝」按鈕">
 <!ENTITY Ctr_hideurlsrg		"隱藏「重新載入、停止載入、衝」按鈕兩側的分隔線和空白">
 <!ENTITY Ctr_urlbardropm	"將下拉式三角按鈕儘可能地移動到網址列最末端">
+<!ENTITY Ctr_urlbardropm2	"Make dropmarker always visible">
 <!ENTITY Ctr_altreaderico	"換個「閱讀模式」圖示">
 <!ENTITY Ctr_hideprbutton	"當彈出型廣告視窗被封鎖時，不顯示通知圖示">
 <!ENTITY Ctr_locsearchbw10	"減少網址列和搜尋列高度 (實驗性)">
@@ -232,6 +242,7 @@
 <!ENTITY Ctr_ib_nohovcolor	"懸停時，不著上灰色底">
 <!ENTITY Ctr_ib_graycolor	"Gray color for unknown identity and chrome pages">
 <!ENTITY Ctr_verifiedcolors	"Button colors for verified websites, secure and not secure connections">
+<!ENTITY Ctr_ibinfoico		"Replace 'i'-icon with globe icon">
 <!ENTITY Ctr_faviconurl		"網址列顯示網站圖示">
 <!ENTITY Ctr_padlock		"鎖頭">
 <!ENTITY Ctr_padlock_hid	"隱藏">
@@ -357,6 +368,8 @@
 <!ENTITY Ctr_addon-bar.accesskey		"A">
 <!ENTITY appMenuGettingStarted.label	"Getting started">
 <!ENTITY goCmd.label					"Go">
+<!ENTITY Ctr_menu_restart.label			"Restart">
+<!ENTITY Ctr_restartapp					"'Restart' in &brandShortName;-menu and file menu">
 
 <!-- For page context entries. Have to be adjusted for every locale! -->
 <!ENTITY backCmd.accesskey				"B">
@@ -365,11 +378,10 @@
 <!ENTITY stopCmd.accesskey				"S">
 <!ENTITY bookmarkPageCmd2.accesskey		"m">
 
-<!-- DONT-EDIT! Start Fallback entities. Leave empty! DONT-EDIT! -->
+<!-- Fallback entities. Leave empty! -->
 <!ENTITY openCmd.commandkey				"">
 <!ENTITY urlbar.accesskey				"">
 <!ENTITY urlbar.placeholder2			"">
-<!-- DONT-EDIT! End Fallback entities. Leave empty! DONT-EDIT! -->
 
 <!-- Extra CyberCTR Additions -->
 

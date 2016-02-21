@@ -58,7 +58,9 @@
 <!ENTITY Ctr_square_edges	"Squared top corners">
 <!ENTITY Ctr_tttitlebar		"Tab title in &brandShortName; titlebar">
 <!ENTITY Ctr_tabinsertion	"Insert related tab after current tab (about:config preference)">
-<!ENTITY Ctr_emptyfavicon	"Restore empty favicon (if a site does not offer one)">
+<!ENTITY Ctr_emptytfavico	"Show favicon (if a site does not offer one)">
+<!ENTITY Ctr_emptytfavico_n	"None">
+<!ENTITY Ctr_emptytfavico_g	"Generic">
 <!ENTITY Ctr_noemptypticon	"Remove empty favicon from pinned tabs">
 <!ENTITY Ctr_e10stab_notd	"E10s tabs: remove underline">
 <!ENTITY Ctr_closetab_0		"Tab Close">
@@ -70,6 +72,7 @@
 <!ENTITY Ctr_closetab_hfot	"Hide for one visible tab">
 <!ENTITY Ctr_closei_def		"Default icons">
 <!ENTITY Ctr_closeonleft	"Alternative position on tab">
+<!ENTITY Ctr_closetabbig	"Bigger icon (20x20px)">
 <!ENTITY Ctr_close_wwltab	"Close window with last visible tab (about:config preference)">
 
 <!ENTITY Ctr_hctpinfotab	"Some tab variations are not compatible to 'Hide Caption Titlebar Plus' add-on.">
@@ -83,7 +86,8 @@
 <!ENTITY Ctr_appbutton2h	"Button on [&brandShortName;] titlebar (hidden)">
 <!ENTITY Ctr_appbutton2io	"Button on [&brandShortName;] titlebar (icon only)">
 <!ENTITY Ctr_paneluibtweak	"Display menu button as &brandShortName; button...">
-<!ENTITY Ctr_paneluibtweak2	"...when on tabs toolbar">
+<!ENTITY Ctr_paneluibtweak2	"Display menu button as &brandShortName; button (icon only)...">
+<!ENTITY Ctr_paneluibtweak3	"...when on tabs toolbar">
 <!ENTITY Ctr_appbuttonc_o	"Orange button color (Firefox)">
 <!ENTITY Ctr_appbuttonc_a	"Blue button color (Aurora)">
 <!ENTITY Ctr_appbuttonc_n	"Black button color (Nightly)">
@@ -128,7 +132,7 @@
 <!ENTITY Ctr_wincontrols	"Movable fullscreen window controls">
 <!ENTITY Ctr_oldtoplevimg	"'Top level domain' images: classic appearance">
 <!ENTITY Ctr_altalertbox	"'Alert box': alternative appearance">
-<!ENTITY Ctr_emptyfavicon2	"Replace generic (empty and dotted) favicon with sheet favicon">
+<!ENTITY Ctr_emptygfavico	"Replace generic favicon">
 <!ENTITY Ctr_mstatusbar		"Movable status panel">
 <!ENTITY Ctr_mstatusbars4e	"Status-bar panel is controlled by 'Status-4-Evar'">
 <!ENTITY Ctr_mstatusbartpp	"Status-bar panel is controlled by 'ThePuzzlePiece'">
@@ -167,12 +171,16 @@
 <!ENTITY Ctr_am_nowarning	"Add-on lists: hide warnings">
 <!ENTITY Ctr_am_compact		"Add-on lists: compact view">
 <!ENTITY Ctr_am_compact2	"Compact view +">
-<!ENTITY Ctr_am_highlight	"Add-on lists: highlight entry on hover">
+<!ENTITY Ctr_am_highlight	"Add-on lists: highlight entry on 'hover'">
+<!ENTITY Ctr_am_buticons	"Add-on lists: replace button labels with icons">
+<!ENTITY Ctr_am_hovshowb	"Add-on lists: only show buttons on 'hover'">
 <!ENTITY Ctr_addonversion	"Add-on lists: show add-on version">
 <!ENTITY Ctr_xpinstallui	"Old add-on install window (about:config preference)">
 <!ENTITY Ctr_bmbutton		"Bookmarks menu button">
+<!ENTITY Ctr_hiderecentbm	"Bookmarks popup: hide recently added bookmarks">
 <!ENTITY Ctr_bmbutpanelm	"Popup: panel menu appearance">
-<!ENTITY Ctr_bmbunsortbm	"Popup: 'unsorted bookmarks' submenu">
+<!ENTITY Ctr_bmbunsortbm	"Popup: 'unsorted bookmarks' menu">
+<!ENTITY Ctr_bmbunsortbm2	"Menu above bookmarks">
 <!ENTITY Ctr_bmbviewbmtb	"Popup: show 'View Toolbar'">
 <!ENTITY Ctr_bmbnounsort	"Popup: hide 'unsorted bookmarks'">
 <!ENTITY Ctr_bmbutnotext	"Hide label on bookmarks bar">
@@ -223,9 +231,11 @@
 <!ENTITY Ctr_starinurlinfo	"Default bookmarks menu button gets hidden">
 <!ENTITY Ctr_feedinurl		"RSS feed-button">
 <!ENTITY Ctr_hideurelstop	"Hide 'stop &amp; reload' buttons">
+<!ENTITY Ctr_hideurelstop2	"Always show 'go' button">
 <!ENTITY Ctr_hideurlgo		"Hide 'go' button">
 <!ENTITY Ctr_hideurlsrg		"Hide 'reload, stop &amp; go' button separators &amp; spaces">
 <!ENTITY Ctr_urlbardropm	"Move dropmarker to the last possible position">
+<!ENTITY Ctr_urlbardropm2	"Make dropmarker always visible">
 <!ENTITY Ctr_altreaderico	"Alternative 'Reader' icons">
 <!ENTITY Ctr_hideprbutton	"Hide notification icon when a popup gets blocked">
 <!ENTITY Ctr_locsearchbw10	"Reduce location bars and search bars height (experimental)">
@@ -233,6 +243,7 @@
 <!ENTITY Ctr_ib_nohovcolor	"Do not show gray color when hovered">
 <!ENTITY Ctr_ib_graycolor	"Gray color for unknown identity and chrome pages">
 <!ENTITY Ctr_verifiedcolors	"Button colors for verified websites, secure and not secure connections">
+<!ENTITY Ctr_ibinfoico		"Replace 'i'-icon with globe icon">
 <!ENTITY Ctr_faviconurl		"Favicon: current websites icon">
 <!ENTITY Ctr_padlock		"Padlock icon for secure connections">
 <!ENTITY Ctr_padlock_hid	"hidden">
@@ -358,6 +369,8 @@
 <!ENTITY Ctr_addon-bar.accesskey		"A">
 <!ENTITY appMenuGettingStarted.label	"Getting started">
 <!ENTITY goCmd.label					"Go">
+<!ENTITY Ctr_menu_restart.label			"Restart">
+<!ENTITY Ctr_restartapp					"'Restart' in &brandShortName;-menu and file menu">
 
 <!-- For page context entries. Have to be adjusted for every locale! -->
 <!ENTITY backCmd.accesskey				"B">
@@ -366,11 +379,10 @@
 <!ENTITY stopCmd.accesskey				"S">
 <!ENTITY bookmarkPageCmd2.accesskey		"m">
 
-<!-- DONT-EDIT! Start Fallback entities. Leave empty! DONT-EDIT! -->
+<!-- Fallback entities. Do not change! -->
 <!ENTITY openCmd.commandkey				"">
 <!ENTITY urlbar.accesskey				"">
 <!ENTITY urlbar.placeholder2			"">
-<!-- DONT-EDIT! End Fallback entities. Leave empty! DONT-EDIT! -->
 
 <!-- Extra CyberCTR Additions -->
 

@@ -6,11 +6,12 @@ pref("extensions.classicthemerestorer.square_edges",false);
 pref("extensions.classicthemerestorer.ctabheight",28);
 pref("extensions.classicthemerestorer.ctabmwidth",100);
 pref("extensions.classicthemerestorer.ctabwidth",210);
-pref("extensions.classicthemerestorer.emptyfavicon",false);
+pref("extensions.classicthemerestorer.emptyfavico_t",'emptyfavico_t_none');
 pref("extensions.classicthemerestorer.noemptypticon",false);
 pref("extensions.classicthemerestorer.closetab","closetab_default");
 pref("extensions.classicthemerestorer.closetabhfl",false);
 pref("extensions.classicthemerestorer.closeonleft",false);
+pref("extensions.classicthemerestorer.closetabbig",false);
 pref("extensions.classicthemerestorer.closeicon",'closeicon_default');
 pref("extensions.classicthemerestorer.tttitlebar",false);
 
@@ -50,7 +51,7 @@ pref("extensions.classicthemerestorer.iat_notf_vt",false);
 pref("extensions.classicthemerestorer.wincontrols",false);
 pref("extensions.classicthemerestorer.oldtoplevimg",false);
 pref("extensions.classicthemerestorer.altalertbox",false);
-pref("extensions.classicthemerestorer.emptyfavicon2",false);
+pref("extensions.classicthemerestorer.emptyfavico_g",'emptyfavico_g_def');
 pref("extensions.classicthemerestorer.panelmenucol",false);
 pref("extensions.classicthemerestorer.cpanelmenus",false);
 pref("extensions.classicthemerestorer.hidezoomres",false);
@@ -65,9 +66,13 @@ pref("extensions.classicthemerestorer.am_nowarning",false);
 pref("extensions.classicthemerestorer.am_compact",false);
 pref("extensions.classicthemerestorer.am_compact2",true);
 pref("extensions.classicthemerestorer.am_highlight",false);
+pref("extensions.classicthemerestorer.am_buticons",false);
+pref("extensions.classicthemerestorer.am_hovshowb",false);
 pref("extensions.classicthemerestorer.alt_addonsp",false);
+pref("extensions.classicthemerestorer.hiderecentbm",false);
 pref("extensions.classicthemerestorer.bmbutpanelm",false);
 pref("extensions.classicthemerestorer.bmbunsortbm",false);
+pref("extensions.classicthemerestorer.bmbunsortbm2",true);
 pref("extensions.classicthemerestorer.bmbviewbmtb",false);
 pref("extensions.classicthemerestorer.bmbnounsort",false);
 pref("extensions.classicthemerestorer.bmbutnotext",false);
@@ -103,15 +108,18 @@ pref("extensions.classicthemerestorer.tabseparator","tabsep_default");
 pref("extensions.classicthemerestorer.starinurl",false);
 pref("extensions.classicthemerestorer.feedinurl",false);
 pref("extensions.classicthemerestorer.hideurelstop",false);
+pref("extensions.classicthemerestorer.hideurelstop2",false);
 pref("extensions.classicthemerestorer.hideurlgo",false);
 pref("extensions.classicthemerestorer.hideurlsrg",false);
 pref("extensions.classicthemerestorer.hideprbutton",false);
 pref("extensions.classicthemerestorer.urlbardropm",false);
+pref("extensions.classicthemerestorer.urlbardropm2",false);
 pref("extensions.classicthemerestorer.altreaderico",false);
 
 pref("extensions.classicthemerestorer.ib_nohovcolor",false);
 pref("extensions.classicthemerestorer.ib_graycolor",false);
 pref("extensions.classicthemerestorer.verifiedcolors",false);
+pref("extensions.classicthemerestorer.ibinfoico",false);
 pref("extensions.classicthemerestorer.faviconurl",false);
 pref("extensions.classicthemerestorer.padlock","padlock_default");
 pref("extensions.classicthemerestorer.padlockex",true);
@@ -188,6 +196,7 @@ pref("extensions.classicthemerestorer.contextitem",false);
 pref("extensions.classicthemerestorer.puictrbutton",false);
 pref("extensions.classicthemerestorer.cuibuttons",true);
 pref("extensions.classicthemerestorer.nodevtheme2",false);
+//pref("extensions.classicthemerestorer.restartapp",true);
 pref("extensions.classicthemerestorer.pref_actindx",3);
 pref("extensions.classicthemerestorer.pref_actindx2",0);
 
@@ -321,15 +330,15 @@ pref("extensions.classicthemerestorer.cbookmarkfontsize", 12);
 pref("extensions.classicthemerestorer.hidexulelements", false);
 pref("extensions.classicthemerestorer.hidexulfilter", "");
 
-//CyberCTR animate animated lightweight themes (False by Default).
-pref("extensions.classicthemerestorer.animatedlwtthemes", false);
+//CyberCTR animate animated lightweight themes (True by Default).
+pref("extensions.classicthemerestorer.animatedlwtthemes", true);
 
 //CyberCTR Custom CSS
 pref("extensions.classicthemerestorer.loadcustomcss", false);
 pref("extensions.classicthemerestorer.customcssurl", "");
 
 //CyberCTR version
-pref("extensions.classicthemerestorer.version", "1.5.0");
+pref("extensions.classicthemerestorer.version", "1.5.1");
 
 //CyberCTR Pre-set Configuration
 pref("extensions.classicthemerestorer.ctrpref.firstrun", true);

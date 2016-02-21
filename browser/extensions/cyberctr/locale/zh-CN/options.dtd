@@ -57,7 +57,9 @@
 <!ENTITY Ctr_square_edges	"方形顶部边角">
 <!ENTITY Ctr_tttitlebar		"在 &brandShortName; 标题栏显示标签页标题">
 <!ENTITY Ctr_tabinsertion	"在当前标签页后插入关联标签页 (about:config)">
-<!ENTITY Ctr_emptyfavicon	"使用空白网站小图标 (如果网站没有提供)">
+<!ENTITY Ctr_emptytfavico	"显示网站图标 (如果网站未提供)">
+<!ENTITY Ctr_emptytfavico_n	"无">
+<!ENTITY Ctr_emptytfavico_g	"通用">
 <!ENTITY Ctr_noemptypticon	"为固定的标签页移除空白小图标">
 <!ENTITY Ctr_e10stab_notd	"E10s 标签页: 移除下划线">
 <!ENTITY Ctr_closetab_0		"标签页关闭按钮">
@@ -69,6 +71,7 @@
 <!ENTITY Ctr_closetab_hfot	"仅一个可见标签页时隐藏">
 <!ENTITY Ctr_closei_def		"默认图标">
 <!ENTITY Ctr_closeonleft	"标签页上的备选位置">
+<!ENTITY Ctr_closetabbig	"Bigger icon (20x20px)">
 <!ENTITY Ctr_close_wwltab	"关闭最后一个可见标签页后关闭窗口 (about:config 选项)">
 
 <!ENTITY Ctr_hctpinfotab	"部分标签页变化与 “Hide Caption Titlebar Plus” 扩展不兼容。">
@@ -82,8 +85,9 @@
 <!ENTITY Ctr_appbutton2h	"在 [&brandShortName;] 标题栏上显示 (隐藏)">
 <!ENTITY Ctr_appbutton2io	"在 [&brandShortName;] 标题栏上显示 (仅图标)">
 <!ENTITY Ctr_paneluibtweak	"在标签页栏上显示橙色面板菜单按钮">
-<!ENTITY Ctr_paneluibtweak2	" ">
-<!ENTITY Ctr_appbuttonc_o	"橙色按钮 (默认)">
+<!ENTITY Ctr_paneluibtweak2	"在标签页栏上显示橙色面板菜单按钮 (仅图标)">
+<!ENTITY Ctr_paneluibtweak3	" ">
+<!ENTITY Ctr_appbuttonc_o	"橙色按钮 (Firefox)">
 <!ENTITY Ctr_appbuttonc_a	"蓝色按钮 (Aurora)">
 <!ENTITY Ctr_appbuttonc_n	"黑色按钮 (Nightly)">
 <!ENTITY Ctr_appbuttonc_t	"透明按钮">
@@ -127,7 +131,7 @@
 <!ENTITY Ctr_wincontrols	"全屏窗口控制按钮可以移动">
 <!ENTITY Ctr_oldtoplevimg	"“顶级域名”图片: 经典外观">
 <!ENTITY Ctr_altalertbox	"“提示框”: 备选的外观">
-<!ENTITY Ctr_emptyfavicon2	"使用空白页面图标来代替常规图标(空白或虚线框)">
+<!ENTITY Ctr_emptygfavico	"替换通用网站图标">
 <!ENTITY Ctr_mstatusbar		"使状态栏面板可以移动">
 <!ENTITY Ctr_mstatusbars4e	"状态栏面板由“Status-4-Evar”所控制">
 <!ENTITY Ctr_mstatusbartpp	"状态栏面板由“ThePuzzlePiece”所控制">
@@ -150,28 +154,32 @@
 <!ENTITY Ctr_nav_txt_ico1	"显示大图标">
 <!ENTITY Ctr_nav_txt_ico2	"显示图标和文本">
 <!ENTITY Ctr_nav_txt_ico3	"只显示文本">
-<!ENTITY Ctr_nav_txt_exp	"Classic attributes (experimental):">
+<!ENTITY Ctr_nav_txt_exp	"经典属性 (试验性):">
 <!ENTITY Ctr_iat_notf_vt	"排除竖直工具栏">
 <!ENTITY Ctr_cpanelmenus	"面板菜单: 更紧凑的视图 (书签、历史等等)">
 <!ENTITY Ctr_hidezoomres	"当缩放控制按钮在工具栏上时: 隐藏重置缩放按钮">
 <!ENTITY Ctr_alt_newtabp	"新标签页页面 (about:newtab): 备选的外观">
 <!ENTITY Ctr_ctroldsearch	"旧式搜索">
 <!ENTITY Ctr_ctroldsearchc	"搜索后清除搜索框">
-<!ENTITY Ctr_search_oit		"Open search in new tab (about:config preference)">
-<!ENTITY Ctr_osearch_meoit	"Middle-clicks: search in new 'foreground tab'">
-<!ENTITY Ctr_osearch_dm		"Small dropmarker">
+<!ENTITY Ctr_search_oit		"在新标签页中搜索 (about:config 选项)">
+<!ENTITY Ctr_osearch_meoit	"中键点击: 在新的“前台标签页”中搜索">
+<!ENTITY Ctr_osearch_dm		"较小的下拉按钮">
 <!ENTITY Ctr_addonmanager	"附加组件管理器">
 <!ENTITY Ctr_alt_addonsp	"附加组件“更多”页面: 备选的外观">
 <!ENTITY Ctr_alt_addonsm	"附加组件管理器: 备选的外观">
 <!ENTITY Ctr_am_nowarning	"附加组件管理器列表: 隐藏警告">
 <!ENTITY Ctr_am_compact		"附加组件列表: 紧凑视图">
 <!ENTITY Ctr_am_compact2	"紧凑视图 +">
-<!ENTITY Ctr_am_highlight	"Add-on lists: highlight entry on hover">
+<!ENTITY Ctr_am_highlight	"附加组件列表: 鼠标悬停时高亮项目">
+<!ENTITY Ctr_am_buticons	"Add-on lists: replace button labels with icons">
+<!ENTITY Ctr_am_hovshowb	"Add-on lists: only show buttons on 'hover'">
 <!ENTITY Ctr_addonversion	"附加组件页面: 显示附加组件版本">
 <!ENTITY Ctr_xpinstallui	"附加组件管理器: 旧式附加组件安装窗口(about:config 选项)">
 <!ENTITY Ctr_bmbutton		"书签菜单按钮">
+<!ENTITY Ctr_hiderecentbm	"Bookmarks popup: hide recently added bookmarks">
 <!ENTITY Ctr_bmbutpanelm	"弹出式菜单: 面板式菜单外观">
 <!ENTITY Ctr_bmbunsortbm	"弹出式菜单: “未分类书签”子菜单">
+<!ENTITY Ctr_bmbunsortbm2	"菜单在书签之上">
 <!ENTITY Ctr_bmbviewbmtb	"弹出式菜单: 显示“查看工具栏”">
 <!ENTITY Ctr_bmbnounsort	"弹出式菜单: 隐藏“未分类书签”">
 <!ENTITY Ctr_bmbutnotext	"隐藏书签工具栏上的文本标签">
@@ -222,9 +230,11 @@
 <!ENTITY Ctr_starinurlinfo	"默认书签菜单按钮被隐藏">
 <!ENTITY Ctr_feedinurl		"RSS源按钮">
 <!ENTITY Ctr_hideurelstop	"隐藏停止和重新载入按钮">
+<!ENTITY Ctr_hideurelstop2	"总是显示 “转到” 按钮">
 <!ENTITY Ctr_hideurlgo		"隐藏 “转到” 按钮">
 <!ENTITY Ctr_hideurlsrg		"隐藏 “重新载入，停止和转到” 按钮的分隔符与空白">
 <!ENTITY Ctr_urlbardropm	"尽可能移动下拉按钮到最后的位置">
+<!ENTITY Ctr_urlbardropm2	"下拉按钮总是可见">
 <!ENTITY Ctr_altreaderico	"备选的 “阅读模式” 图标">
 <!ENTITY Ctr_hideprbutton	"当弹出窗口被阻止时隐藏通知图标">
 <!ENTITY Ctr_locsearchbw10	"减小地址栏与搜索栏高度(实验性)">
@@ -232,6 +242,7 @@
 <!ENTITY Ctr_ib_nohovcolor	"鼠标悬停时不显示灰色">
 <!ENTITY Ctr_ib_graycolor	"未知网站标识与Chrome页面显示灰色">
 <!ENTITY Ctr_verifiedcolors	"已验证站点，安全站点和不安全站点显示不同颜色按钮">
+<!ENTITY Ctr_ibinfoico		"Replace 'i'-icon with globe icon">
 <!ENTITY Ctr_faviconurl		"网站图标：当前网站图标">
 <!ENTITY Ctr_padlock		"加密连接锁图标">
 <!ENTITY Ctr_padlock_hid	"隐藏">
@@ -357,6 +368,8 @@
 <!ENTITY Ctr_addon-bar.accesskey		"A">
 <!ENTITY appMenuGettingStarted.label	"开始使用">
 <!ENTITY goCmd.label					"转到">
+<!ENTITY Ctr_menu_restart.label			"重启">
+<!ENTITY Ctr_restartapp					"在应用菜单和文件菜单中显示 “重启”">
 
 <!-- For page context entries. Have to be adjusted for every locale! -->
 <!ENTITY backCmd.accesskey				"B">
@@ -365,11 +378,10 @@
 <!ENTITY stopCmd.accesskey				"S">
 <!ENTITY bookmarkPageCmd2.accesskey		"m">
 
-<!-- DONT-EDIT! Start Fallback entities. Leave empty! DONT-EDIT! -->
+<!-- Fallback entities. Leave empty! -->
 <!ENTITY openCmd.commandkey				"">
 <!ENTITY urlbar.accesskey				"">
 <!ENTITY urlbar.placeholder2			"">
-<!-- DONT-EDIT! End Fallback entities. Leave empty! DONT-EDIT! -->
 
 <!-- Extra CyberCTR Additions -->
 

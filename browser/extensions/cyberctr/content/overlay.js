@@ -16,7 +16,6 @@ var {osfile} = Cu.import("resource://gre/modules/osfile.jsm", {});    // load th
 //Import services
 var {Services} = Cu.import("resource://gre/modules/Services.jsm", {});
 
-
 if (typeof classicthemerestorerjs == "undefined") {var classicthemerestorerjs = {};};
 if (!classicthemerestorerjs.ctr) {classicthemerestorerjs.ctr = {};};
 window.addEventListener("load", function () { 
@@ -95,6 +94,7 @@ classicthemerestorerjs.ctr = {
   moveStarIntoUrlbar:	false,
   moveFeedIntoUrlbar:	false,
   altnewtabpageOn:		false,
+  removeRecentBmOn:		false,
   
   devthemeinterval: 	null,
   ctrcontentprefswin: 	null,
@@ -722,6 +722,11 @@ classicthemerestorerjs.ctr = {
 			if (branch.getBoolPref("closeonleft") && classicthemerestorerjs.ctr.fxdefaulttheme==true) classicthemerestorerjs.ctr.loadUnloadCSS("closeonleft",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("closeonleft",false);
 		  break;
+		  
+		  case "closetabbig":
+			if (branch.getBoolPref("closetabbig")) classicthemerestorerjs.ctr.loadUnloadCSS("closetabbig",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("closetabbig",false);
+		  break;
 
 
 		  // Appbutton
@@ -734,6 +739,7 @@ classicthemerestorerjs.ctr = {
 			classicthemerestorerjs.ctr.loadUnloadCSS('appbutton_v2io2',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('appbutton_v2h',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('appbutton_pm',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('appbutton_pm2',false);
 		
 			if (branch.getCharPref("appbutton")!="appbutton_off"){
 			  classicthemerestorerjs.ctr.loadUnloadCSS(branch.getCharPref("appbutton"),true);
@@ -1267,13 +1273,33 @@ classicthemerestorerjs.ctr = {
 		  break;
 		  
 		  case "hideurelstop":
-			if (branch.getBoolPref("hideurelstop")) classicthemerestorerjs.ctr.loadUnloadCSS("hideurelstop",true);
-			  else classicthemerestorerjs.ctr.loadUnloadCSS("hideurelstop",false);
+			if (branch.getBoolPref("hideurelstop")) {
+			  classicthemerestorerjs.ctr.loadUnloadCSS("hideurelstop",true);
+			  
+			  if (branch.getBoolPref("hideurelstop2") && branch.getBoolPref("hideurlgo")==false) classicthemerestorerjs.ctr.loadUnloadCSS("hideurelstop2",true);
+			}
+			else { 
+			  classicthemerestorerjs.ctr.loadUnloadCSS("hideurelstop",false);
+			  classicthemerestorerjs.ctr.loadUnloadCSS("hideurelstop2",false);
+			}
+		  break;
+		  
+		  case "hideurelstop2":
+			if (branch.getBoolPref("hideurelstop2") && branch.getBoolPref("hideurelstop") && branch.getBoolPref("hideurlgo")==false) classicthemerestorerjs.ctr.loadUnloadCSS("hideurelstop2",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("hideurelstop2",false);
 		  break;
 		  
 		  case "hideurlgo":
-			if (branch.getBoolPref("hideurlgo")) classicthemerestorerjs.ctr.loadUnloadCSS("hideurlgo",true);
-			  else classicthemerestorerjs.ctr.loadUnloadCSS("hideurlgo",false);
+			if (branch.getBoolPref("hideurlgo")) {
+			  classicthemerestorerjs.ctr.loadUnloadCSS("hideurlgo",true);
+
+			  if (branch.getBoolPref("hideurelstop2") && branch.getBoolPref("hideurelstop")) classicthemerestorerjs.ctr.loadUnloadCSS("hideurelstop2",false);
+			}
+			else {
+			  classicthemerestorerjs.ctr.loadUnloadCSS("hideurlgo",false);
+
+			  if (branch.getBoolPref("hideurelstop2") && branch.getBoolPref("hideurelstop")) classicthemerestorerjs.ctr.loadUnloadCSS("hideurelstop2",true);
+			}
 		  break;
 
 		  case "hideurlsrg":
@@ -1284,6 +1310,11 @@ classicthemerestorerjs.ctr = {
 		  case "urlbardropm":
 			if (branch.getBoolPref("urlbardropm")) classicthemerestorerjs.ctr.loadUnloadCSS("urlbardropm",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("urlbardropm",false);
+		  break;
+
+		  case "urlbardropm2":
+			if (branch.getBoolPref("urlbardropm2")) classicthemerestorerjs.ctr.loadUnloadCSS("urlbardropm2",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("urlbardropm2",false);
 		  break;
 
 		  case "altreaderico":
@@ -1908,23 +1939,32 @@ classicthemerestorerjs.ctr = {
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("bf_space",false);
 		  break;		  
 
-		  case "emptyfavicon":
-			if (branch.getBoolPref("emptyfavicon") && branch.getBoolPref("emptyfavicon2")==false) classicthemerestorerjs.ctr.loadUnloadCSS("emptyfavicon",true);
-			  else classicthemerestorerjs.ctr.loadUnloadCSS("emptyfavicon",false);
+		  case "emptyfavico_t":
+			  
+			classicthemerestorerjs.ctr.loadUnloadCSS('emptyfavico_t_dot',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('emptyfavico_t_dot2',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('emptyfavico_t_gen',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('emptyfavico_t_gen2',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('emptyfavico_t_sheet',false);
+			
+			if (branch.getCharPref("emptyfavico_t")!="emptyfavico_t_none"){
+			  classicthemerestorerjs.ctr.loadUnloadCSS(branch.getCharPref("emptyfavico_t"),true);
+			}
 			
 			if (branch.getBoolPref("faviconurl")) {classicthemerestorerjs.ctr.favIconinUrlbarCTR();}
 		  break;
-		  
-		  case "emptyfavicon2":
-			if (branch.getBoolPref("emptyfavicon2")) {
-			  classicthemerestorerjs.ctr.loadUnloadCSS("emptyfavicon2",true);
-			  if (branch.getBoolPref("emptyfavicon")) { classicthemerestorerjs.ctr.loadUnloadCSS("emptyfavicon",false);}
-			} else {
-			  classicthemerestorerjs.ctr.loadUnloadCSS("emptyfavicon2",false);
-			  if (branch.getBoolPref("emptyfavicon")) { classicthemerestorerjs.ctr.loadUnloadCSS("emptyfavicon",true);}
+
+		  case "emptyfavico_g":
+			  
+			classicthemerestorerjs.ctr.loadUnloadCSS('emptyfavico_g_def2',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('emptyfavico_g_dot',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('emptyfavico_g_dot2',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('emptyfavico_g_sheet',false);
+			
+			if (branch.getCharPref("emptyfavico_g")!="emptyfavico_g_def"){
+			  classicthemerestorerjs.ctr.loadUnloadCSS(branch.getCharPref("emptyfavico_g"),true);
 			}
 
-			if (branch.getBoolPref("faviconurl")) {classicthemerestorerjs.ctr.favIconinUrlbarCTR();}
 		  break;
 		  
 		  case "noemptypticon":
@@ -1991,6 +2031,16 @@ classicthemerestorerjs.ctr = {
 			if (branch.getBoolPref("am_highlight")) classicthemerestorerjs.ctr.loadUnloadCSS("am_highlight",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("am_highlight",false);
 		  break;
+		  
+		  case "am_buticons":
+			if (branch.getBoolPref("am_buticons")) classicthemerestorerjs.ctr.loadUnloadCSS("am_buticons",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("am_buticons",false);
+		  break;
+		  
+		  case "am_hovshowb":
+			if (branch.getBoolPref("am_hovshowb")) classicthemerestorerjs.ctr.loadUnloadCSS("am_hovshowb",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("am_hovshowb",false);
+		  break;
 
 		  case "alt_newtabpalt":
 			classicthemerestorerjs.ctr.loadUnloadCSS("alt_newtabpalt",branch.getBoolPref("alt_newtabpalt"));
@@ -2011,6 +2061,96 @@ classicthemerestorerjs.ctr = {
 			if (branch.getBoolPref("addonversion") && classicthemerestorerjs.ctr.appversion >= 40) classicthemerestorerjs.ctr.loadUnloadCSS("addonversion",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("addonversion",false);
 		  break;
+		  
+		  case "hiderecentbm":
+		    if(classicthemerestorerjs.ctr.appversion >= 47) {
+				if (branch.getBoolPref("hiderecentbm")) {
+				  classicthemerestorerjs.ctr.loadUnloadCSS("hiderecentbm",true);
+				  
+				  if (classicthemerestorerjs.ctr.osstring=="Darwin"){
+
+					setTimeout(function(){
+
+					  var recentlyBookmarked0 = document.getElementById("menu_recentBookmarks");
+					  var recentlyBookmarked1 = recentlyBookmarked0.nextSibling; // 1st recent bookmark
+					  var recentlyBookmarked2 = recentlyBookmarked1.nextSibling; // 2nd...
+					  var recentlyBookmarked3 = recentlyBookmarked2.nextSibling;
+					  var recentlyBookmarked4 = recentlyBookmarked3.nextSibling;
+					  var recentlyBookmarked5 = recentlyBookmarked4.nextSibling;
+					  
+					  var rec_stop=false;
+					  
+					  if(recentlyBookmarked0.previousSibling!=null && recentlyBookmarked0.previousSibling.nodeName=="menuseparator")
+					    recentlyBookmarked0.previousSibling.collapsed=true;
+					  
+					  recentlyBookmarked0.collapsed=true;
+					  
+					  if(recentlyBookmarked1!=null && recentlyBookmarked1.nodeName=="menuitem" && rec_stop==false)
+						recentlyBookmarked1.collapsed=true;
+					  else rec_stop=true;
+					  if(recentlyBookmarked2!=null && recentlyBookmarked2.nodeName=="menuitem" && rec_stop==false)
+						recentlyBookmarked2.collapsed=true;
+					  else rec_stop=true;
+					  if(recentlyBookmarked3!=null && recentlyBookmarked3.nodeName=="menuitem" && rec_stop==false)
+						recentlyBookmarked3.collapsed=true;
+					  else rec_stop=true;
+					  if(recentlyBookmarked4!=null && recentlyBookmarked4.nodeName=="menuitem" && rec_stop==false)
+						recentlyBookmarked4.collapsed=true;
+					  else rec_stop=true;
+					  if(recentlyBookmarked5!=null && recentlyBookmarked5.nodeName=="menuitem" && rec_stop==false)
+						recentlyBookmarked5.collapsed=true;
+					},1000);
+				  
+				    classicthemerestorerjs.ctr.removeRecentBmOn = true;
+				  }
+				}
+				else {
+				  classicthemerestorerjs.ctr.loadUnloadCSS("hiderecentbm",false);
+				  
+				  if (classicthemerestorerjs.ctr.osstring=="Darwin"){
+				   if(classicthemerestorerjs.ctr.removeRecentBmOn) {
+
+					setTimeout(function(){
+
+					  var recentlyBookmarked0 = document.getElementById("menu_recentBookmarks");
+					  var recentlyBookmarked1 = recentlyBookmarked0.nextSibling; // 1st recent bookmark
+					  var recentlyBookmarked2 = recentlyBookmarked1.nextSibling; // 2nd...
+					  var recentlyBookmarked3 = recentlyBookmarked2.nextSibling;
+					  var recentlyBookmarked4 = recentlyBookmarked3.nextSibling;
+					  var recentlyBookmarked5 = recentlyBookmarked4.nextSibling;
+					  
+					  var rec_stop=false;
+					  
+					  if(recentlyBookmarked0.previousSibling!=null && recentlyBookmarked0.previousSibling.nodeName=="menuseparator")
+					    recentlyBookmarked0.previousSibling.collapsed=false;
+
+					  recentlyBookmarked0.collapsed=false;
+					  
+					  if(recentlyBookmarked1!=null && recentlyBookmarked1.nodeName=="menuitem" && rec_stop==false)
+						recentlyBookmarked1.collapsed=false;
+					  else rec_stop=true;
+					  if(recentlyBookmarked2!=null && recentlyBookmarked2.nodeName=="menuitem" && rec_stop==false)
+						recentlyBookmarked2.collapsed=false;
+					  else rec_stop=true;
+					  if(recentlyBookmarked3!=null && recentlyBookmarked3.nodeName=="menuitem" && rec_stop==false)
+						recentlyBookmarked3.collapsed=false;
+					  else rec_stop=true;
+					  if(recentlyBookmarked4!=null && recentlyBookmarked4.nodeName=="menuitem" && rec_stop==false)
+						recentlyBookmarked4.collapsed=false;
+					  else rec_stop=true;
+					  if(recentlyBookmarked5!=null && recentlyBookmarked5.nodeName=="menuitem" && rec_stop==false)
+						recentlyBookmarked5.collapsed=false;
+
+					},1000);
+					
+					classicthemerestorerjs.ctr.removeRecentBmOn = false;
+				  
+				   }
+				  }
+				  
+				}
+			}
+		  break;
 
 		  case "bmbutpanelm":
 			if (branch.getBoolPref("bmbutpanelm")) {
@@ -2026,9 +2166,17 @@ classicthemerestorerjs.ctr = {
 			}
 		  break;
 
-		  case "bmbunsortbm":
-			if (branch.getBoolPref("bmbunsortbm")) classicthemerestorerjs.ctr.loadUnloadCSS("bmbunsortbm",true);
-			  else classicthemerestorerjs.ctr.loadUnloadCSS("bmbunsortbm",false);
+		  case "bmbunsortbm": case "bmbunsortbm2":
+			if (branch.getBoolPref("bmbunsortbm") && branch.getBoolPref("bmbunsortbm2")==false) {
+			  classicthemerestorerjs.ctr.loadUnloadCSS("bmbunsortbm",true);
+			  classicthemerestorerjs.ctr.loadUnloadCSS("bmbunsortbm2",false);
+			} else if (branch.getBoolPref("bmbunsortbm") && branch.getBoolPref("bmbunsortbm2")) {
+			  classicthemerestorerjs.ctr.loadUnloadCSS("bmbunsortbm",false);
+			  classicthemerestorerjs.ctr.loadUnloadCSS("bmbunsortbm2",true);
+			} else {
+			  classicthemerestorerjs.ctr.loadUnloadCSS("bmbunsortbm",false);
+			  classicthemerestorerjs.ctr.loadUnloadCSS("bmbunsortbm2",false);
+			}
 		  break;
 		  
 		  case "bmbviewbmtb":
@@ -2081,6 +2229,10 @@ classicthemerestorerjs.ctr = {
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("verifiedcolors",false);
 		  break;
 
+		  case "ibinfoico":
+			if (branch.getBoolPref("ibinfoico")) classicthemerestorerjs.ctr.loadUnloadCSS("ibinfoico",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("ibinfoico",false);
+		  break;
 		  
 		  case "hideprivmask":
 			if (branch.getBoolPref("hideprivmask")) classicthemerestorerjs.ctr.loadUnloadCSS("hideprivmask",true);
@@ -2100,7 +2252,7 @@ classicthemerestorerjs.ctr = {
 		  case "tabthrobber":
 		  
 			classicthemerestorerjs.ctr.loadUnloadCSS('throbber_alt',false);
-			classicthemerestorerjs.ctr.loadUnloadCSS('throbber_f39',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('throbber_fx39',false);
       classicthemerestorerjs.ctr.loadUnloadCSS('throbber_nav',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('cctr/throbber_alt1',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('cctr/throbber_alt2',false);
@@ -2397,6 +2549,31 @@ classicthemerestorerjs.ctr = {
 		  case "cuibuttons":
 			if (branch.getBoolPref("cuibuttons")) classicthemerestorerjs.ctr.loadUnloadCSS("cuibuttons",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("cuibuttons",false);
+		  break;
+		  
+		  case "restartapp":
+		  
+			if (branch.getBoolPref("restartapp")) classicthemerestorerjs.ctr.loadUnloadCSS("restartapp",false);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("restartapp",true);
+			
+			// for MacOSX: hide filemenu item using js instead of css or it won't work
+			if (classicthemerestorerjs.ctr.osstring=="Darwin"){
+				if (branch.getBoolPref("restartapp")) {
+					setTimeout(function(){
+					  try{
+						document.getElementById("ctraddon_restart-menu").collapsed = false;
+					  } catch(e){}
+					},500);
+				}
+				else {
+				  setTimeout(function(){
+					try{
+					  document.getElementById("ctraddon_restart-menu").collapsed = true;
+					} catch(e){}
+				  },500);
+				}
+			}
+
 		  break;
 
 		  case "searchbarwidth": case "customsearchbarwidth":
@@ -2966,6 +3143,7 @@ classicthemerestorerjs.ctr = {
 	  setTimeout(function(){
 		try{
 		  document.getElementById("ctraddon_BMB_unsortedBookmarks_mm").collapsed = true;
+		  document.getElementById("ctraddon_BMB_unsortedBookmarks_mm2").collapsed = true;
 		} catch(e){}
 	  },1000);
 	}
@@ -3121,8 +3299,7 @@ classicthemerestorerjs.ctr = {
 		} catch(e){}
 	 }
 	 
-	 var emptyfavicon1 = Services.prefs.getBranch("extensions.classicthemerestorer.").getBoolPref("emptyfavicon");
-	 var emptyfavicon2 = Services.prefs.getBranch("extensions.classicthemerestorer.").getBoolPref("emptyfavicon2");
+	 var emptyfavicon = Services.prefs.getBranch("extensions.classicthemerestorer.").getCharPref("emptyfavico_t");
 	 var extrabrandico = Services.prefs.getBranch("extensions.classicthemerestorer.").getBoolPref("padlockex");
 	 var ppsvalid	   = false; try { ppsvalid  = document.getElementById("urlbar").getAttribute('pageproxystate')=='valid'; } catch(e){}
 	 var ppsinvalid	   = false; try { ppsinvalid = document.getElementById("urlbar").getAttribute('pageproxystate')=='invalid'; } catch(e){}
@@ -3134,37 +3311,67 @@ classicthemerestorerjs.ctr = {
 		ppfavicon.setAttribute("src", gBrowser.selectedTab.image);
 	  } catch(e){}
 	 }
-	 else if(emptyfavicon1 && emptyfavicon2==false && extrabrandico && ppsvalid && ibchromeui){
+	 else if(emptyfavicon=='emptyfavico_t_dot' && extrabrandico && ppsvalid && ibchromeui){
 	  try {
 		ppfavicon.removeAttribute("src");
 	  } catch(e){}
 	 }
-	 else if(emptyfavicon2 && extrabrandico && ppsvalid && ibchromeui){
+	 else if(emptyfavicon=='emptyfavico_t_dot2' && extrabrandico && ppsvalid && ibchromeui){
 	  try {
 		ppfavicon.removeAttribute("src");
 	  } catch(e){}
 	 }
-	 else if(emptyfavicon1 && emptyfavicon2==false && ppsinvalid && ibukidentity) {
+	 else if(emptyfavicon=='emptyfavico_t_gen2' && extrabrandico && ppsvalid && ibchromeui){
+	  try {
+		ppfavicon.removeAttribute("src");
+	  } catch(e){}
+	 }
+	 else if(emptyfavicon=='emptyfavico_t_sheet' && extrabrandico && ppsvalid && ibchromeui){
+	  try {
+		ppfavicon.removeAttribute("src");
+	  } catch(e){}
+	 }
+	 else if(emptyfavicon=='emptyfavico_t_dot' && ppsinvalid && ibukidentity) {
 	  try {
 		ppfavicon.setAttribute("src", "chrome://classic_theme_restorer/content/images/default_dot_favicon.png");
 	  } catch(e){}
 	 }
-	 else if(emptyfavicon2 && ppsinvalid && ibukidentity) {
+	 else if(emptyfavicon=='emptyfavico_t_dot2' && ppsinvalid && ibukidentity) {
+	  try {
+		ppfavicon.setAttribute("src", "chrome://classic_theme_restorer/content/images/default_dot_favicon_white.png");
+	  } catch(e){}
+	 }
+	 else if(emptyfavicon=='emptyfavico_t_gen2' && ppsinvalid && ibukidentity) {
+	  try {
+		ppfavicon.setAttribute("src", "chrome://classic_theme_restorer/content/images/globe_white.png");
+	  } catch(e){}
+	 }
+	 else if(emptyfavicon=='emptyfavico_t_sheet' && ppsinvalid && ibukidentity) {
 	  try {
 		ppfavicon.setAttribute("src", "chrome://classic_theme_restorer/content/images/default_favicon.png");
 	  } catch(e){}
 	 }
-	 else if(emptyfavicon1 && emptyfavicon2==false) {
+	 else if(emptyfavicon=='emptyfavico_t_dot') {
 	  try {
 		ppfavicon.setAttribute("src", "chrome://classic_theme_restorer/content/images/default_dot_favicon.png");
 	  } catch(e){}
 	 }
-	 else if(emptyfavicon2) {
+	 else if(emptyfavicon=='emptyfavico_t_dot2') {
+	  try {
+		ppfavicon.setAttribute("src", "chrome://classic_theme_restorer/content/images/default_dot_favicon_white.png");
+	  } catch(e){}
+	 }
+	 else if(emptyfavicon=='emptyfavico_t_gen2') {
+	  try {
+		ppfavicon.setAttribute("src", "chrome://classic_theme_restorer/content/images/globe_white.png");
+	  } catch(e){}
+	 }
+	 else if(emptyfavicon=='emptyfavico_t_sheet') {
 	  try {
 		ppfavicon.setAttribute("src", "chrome://classic_theme_restorer/content/images/default_favicon.png");
 	  } catch(e){}
 	 }
-	 else if(emptyfavicon1==false && emptyfavicon2==false) {
+	 else if(emptyfavicon=='emptyfavico_t_gen' || emptyfavicon=='emptyfavico_t_none') {
 	  try {
 		ppfavicon.removeAttribute("src");
 	  } catch(e){}
@@ -3694,6 +3901,8 @@ classicthemerestorerjs.ctr = {
 		case "closeicong_w10red": 		manageCSS("close_icon_g_w10red.css");  	break;
 		case "closeicong_gc": 			manageCSS("close_icon_g_gc.css");  		break;
 		
+		case "closetabbig": 			manageCSS("close_icon_t_big.css");  	break;
+		
 		case "closeonleft":
 		
 			if(this.prefs.getCharPref("tabs")=="tabs_curvedall") manageCSS("close_onleft2.css");
@@ -3730,6 +3939,7 @@ classicthemerestorerjs.ctr = {
 		case "appbutton_v2io2":		manageCSS("appbutton2io2.css");			break;
 		case "appbutton_v2h":		manageCSS("appbutton2hidden.css");		break;
 		case "appbutton_pm": 		manageCSS("paneluibutton_tweak.css");	break;
+		case "appbutton_pm2": 		manageCSS("paneluibutton_tweak2.css");	break;
 		
 		case "appbutton_on_nav":	manageCSS("appbutton_on_navbar.css");	break;
 		
@@ -3854,9 +4064,11 @@ classicthemerestorerjs.ctr = {
 		case "feedinurl":			manageCSS("feedinurl.css");				break;
 		case "statusbar": 			manageCSS("statusbar.css"); 			break;
 		case "hideurelstop": 		manageCSS("hideurlbarrelstop.css"); 	break;
+		case "hideurelstop2": 		manageCSS("hideurlbarrelstop2.css"); 	break;
 		case "hideurlgo": 			manageCSS("hideurlbargo.css"); 			break;
 		case "hideurlsrg": 			manageCSS("hideurlbarrelstopgo.css"); 	break;
 		case "urlbardropm": 		manageCSS("urlbar_dropm.css"); 			break;
+		case "urlbardropm2": 		manageCSS("urlbar_dropm2.css"); 		break;
 		case "altreaderico": 		manageCSS("alt_reader_icons.css");		break;
 		case "locsearchbw10": 		manageCSS("locationsearchbarw10.css");	break;
 		case "combrelstop":			manageCSS("combrelstop.css");			break;
@@ -3890,8 +4102,15 @@ classicthemerestorerjs.ctr = {
 		case "alttabstb2": 			manageCSS("alttabstoolbar2.css");		break;
 		case "hidetbwotextra": 		manageCSS("hidetbwot_extra.css");		break;
 		
-		case "emptyfavicon": 		manageCSS("empty_favicon.css");			break;
-		case "emptyfavicon2": 		manageCSS("empty_favicon2.css");		break;
+		case "emptyfavico_t_gen": 	manageCSS("empty_favicon_t0.css");		break;
+		case "emptyfavico_t_gen2": 	manageCSS("empty_favicon_t0v2.css");	break;
+		case "emptyfavico_t_dot": 	manageCSS("empty_favicon_t1.css");		break;
+		case "emptyfavico_t_dot2": 	manageCSS("empty_favicon_t1v2.css");	break;
+		case "emptyfavico_t_sheet": manageCSS("empty_favicon_t2.css");		break;
+		case "emptyfavico_g_def2": 	manageCSS("empty_favicon_g0.css");		break;
+		case "emptyfavico_g_dot": 	manageCSS("empty_favicon_g1.css");		break;
+		case "emptyfavico_g_dot2": 	manageCSS("empty_favicon_g1v2.css");	break;
+		case "emptyfavico_g_sheet": manageCSS("empty_favicon_g2.css");		break;
 		case "noemptypticon": 		manageCSS("empty_favicon_pt.css");		break;
 		case "hidezoomres": 		manageCSS("hide_zoomreset.css");		break;
 		case "alt_newtabp": 		manageCSS("alt_newtabpage.css");		break;
@@ -3901,6 +4120,8 @@ classicthemerestorerjs.ctr = {
 		case "am_compact":			manageCSS("am_compact.css");			break;
 		case "am_compact2":			manageCSS("am_compact2.css");			break;
 		case "am_highlight": 		manageCSS("am_highlight.css");			break;
+		case "am_buticons": 		manageCSS("am_buttonicons.css");		break;
+		case "am_hovshowb": 		manageCSS("am_hovshowbut.css");			break;
 		case "alt_addonsp": 		manageCSS("alt_addonspage.css");		break;
 		case "alt_addonsm": 		manageCSS("alt_addonsmanager.css");		break;
 		
@@ -3909,8 +4130,10 @@ classicthemerestorerjs.ctr = {
 			else manageCSS("addonversion46.css");
 		break;
 		
+		case "hiderecentbm": 		manageCSS("hide_recently_bm.css");		break;
 		case "bmbutpanelm": 		manageCSS("bmbut_pmenu.css");			break;
 		case "bmbunsortbm": 		manageCSS("bmbut_unsortedbookm.css");	break;
+		case "bmbunsortbm2": 		manageCSS("bmbut_unsortedbookm2.css");	break;
 		case "bmbviewbmtb": 		manageCSS("bmbut_bmbviewbmtb.css");		break;
 		case "bmbnounsort": 		manageCSS("bmbut_bmbnounsort.css");		break;
 		case "bmbutnotext": 		manageCSS("bmbut_no_label.css");		break;
@@ -3921,6 +4144,7 @@ classicthemerestorerjs.ctr = {
 		case "ib_nohovcolor": 		manageCSS("ib_nohovcolor.css");			break;
 		case "ib_graycolor": 		manageCSS("ib_graycolor.css");			break;
 		case "verifiedcolors": 		manageCSS("verifiedcolors.css");		break;
+		case "ibinfoico": 			manageCSS("hide_ibinfoico.css");		break;
 		case "hideprivmask": 		manageCSS("hideprivatemask.css");		break;
 		case "bfurlbarfix": 		manageCSS("bf_urlbarfix.css");			break;
 		case "bf_space": 			manageCSS("bf_space.css");				break;
@@ -3971,6 +4195,7 @@ classicthemerestorerjs.ctr = {
 		case "puictrbutton": 		manageCSS("ctraddon_puictrbutton.css");	break;
 		case "toolsitem": 			manageCSS("ctraddon_toolsitem.css");	break;
 		
+		case "restartapp":			manageCSS("ctraddon_restartapp.css");	break;
 		case "cuibuttons":			manageCSS("cuibuttons.css");			break;
 		
 		case "nodevtheme2":			manageCSS("no_devtheme.css");			break;
@@ -4347,7 +4572,7 @@ classicthemerestorerjs.ctr = {
 			if(this.prefs.getBoolPref('cappbutnotxtsh')){
 				buttonTextShadow = "text-shadow:none!important;";
 			}	
-			if(enable==true && this.prefs.getCharPref('appbuttonc')=='appbuttonc_custom' && this.prefs.getCharPref('appbutton')=='appbutton_pm') {
+			if(enable==true && this.prefs.getCharPref('appbuttonc')=='appbuttonc_custom' && (this.prefs.getCharPref('appbutton')=='appbutton_pm' || this.prefs.getCharPref('appbutton')=='appbutton_pm2')) {
 			
 				this.appbutton_color=ios.newURI("data:text/css;charset=utf-8," + encodeURIComponent('\
 					@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);\
@@ -7023,6 +7248,19 @@ switch (appButtonState){
 	else {
 	  try{ document.getElementById("ctraddon_BMB_viewBookmarksToolbar").removeAttribute('checked');} catch(e){}
 	}
+
+  },
+  
+  restartBrowser: function() {
+    
+	var cancelQuit   = Cc["@mozilla.org/supports-PRBool;1"].createInstance(Ci.nsISupportsPRBool);
+	var observerSvc  = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
+		
+	observerSvc.notifyObservers(cancelQuit, "quit-application-requested", "restart");
+	
+	if(cancelQuit.data) return false;
+		
+	Services.startup.quit(Services.startup.eRestart | Services.startup.eAttemptQuit);
 
   }
 

@@ -66,6 +66,12 @@ classicthemerestorerjso.ctr = {
 	  }
 	} catch(e){}
 	
+	try{
+	  if (this.appversion >= 44) {
+		document.getElementById("ClassicTRoptionsPane").setAttribute('fx44plus',true);
+	  }
+	} catch(e){}
+	
 	// restore last selected categories/tabs
 	document.getElementById("CtrRadioGroup").selectedIndex = this.prefs.getIntPref('pref_actindx');
 	document.getElementById("ctraddon_tabcolor_tabs").selectedIndex = this.prefs.getIntPref('pref_actindx2');
@@ -428,8 +434,17 @@ classicthemerestorerjso.ctr = {
 
 	if (this.appversion < 44) {
 	  document.getElementById('ctraddon_pw_altalertbox').style.visibility = 'collapse';
+	  document.getElementById('ctraddon_pw_urlbardropm2').style.visibility = 'collapse';
 	}
 
+	if (this.appversion < 45) {
+	  document.getElementById('ctraddon_pw_ibinfoico').style.visibility = 'collapse';
+	}
+
+	if (this.appversion < 47) {
+	  document.getElementById('ctraddon_pw_hiderecentbm').style.visibility = 'collapse';
+	}
+	
 
 	function PrefListener(branch_name, callback) {
 	  // Keeping a reference to the observed preference branch or it will get
@@ -670,7 +685,6 @@ classicthemerestorerjso.ctr = {
 	// update sub settings
 	this.ctrpwAppbuttonextra(this.prefs.getCharPref("appbutton"),false);
 	this.ctrpwAppbuttonColorExtra(this.prefs.getCharPref("appbuttonc"));
-	this.ctrpwTabEmptyFavicon(this.prefs.getBoolPref("emptyfavicon2"));
 	this.ctrpwCtrOldSearch(this.prefs.getBoolPref("ctroldsearch"));
 	this.ctrpwFaviconextra(this.prefs.getBoolPref("faviconurl"));
 	this.ctrpwBFextra(this.prefs.getBoolPref("backforward"));
@@ -684,6 +698,8 @@ classicthemerestorerjso.ctr = {
 	this.ctrpwNavBarPadding(this.prefs.getBoolPref("navbarpad"));
 	this.ctrpwLocationSearchbarSize(this.prefs.getBoolPref("lbsbsize"));
 	this.ctrpwCompactAddonList(this.prefs.getBoolPref("am_compact"));
+	this.ctrpwUnsortBM(this.prefs.getBoolPref("bmbunsortbm"));
+	this.ctrpwHideUrlStopRel(this.prefs.getBoolPref("hideurelstop"));
 	
 	var closetab_value = this.prefs.getCharPref("closetab");
   
@@ -902,12 +918,8 @@ classicthemerestorerjso.ctr = {
   },
   
   ctrpwFaviconextra: function(which) {
-    if(which==true) which=false; else which=true;
+	if(which==true) which=false; else which=true;
 	document.getElementById('ctraddon_padlock_extra').disabled = which;
-  },
-  
-  ctrpwTabEmptyFavicon: function(which) {
-	document.getElementById('ctraddon_pw_tab_emptyfavicon').disabled = which;
   },
   
   ctrpwBFextra: function(which) {
@@ -1020,6 +1032,32 @@ classicthemerestorerjso.ctr = {
 	
     document.getElementById('ctraddon_pw_am_compact2').disabled = which;
 	document.getElementById('ctraddon_pw_am_compact2').style.visibility = itemvis;
+  },
+  
+  ctrpwUnsortBM: function(which) {
+	var itemvis = 'collapse';
+	
+    if(which==true) {
+	  which=false; itemvis = 'visible';
+	} else {
+	  which=true; itemvis = 'collapse';
+	}
+	
+    document.getElementById('ctraddon_pw_bmbunsortbm2').disabled = which;
+	document.getElementById('ctraddon_pw_bmbunsortbm2').style.visibility = itemvis;
+  },
+  
+  ctrpwHideUrlStopRel: function(which) {
+	var itemvis = 'collapse';
+	
+    if(which==true) {
+	  which=false; itemvis = 'visible';
+	} else {
+	  which=true; itemvis = 'collapse';
+	}
+	
+    document.getElementById('ctraddon_pw_hideurelstop2').disabled = which;
+	document.getElementById('ctraddon_pw_hideurelstop2').style.visibility = itemvis;
   },
   
   ctrpwCtrOldSearch: function(which) {
@@ -1148,6 +1186,17 @@ classicthemerestorerjso.ctr = {
 	  document.getElementById('ctraddon_pw_appbautocol').disabled = true;
 	  document.getElementById('ctraddon_pw_appbuttonct').disabled = true;
 	} else if (which=="appbutton_pm"){
+	  document.getElementById('ctraddon_altabico_list').disabled = true;
+	  document.getElementById('ctraddon_abhigher').disabled = true;
+	  document.getElementById('ctraddon_appbutbdl').disabled = true;
+	  document.getElementById('ctraddon_appbutcolor_list').disabled = false;
+	  document.getElementById('ctraddon_dblclclosefx').disabled = true;
+	  document.getElementById('ctraddon_pw_appbutonclab').disabled = true;
+	  document.getElementById('ctraddon_pw_appbuttontxt').disabled = true;
+	  document.getElementById('ctraddon_appbclmmenus').disabled = true;
+	  document.getElementById('ctraddon_pw_appbautocol').disabled = true;
+	  document.getElementById('ctraddon_pw_appbuttonct').disabled = true;
+	} else if (which=="appbutton_pm2"){
 	  document.getElementById('ctraddon_altabico_list').disabled = true;
 	  document.getElementById('ctraddon_abhigher').disabled = true;
 	  document.getElementById('ctraddon_appbutbdl').disabled = true;
@@ -1334,7 +1383,7 @@ classicthemerestorerjso.ctr = {
 	this.prefs.setCharPref("findbar",'findbar_bottoma');
 	this.prefs.setBoolPref("hideprivmask",true);
 	this.prefs.setBoolPref("cpanelmenus",true);
-	this.prefs.setBoolPref("emptyfavicon",true);
+	this.prefs.setCharPref("emptyfavico_t",'emptyfavico_t_dot');
 	this.prefs.setBoolPref("hidezoomres",true);
 	this.prefs.setBoolPref("faviconurl",true);
 	this.prefs.setBoolPref("bmanimation",true);

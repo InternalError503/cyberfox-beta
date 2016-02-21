@@ -58,7 +58,9 @@
 <!ENTITY Ctr_square_edges	"Firkantede øverste hjørner">
 <!ENTITY Ctr_tttitlebar		"Fanebladstitel i &brandShortName;-titellinje">
 <!ENTITY Ctr_tabinsertion	"Indsæt relaterede faneblad efter aktive faneblad (about:config)">
-<!ENTITY Ctr_emptyfavicon	"Gendan tomme favicon (hvis webstedet ikke levere et)">
+<!ENTITY Ctr_emptytfavico	"Show favicon (if a site does not offer one)">
+<!ENTITY Ctr_emptytfavico_n	"None">
+<!ENTITY Ctr_emptytfavico_g	"Generic">
 <!ENTITY Ctr_noemptypticon	"Fjern tomme favicon fra fastgjorte faneblade">
 <!ENTITY Ctr_e10stab_notd	"E10s faneblade: fjern understregning">
 <!ENTITY Ctr_closetab_0		"Lukning af faneblad">
@@ -70,6 +72,7 @@
 <!ENTITY Ctr_closetab_hfot	"Skjul hvis der kun er ét synligt faneblad">
 <!ENTITY Ctr_closei_def		"Standard ikoner">
 <!ENTITY Ctr_closeonleft	"Alternativ placering på faneblad">
+<!ENTITY Ctr_closetabbig	"Bigger icon (20x20px)">
 <!ENTITY Ctr_close_wwltab	"Luk vindue med det sidste synlige faneblad (about:config)">
 
 <!ENTITY Ctr_hctpinfotab	"Nogle varianter af faneblade er ikke kompatible med tilføjelsen 'Hide Caption Titlebar Plus'.">
@@ -83,8 +86,9 @@
 <!ENTITY Ctr_appbutton2h	"Knap på [&brandShortName;] titellinje (skjul)">
 <!ENTITY Ctr_appbutton2io	"Knap på [&brandShortName;] titellinje (kun ikon)">
 <!ENTITY Ctr_paneluibtweak	"Vis menuknap som &brandShortName;-knap...">
-<!ENTITY Ctr_paneluibtweak2	"...når på fanebladslinje">
-<!ENTITY Ctr_appbuttonc_o	"Orange knap (standard)">
+<!ENTITY Ctr_paneluibtweak2	"Vis menuknap som &brandShortName;-knap (kun ikon)...">
+<!ENTITY Ctr_paneluibtweak3	"...når på fanebladslinje">
+<!ENTITY Ctr_appbuttonc_o	"Orange knap (Firefox)">
 <!ENTITY Ctr_appbuttonc_a	"Blå knap (Aurora)">
 <!ENTITY Ctr_appbuttonc_n	"Sort knap (Nightly)">
 <!ENTITY Ctr_appbuttonc_t	"Gennemsigtig knap">
@@ -128,7 +132,7 @@
 <!ENTITY Ctr_wincontrols	"Flytbar fuldskærmsvindue kontrolelementer">
 <!ENTITY Ctr_oldtoplevimg	"'Top level domæne'-billeder: klassisk udseende">
 <!ENTITY Ctr_altalertbox	"'Alert-boks': alternativt udseende">
-<!ENTITY Ctr_emptyfavicon2	"Erstat generelle (tomme eller prikkede) favicon'er med papirark-favicon">
+<!ENTITY Ctr_emptygfavico	"Replace generic favicon">
 <!ENTITY Ctr_mstatusbar		"Flytbare statuspanel">
 <!ENTITY Ctr_mstatusbars4e	"Statuslinje-panel styres af 'Status-4-Evar'">
 <!ENTITY Ctr_mstatusbartpp	"Statuslinje-panel styres af 'ThePuzzlePiece'">
@@ -168,11 +172,15 @@
 <!ENTITY Ctr_am_compact		"Tilføjelseslister: kompakt visning">
 <!ENTITY Ctr_am_compact2	"Kompakt udseende +">
 <!ENTITY Ctr_am_highlight	"Add-on lists: highlight entry on hover">
+<!ENTITY Ctr_am_buticons	"Add-on lists: replace button labels with icons">
+<!ENTITY Ctr_am_hovshowb	"Add-on lists: only show buttons on 'hover'">
 <!ENTITY Ctr_addonversion	"Tilføjelseslister: vis tilføjelsesversion">
 <!ENTITY Ctr_xpinstallui	"Gamle tilføjelser-installationsvindue (about:config-indstilling)">
 <!ENTITY Ctr_bmbutton		"Bogmærker-menuknap">
+<!ENTITY Ctr_hiderecentbm	"Bookmarks popup: hide recently added bookmarks">
 <!ENTITY Ctr_bmbutpanelm	"Popup: panelmenu udseende">
 <!ENTITY Ctr_bmbunsortbm	"Popup: 'usorterede bogmærker'-undermenu">
+<!ENTITY Ctr_bmbunsortbm2	"Menu above bookmarks">
 <!ENTITY Ctr_bmbviewbmtb	"Popup: vis 'Vis værktøjslinje'">
 <!ENTITY Ctr_bmbnounsort	"Popup: skjul 'usorterede bogmærker'">
 <!ENTITY Ctr_bmbutnotext	"Skjul etiket på bogmærkelinje">
@@ -223,9 +231,11 @@
 <!ENTITY Ctr_starinurlinfo	"Standard bogmærker-menuknap skjules">
 <!ENTITY Ctr_feedinurl		"RSS feed-knap">
 <!ENTITY Ctr_hideurelstop	"Skjul knapperne 'Stop &amp; genindlæs'">
+<!ENTITY Ctr_hideurelstop2	"Always show 'go' button">
 <!ENTITY Ctr_hideurlgo		"Skjul 'gå'-knap">
 <!ENTITY Ctr_hideurlsrg		"Skjul 'genindlæs, stop &amp; gå'-knapseparatore &amp; mellemrum">
 <!ENTITY Ctr_urlbardropm	"Flyt rullemenu-pilen til den sidst mulige position">
+<!ENTITY Ctr_urlbardropm2	"Make dropmarker always visible">
 <!ENTITY Ctr_altreaderico	"Alternative 'Læser'-ikoner">
 <!ENTITY Ctr_hideprbutton	"Skjul notifikationsikonet når en popup blokeres">
 <!ENTITY Ctr_locsearchbw10	"Reducér adresselinjers og søgelinjers højde (eksperimentel)">
@@ -233,6 +243,7 @@
 <!ENTITY Ctr_ib_nohovcolor	"Vis ikke grå farve når der peges på">
 <!ENTITY Ctr_ib_graycolor	"Grå farve for ukendt identitet og chrome-sider">
 <!ENTITY Ctr_verifiedcolors	"Knapfarver for bekræftede websteder, sikre og ikke-sikre forbindelser">
+<!ENTITY Ctr_ibinfoico		"Replace 'i'-icon with globe icon">
 <!ENTITY Ctr_faviconurl		"Favicon: nuværende webstedsikon">
 <!ENTITY Ctr_padlock		"Hængelås ikon for sikre forbindelser">
 <!ENTITY Ctr_padlock_hid	"skjul">
@@ -358,6 +369,8 @@
 <!ENTITY Ctr_addon-bar.accesskey		"A">
 <!ENTITY appMenuGettingStarted.label	"Kom i gang">
 <!ENTITY goCmd.label					"Gå">
+<!ENTITY Ctr_menu_restart.label			"Restart">
+<!ENTITY Ctr_restartapp					"'Restart' in &brandShortName;-menu and file menu">
 
 <!-- For page context entries. Have to be adjusted for every locale! -->
 <!ENTITY backCmd.accesskey				"T">
@@ -366,11 +379,10 @@
 <!ENTITY stopCmd.accesskey				"S">
 <!ENTITY bookmarkPageCmd2.accesskey		"b">
 
-<!-- DONT-EDIT! Start Fallback entities. Leave empty! DONT-EDIT! -->
+<!-- Fallback entities. Do not change! -->
 <!ENTITY openCmd.commandkey				"">
 <!ENTITY urlbar.accesskey				"">
 <!ENTITY urlbar.placeholder2			"">
-<!-- DONT-EDIT! End Fallback entities. Leave empty! DONT-EDIT! -->
 
 <!-- Extra CyberCTR Additions -->
 

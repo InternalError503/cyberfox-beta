@@ -57,7 +57,9 @@
 <!ENTITY Ctr_square_edges	"Squared top corners">
 <!ENTITY Ctr_tttitlebar		"Tab title in &brandShortName; titlebar">
 <!ENTITY Ctr_tabinsertion	"İlgili sekmeyi geçerli sekmeden sonra ekle (about:config tercihi)">
-<!ENTITY Ctr_emptyfavicon	"Boş faviconu yükle (sitenin faviconu yoksa eğer)">
+<!ENTITY Ctr_emptytfavico	"Show favicon (if a site does not offer one)">
+<!ENTITY Ctr_emptytfavico_n	"None">
+<!ENTITY Ctr_emptytfavico_g	"Generic">
 <!ENTITY Ctr_noemptypticon	"Tutturulmuş sekmelerde boş faviconu kaldır">
 <!ENTITY Ctr_e10stab_notd	"E10s sekmeler: altçizgiyi kaldır">
 <!ENTITY Ctr_closetab_0		"Sekme Kapat">
@@ -69,6 +71,7 @@
 <!ENTITY Ctr_closetab_hfot	"Görünen sekme için sakla">
 <!ENTITY Ctr_closei_def		"Default icons">
 <!ENTITY Ctr_closeonleft	"Sekme üstünde alternatif pozisyon">
+<!ENTITY Ctr_closetabbig	"Bigger icon (20x20px)">
 <!ENTITY Ctr_close_wwltab	"Son görülebilir sekmeyle sencereyi kapat (about:config)">
 
 <!ENTITY Ctr_hctpinfotab	"Bazı sekme varyasyonları 'Hide Caption Titlebar Plus' eklentisiyle uyumlu değildir.">
@@ -82,7 +85,8 @@
 <!ENTITY Ctr_appbutton2h	"Araç çubuğunda [&brandShortName;] butonu(saklı)">
 <!ENTITY Ctr_appbutton2io	"[&brandShortName;] başlığında buton (sadece ikon)">
 <!ENTITY Ctr_paneluibtweak	"Sekme çubuğunda turuncu panel...">
-<!ENTITY Ctr_paneluibtweak2	"...menü butonu">
+<!ENTITY Ctr_paneluibtweak2	"Sekme çubuğunda turuncu panel (sadece ikon)...">
+<!ENTITY Ctr_paneluibtweak3	"...menü butonu">
 <!ENTITY Ctr_appbuttonc_o	"Turuncu renk butonu">
 <!ENTITY Ctr_appbuttonc_a	"Mavi renk butonu (Aurora)">
 <!ENTITY Ctr_appbuttonc_n	"Siyah renk butonu (Nightly)">
@@ -127,7 +131,7 @@
 <!ENTITY Ctr_wincontrols	"Hareketli tam ekran penceresi kontrolleri">
 <!ENTITY Ctr_oldtoplevimg	"'Top level domain' images: classic appearance">
 <!ENTITY Ctr_altalertbox	"'Alert box': alternative appearance">
-<!ENTITY Ctr_emptyfavicon2	"Genel(boş noktalı) faviconu kağıt görünümlü favicon ile değiştir">
+<!ENTITY Ctr_emptygfavico	"Replace generic favicon">
 <!ENTITY Ctr_mstatusbar		"Hareketli durum çubuğu paneli">
 <!ENTITY Ctr_mstatusbars4e	"Durum çubuğu paneli 'Status-4-Evar' tarafından kontrol edilir">
 <!ENTITY Ctr_mstatusbartpp	"Durum çubuğu paneli 'ThePuzzlePiece' tarafından kontrol edilir">
@@ -167,11 +171,15 @@
 <!ENTITY Ctr_am_compact		"Add-on lists: compact view">
 <!ENTITY Ctr_am_compact2	"Compact view +">
 <!ENTITY Ctr_am_highlight	"Add-on lists: highlight entry on hover">
+<!ENTITY Ctr_am_buticons	"Add-on lists: replace button labels with icons">
+<!ENTITY Ctr_am_hovshowb	"Add-on lists: only show buttons on 'hover'">
 <!ENTITY Ctr_addonversion	"Add-on lists: show add-on version">
 <!ENTITY Ctr_xpinstallui	"Old add-on install window (about:config preference)">
 <!ENTITY Ctr_bmbutton		"Yer imleri menü düğmesi">
+<!ENTITY Ctr_hiderecentbm	"Bookmarks popup: hide recently added bookmarks">
 <!ENTITY Ctr_bmbutpanelm	"Popup: panel menu görünümü">
-<!ENTITY Ctr_bmbunsortbm	"Popup: 'unsorted bookmarks' submenu">
+<!ENTITY Ctr_bmbunsortbm	"Popup: 'unsorted bookmarks' menu">
+<!ENTITY Ctr_bmbunsortbm2	"Menu above bookmarks">
 <!ENTITY Ctr_bmbviewbmtb	"Popup: show 'View Toolbar'">
 <!ENTITY Ctr_bmbnounsort	"Popup: hide 'unsorted bookmarks'">
 <!ENTITY Ctr_bmbutnotext	"Bar üzerinde etiketi gizle">
@@ -222,9 +230,11 @@
 <!ENTITY Ctr_starinurlinfo	"Default bookmarks menu button gets hidden">
 <!ENTITY Ctr_feedinurl		"RSS feed-butonu">
 <!ENTITY Ctr_hideurelstop	"'Dur &amp; Yenile' butonlarını gizle">
+<!ENTITY Ctr_hideurelstop2	"Always show 'go' button">
 <!ENTITY Ctr_hideurlgo		"Hide 'go' button">
 <!ENTITY Ctr_hideurlsrg		"Hide 'reload, stop &amp; go' button separators &amp; spaces">
 <!ENTITY Ctr_urlbardropm	"Move dropmarker to the last possible position">
+<!ENTITY Ctr_urlbardropm2	"Make dropmarker always visible">
 <!ENTITY Ctr_altreaderico	"Alternative 'Reader' icons">
 <!ENTITY Ctr_hideprbutton	"Popup engellendiğinde beliren uyarıyı gizle">
 <!ENTITY Ctr_locsearchbw10	"Reduce location bars and search bars height (experimental)">
@@ -232,6 +242,7 @@
 <!ENTITY Ctr_ib_nohovcolor	"Do not show gray color when hovered">
 <!ENTITY Ctr_ib_graycolor	"Gray color for unknown identity and chrome pages">
 <!ENTITY Ctr_verifiedcolors	"Button colors for verified websites, secure and not secure connections">
+<!ENTITY Ctr_ibinfoico		"Replace 'i'-icon with globe icon">
 <!ENTITY Ctr_faviconurl		"Favicon: Mevcut web siteleri simgesidir">
 <!ENTITY Ctr_padlock		"Güvenli bağlantılar için asma kilit simgesi">
 <!ENTITY Ctr_padlock_hid	"gizli">
@@ -357,6 +368,8 @@
 <!ENTITY Ctr_addon-bar.accesskey		"A">
 <!ENTITY appMenuGettingStarted.label	"Başlarken">
 <!ENTITY goCmd.label					"Go">
+<!ENTITY Ctr_menu_restart.label			"Restart">
+<!ENTITY Ctr_restartapp					"'Restart' in &brandShortName;-menu and file menu">
 
 <!-- For page context entries. Have to be adjusted for every locale! -->
 <!ENTITY backCmd.accesskey				"i">
@@ -365,11 +378,10 @@
 <!ENTITY stopCmd.accesskey				"D">
 <!ENTITY bookmarkPageCmd2.accesskey		"m">
 
-<!-- DONT-EDIT! Start Fallback entities. Leave empty! DONT-EDIT! -->
+<!-- Fallback entities. Leave empty! -->
 <!ENTITY openCmd.commandkey				"">
 <!ENTITY urlbar.accesskey				"">
 <!ENTITY urlbar.placeholder2			"">
-<!-- DONT-EDIT! End Fallback entities. Leave empty! DONT-EDIT! -->
 
 <!-- Extra CyberCTR Additions -->
 
