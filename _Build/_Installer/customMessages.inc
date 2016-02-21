@@ -372,8 +372,8 @@ ja.DeleteProfileData=プロファイル データを削除しますか？
 ja.ConfirmDeleteProfileData=元に戻すことはできませんがよろしいですか？
 ja.CleanInstallDescription=クリーン インストールを実行する
 ja.CleanInstallGroupDescription=インストール オプション
-ja.LoopInstallDescription=Install firefox hello chat (Optional)
-ja.LoopInstallGroupDescription=Firefox hello
+ja.LoopInstallDescription=Firefox Hello チャットをインストールする(オプション)
+ja.LoopInstallGroupDescription=Firefox Hello
 ;Norwegian
 nr.ProcessName={#MyAppName}
 nr.IsAppRunning= er allerede i gang, Vennligst lukk {#MyAppName} deretter kjøre installasjonsprogrammet på nytt.
