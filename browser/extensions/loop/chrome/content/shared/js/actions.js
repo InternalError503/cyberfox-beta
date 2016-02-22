@@ -131,24 +131,6 @@ loop.shared.actions = (function() {
     }),
 
     /**
-     *  Used to send cursor data to the other peer
-     */
-    SendCursorData: Action.define("sendCursorData", {
-      ratioX: Number,
-      ratioY: Number,
-      type: String
-    }),
-
-    /**
-     * Notifies that cursor data has been received from the other peer.
-     */
-    ReceivedCursorData: Action.define("receivedCursorData", {
-      ratioX: Number,
-      ratioY: Number,
-      type: String
-    }),
-
-    /**
      * Used by the ongoing views to notify stores about the elements
      * required for the sdk.
      */
@@ -183,13 +165,6 @@ loop.shared.actions = (function() {
       isLocal: Boolean,
       videoType: String,
       dimensions: Object
-    }),
-
-    /**
-     * Used for notifying that the hasVideo property of the screen stream, has changed.
-     */
-    VideoScreenStreamChanged: Action.define("videoScreenStreamChanged", {
-      hasVideo: Boolean
     }),
 
     /**
@@ -240,14 +215,6 @@ loop.shared.actions = (function() {
      * Used to end a screen share.
      */
     EndScreenShare: Action.define("endScreenShare", {
-    }),
-
-    /**
-     * Used to mute or unmute a screen share.
-     */
-    ToggleBrowserSharing: Action.define("toggleBrowserSharing", {
-      // Whether or not to enable the stream.
-      enabled: Boolean
     }),
 
     /**
@@ -405,13 +372,11 @@ loop.shared.actions = (function() {
      * XXX: should move to some roomActions module - refs bug 1079284
      * @from: where the invitation is shared from.
      *        Possible values ['panel', 'conversation']
-     * @roomUrl: the URL that is shared.
-     * @roomOrigin: the URL browsed when the sharing is started - Optional.
+     * @roomUrl: the URL that is shared
      */
     FacebookShareRoomUrl: Action.define("facebookShareRoomUrl", {
       from: String,
       roomUrl: String
-      // roomOrigin: String
     }),
 
     /**

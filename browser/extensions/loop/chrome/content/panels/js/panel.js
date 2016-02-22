@@ -12,9 +12,7 @@ loop.panel = function (_, mozL10n) {
   var sharedActions = loop.shared.actions;
   var Button = sharedViews.Button;
 
-  // XXX This must be kept in sync with the number in MozLoopService.jsm.
-  // We should expose that one through MozLoopAPI and kill this constant.
-  var FTU_VERSION = 2;
+  var FTU_VERSION = 1;
 
   var GettingStartedView = React.createClass({
     displayName: "GettingStartedView",
@@ -22,8 +20,16 @@ loop.panel = function (_, mozL10n) {
     mixins: [sharedMixins.WindowCloseMixin],
 
     handleButtonClick: function () {
-      loop.request("OpenGettingStartedTour");
+      loop.requestMulti(["OpenGettingStartedTour", "getting-started"], ["SetLoopPref", "gettingStarted.latestFTUVersion", FTU_VERSION], ["SetPanelHeight"]).then(function () {
+        var event = new CustomEvent("GettingStartedSeen");
+        window.dispatchEvent(event);
+      }.bind(this));
       this.closeWindow();
+    },
+
+    componentWillMount: function () {
+      // Set 553 pixel height to show the full FTU panel content.
+      loop.request("SetPanelHeight", 553);
     },
 
     render: function () {
@@ -285,7 +291,7 @@ loop.panel = function (_, mozL10n) {
     },
 
     openGettingStartedTour: function () {
-      loop.request("OpenGettingStartedTour");
+      loop.request("OpenGettingStartedTour", "settings-menu");
       this.closeWindow();
     },
 
@@ -733,20 +739,14 @@ loop.panel = function (_, mozL10n) {
      * @returns {Object} React render
      */
     _renderLoadingRoomsView: function () {
-      /* XXX should refactor and separate "rooms" amd perhaps room-list so that
-      we arent duplicating those elements all over */
       return React.createElement(
         "div",
-        { className: "rooms" },
+        { className: "room-list" },
         this._renderNewRoomButton(),
         React.createElement(
           "div",
-          { className: "room-list" },
-          React.createElement(
-            "div",
-            { className: "room-list-loading" },
-            React.createElement("img", { src: "shared/img/animated-spinner.svg" })
-          )
+          { className: "room-list-loading" },
+          React.createElement("img", { src: "shared/img/animated-spinner.svg" })
         )
       );
     },
@@ -757,20 +757,7 @@ loop.panel = function (_, mozL10n) {
         pendingOperation: this.state.pendingCreation || this.state.pendingInitialRetrieval });
     },
 
-    _addListGradientIfNeeded: function () {
-      if (this.state.rooms.length > 5) {
-        return React.createElement("div", { className: "room-list-blur" });
-      }
-    },
-
     render: function () {
-      var roomListClasses = classNames({
-        "room-list": true,
-        // add extra space to last item so when scrolling to bottom,
-        // last item is not covered by the gradient
-        "room-list-add-space": this.state.rooms.length && this.state.rooms.length > 5
-      });
-
       if (this.state.error) {
         // XXX Better end user reporting of errors.
         console.error("RoomList error", this.state.error);
@@ -789,9 +776,9 @@ loop.panel = function (_, mozL10n) {
           null,
           mozL10n.get(this.state.openedRoom === null ? "rooms_list_recently_browsed2" : "rooms_list_currently_browsing2")
         ),
-        !this.state.rooms.length ? React.createElement("div", { className: "room-list-empty" }) : React.createElement(
+        !this.state.rooms.length ? null : React.createElement(
           "div",
-          { className: roomListClasses },
+          { className: "room-list" },
           this.state.rooms.map(function (room) {
             if (this.state.openedRoom !== null && room.roomToken !== this.state.openedRoom) {
               return null;
@@ -803,8 +790,7 @@ loop.panel = function (_, mozL10n) {
               key: room.roomToken,
               room: room });
           }, this)
-        ),
-        this._addListGradientIfNeeded()
+        )
       );
     }
   });
@@ -879,7 +865,7 @@ loop.panel = function (_, mozL10n) {
           { className: "btn btn-info stop-sharing-button",
             disabled: this.props.pendingOperation,
             onClick: this.handleStopSharingButtonClick },
-          mozL10n.get("panel_disconnect_button")
+          mozL10n.get("panel_stop_sharing_tabs_button")
         ) : React.createElement(
           "button",
           { className: "btn btn-info new-room-button",
@@ -899,9 +885,6 @@ loop.panel = function (_, mozL10n) {
 
     propTypes: {
       onClick: React.PropTypes.func.isRequired
-    },
-    componentWillMount: function () {
-      loop.request("SetPanelHeight", 262);
     },
 
     render: function () {
@@ -955,8 +938,7 @@ loop.panel = function (_, mozL10n) {
         hasEncryptionKey: loop.getStoredRequest(["GetHasEncryptionKey"]),
         userProfile: loop.getStoredRequest(["GetUserProfile"]),
         gettingStartedSeen: loop.getStoredRequest(["GetLoopPref", "gettingStarted.latestFTUVersion"]) >= FTU_VERSION,
-        multiProcessActive: loop.getStoredRequest(["IsMultiProcessActive"]),
-        remoteAutoStart: loop.getStoredRequest(["GetLoopPref", "remote.autostart"])
+        multiProcessEnabled: loop.getStoredRequest(["IsMultiProcessEnabled"])
       };
     },
 
@@ -995,32 +977,26 @@ loop.panel = function (_, mozL10n) {
     },
 
     _onStatusChanged: function () {
-      loop.requestMulti(["GetUserProfile"], ["GetHasEncryptionKey"], ["GetLoopPref", "gettingStarted.latestFTUVersion"]).then(function (results) {
+      loop.requestMulti(["GetUserProfile"], ["GetHasEncryptionKey"]).then(function (results) {
         var profile = results[0];
         var hasEncryptionKey = results[1];
-        var prefFTUVersion = results[2];
-
-        var stateToUpdate = {};
-
-        // It's possible that this state change was slideshow related
-        // so update that if the pref has changed.
-        var prefGettingStartedSeen = prefFTUVersion >= FTU_VERSION;
-        if (prefGettingStartedSeen !== this.state.gettingStartedSeen) {
-          stateToUpdate.gettingStartedSeen = prefGettingStartedSeen;
-        }
-
         var currUid = this.state.userProfile ? this.state.userProfile.uid : null;
         var newUid = profile ? profile.uid : null;
         if (currUid === newUid) {
           // Update the state of hasEncryptionKey as this might have changed now.
-          stateToUpdate.hasEncryptionKey = hasEncryptionKey;
+          this.setState({ hasEncryptionKey: hasEncryptionKey });
         } else {
-          stateToUpdate.userProfile = profile;
+          this.setState({ userProfile: profile });
         }
-
-        this.setState(stateToUpdate);
-
         this.updateServiceErrors();
+      }.bind(this));
+    },
+
+    _gettingStartedSeen: function () {
+      loop.request("GetLoopPref", "gettingStarted.latestFTUVersion").then(function (result) {
+        this.setState({
+          gettingStartedSeen: result >= FTU_VERSION
+        });
       }.bind(this));
     },
 
@@ -1030,10 +1006,12 @@ loop.panel = function (_, mozL10n) {
 
     componentDidMount: function () {
       loop.subscribe("LoopStatusChanged", this._onStatusChanged);
+      window.addEventListener("GettingStartedSeen", this._gettingStartedSeen);
     },
 
     componentWillUnmount: function () {
       loop.unsubscribe("LoopStatusChanged", this._onStatusChanged);
+      window.removeEventListener("GettingStartedSeen", this._gettingStartedSeen);
     },
 
     handleContextMenu: function (e) {
@@ -1049,7 +1027,7 @@ loop.panel = function (_, mozL10n) {
     render: function () {
       var NotificationListView = sharedViews.NotificationListView;
 
-      if (this.state.multiProcessActive && !this.state.remoteAutoStart) {
+      if (this.state.multiProcessEnabled) {
         return React.createElement(E10sNotSupported, { onClick: this.launchNonE10sWindow });
       }
 
@@ -1099,7 +1077,7 @@ loop.panel = function (_, mozL10n) {
    */
   function init() {
     var requests = [["GetAllConstants"], ["GetAllStrings"], ["GetLocale"], ["GetPluralRule"]];
-    var prefetch = [["GetLoopPref", "gettingStarted.latestFTUVersion"], ["GetLoopPref", "legal.ToS_url"], ["GetLoopPref", "legal.privacy_url"], ["GetLoopPref", "remote.autostart"], ["GetUserProfile"], ["GetFxAEnabled"], ["GetDoNotDisturb"], ["GetHasEncryptionKey"], ["IsMultiProcessActive"]];
+    var prefetch = [["GetLoopPref", "gettingStarted.latestFTUVersion"], ["GetLoopPref", "legal.ToS_url"], ["GetLoopPref", "legal.privacy_url"], ["GetUserProfile"], ["GetFxAEnabled"], ["GetDoNotDisturb"], ["GetHasEncryptionKey"], ["IsMultiProcessEnabled"]];
 
     return loop.requestMulti.apply(null, requests.concat(prefetch)).then(function (results) {
       // `requestIdx` is keyed off the order of the `requests` and `prefetch`

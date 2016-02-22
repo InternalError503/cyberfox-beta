@@ -6,17 +6,15 @@ describe("loop.conversation", function() {
   "use strict";
 
   var FeedbackView = loop.feedbackViews.FeedbackView;
-  var expect = chai.expect;
   var TestUtils = React.addons.TestUtils;
   var sharedActions = loop.shared.actions;
-  var fakeWindow, sandbox, setLoopPrefStub, mozL10nGet,
-    remoteCursorStore, dispatcher, requestStubs;
+  var fakeWindow, sandbox, setLoopPrefStub, mozL10nGet;
 
   beforeEach(function() {
     sandbox = LoopMochaUtils.createSandbox();
     setLoopPrefStub = sandbox.stub();
 
-    LoopMochaUtils.stubLoopRequest(requestStubs = {
+    LoopMochaUtils.stubLoopRequest({
       GetDoNotDisturb: function() { return true; },
       GetAllStrings: function() {
         return JSON.stringify({ textContent: "fakeText" });
@@ -39,13 +37,6 @@ describe("loop.conversation", function() {
           LOOP_SESSION_TYPE: {
             GUEST: 1,
             FXA: 2
-          },
-          LOOP_MAU_TYPE: {
-            OPEN_PANEL: 0,
-            OPEN_CONVERSATION: 1,
-            ROOM_OPEN: 2,
-            ROOM_SHARE: 3,
-            ROOM_DELETE: 4
           }
         };
       },
@@ -65,8 +56,7 @@ describe("loop.conversation", function() {
       },
       GetConversationWindowData: function() {
         return {};
-      },
-      TelemetryAddValue: sinon.stub()
+      }
     });
 
     fakeWindow = {
@@ -86,14 +76,6 @@ describe("loop.conversation", function() {
       getStrings: function() { return JSON.stringify({ textContent: "fakeText" }); },
       locale: "en_US"
     });
-
-    dispatcher = new loop.Dispatcher();
-
-    remoteCursorStore = new loop.store.RemoteCursorStore(dispatcher, {
-      sdkDriver: {}
-    });
-
-    loop.store.StoreMixin.register({ remoteCursorStore: remoteCursorStore });
   });
 
   afterEach(function() {
@@ -153,34 +135,24 @@ describe("loop.conversation", function() {
           windowId: "42"
         }));
     });
-
-    it("should log a telemetry event when opening the conversation window", function() {
-      var constants = requestStubs.GetAllConstants();
-      loop.conversation.init();
-
-      sinon.assert.calledOnce(requestStubs["TelemetryAddValue"]);
-      sinon.assert.calledWithExactly(requestStubs["TelemetryAddValue"],
-        "LOOP_MAU", constants.LOOP_MAU_TYPE.OPEN_CONVERSATION);
-    });
   });
 
   describe("AppControllerView", function() {
-    var activeRoomStore, ccView, addRemoteCursorStub;
-    var conversationAppStore,
-        roomStore,
-        feedbackPeriodMs = 15770000000;
+    var activeRoomStore, ccView, dispatcher;
+    var conversationAppStore, roomStore, feedbackPeriodMs = 15770000000;
     var ROOM_STATES = loop.store.ROOM_STATES;
 
     function mountTestComponent() {
       return TestUtils.renderIntoDocument(
         React.createElement(loop.conversation.AppControllerView, {
-          cursorStore: remoteCursorStore,
-          dispatcher: dispatcher,
-          roomStore: roomStore
+          roomStore: roomStore,
+          dispatcher: dispatcher
         }));
     }
 
     beforeEach(function() {
+      dispatcher = new loop.Dispatcher();
+
       activeRoomStore = new loop.store.ActiveRoomStore(dispatcher, {
         mozLoop: {},
         sdkDriver: {}
@@ -189,55 +161,20 @@ describe("loop.conversation", function() {
         activeRoomStore: activeRoomStore,
         constants: {}
       });
-      remoteCursorStore = new loop.store.RemoteCursorStore(dispatcher, {
-        sdkDriver: {}
-      });
       conversationAppStore = new loop.store.ConversationAppStore({
         activeRoomStore: activeRoomStore,
         dispatcher: dispatcher,
         feedbackPeriod: 42,
-        feedbackTimestamp: 42,
-        facebookEnabled: false
+        feedbackTimestamp: 42
       });
 
       loop.store.StoreMixin.register({
         conversationAppStore: conversationAppStore
       });
-
-      addRemoteCursorStub = sandbox.stub();
-      LoopMochaUtils.stubLoopRequest({
-        AddRemoteCursorOverlay: addRemoteCursorStub
-      });
     });
 
     afterEach(function() {
       ccView = undefined;
-    });
-
-    it("should request AddRemoteCursorOverlay when cursor position changes", function() {
-
-      mountTestComponent();
-      remoteCursorStore.setStoreState({
-        "remoteCursorPosition": {
-          "ratioX": 10,
-          "ratioY": 10
-        }
-      });
-
-      sinon.assert.calledOnce(addRemoteCursorStub);
-    });
-
-    it("should NOT request AddRemoteCursorOverlay when cursor position DOES NOT changes", function() {
-
-      mountTestComponent();
-      remoteCursorStore.setStoreState({
-        "realVideoSize": {
-          "height": 400,
-          "width": 600
-        }
-      });
-
-      sinon.assert.notCalled(addRemoteCursorStub);
     });
 
     it("should display the RoomView for rooms", function() {
@@ -246,27 +183,9 @@ describe("loop.conversation", function() {
 
       ccView = mountTestComponent();
 
-      var desktopRoom = TestUtils.findRenderedComponentWithType(ccView,
+      TestUtils.findRenderedComponentWithType(ccView,
         loop.roomViews.DesktopRoomConversationView);
-
-      expect(desktopRoom.props.facebookEnabled).to.eql(false);
     });
-
-    it("should pass the correct value of facebookEnabled to DesktopRoomConversationView",
-      function() {
-        conversationAppStore.setStoreState({
-          windowType: "room",
-          facebookEnabled: true
-        });
-        activeRoomStore.setStoreState({ roomState: ROOM_STATES.READY });
-
-        ccView = mountTestComponent();
-
-        var desktopRoom = TestUtils.findRenderedComponentWithType(ccView,
-            loop.roomViews.DesktopRoomConversationView);
-
-        expect(desktopRoom.props.facebookEnabled).to.eql(true);
-      });
 
     it("should display the RoomFailureView for failures", function() {
       conversationAppStore.setStoreState({
