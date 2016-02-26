@@ -5,9 +5,6 @@
 
 var Cc = Components.classes;
 var Ci = Components.interfaces;
-var Cu = Components.utils;
-
-var {Sanitizer} = Cu.import("resource:///modules/Sanitizer.jsm", {});
 
 var gSanitizePromptDialog = {
 
@@ -45,6 +42,19 @@ var gSanitizePromptDialog = {
 
     var s = new Sanitizer();
     s.prefDomain = "privacy.cpd.";
+
+    let sanitizeItemList = document.querySelectorAll("#itemList > [preference]");
+    for (let i = 0; i < sanitizeItemList.length; i++) {
+      let prefItem = sanitizeItemList[i];
+      let name = s.getNameFromPreference(prefItem.getAttribute("preference"));
+      s.canClearItem(name, function canClearCallback(aItem, aCanClear, aPrefItem) {
+        if (!aCanClear) {
+          aPrefItem.preference = null;
+          aPrefItem.checked = false;
+          aPrefItem.disabled = true;
+        }
+      }, prefItem);
+    }
 
     document.documentElement.getButton("accept").label =
       this.bundleBrowser.getString("sanitizeButtonOK");
@@ -109,7 +119,6 @@ var gSanitizePromptDialog = {
     acceptButton.setAttribute("label",
                               this.bundleBrowser.getString("sanitizeButtonClearing"));
     docElt.getButton("cancel").disabled = true;
-
     try {
       s.sanitize().then(null, Components.utils.reportError)
                   .then(() => window.close())
@@ -118,6 +127,7 @@ var gSanitizePromptDialog = {
       Components.utils.reportError("Exception during sanitize: " + er);
       return true; // We *do* want to close immediately on error.
     }
+    return false;
   },
 
   /**
@@ -281,6 +291,19 @@ var gSanitizePromptDialog = {
 
     var s = new Sanitizer();
     s.prefDomain = "privacy.cpd.";
+
+    let sanitizeItemList = document.querySelectorAll("#itemList > [preference]");
+    for (let i = 0; i < sanitizeItemList.length; i++) {
+      let prefItem = sanitizeItemList[i];
+      let name = s.getNameFromPreference(prefItem.getAttribute("preference"));
+      s.canClearItem(name, function canClearCallback(aCanClear) {
+        if (!aCanClear) {
+          prefItem.preference = null;
+          prefItem.checked = false;
+          prefItem.disabled = true;
+        }
+      });
+    }
 
     document.documentElement.getButton("accept").label =
       this.bundleBrowser.getString("sanitizeButtonOK");
@@ -482,7 +505,7 @@ var gSanitizePromptDialog = {
     }
 
     try {
-      s.sanitize(); // We ignore the resulting Promise
+      s.sanitize();
     } catch (er) {
       Components.utils.reportError("Exception during sanitize: " + er);
     }

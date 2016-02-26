@@ -494,9 +494,6 @@ BrowserGlue.prototype = {
           }
         });
         break;
-      case "test-initialize-sanitizer":
-        this._sanitizer.onStartup();
-        break;
     }
   },
 
@@ -867,7 +864,7 @@ BrowserGlue.prototype = {
     CustomizationTabPreloader.uninit();
     WebappManager.uninit();
 
-    if(!AppConstants.RELEASE_BUILD) {
+    if (!AppConstants.RELEASE_BUILD) {
       RemoteAboutNewTab.uninit();
     }
     AboutNewTab.uninit();
@@ -1507,6 +1504,7 @@ BrowserGlue.prototype = {
    * - export bookmarks as HTML, if so configured.
    */
   _onPlacesShutdown: function BG__onPlacesShutdown() {
+    this._sanitizer.onShutdown();
     PageThumbs.uninit();
 
     if (this._bookmarksBackupIdleTime) {
