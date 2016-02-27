@@ -1,7 +1,0 @@
-/*
-* (Tree Style Tabs):browser.tabs.drawInTitlebar Temp fix for cyberfox and intergrated CTR 
-*  Note: Menu-Bar Still Needs To Be Enabled.
-*/ 
-#toolbar-menubar{
-	visibility:hidden;
-}

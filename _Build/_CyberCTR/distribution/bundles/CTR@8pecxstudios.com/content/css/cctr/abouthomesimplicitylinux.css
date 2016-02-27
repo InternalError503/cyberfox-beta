@@ -1,7 +1,0 @@
-/* simplicity theme (Linux)*/
-@namespace url(http://www.w3.org/1999/xhtml);
-@-moz-document url("about:home") {
-	:root {
-		--main-highlight-color:#0fed00!important;  
-	}
-}
