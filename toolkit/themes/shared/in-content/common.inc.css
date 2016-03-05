@@ -262,6 +262,7 @@ xul|*.help-button {
   -moz-margin-end: 0;
   border-width: 0;
   background-image: none;
+  background-color: transparent;
   box-shadow: none;
   list-style-image: url("chrome://global/skin/in-content/help-glyph.svg#help");
 }
