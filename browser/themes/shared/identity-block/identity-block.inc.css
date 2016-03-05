@@ -13,6 +13,8 @@
 	--identity-box-chrome-color: rgb(236,24,24);
 %elif IDENTITY_BRANDING_LINUX
 	--identity-box-chrome-color: rgb(3,81,1);
+%elif IDENTITY_BRANDING_LINUX_BETA
+	--identity-box-chrome-color: rgb(25,198,121);
 %elif IDENTITY_BRANDING_INTEL
 	--identity-box-chrome-color: rgb(24,147,236);
 %else
