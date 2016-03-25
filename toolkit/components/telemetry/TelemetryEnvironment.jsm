@@ -65,6 +65,10 @@ this.TelemetryEnvironment = {
     return getGlobal().onInitialized();
   },
 
+  delayedInit: function() {
+    return getGlobal().delayedInit();
+  },
+
   registerChangeListener: function(name, listener) {
     return getGlobal().registerChangeListener(name, listener);
   },
@@ -104,7 +108,6 @@ const DEFAULT_ENVIRONMENT_PREFS = new Map([
   ["browser.newtab.url", {what: RECORD_PREF_STATE}],
   ["browser.newtabpage.enabled", {what: RECORD_PREF_VALUE}],
   ["browser.newtabpage.enhanced", {what: RECORD_PREF_VALUE}],
-  ["browser.polaris.enabled", {what: RECORD_PREF_VALUE}],
   ["browser.shell.checkDefaultBrowser", {what: RECORD_PREF_VALUE}],
   ["browser.search.suggest.enabled", {what: RECORD_PREF_VALUE}],
   ["browser.startup.homepage", {what: RECORD_PREF_STATE}],
@@ -681,6 +684,7 @@ function EnvironmentCache() {
   this._log.trace("constructor");
 
   this._shutdown = false;
+  this._delayedInitFinished = false;
 
   // A map of listeners that will be called on environment changes.
   this._changeListeners = new Map();
@@ -758,6 +762,13 @@ EnvironmentCache.prototype = {
   },
 
   /**
+   * This gets called when the delayed init completes.
+   */
+  delayedInit: function() {
+    this._delayedInitFinished = true;
+  },
+
+  /**
    * Register a listener for environment changes.
    * @param name The name of the listener. If a new listener is registered
    *             with the same name, the old listener will be replaced.
@@ -811,7 +822,7 @@ EnvironmentCache.prototype = {
       if (!Preferences.isSet(pref)) {
         continue;
       }
-      
+
       // Check the policy for the preference and decide if we need to store its value
       // or whether it changed from the default value.
       let prefValue = undefined;
@@ -880,7 +891,7 @@ EnvironmentCache.prototype = {
     this._log.trace("observe - aTopic: " + aTopic + ", aData: " + aData);
     switch (aTopic) {
       case SEARCH_ENGINE_MODIFIED_TOPIC:
-        if (aData != "engine-default" && aData != "engine-current") {
+        if (aData != "engine-current") {
           return;
         }
         // Record the new default search choice and send the change notification.
@@ -1027,6 +1038,7 @@ EnvironmentCache.prototype = {
     if (AppConstants.platform === "gonk") {
       return true;
     }
+
     if (!("@mozilla.org/browser/shell-service;1" in Cc)) {
       this._log.info("_isDefaultBrowser - Could not obtain browser shell service");
       return null;
@@ -1034,11 +1046,21 @@ EnvironmentCache.prototype = {
 
     let shellService;
     try {
-      shellService = Cc["@mozilla.org/browser/shell-service;1"]
-                       .getService(Ci.nsIShellService);
+      let scope = {};
+      Cu.import("resource:///modules/ShellService.jsm", scope);
+      shellService = scope.ShellService;
     } catch (ex) {
-      this._log.error("_isDefaultBrowser - Could not obtain shell service", ex);
-      return null;
+      this._log.error("_isDefaultBrowser - Could not obtain shell service JSM");
+    }
+
+    if (!shellService) {
+      try {
+        shellService = Cc["@mozilla.org/browser/shell-service;1"]
+                         .getService(Ci.nsIShellService);
+      } catch (ex) {
+        this._log.error("_isDefaultBrowser - Could not obtain shell service", ex);
+        return null;
+      }
     }
 
     try {
@@ -1321,6 +1343,7 @@ EnvironmentCache.prototype = {
     // We are already skipping change events in _checkChanges if there is a pending change task running.
     let now = Policy.now();
     if (this._lastEnvironmentChangeDate &&
+        this._delayedInitFinished &&
         (CHANGE_THROTTLE_INTERVAL_MS >=
          (now.getTime() - this._lastEnvironmentChangeDate.getTime()))) {
       this._log.trace("_onEnvironmentChange - throttling changes, now: " + now +
@@ -1328,7 +1351,9 @@ EnvironmentCache.prototype = {
       return;
     }
 
-    this._lastEnvironmentChangeDate = now;
+    if(this._delayedInitFinished) {
+      this._lastEnvironmentChangeDate = now;
+    }
 
     for (let [name, listener] of this._changeListeners) {
       try {

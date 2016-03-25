@@ -1253,7 +1253,7 @@ nsNPAPIPluginInstance::SetBackgroundUnknown()
 
 nsresult
 nsNPAPIPluginInstance::BeginUpdateBackground(nsIntRect* aRect,
-                                             gfxContext** aContext)
+                                             DrawTarget** aDrawTarget)
 {
   if (RUNNING != mRunning)
     return NS_OK;
@@ -1262,12 +1262,11 @@ nsNPAPIPluginInstance::BeginUpdateBackground(nsIntRect* aRect,
   if (!library)
     return NS_ERROR_FAILURE;
 
-  return library->BeginUpdateBackground(&mNPP, *aRect, aContext);
+  return library->BeginUpdateBackground(&mNPP, *aRect, aDrawTarget);
 }
 
 nsresult
-nsNPAPIPluginInstance::EndUpdateBackground(gfxContext* aContext,
-                                           nsIntRect* aRect)
+nsNPAPIPluginInstance::EndUpdateBackground(nsIntRect* aRect)
 {
   if (RUNNING != mRunning)
     return NS_OK;
@@ -1276,7 +1275,7 @@ nsNPAPIPluginInstance::EndUpdateBackground(gfxContext* aContext,
   if (!library)
     return NS_ERROR_FAILURE;
 
-  return library->EndUpdateBackground(&mNPP, aContext, *aRect);
+  return library->EndUpdateBackground(&mNPP, *aRect);
 }
 
 nsresult
@@ -1863,7 +1862,7 @@ nsNPAPIPluginInstance::WindowVolumeChanged(float aVolume, bool aMuted)
 }
 
 NS_IMETHODIMP
-nsNPAPIPluginInstance::WindowAudioCaptureChanged()
+nsNPAPIPluginInstance::WindowAudioCaptureChanged(bool aCapture)
 {
   return NS_OK;
 }

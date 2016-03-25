@@ -13,14 +13,23 @@
 #ifdef MOZ_ANDROID_MAX_SDK_VERSION
               android:maxSdkVersion="@MOZ_ANDROID_MAX_SDK_VERSION@"
 #endif
-              android:targetSdkVersion="22"/>
+              android:targetSdkVersion="23"/>
 
 #include ../services/manifests/FxAccountAndroidManifest_permissions.xml.in
-#include ../services/manifests/SyncAndroidManifest_permissions.xml.in
 
 #ifdef MOZ_ANDROID_SEARCH_ACTIVITY
 #include ../search/manifests/SearchAndroidManifest_permissions.xml.in
 #endif
+
+    <!-- A signature level permission specific to each Firefox version (Android
+         package name, e.g., org.mozilla.firefox).  Use this permission to
+         broadcast securely within a single Firefox version.  This needs to
+         agree with GlobalConstants.PER_ANDROID_PACKAGE_PERMISSION. -->
+    <permission
+        android:name="@ANDROID_PACKAGE_NAME@.permission.PER_ANDROID_PACKAGE"
+        android:protectionLevel="signature"/>
+
+    <uses-permission android:name="@ANDROID_PACKAGE_NAME@.permission.PER_ANDROID_PACKAGE" />
 
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
@@ -34,9 +43,6 @@
 
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="@ANDROID_PACKAGE_NAME@.permissions.PASSWORD_PROVIDER"/>
-    <uses-permission android:name="@ANDROID_PACKAGE_NAME@.permissions.BROWSER_PROVIDER"/>
-    <uses-permission android:name="@ANDROID_PACKAGE_NAME@.permissions.FORMHISTORY_PROVIDER"/>
 #ifdef MOZ_ANDROID_DOWNLOADS_INTEGRATION
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
 #endif
@@ -61,10 +67,8 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
 #endif
 
-#ifdef MOZ_ANDROID_TAB_QUEUE
     <!-- Tab Queue -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-#endif
 
 #ifdef MOZ_ANDROID_BEAM
     <!-- Android Beam support -->
@@ -172,34 +176,7 @@
                 <action android:name="org.mozilla.gecko.UPDATE"/>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-#ifndef MOZ_ANDROID_TAB_QUEUE
-            <!-- The main reason for the Tab Queue build flag is to not mess with the VIEW intent filter
-                 before the rest of the plumbing is in place -->
 
-            <!-- The entry point for Intent.VIEW actions will move to the TabQueue activity -->
-
-            <!-- Default browser intents -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:scheme="about" />
-                <data android:scheme="javascript" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="file" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:mimeType="text/html"/>
-                <data android:mimeType="text/plain"/>
-                <data android:mimeType="application/xhtml+xml"/>
-            </intent-filter>
-#endif
             <intent-filter>
                 <action android:name="android.intent.action.WEB_SEARCH" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -250,7 +227,6 @@
                   android:launchMode="singleTop"
                   android:theme="@style/OverlayActivity" />
 
-#ifdef MOZ_ANDROID_TAB_QUEUE
         <!-- The main reason for the Tab Queue build flag is to not mess with the VIEW intent filter
              before the rest of the plumbing is in place -->
 
@@ -287,7 +263,6 @@
                 <data android:mimeType="application/xhtml+xml"/>
             </intent-filter>
         </activity>
-#endif
 
         <activity android:name="org.mozilla.gecko.webapp.Dispatcher"
             android:noHistory="true" >
@@ -370,10 +345,7 @@
         </receiver>
 
         <receiver android:name="org.mozilla.gecko.GeckoMessageReceiver"
-                  android:permission="@ANDROID_PACKAGE_NAME@.permissions.PASSWORD_PROVIDER">
-            <intent-filter>
-                  <action android:name="org.mozilla.gecko.INIT_PW"></action>
-            </intent-filter>
+                  android:exported="false">
         </receiver>
 
         <!-- Catch install referrer so we can do post-install work. -->
@@ -393,7 +365,6 @@
         </receiver>
 
 #include ../services/manifests/FxAccountAndroidManifest_activities.xml.in
-#include ../services/manifests/SyncAndroidManifest_activities.xml.in
 #ifdef MOZ_ANDROID_SEARCH_ACTIVITY
 #include ../search/manifests/SearchAndroidManifest_activities.xml.in
 #endif
@@ -419,7 +390,7 @@
 
         <provider android:name="org.mozilla.gecko.db.BrowserProvider"
                   android:authorities="@ANDROID_PACKAGE_NAME@.db.browser"
-                  android:permission="@ANDROID_PACKAGE_NAME@.permissions.BROWSER_PROVIDER"/>
+                  android:exported="false"/>
 
         <!-- Share overlay activity
 
@@ -452,36 +423,35 @@
         <provider android:name="org.mozilla.gecko.db.PasswordsProvider"
                   android:label="@string/sync_configure_engines_title_passwords"
                   android:authorities="@ANDROID_PACKAGE_NAME@.db.passwords"
-                  android:permission="@ANDROID_PACKAGE_NAME@.permissions.PASSWORD_PROVIDER"
+                  android:exported="false"
                   android:process="@MANGLED_ANDROID_PACKAGE_NAME@.PasswordsProvider"/>
 
         <provider android:name="org.mozilla.gecko.db.FormHistoryProvider"
                   android:label="@string/sync_configure_engines_title_history"
                   android:authorities="@ANDROID_PACKAGE_NAME@.db.formhistory"
-                  android:permission="@ANDROID_PACKAGE_NAME@.permissions.FORMHISTORY_PROVIDER"
-                  android:protectionLevel="signature"/>
+                  android:exported="false"/>
 
         <provider android:name="org.mozilla.gecko.GeckoProfilesProvider"
-                  android:authorities="@ANDROID_PACKAGE_NAME@.profiles"/>
+                  android:authorities="@ANDROID_PACKAGE_NAME@.profiles"
+                  android:exported="false"/>
 
         <provider android:name="org.mozilla.gecko.db.TabsProvider"
                   android:label="@string/sync_configure_engines_title_tabs"
                   android:authorities="@ANDROID_PACKAGE_NAME@.db.tabs"
-                  android:permission="@ANDROID_PACKAGE_NAME@.permissions.BROWSER_PROVIDER"/>
+                  android:exported="false"/>
 
         <provider android:name="org.mozilla.gecko.db.HomeProvider"
                   android:authorities="@ANDROID_PACKAGE_NAME@.db.home"
-                  android:permission="@ANDROID_PACKAGE_NAME@.permissions.BROWSER_PROVIDER"/>
+                  android:exported="false"/>
 
         <provider android:name="org.mozilla.gecko.db.ReadingListProvider"
                   android:authorities="@ANDROID_PACKAGE_NAME@.db.readinglist"
-                  android:exported="false"
                   android:label="@string/reading_list_title"
-                  android:permission="@ANDROID_PACKAGE_NAME@.permissions.BROWSER_PROVIDER"/>
+                  android:exported="false"/>
 
         <provider android:name="org.mozilla.gecko.db.SearchHistoryProvider"
                   android:authorities="@ANDROID_PACKAGE_NAME@.db.searchhistory"
-                  android:permission="@ANDROID_PACKAGE_NAME@.permissions.BROWSER_PROVIDER"/>
+                  android:exported="false"/>
 
         <service
             android:exported="false"
@@ -504,7 +474,6 @@
           android:exported="false"/>
 
 #include ../services/manifests/FxAccountAndroidManifest_services.xml.in
-#include ../services/manifests/SyncAndroidManifest_services.xml.in
 
         <service
             android:name="org.mozilla.gecko.tabqueue.TabReceivedService"
@@ -519,14 +488,4 @@
 #endif
 
     </application>
-
-    <permission android:name="@ANDROID_PACKAGE_NAME@.permissions.BROWSER_PROVIDER"
-                android:protectionLevel="signature"/>
-
-    <permission android:name="@ANDROID_PACKAGE_NAME@.permissions.PASSWORD_PROVIDER"
-                android:protectionLevel="signature"/>
-
-    <permission android:name="@ANDROID_PACKAGE_NAME@.permissions.FORMHISTORY_PROVIDER"
-                android:protectionLevel="signature"/>
-
 </manifest>

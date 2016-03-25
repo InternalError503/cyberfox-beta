@@ -119,7 +119,7 @@ public:
     mFrame->mInstanceOwner->SetBackgroundUnknown();
   }
 
-  virtual already_AddRefed<gfxContext>
+  virtual already_AddRefed<DrawTarget>
       BeginUpdate(const nsIntRect& aRect, uint64_t aSequenceNumber)
   {
     if (!AcceptUpdate(aSequenceNumber))
@@ -127,9 +127,9 @@ public:
     return mFrame->mInstanceOwner->BeginUpdateBackground(aRect);
   }
 
-  virtual void EndUpdate(gfxContext* aContext, const nsIntRect& aRect)
+  virtual void EndUpdate(const nsIntRect& aRect)
   {
-    return mFrame->mInstanceOwner->EndUpdateBackground(aContext, aRect);
+    return mFrame->mInstanceOwner->EndUpdateBackground(aRect);
   }
 
   void Destroy() { mFrame = nullptr; }
@@ -1019,7 +1019,10 @@ nsDisplayPlugin::ComputeVisibility(nsDisplayListBuilder* aBuilder,
         rAncestor.ToNearestPixels(appUnitsPerDevPixel));
 
       nsRegion visibleRegion;
-      visibleRegion.And(*aVisibleRegion, GetClippedBounds(aBuilder));
+      // Apply all scroll clips when computing the clipped bounds of this item.
+      // We hide windowed plugins during APZ scrolling, so there never is an
+      // async transform that we need to take into account when clipping.
+      visibleRegion.And(*aVisibleRegion, GetScrollClippedBoundsUpTo(aBuilder, nullptr));
       // Make visibleRegion relative to f
       visibleRegion.MoveBy(-ToReferenceFrame());
 
@@ -1400,7 +1403,7 @@ nsPluginFrame::GetLayerState(nsDisplayListBuilder* aBuilder,
     return LAYER_NONE;
   }
 
-  return LAYER_ACTIVE;
+  return LAYER_ACTIVE_FORCE;
 }
 
 class PluginFrameDidCompositeObserver final : public ClientLayerManager::

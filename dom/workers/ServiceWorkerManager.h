@@ -373,19 +373,14 @@ public:
   bool
   IsControlled(nsIDocument* aDocument, ErrorResult& aRv);
 
-  already_AddRefed<nsIRunnable>
-  PrepareFetchEvent(const PrincipalOriginAttributes& aOriginAttributes,
-                    nsIDocument* aDoc,
-                    const nsAString& aDocumentIdForTopLevelNavigation,
-                    nsIInterceptedChannel* aChannel,
-                    bool aIsReload,
-                    bool aIsSubresourceLoad,
-                    ErrorResult& aRv);
-
   void
-  DispatchPreparedFetchEvent(nsIInterceptedChannel* aChannel,
-                             nsIRunnable* aPreparedRunnable,
-                             ErrorResult& aRv);
+  DispatchFetchEvent(const PrincipalOriginAttributes& aOriginAttributes,
+                     nsIDocument* aDoc,
+                     const nsAString& aDocumentIdForTopLevelNavigation,
+                     nsIInterceptedChannel* aChannel,
+                     bool aIsReload,
+                     bool aIsSubresourceLoad,
+                     ErrorResult& aRv);
 
   void
   Update(nsIPrincipal* aPrincipal,
@@ -393,7 +388,7 @@ public:
          ServiceWorkerUpdateFinishCallback* aCallback);
 
   void
-  SoftUpdate(const OriginAttributes& aOriginAttributes,
+  SoftUpdate(const PrincipalOriginAttributes& aOriginAttributes,
              const nsACString& aScope);
 
   void
@@ -498,6 +493,11 @@ public:
 
   void
   MaybeCheckNavigationUpdate(nsIDocument* aDoc);
+
+  nsresult
+  SendPushEvent(const nsACString& aOriginAttributes,
+                const nsACString& aScope,
+                Maybe<nsTArray<uint8_t>> aData);
 
 private:
   ServiceWorkerManager();
@@ -645,10 +645,9 @@ private:
   void
   RemoveRegistrationInternal(ServiceWorkerRegistrationInfo* aRegistration);
 
-  // Removes all service worker registrations that matches the given
-  // mozIApplicationClearPrivateDataParams.
+  // Removes all service worker registrations that matches the given pattern.
   void
-  RemoveAllRegistrations(PrincipalOriginAttributes* aParams);
+  RemoveAllRegistrations(OriginAttributesPattern* aPattern);
 
   RefPtr<ServiceWorkerManagerChild> mActor;
 

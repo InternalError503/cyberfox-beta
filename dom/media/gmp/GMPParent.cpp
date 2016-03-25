@@ -73,8 +73,6 @@ GMPParent::GMPParent()
 
 GMPParent::~GMPParent()
 {
-  // Can't Close or Destroy the process here, since destruction is MainThread only
-  MOZ_ASSERT(NS_IsMainThread());
   LOGD("GMPParent dtor");
 
   MOZ_ASSERT(!mProcess);
@@ -938,7 +936,7 @@ GMPParent::GetVersion() const
   return mVersion;
 }
 
-const uint32_t
+uint32_t
 GMPParent::GetPluginId() const
 {
   return mPluginId;

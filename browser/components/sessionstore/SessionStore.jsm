@@ -1575,7 +1575,7 @@ var SessionStoreInternal = {
     }
 
     this._clearRestoringWindows();
-    this._saveableClosedWindowData.clear();
+    this._saveableClosedWindowData = new WeakSet();
   },
 
   /**
@@ -1915,10 +1915,10 @@ var SessionStoreInternal = {
     this._cleanupOldData([this._closedWindows]);
 
     // Remove closed tabs of closed windows
-    this._cleanupOldData([winData._closedTabs for (winData of this._closedWindows)]);
+    this._cleanupOldData(this._closedWindows.map((winData) => winData._closedTabs));
 
     // Remove closed tabs of open windows
-    this._cleanupOldData([this._windows[key]._closedTabs for (key of Object.keys(this._windows))]);
+    this._cleanupOldData(Object.keys(this._windows).map((key) => this._windows[key]._closedTabs));
   },
 
   // Remove "old" data from an array
@@ -2522,7 +2522,7 @@ var SessionStoreInternal = {
       let window = tab.ownerDocument && tab.ownerDocument.defaultView;
 
       // The tab or its window might be gone.
-      if (!window || !window.__SSi) {
+      if (!window || !window.__SSi || window.closed) {
         return;
       }
 
@@ -3200,6 +3200,10 @@ var SessionStoreInternal = {
       tabbrowser.hideTab(tab);
     } else {
       tabbrowser.showTab(tab);
+    }
+
+    if (tabData.userContextId) {
+      tab.setUserContextId(tabData.userContextId);
     }
 
     if (!!tabData.muted != browser.audioMuted) {
@@ -4326,7 +4330,7 @@ var DirtyWindows = {
   },
 
   clear: function (window) {
-    this._data.clear();
+    this._data = new WeakMap();
   }
 };
 

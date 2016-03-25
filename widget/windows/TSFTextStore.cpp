@@ -4110,6 +4110,7 @@ TSFTextStore::RecordCompositionStartAction(ITfCompositionView* aComposition,
   }
 
   lockedContent.StartComposition(aComposition, *action, aPreserveSelection);
+  action->mData = mComposition.mString;
 
   MOZ_LOG(sTextStoreLog, LogLevel::Info,
          ("TSF: 0x%p   TSFTextStore::RecordCompositionStartAction() succeeded: "
@@ -4147,6 +4148,33 @@ TSFTextStore::RecordCompositionEndAction()
     return E_FAIL;
   }
   lockedContent.EndComposition(*action);
+
+  // If this composition was restart but the composition doesn't modify
+  // anything, we should remove the pending composition for preventing to
+  // dispatch redundant composition events.
+  for (size_t i = mPendingActions.Length(), j = 1; i > 0; --i, ++j) {
+    PendingAction& pendingAction = mPendingActions[i - 1];
+    if (pendingAction.mType == PendingAction::COMPOSITION_START) {
+      if (pendingAction.mData != action->mData) {
+        break;
+      }
+      // When only setting selection is necessary, we should append it.
+      if (pendingAction.mAdjustSelection) {
+        PendingAction* setSelection = mPendingActions.AppendElement();
+        setSelection->mType = PendingAction::SET_SELECTION;
+        setSelection->mSelectionStart = pendingAction.mSelectionStart;
+        setSelection->mSelectionLength = pendingAction.mSelectionLength;
+        setSelection->mSelectionReversed = false;
+      }
+      // Remove the redundant pending composition.
+      mPendingActions.RemoveElementsAt(i - 1, j);
+      MOZ_LOG(sTextStoreLog, LogLevel::Info,
+             ("TSF: 0x%p   TSFTextStore::RecordCompositionEndAction(), "
+              "succeeded, but the composition was canceled due to redundant",
+              this));
+      return S_OK;
+    }
+  }
 
   MOZ_LOG(sTextStoreLog, LogLevel::Info,
          ("TSF: 0x%p   TSFTextStore::RecordCompositionEndAction(), succeeded",
@@ -4573,21 +4601,35 @@ TSFTextStore::OnTextChangeInternal(const IMENotification& aIMENotification)
          ("TSF: 0x%p   TSFTextStore::OnTextChangeInternal(aIMENotification={ "
           "mMessage=0x%08X, mTextChangeData={ mStartOffset=%lu, "
           "mRemovedEndOffset=%lu, mAddedEndOffset=%lu, "
-          "mCausedByComposition=%s, mOccurredDuringComposition=%s }), "
+          "mCausedOnlyByComposition=%s, "
+          "mIncludingChangesDuringComposition=%s, "
+          "mIncludingChangesWithoutComposition=%s }), "
           "mSink=0x%p, mSinkMask=%s, mComposition.IsComposing()=%s",
           this, aIMENotification.mMessage,
           textChangeData.mStartOffset,
           textChangeData.mRemovedEndOffset,
           textChangeData.mAddedEndOffset,
-          GetBoolName(textChangeData.mCausedByComposition),
-          GetBoolName(textChangeData.mOccurredDuringComposition),
+          GetBoolName(textChangeData.mCausedOnlyByComposition),
+          GetBoolName(textChangeData.mIncludingChangesDuringComposition),
+          GetBoolName(textChangeData.mIncludingChangesWithoutComposition),
           mSink.get(),
           GetSinkMaskNameStr(mSinkMask).get(),
           GetBoolName(mComposition.IsComposing())));
 
-  if (textChangeData.mCausedByComposition) {
-    // Ignore text change notifications caused by composition since it's
+  if (textChangeData.mCausedOnlyByComposition) {
+    // Ignore text change notifications caused only by composition since it's
     // already been handled internally.
+    return NS_OK;
+  }
+
+  if (mComposition.IsComposing() &&
+      !textChangeData.mIncludingChangesDuringComposition) {
+    // Ignore text changes when they don't include changes caused not by
+    // composition at the latest composition because changes before current
+    // composition start shouldn't cause forcibly committing composition.
+    // In the future, we should notify TSF of such delayed text changes
+    // after current composition is active (In such case,
+    // mIncludingChangesWithoutComposition is true).
     return NS_OK;
   }
 

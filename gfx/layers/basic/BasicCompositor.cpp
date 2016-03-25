@@ -7,7 +7,6 @@
 #include "BasicLayersImpl.h"            // for FillRectWithMask
 #include "TextureHostBasic.h"
 #include "mozilla/layers/Effects.h"
-#include "mozilla/layers/YCbCrImageDataSerializer.h"
 #include "nsIWidget.h"
 #include "gfx2DGlue.h"
 #include "mozilla/gfx/2D.h"
@@ -255,9 +254,9 @@ Transform(DataSourceSurface* aDest,
   SkPaint paint;
   paint.setXfermodeMode(SkXfermode::kSrc_Mode);
   paint.setAntiAlias(true);
-  paint.setFilterLevel(SkPaint::kLow_FilterLevel);
+  paint.setFilterQuality(kLow_SkFilterQuality);
   SkRect destRect = SkRect::MakeXYWH(0, 0, srcSize.width, srcSize.height);
-  destCanvas.drawBitmapRectToRect(src, nullptr, destRect, &paint);
+  destCanvas.drawBitmapRect(src, destRect, &paint);
 }
 #else
 static pixman_transform
@@ -521,11 +520,10 @@ BasicCompositor::BeginFrame(const nsIntRegion& aInvalidRegion,
                             gfx::Rect *aClipRectOut /* = nullptr */,
                             gfx::Rect *aRenderBoundsOut /* = nullptr */)
 {
-  mWidgetSize = mWidget->GetClientSize().ToUnknownSize();
-  IntRect intRect = gfx::IntRect(IntPoint(), mWidgetSize);
+  LayoutDeviceIntRect intRect(LayoutDeviceIntPoint(), mWidget->GetClientSize());
   Rect rect = Rect(0, 0, intRect.width, intRect.height);
 
-  nsIntRegion invalidRegionSafe;
+  LayoutDeviceIntRegion invalidRegionSafe;
   if (mDidExternalComposition) {
     // We do not know rendered region during external composition, just redraw
     // whole widget.
@@ -533,7 +531,8 @@ BasicCompositor::BeginFrame(const nsIntRegion& aInvalidRegion,
     mDidExternalComposition = false;
   } else {
     // Sometimes the invalid region is larger than we want to draw.
-    invalidRegionSafe.And(aInvalidRegion, intRect);
+    invalidRegionSafe.And(
+      LayoutDeviceIntRegion::FromUnknownRegion(aInvalidRegion), intRect);
   }
 
   mInvalidRegion = invalidRegionSafe;
@@ -566,7 +565,8 @@ BasicCompositor::BeginFrame(const nsIntRegion& aInvalidRegion,
 
   // Setup an intermediate render target to buffer all compositing. We will
   // copy this into mDrawTarget (the widget), and/or mTarget in EndFrame()
-  RefPtr<CompositingRenderTarget> target = CreateRenderTarget(mInvalidRect, INIT_MODE_CLEAR);
+  RefPtr<CompositingRenderTarget> target =
+    CreateRenderTarget(mInvalidRect.ToUnknownRect(), INIT_MODE_CLEAR);
   if (!target) {
     if (!mTarget) {
       mWidget->EndRemoteDrawingInRegion(mDrawTarget, mInvalidRegion);
@@ -580,7 +580,8 @@ BasicCompositor::BeginFrame(const nsIntRegion& aInvalidRegion,
   mRenderTarget->mDrawTarget->SetTransform(Matrix::Translation(-mInvalidRect.x,
                                                                -mInvalidRect.y));
 
-  gfxUtils::ClipToRegion(mRenderTarget->mDrawTarget, mInvalidRegion);
+  gfxUtils::ClipToRegion(mRenderTarget->mDrawTarget,
+                         mInvalidRegion.ToUnknownRegion());
 
   if (aRenderBoundsOut) {
     *aRenderBoundsOut = rect;
@@ -607,8 +608,9 @@ BasicCompositor::EndFrame()
     float g = float(rand()) / RAND_MAX;
     float b = float(rand()) / RAND_MAX;
     // We're still clipped to mInvalidRegion, so just fill the bounds.
-    mRenderTarget->mDrawTarget->FillRect(IntRectToRect(mInvalidRegion.GetBounds()),
-                                         ColorPattern(Color(r, g, b, 0.2f)));
+    mRenderTarget->mDrawTarget->FillRect(
+      IntRectToRect(mInvalidRegion.GetBounds()).ToUnknownRect(),
+      ColorPattern(Color(r, g, b, 0.2f)));
   }
 
   // Pop aInvalidregion
@@ -624,8 +626,8 @@ BasicCompositor::EndFrame()
   // The source DrawTarget is clipped to the invalidation region, so we have
   // to copy the individual rectangles in the region or else we'll draw blank
   // pixels.
-  nsIntRegionRectIterator iter(mInvalidRegion);
-  for (const IntRect *r = iter.Next(); r; r = iter.Next()) {
+  LayoutDeviceIntRegion::RectIterator iter(mInvalidRegion);
+  for (const LayoutDeviceIntRect *r = iter.Next(); r; r = iter.Next()) {
     dest->CopySurface(source,
                       IntRect(r->x - mInvalidRect.x, r->y - mInvalidRect.y, r->width, r->height),
                       IntPoint(r->x - offset.x, r->y - offset.y));

@@ -1875,6 +1875,18 @@ richlistitem[type~="action"][actiontype$="tab"] > .ac-url-box > .ac-action-icon 
   border: none;
 }
 
+@media not all and (min-resolution: 1.1dppx) {
+  #sidebar-header > .close-icon:-moz-lwtheme-brighttext {
+    list-style-image: url("chrome://global/skin/icons/close-inverted.png");
+  }
+}
+
+@media (min-resolution: 1.1dppx) {
+  #sidebar-header > .close-icon:-moz-lwtheme-brighttext {
+    list-style-image: url("chrome://global/skin/icons/close-inverted@2x.png");
+  }
+}
+
 @media (-moz-os-version: windows-xp),
        (-moz-os-version: windows-vista),
        (-moz-os-version: windows-win7) {
@@ -2305,12 +2317,6 @@ notification[value="translation"] {
 #panelMenu_unsortedBookmarks {
   list-style-image: url("chrome://browser/skin/places/unsortedBookmarks.png");
   -moz-image-region: auto;
-}
-
-#panelMenu_pocket,
-#menu_pocket,
-#BMB_pocket {
-  list-style-image: url("chrome://browser/content/pocket/panels/img/pocketmenuitem16.png");
 }
 
 /* ::::: Keyboard UI Panel ::::: */

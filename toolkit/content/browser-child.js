@@ -122,6 +122,16 @@ var WebProgressListener = {
     json.stateFlags = aStateFlags;
     json.status = aStatus;
 
+    // It's possible that this state change was triggered by
+    // loading an internal error page, for which the parent
+    // will want to know some details, so we'll update it with
+    // the documentURI.
+    if (aWebProgress && aWebProgress.isTopLevel) {
+      json.documentURI = content.document.documentURIObject.spec;
+      json.charset = content.document.characterSet;
+      json.mayEnableCharacterEncodingMenu = docShell.mayEnableCharacterEncodingMenu;
+    }
+
     this._send("Content:StateChange", json, objects);
   },
 
@@ -454,10 +464,18 @@ addMessageListener("UpdateCharacterSet", function (aMessage) {
  * Remote thumbnail request handler for PageThumbs thumbnails.
  */
 addMessageListener("Browser:Thumbnail:Request", function (aMessage) {
-  let snapshotWidth = aMessage.data.canvasWidth;
-  let snapshotHeight = aMessage.data.canvasHeight;
-  let canvas = PageThumbUtils.createCanvas(content, snapshotWidth, snapshotHeight);
-  let snapshot = PageThumbUtils.createSnapshotThumbnail(content, canvas);
+  let snapshot;
+  let args = aMessage.data.additionalArgs;
+  let fullScale = args ? args.fullScale : false;
+  if (fullScale) {
+    snapshot = PageThumbUtils.createSnapshotThumbnail(content, null, args);
+  } else {
+    let snapshotWidth = aMessage.data.canvasWidth;
+    let snapshotHeight = aMessage.data.canvasHeight;
+    snapshot =
+      PageThumbUtils.createCanvas(content, snapshotWidth, snapshotHeight);
+    PageThumbUtils.createSnapshotThumbnail(content, snapshot, args);
+  }
 
   snapshot.toBlob(function (aBlob) {
     sendAsyncMessage("Browser:Thumbnail:Response", {
@@ -591,7 +609,7 @@ var outerWindowID = content.QueryInterface(Ci.nsIInterfaceRequestor)
                            .getInterface(Ci.nsIDOMWindowUtils)
                            .outerWindowID;
 var initData = sendSyncMessage("Browser:Init", {outerWindowID: outerWindowID});
-if (initData.length) {
+if (initData.length && initData[0]) {
   docShell.useGlobalHistory = initData[0].useGlobalHistory;
   if (initData[0].initPopup) {
     setTimeout(() => AutoCompletePopup.init(), 0);

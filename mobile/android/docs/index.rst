@@ -14,7 +14,7 @@ Contents:
    localeswitching
    uitelemetry
    adjust
-   gradle
+   defaultdomains
 
 Indices and tables
 ==================
@@ -22,4 +22,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

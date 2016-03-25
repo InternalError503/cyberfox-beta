@@ -88,19 +88,20 @@ DCFromDrawTarget::DCFromDrawTarget(DrawTarget& aDrawTarget)
 {
   mDC = nullptr;
   if (aDrawTarget.GetBackendType() == BackendType::CAIRO) {
-    cairo_surface_t *surf = (cairo_surface_t*)
-        aDrawTarget.GetNativeSurface(NativeSurfaceType::CAIRO_SURFACE);
-    if (surf) {
-      cairo_surface_type_t surfaceType = cairo_surface_get_type(surf);
-      if (surfaceType == CAIRO_SURFACE_TYPE_WIN32 ||
-          surfaceType == CAIRO_SURFACE_TYPE_WIN32_PRINTING) {
-        mDC = cairo_win32_surface_get_dc(surf);
-        mNeedsRelease = false;
-        SaveDC(mDC);
-        cairo_t* ctx = (cairo_t*)
-            aDrawTarget.GetNativeSurface(NativeSurfaceType::CAIRO_CONTEXT);
-        cairo_scaled_font_t* scaled = cairo_get_scaled_font(ctx);
-        cairo_win32_scaled_font_select_font(scaled, mDC);
+    cairo_t* ctx = static_cast<cairo_t*>
+      (aDrawTarget.GetNativeSurface(NativeSurfaceType::CAIRO_CONTEXT));
+    if (ctx) {
+      cairo_surface_t* surf = cairo_get_group_target(ctx);
+      if (surf) {
+        cairo_surface_type_t surfaceType = cairo_surface_get_type(surf);
+        if (surfaceType == CAIRO_SURFACE_TYPE_WIN32 ||
+            surfaceType == CAIRO_SURFACE_TYPE_WIN32_PRINTING) {
+          mDC = cairo_win32_surface_get_dc(surf);
+          mNeedsRelease = false;
+          SaveDC(mDC);
+          cairo_scaled_font_t* scaled = cairo_get_scaled_font(ctx);
+          cairo_win32_scaled_font_select_font(scaled, mDC);
+        }
       }
     }
   }
@@ -524,17 +525,16 @@ gfxWindowsPlatform::UpdateBackendPrefs()
   uint32_t canvasMask = BackendTypeBit(SOFTWARE_BACKEND);
   uint32_t contentMask = BackendTypeBit(SOFTWARE_BACKEND);
   BackendType defaultBackend = SOFTWARE_BACKEND;
-  if (GetD2DStatus() == FeatureStatus::Available) {
+  if (GetD2D1Status() == FeatureStatus::Available) {
+    contentMask |= BackendTypeBit(BackendType::DIRECT2D1_1);
+    canvasMask |= BackendTypeBit(BackendType::DIRECT2D1_1);
+    defaultBackend = BackendType::DIRECT2D1_1;
     mRenderMode = RENDER_DIRECT2D;
+  } else if (GetD2DStatus() == FeatureStatus::Available && gfxPrefs::Direct2DAllow1_0()) {
     canvasMask |= BackendTypeBit(BackendType::DIRECT2D);
     contentMask |= BackendTypeBit(BackendType::DIRECT2D);
-    if (GetD2D1Status() == FeatureStatus::Available) {
-      contentMask |= BackendTypeBit(BackendType::DIRECT2D1_1);
-      canvasMask |= BackendTypeBit(BackendType::DIRECT2D1_1);
-      defaultBackend = BackendType::DIRECT2D1_1;
-    } else {
-      defaultBackend = BackendType::DIRECT2D;
-    }
+    defaultBackend = BackendType::DIRECT2D;
+    mRenderMode = RENDER_DIRECT2D;
   } else {
     mRenderMode = RENDER_GDI;
     canvasMask |= BackendTypeBit(BackendType::SKIA);
@@ -624,7 +624,7 @@ gfxWindowsPlatform::CreateDevice(RefPtr<IDXGIAdapter1> &adapter1,
 void
 gfxWindowsPlatform::VerifyD2DDevice(bool aAttemptForce)
 {
-  if (!Factory::SupportsD2D1() && !gfxPrefs::Direct2DAllow1_0()) {
+  if ((!Factory::SupportsD2D1() || !gfxPrefs::Direct2DUse1_1()) && !gfxPrefs::Direct2DAllow1_0()) {
     return;
   }
 
@@ -701,9 +701,7 @@ gfxWindowsPlatform::CreatePlatformFontList()
 #ifdef CAIRO_HAS_DWRITE_FONT
     // bug 630201 - older pre-RTM versions of Direct2D/DirectWrite cause odd
     // crashers so blacklist them altogether
-    if (IsNotWin7PreRTM() && GetDWriteFactory() &&
-        // Skia doesn't support DirectWrite fonts yet.
-       (gfxPlatform::GetDefaultContentBackend() != BackendType::SKIA)) {
+    if (IsNotWin7PreRTM() && GetDWriteFactory()) {
         pfl = new gfxDWriteFontList();
         if (NS_SUCCEEDED(pfl->InitFontList())) {
             return pfl;
@@ -1200,6 +1198,32 @@ gfxWindowsPlatform::DidRenderingDeviceReset(DeviceResetReason* aResetReason)
     return true;
   }
   return false;
+}
+
+BOOL CALLBACK
+InvalidateWindowForDeviceReset(HWND aWnd, LPARAM aMsg)
+{
+    RedrawWindow(aWnd, nullptr, nullptr,
+                 RDW_INVALIDATE|RDW_INTERNALPAINT|RDW_FRAME);
+    return TRUE;
+}
+
+bool
+gfxWindowsPlatform::UpdateForDeviceReset()
+{
+  PROFILER_LABEL_FUNC(js::ProfileEntry::Category::GRAPHICS);
+
+  if (!DidRenderingDeviceReset()) {
+    return false;
+  }
+
+  // Trigger an ::OnPaint for each window.
+  ::EnumThreadWindows(GetCurrentThreadId(),
+                      InvalidateWindowForDeviceReset,
+                      0);
+
+  gfxCriticalNote << "Detected rendering device reset on refresh";
+  return true;
 }
 
 void
@@ -1766,7 +1790,7 @@ CheckForAdapterMismatch(ID3D11Device *device)
   nsresult ec;
   int32_t vendor = vendorID.ToInteger(&ec, 16);
   if (vendor != desc.VendorId) {
-      gfxCriticalNote << "VendorIDMismatch " << hexa(vendor) << " " << hexa(desc.VendorId);
+      gfxCriticalNote << "VendorIDMismatch V " << hexa(vendor) << " " << hexa(desc.VendorId);
   }
 }
 
@@ -2254,7 +2278,7 @@ gfxWindowsPlatform::ContentAdapterIsParentAdapter(ID3D11Device* device)
       desc.AdapterLuid.HighPart != parent.AdapterLuid.HighPart ||
       desc.AdapterLuid.LowPart != parent.AdapterLuid.LowPart)
   {
-    gfxCriticalNote << "VendorIDMismatch " << hexa(parent.VendorId) << " " << hexa(desc.VendorId);
+    gfxCriticalNote << "VendorIDMismatch P " << hexa(parent.VendorId) << " " << hexa(desc.VendorId);
     return false;
   }
 
@@ -2915,12 +2939,19 @@ public:
 
           // Use a combination of DwmFlush + DwmGetCompositionTimingInfoPtr
           // Using WaitForVBlank, the whole system dies :/
-          WinUtils::dwmFlushProcPtr();
-          HRESULT hr = WinUtils::dwmGetCompositionTimingInfoPtr(0, &vblankTime);
-          vsync = TimeStamp::Now();
-          if (SUCCEEDED(hr)) {
-            vsync = GetAdjustedVsyncTimeStamp(frequency, vblankTime.qpcVBlank);
+          HRESULT hr = WinUtils::dwmFlushProcPtr();
+          if (!SUCCEEDED(hr)) {
+            // We don't actually know how long we had to wait on DWMFlush
+            // Instead of trying to calculate how long DwmFlush actually took
+            // Fallback to software vsync.
+            ScheduleSoftwareVsync(TimeStamp::Now());
+            return;
           }
+
+          hr = WinUtils::dwmGetCompositionTimingInfoPtr(0, &vblankTime);
+          vsync = SUCCEEDED(hr) ?
+                    GetAdjustedVsyncTimeStamp(frequency, vblankTime.qpcVBlank) :
+                    TimeStamp::Now();
         } // end for
       }
 

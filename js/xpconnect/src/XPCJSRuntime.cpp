@@ -45,6 +45,8 @@
 #include "mozilla/Atomics.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/ProcessHangMonitor.h"
+#include "mozilla/UniquePtrExtensions.h"
+#include "mozilla/unused.h"
 #include "AccessCheck.h"
 #include "nsGlobalWindow.h"
 #include "nsAboutProtocolUtils.h"
@@ -115,6 +117,11 @@ bool xpc::ExtraWarningsForSystemJS() { return sExtraWarningsForSystemJS; }
 #else
 bool xpc::ExtraWarningsForSystemJS() { return false; }
 #endif
+
+static mozilla::Atomic<bool> sSharedMemoryEnabled(false);
+
+bool
+xpc::SharedMemoryEnabled() { return sSharedMemoryEnabled; }
 
 // *Some* NativeSets are referenced from mClassInfo2NativeSetMap.
 // *All* NativeSets are referenced from mNativeSetMap.
@@ -1563,6 +1570,9 @@ ReloadPrefsCallback(const char* pref, void* data)
     bool werror = Preferences::GetBool(JS_OPTIONS_DOT_STR "werror");
 
     bool extraWarnings = Preferences::GetBool(JS_OPTIONS_DOT_STR "strict");
+
+    sSharedMemoryEnabled = Preferences::GetBool(JS_OPTIONS_DOT_STR "shared_memory");
+
 #ifdef DEBUG
     sExtraWarningsForSystemJS = Preferences::GetBool(JS_OPTIONS_DOT_STR "strict.debug");
 #endif
@@ -2655,7 +2665,7 @@ class JSMainRuntimeCompartmentsReporter final : public nsIMemoryReporter
                     ? NS_LITERAL_CSTRING("js-main-runtime-compartments/system/")
                     : NS_LITERAL_CSTRING("js-main-runtime-compartments/user/"),
                     0);
-        data->paths.append(path);
+        mozilla::Unused << data->paths.append(path);
     }
 
     NS_IMETHOD CollectReports(nsIMemoryReporterCallback* cb,
@@ -3249,11 +3259,11 @@ ReadSourceFromFilename(JSContext* cx, const char* filename, char16_t** src, size
         return NS_ERROR_FILE_TOO_BIG;
 
     // Allocate an internal buf the size of the file.
-    nsAutoArrayPtr<unsigned char> buf(new unsigned char[rawLen]);
+    auto buf = MakeUniqueFallible<unsigned char[]>(rawLen);
     if (!buf)
         return NS_ERROR_OUT_OF_MEMORY;
 
-    unsigned char* ptr = buf;
+    unsigned char* ptr = buf.get();
     unsigned char* end = ptr + rawLen;
     while (ptr < end) {
         uint32_t bytesRead;
@@ -3264,7 +3274,7 @@ ReadSourceFromFilename(JSContext* cx, const char* filename, char16_t** src, size
         ptr += bytesRead;
     }
 
-    rv = nsScriptLoader::ConvertToUTF16(scriptChannel, buf, rawLen, EmptyString(),
+    rv = nsScriptLoader::ConvertToUTF16(scriptChannel, buf.get(), rawLen, EmptyString(),
                                         nullptr, *src, *len);
     NS_ENSURE_SUCCESS(rv, rv);
 

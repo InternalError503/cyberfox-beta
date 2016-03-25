@@ -12,7 +12,7 @@ sys.path.insert(1, os.path.dirname(os.path.abspath(__file__)))
 import pyperclip
 
 from serversetup import LoopTestServers
-from config import *
+from config import FIREFOX_PREFERENCES
 
 
 class Test1BrowserCall(MarionetteTestCase):
@@ -81,7 +81,7 @@ class Test1BrowserCall(MarionetteTestCase):
         # for Marionette bug 1094246 to be fixed.
         chatbox = self.wait_for_element_exists(By.TAG_NAME, 'chatbox')
         script = ("return document.getAnonymousElementByAttribute("
-                  "arguments[0], 'class', 'chat-frame');")
+                  "arguments[0], 'anonid', 'content');")
         frame = self.marionette.execute_script(script, [chatbox])
         self.marionette.switch_to_frame(frame)
 
@@ -122,15 +122,16 @@ class Test1BrowserCall(MarionetteTestCase):
         self.switch_to_standalone()
         self.marionette.navigate(url)
 
-        # Join the room
-        join_button = self.wait_for_element_displayed(By.CLASS_NAME,
-                                                      "btn-join")
-        join_button.click()
+        # Join the room - the first time around, the tour will be displayed
+        # so we look for its close button.
+        tour_close_button = self.wait_for_element_displayed(By.CLASS_NAME,
+                                                            "button-close")
+        tour_close_button.click()
 
     # Assumes the standalone or the conversation window is selected first.
     def check_video(self, selector):
         video = self.wait_for_element_displayed(By.CSS_SELECTOR,
-                                                        selector, 20)
+                                                selector, 20)
         self.wait_for_element_attribute_to_be_false(video, "paused")
         self.assertEqual(video.get_attribute("ended"), "false")
 
@@ -216,8 +217,8 @@ class Test1BrowserCall(MarionetteTestCase):
         chatbox = self.wait_for_element_exists(By.TAG_NAME, 'chatbox')
         script = '''
             let chatBrowser = document.getAnonymousElementByAttribute(
-              arguments[0], 'class',
-              'chat-frame')
+              arguments[0], 'anonid',
+              'content')
 
             // note that using wrappedJSObject waives X-ray vision, which
             // has security implications, but because we trust the code

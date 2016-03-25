@@ -408,7 +408,7 @@ static nsresult GetDownloadDirectory(nsIFile **_directory,
   // creating. Note that Creating directories with specified permission only
   // supported on Unix platform right now. That's why above if exists.
 
-  PRUint32 permissions;
+  uint32_t permissions;
   rv = dir->GetPermissions(&permissions);
   NS_ENSURE_SUCCESS(rv, rv);
 
@@ -518,11 +518,9 @@ static nsDefaultMimeTypeEntry defaultMimeEntries [] =
   { APPLICATION_OGG, "ogg" },
   { AUDIO_OGG, "oga" },
   { AUDIO_OGG, "opus" },
-#ifdef MOZ_WEBM
   { VIDEO_WEBM, "webm" },
   { AUDIO_WEBM, "webm" },
-#endif
-#if defined(MOZ_GSTREAMER) || defined(MOZ_WMF)
+#if defined(MOZ_WMF)
   { VIDEO_MP4, "mp4" },
   { AUDIO_MP4, "m4a" },
   { AUDIO_MP3, "mp3" },
@@ -557,9 +555,7 @@ struct nsExtraMimeTypeEntry {
  */
 static nsExtraMimeTypeEntry extraMimeEntries [] =
 {
-#if defined(VMS)
-  { APPLICATION_OCTET_STREAM, "exe,com,bin,sav,bck,pcsi,dcx_axpexe,dcx_vaxexe,sfx_axpexe,sfx_vaxexe", "Binary File" },
-#elif defined(XP_MACOSX) // don't define .bin on the mac...use internet config to look that up...
+#if defined(XP_MACOSX) // don't define .bin on the mac...use internet config to look that up...
   { APPLICATION_OCTET_STREAM, "exe,com", "Binary File" },
 #else
   { APPLICATION_OCTET_STREAM, "exe,com,bin", "Binary File" },

@@ -243,6 +243,13 @@ namespace JS {
 extern JS_FRIEND_API(char*)
 FormatStackDump(JSContext* cx, char* buf, bool showArgs, bool showLocals, bool showThisProps);
 
+/**
+ * Set all of the uninitialized lexicals on an object to undefined. Return
+ * true if any lexicals were initialized and false otherwise.
+ * */
+extern JS_FRIEND_API(bool)
+ForceLexicalInitialization(JSContext *cx, HandleObject obj);
+
 } // namespace JS
 
 /**
@@ -1653,7 +1660,10 @@ JS_NewFloat64ArrayWithBuffer(JSContext* cx, JS::HandleObject arrayBuffer,
                              uint32_t byteOffset, int32_t length);
 
 /**
- * Create a new SharedArrayBuffer with the given byte length.
+ * Create a new SharedArrayBuffer with the given byte length.  This
+ * may only be called if
+ * JS::CompartmentCreationOptionsRef(cx).getSharedMemoryAndAtomicsEnabled() is
+ * true.
  */
 extern JS_FRIEND_API(JSObject*)
 JS_NewSharedArrayBuffer(JSContext* cx, uint32_t nbytes);
@@ -2336,7 +2346,12 @@ struct JSJitInfo {
         js::jit::InlinableNative inlinableNative;
     };
 
-    uint16_t depth;
+    union {
+        uint16_t depth;
+
+        // Additional opcode for some InlinableNative functions.
+        uint16_t nativeOp;
+    };
 
     // These fields are carefully packed to take up 4 bytes.  If you need more
     // bits for whatever reason, please see if you can steal bits from existing

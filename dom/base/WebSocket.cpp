@@ -80,10 +80,7 @@ public:
   NS_DECL_NSIREQUEST
   NS_DECL_THREADSAFE_ISUPPORTS
   NS_DECL_NSIEVENTTARGET
-  // missing from NS_DECL_NSIEVENTTARGET because MSVC
-  nsresult Dispatch(nsIRunnable* aEvent, uint32_t aFlags) {
-    return Dispatch(nsCOMPtr<nsIRunnable>(aEvent).forget(), aFlags);
-  }
+  using nsIEventTarget::Dispatch;
 
   explicit WebSocketImpl(WebSocket* aWebSocket)
   : mWebSocket(aWebSocket)
@@ -1259,7 +1256,7 @@ WebSocket::Constructor(const GlobalObject& aGlobal,
     }
 
     unsigned lineno, column;
-    JS::AutoFilename file;
+    JS::UniqueChars file;
     if (!JS::DescribeScriptedCaller(aGlobal.Context(), &file, &lineno,
                                     &column)) {
       NS_WARNING("Failed to get line number and filename in workers.");
@@ -1494,7 +1491,7 @@ WebSocketImpl::Init(JSContext* aCx,
     MOZ_ASSERT(aCx);
 
     unsigned lineno, column;
-    JS::AutoFilename file;
+    JS::UniqueChars file;
     if (JS::DescribeScriptedCaller(aCx, &file, &lineno, &column)) {
       mScriptFile = file.get();
       mScriptLine = lineno;
@@ -2119,17 +2116,6 @@ public:
                                       EmptyCString());
     }
 
-    return true;
-  }
-
-  bool Suspend(JSContext* aCx) override
-  {
-    {
-      MutexAutoLock lock(mWebSocketImpl->mMutex);
-      mWebSocketImpl->mWorkerShuttingDown = true;
-    }
-
-    mWebSocketImpl->CloseConnection(nsIWebSocketChannel::CLOSE_GOING_AWAY);
     return true;
   }
 

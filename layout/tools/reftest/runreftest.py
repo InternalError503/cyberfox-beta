@@ -250,6 +250,10 @@ class RefTest(object):
             prefs['reftest.ignoreWindowSize'] = True
         if options.shuffle:
             prefs['reftest.shuffle'] = True
+        if options.repeat:
+            prefs['reftest.repeat'] = options.repeat
+        if options.runUntilFailure:
+            prefs['reftest.runUntilFailure'] = True
         prefs['reftest.focusFilterMode'] = options.focusFilterMode
         prefs['reftest.manifests'] = json.dumps(manifests)
 
@@ -278,8 +282,6 @@ class RefTest(object):
         # injection
         prefs["extensions.enabledScopes"] = 5
         prefs["extensions.autoDisableScopes"] = 0
-        # Don't constantly try to autodetect touch event support
-        prefs["dom.w3c_touch_events.enabled"] = 1
         # Allow unsigned add-ons
         prefs['xpinstall.signatures.required'] = False
 
@@ -288,6 +290,7 @@ class RefTest(object):
         prefs['browser.tabs.remote.autostart.2'] = False
         if options.e10s:
             prefs['browser.tabs.remote.autostart'] = True
+            prefs['extensions.e10sBlocksEnabling'] = False
 
         for v in options.extraPrefs:
             thispref = v.split('=')

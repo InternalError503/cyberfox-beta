@@ -390,7 +390,12 @@
             return;
           this.mDestroyed = true;
 
-          this.controllers.removeController(this._controller);
+          try {
+            this.controllers.removeController(this._controller);
+          } catch (ex) {
+            // This can fail when this browser element is not attached to a
+            // BrowserDOMWindow.
+          }
 
           if (!this.hasAttribute("disablehistory")) {
             try {
@@ -510,8 +515,11 @@
           <![CDATA[
             try {
               this.messageManager.sendAsyncMessage("Browser:PurgeSessionHistory");
-            } catch (ex if ex.result == Components.results.NS_ERROR_NOT_INITIALIZED) {
+            } catch (ex) {
               // This can throw if the browser has started to go away.
+              if (ex.result != Components.results.NS_ERROR_NOT_INITIALIZED) {
+                throw ex;
+              }
             }
             this._remoteWebNavigationImpl.canGoBack = false;
             this._remoteWebNavigationImpl.canGoForward = false;
