@@ -1310,7 +1310,11 @@ function Engine(aLocation, aIsReadOnly) {
 
     // Build the id used for the legacy metadata storage, so that we
     // can do a one-time import of data from old profiles.
-    if (this._isDefault) {
+    if (this._isDefault ||
+        (uri && uri.spec.startsWith(APP_SEARCH_PREFIX))) {
+      // The second part of the check is to catch engines from language packs.
+      // They aren't default engines (because they aren't app-shipped), but we
+      // still need to give their id an [app] prefix for backward compat.
       this._id = "[app]/" + this._shortName + ".xml";
     }
     else if (!aIsReadOnly) {
@@ -2851,6 +2855,9 @@ SearchService.prototype = {
     }
 
     try {
+      if (!cache.engines.length)
+        throw "cannot write without any engine.";
+
       LOG("_buildCache: Writing to cache file.");
       let path = OS.Path.join(OS.Constants.Path.profileDir, CACHE_FILENAME);
       let data = gEncoder.encode(JSON.stringify(cache));
@@ -3169,7 +3176,10 @@ SearchService.prototype = {
       bis.readArrayBuffer(count, array.buffer);
 
       let bytes = Lz4.decompressFileContent(array);
-      return JSON.parse(new TextDecoder().decode(bytes));
+      let json = JSON.parse(new TextDecoder().decode(bytes));
+      if (!json.engines || !json.engines.length)
+        throw "no engine in the file";
+      return json;
     } catch(ex) {
       LOG("_readCacheFile: Error reading cache file: " + ex);
     } finally {
@@ -3181,8 +3191,8 @@ SearchService.prototype = {
       stream = Cc["@mozilla.org/network/file-input-stream;1"].
                  createInstance(Ci.nsIFileInputStream);
       stream.init(cacheFile, MODE_RDONLY, FileUtils.PERMS_FILE, 0);
-      let metadata = json.decodeFromStream(stream, stream.available());
-      let json;
+      let metadata = parseJsonFromStream(stream);
+      let json = {};
       if ("[global]" in metadata) {
         LOG("_readCacheFile: migrating metadata from search-metadata.json");
         let data = metadata["[global]"];
@@ -3201,7 +3211,7 @@ SearchService.prototype = {
 
       return json;
     } catch(ex) {
-      LOG("_readCacheFile: failed to read old metadata");
+      LOG("_readCacheFile: failed to read old metadata: " + ex);
       return {};
     } finally {
       stream.close();
@@ -3222,6 +3232,8 @@ SearchService.prototype = {
         let cacheFilePath = OS.Path.join(OS.Constants.Path.profileDir, CACHE_FILENAME);
         let bytes = yield OS.File.read(cacheFilePath, {compression: "lz4"});
         json = JSON.parse(new TextDecoder().decode(bytes));
+        if (!json.engines || !json.engines.length)
+          throw "no engine in the file";
         this._cacheFileJSON = json;
       } catch (ex) {
         LOG("_asyncReadCacheFile: Error reading cache file: " + ex);

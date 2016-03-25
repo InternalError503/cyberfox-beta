@@ -1,7 +1,10 @@
 import argparse
 import os
+import sys
 from collections import OrderedDict
 from urlparse import urlparse
+
+import mozlog
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -127,6 +130,10 @@ class ReftestArgumentsParser(argparse.ArgumentParser):
                           "the extension's id as indicated in its install.rdf. "
                           "An optional path can be specified too.")
 
+        self.add_argument("--marionette",
+                          default=None,
+                          help="host:port to use when connecting to Marionette")
+
         self.add_argument("--setenv",
                           action="append",
                           type=str,
@@ -207,6 +214,8 @@ class ReftestArgumentsParser(argparse.ArgumentParser):
                           nargs="*",
                           help="Path to test file, manifest file, or directory containing tests")
 
+        mozlog.commandline.add_logging_group(self)
+
     def get_ip(self):
         import moznetwork
         if os.name != "nt":
@@ -235,8 +244,6 @@ class ReftestArgumentsParser(argparse.ArgumentParser):
         self.error("Failed to determine test suite; supply --suite to set this explicitly")
 
     def validate(self, options, reftest):
-        import sys
-
         if not options.tests:
             # Can't just set this in the argument parser because mach will set a default
             self.error("Must supply at least one path to a manifest file, test directory, or test file to run.")
@@ -378,12 +385,6 @@ class B2GArgumentParser(ReftestArgumentsParser):
                           type=str,
                           dest="b2gPath",
                           help="path to B2G repo or qemu dir")
-
-        self.add_argument("--marionette",
-                          action="store",
-                          type=str,
-                          dest="marionette",
-                          help="host:port to use when connecting to Marionette")
 
         self.add_argument("--emulator",
                           action="store",
@@ -646,12 +647,6 @@ class RemoteArgumentsParser(ReftestArgumentsParser):
                           dest="pidFile",
                           default="",
                           help="name of the pidfile to generate")
-
-        self.add_argument("--bootstrap",
-                          action="store_true",
-                          dest="bootstrap",
-                          default=False,
-                          help="test with a bootstrap addon required for native Fennec")
 
         self.add_argument("--dm_trans",
                           action="store",

@@ -4,10 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#if BOOTSTRAP
-this.EXPORTED_SYMBOLS = ["OnRefTestLoad"];
-#endif
-
+this.EXPORTED_SYMBOLS = ["OnRefTestLoad", "OnRefTestUnload"];
 
 var CC = Components.classes;
 const CI = Components.interfaces;
@@ -38,6 +35,7 @@ const NS_OBSERVER_SERVICE_CONTRACTID =
 
 CU.import("resource://gre/modules/FileUtils.jsm");
 CU.import("chrome://reftest/content/httpd.jsm", this);
+CU.import("chrome://reftest/content/StructuredLog.jsm", this);
 CU.import("resource://gre/modules/Services.jsm");
 CU.import("resource://gre/modules/NetUtil.jsm");
 
@@ -99,6 +97,7 @@ var gTotalTests = 0;
 var gState;
 var gCurrentURL;
 var gTestLog = [];
+var gLogLevel;
 var gServer;
 var gCount = 0;
 var gAssertionCount = 0;
@@ -163,10 +162,6 @@ var gNoCanvasCache = false;
 
 var gRecycledCanvases = new Array();
 
-// By default we just log to stdout
-var gDumpLog = dump;
-var gVerbose = false;
-
 // Only dump the sandbox once, because it doesn't depend on the
 // manifest URL (yet!).
 var gDumpedConditionSandbox = false;
@@ -181,28 +176,34 @@ function HasUnexpectedResult()
            gTestResults.AssertionUnexpectedFixed > 0;
 }
 
-function LogWarning(str)
+// By default we just log to stdout
+var gLogFile = null;
+var gDumpRawLog = function(record) {
+  // Dump JSON representation of data on a single line
+  var line = "\n" + JSON.stringify(record) + "\n";
+  dump(line);
+
+  if (gLogFile) {
+    gLogFile.write(line, line.length);
+  }
+}
+var logger = new StructuredLogger('reftest', gDumpRawLog);
+
+function TestBuffer(str)
 {
-    gDumpLog("REFTEST INFO | " + str + "\n");
-    gTestLog.push(str);
+  logger.debug(str);
+  gTestLog.push(str);
 }
 
-function LogInfo(str)
+function FlushTestBuffer()
 {
-    if (gVerbose)
-        gDumpLog("REFTEST INFO | " + str + "\n");
-    gTestLog.push(str);
-}
-
-function FlushTestLog()
-{
-    if (!gVerbose) {
-        // In verbose mode, we've dumped all these messages already.
-        for (var i = 0; i < gTestLog.length; ++i) {
-            gDumpLog("REFTEST INFO | Saved log: " + gTestLog[i] + "\n");
-        }
+  // In debug mode, we've dumped all these messages already.
+  if (gLogLevel !== 'debug') {
+    for (var i = 0; i < gTestLog.length; ++i) {
+      logger.info("Saved log: " + gTestLog[i]);
     }
-    gTestLog = [];
+  }
+  gTestLog = [];
 }
 
 function AllocateCanvas()
@@ -244,7 +245,7 @@ function getTestPlugin(aName) {
       return tags[i];
   }
 
-  LogWarning("Failed to find the test-plugin.");
+  logger.warning("Failed to find the test-plugin.");
   return null;
 }
 
@@ -257,7 +258,6 @@ this.OnRefTestLoad = function OnRefTestLoad(win)
 
     var env = CC["@mozilla.org/process/environment;1"].
               getService(CI.nsIEnvironment);
-    gVerbose = !!env.get("MOZ_REFTEST_VERBOSE");
 
     var prefs = Components.classes["@mozilla.org/preferences-service;1"].
                 getService(Components.interfaces.nsIPrefBranch);
@@ -277,6 +277,12 @@ this.OnRefTestLoad = function OnRefTestLoad(win)
       gBrowserIsIframe = prefs.getBoolPref("reftest.browser.iframe.enabled");
     } catch (e) {
       gBrowserIsIframe = false;
+    }
+
+    try {
+      gLogLevel = prefs.getCharPref("reftest.logLevel");
+    } catch (e) {
+      gLogLevel ='info';
     }
 
     if (win === undefined || win == null) {
@@ -300,19 +306,20 @@ this.OnRefTestLoad = function OnRefTestLoad(win)
     // what size our window is
     gBrowser.setAttribute("style", "padding: 0px; margin: 0px; border:none; min-width: 800px; min-height: 1000px; max-width: 800px; max-height: 1000px");
 
-#ifdef BOOTSTRAP
-#ifdef REFTEST_B2G
-    var doc = gContainingWindow.document.getElementsByTagName("html")[0];
-#else
-    var doc = gContainingWindow.document.getElementById('main-window');
-#endif
-    while (doc.hasChildNodes()) {
-      doc.removeChild(doc.firstChild);
+    if (Services.appinfo.OS == "Android") {
+      let doc;
+      if (Services.appinfo.widgetToolkit == "gonk") {
+        doc = gContainingWindow.document.getElementsByTagName("html")[0];
+      } else {
+        doc = gContainingWindow.document.getElementById('main-window');
+      }
+      while (doc.hasChildNodes()) {
+        doc.removeChild(doc.firstChild);
+      }
+      doc.appendChild(gBrowser);
+    } else {
+      document.getElementById("reftest-window").appendChild(gBrowser);
     }
-    doc.appendChild(gBrowser);
-#else
-    document.getElementById("reftest-window").appendChild(gBrowser);
-#endif
 
     // reftests should have the test plugins enabled, not click-to-play
     let plugin1 = getTestPlugin("Test Plug-in");
@@ -322,7 +329,7 @@ this.OnRefTestLoad = function OnRefTestLoad(win)
       plugin1.enabledState = CI.nsIPluginTag.STATE_ENABLED;
       plugin2.enabledState = CI.nsIPluginTag.STATE_ENABLED;
     } else {
-      LogWarning("Could not get test plugin tags.");
+      logger.warning("Could not get test plugin tags.");
     }
 
     gBrowserMessageManager = gBrowser.QueryInterface(CI.nsIFrameLoaderOwner)
@@ -339,7 +346,7 @@ function InitAndStartRefTests()
         var prefs = Components.classes["@mozilla.org/preferences-service;1"].
                     getService(Components.interfaces.nsIPrefBranch);
     } catch(e) {
-        gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | | EXCEPTION: " + e + "\n");
+        logger.error("EXCEPTION: " + e);
     }
 
     try {
@@ -357,27 +364,8 @@ function InitAndStartRefTests()
     try {
         var logFile = prefs.getCharPref("reftest.logFile");
         if (logFile) {
-            try {
-                var f = FileUtils.File(logFile);
-                var mfl = FileUtils.openFileOutputStream(f, FileUtils.MODE_WRONLY | FileUtils.MODE_CREATE);
-                // Set to mirror to stdout as well as the file
-                gDumpLog = function (msg) {
-#ifdef BOOTSTRAP
-#ifdef REFTEST_B2G
-                    dump(msg);
-#else
-                    //NOTE: on android-xul, we have a libc crash if we do a dump with %7s in the string
-#endif
-#else
-                    dump(msg);
-#endif
-                    mfl.write(msg, msg.length);
-                };
-            }
-            catch(e) {
-                // If there is a problem, just use stdout
-                gDumpLog = dump;
-            }
+            var f = FileUtils.File(logFile);
+            gLogFile = FileUtils.openFileOutputStream(f, FileUtils.MODE_WRONLY | FileUtils.MODE_CREATE);
         }
     } catch(e) {}
 
@@ -427,7 +415,7 @@ function InitAndStartRefTests()
     } catch (ex) {
         //gBrowser.loadURI('data:text/plain,' + ex);
         ++gTestResults.Exception;
-        gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | | EXCEPTION: " + ex + "\n");
+        logger.error("EXCEPTION: " + ex);
         DoneTests();
     }
 
@@ -465,7 +453,7 @@ function StartTests()
         var prefs = Components.classes["@mozilla.org/preferences-service;1"].
                     getService(Components.interfaces.nsIPrefBranch);
     } catch(e) {
-        gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | | EXCEPTION: " + e + "\n");
+        logger.error("EXCEPTION: " + e);
     }
 
     try {
@@ -513,7 +501,7 @@ function StartTests()
         var manifests = JSON.parse(prefs.getCharPref("reftest.manifests"));
         gURLFilterRegex = manifests[null];
     } catch(e) {
-        gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | | Unable to find reftest.manifests pref.  Please ensure your profile is setup properly\n");
+        logger.error("Unable to find reftest.manifests pref.  Please ensure your profile is setup properly");
         DoneTests();
     }
 
@@ -525,7 +513,7 @@ function StartTests()
         // process includes before reading the included manifest again
         manifestURLs.sort(function(a,b) {return a.length - b.length})
         manifestURLs.forEach(function(manifestURL) {
-            gDumpLog("Reading manifest " + manifestURL + "\n");
+            logger.info("Reading manifest " + manifestURL);
             var filter = manifests[manifestURL] ? new RegExp(manifests[manifestURL]) : null;
             ReadTopManifest(manifestURL, [globalFilter, filter, false]);
         });
@@ -534,6 +522,7 @@ function StartTests()
         // Filter tests which will be skipped to get a more even distribution when chunking
         // tURLs is a temporary array containing all active tests
         var tURLs = new Array();
+        var tIDs = new Array();
         for (var i = 0; i < gURLs.length; ++i) {
             if (gURLs[i].expected == EXPECTED_DEATH)
                 continue;
@@ -545,9 +534,10 @@ function StartTests()
                 continue;
 
             tURLs.push(gURLs[i]);
+            tIDs.push(gURLs[i].identifier);
         }
 
-        gDumpLog("REFTEST INFO | Discovered " + gURLs.length + " tests, after filtering SKIP tests, we have " + tURLs.length + "\n");
+        logger.suiteStart(tIDs, {"skipped": gURLs.length - tURLs.length});
 
         if (gTotalChunks > 0 && gThisChunk > 0) {
             // Calculate start and end indices of this chunk if tURLs array were
@@ -562,8 +552,8 @@ function StartTests()
             end = gThisChunk == gTotalChunks ? gURLs.length : gURLs.indexOf(tURLs[end + 1]) - 1;
             gURLs = gURLs.slice(start, end);
 
-            gDumpLog("REFTEST INFO | Running chunk " + gThisChunk + " out of " + gTotalChunks + " chunks.  ");
-            gDumpLog("tests " + (start+1) + "-" + end + "/" + gURLs.length + "\n");
+            logger.info("Running chunk " + gThisChunk + " out of " + gTotalChunks + " chunks.  " +
+                "tests " + (start+1) + "-" + end + "/" + gURLs.length);
         }
 
         if (gShuffle) {
@@ -580,7 +570,7 @@ function StartTests()
     } catch (ex) {
         //gBrowser.loadURI('data:text/plain,' + ex);
         ++gTestResults.Exception;
-        gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | | EXCEPTION: " + ex + "\n");
+        logger.error("EXCEPTION: " + ex);
         DoneTests();
     }
 }
@@ -593,7 +583,7 @@ function OnRefTestUnload()
     plugin1.enabledState = gTestPluginEnabledStates[0];
     plugin2.enabledState = gTestPluginEnabledStates[1];
   } else {
-    LogWarning("Failed to get test plugin tags.");
+    logger.warning("Failed to get test plugin tags.");
   }
 }
 
@@ -749,8 +739,8 @@ function BuildConditionSandbox(aURL) {
     }
 
     if (!gDumpedConditionSandbox) {
-        dump("REFTEST INFO | Dumping JSON representation of sandbox \n");
-        dump("REFTEST INFO | " + JSON.stringify(CU.waiveXrays(sandbox)) + " \n");
+        logger.info("Dumping JSON representation of sandbox");
+        logger.info(JSON.stringify(CU.waiveXrays(sandbox)));
         gDumpedConditionSandbox = true;
     }
 
@@ -811,6 +801,12 @@ function AddTestItem(aTest, aFilter)
     if (gFocusFilterMode == FOCUS_FILTER_NON_NEEDS_FOCUS_TESTS &&
         aTest.needsFocus)
         return;
+
+    if (aTest.url2 !== null)
+        aTest.identifier = [aTest.prettyPath, aTest.type, aTest.url2.spec];
+    else
+        aTest.identifier = aTest.prettyPath;
+
     gURLs.push(aTest);
 }
 
@@ -837,8 +833,7 @@ function ReadManifest(aURL, inherited_status, aFilter)
     var inputStream = channel.open2();
     if (channel instanceof Components.interfaces.nsIHttpChannel
         && channel.responseStatus != 200) {
-      gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | | HTTP ERROR : " +
-        channel.responseStatus + "\n");
+      logger.error("HTTP ERROR : " + channel.responseStatus);
     }
     var streamBuf = getStreamContent(inputStream);
     inputStream.close();
@@ -1238,19 +1233,20 @@ function StartCurrentTest()
     // make sure we don't run tests that are expected to kill the browser
     while (gURLs.length > 0) {
         var test = gURLs[0];
+        logger.testStart(test.identifier);
         if (test.expected == EXPECTED_DEATH) {
             ++gTestResults.Skip;
-            gDumpLog("REFTEST TEST-KNOWN-FAIL | " + test.url1.spec + " | (SKIP)\n");
+            logger.testEnd(test.identifier, "SKIP");
             gURLs.shift();
         } else if (test.needsFocus && !Focus()) {
             // FIXME: Marking this as a known fail is dangerous!  What
             // if it starts failing all the time?
             ++gTestResults.Skip;
-            gDumpLog("REFTEST TEST-KNOWN-FAIL | " + test.url1.spec + " | (SKIPPED; COULDN'T GET FOCUS)\n");
+            logger.testEnd(test.identifier, "SKIP", null, "(COULDN'T GET FOCUS)");
             gURLs.shift();
         } else if (test.slow && !gRunSlowTests) {
             ++gTestResults.Slow;
-            gDumpLog("REFTEST TEST-KNOWN-SLOW | " + test.url1.spec + " | (SLOW)\n");
+            logger.testEnd(test.identifier, "SKIP", null, "(SLOW)");
             gURLs.shift();
         } else {
             break;
@@ -1266,7 +1262,6 @@ function StartCurrentTest()
         gRepeat--;
         StartTests();
     } else {
-        gDumpLog("REFTEST TEST-START | " + gURLs[0].prettyPath + "\n");
         if (gURLs[0].chaosMode) {
             gWindowUtils.enterChaosMode();
         }
@@ -1332,31 +1327,29 @@ function StartCurrentURI(aState)
                     } else if (ps.type == PREF_INTEGER) {
                         prefs.setIntPref(ps.name, value);
                     }
-                    gDumpLog("SET PREFERENCE pref(" + ps.name + "," + value + ")\n");
+                    logger.info("SET PREFERENCE pref(" + ps.name + "," + value + ")");
                 }
             });
         } catch (e) {
             if (e == "bad pref") {
                 var test = gURLs[0];
                 if (test.expected == EXPECTED_FAIL) {
-                    gDumpLog("REFTEST TEST-KNOWN-FAIL | " + test.url1.spec +
-                             " | (SKIPPED; " + badPref + " not known or wrong type)\n");
+                    logger.testEnd(test.identifier, "FAIL", "FAIL",
+                                   "(SKIPPED; " + badPref + " not known or wrong type)");
                     ++gTestResults.Skip;
                 } else {
-                    gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | " + test.url1.spec +
-                             " | " + badPref + " not known or wrong type\n");
+                    logger.testEnd(test.identifier, "FAIL", "PASS",
+                                   badPref + " not known or wrong type");
                     ++gTestResults.UnexpectedFail;
                 }
+
+                // skip the test that had a bad preference
+                gURLs.shift();
+                StartCurrentTest();
+                return;
             } else {
                 throw e;
             }
-        }
-        if (badPref != undefined) {
-            // skip the test that had a bad preference
-            gURLs.shift();
-
-            StartCurrentTest();
-            return;
         }
     }
 
@@ -1370,9 +1363,11 @@ function StartCurrentURI(aState)
         gContainingWindow.setTimeout(RecordResult, 0);
     } else {
         var currentTest = gTotalTests - gURLs.length;
-        gDumpLog("REFTEST TEST-LOAD | " + gCurrentURL + " | " + currentTest + " / " + gTotalTests +
-            " (" + Math.floor(100 * (currentTest / gTotalTests)) + "%)\n");
-        LogInfo("START " + gCurrentURL);
+        // Log this to preserve the same overall log format,
+        // should be removed if the format is updated
+        dump("REFTEST TEST-LOAD | " + gCurrentURL + " | " + currentTest + " / " + gTotalTests +
+             " (" + Math.floor(100 * (currentTest / gTotalTests)) + "%)\n");
+        TestBuffer("START " + gCurrentURL);
         var type = gURLs[0].type
         if (TYPE_SCRIPT == type) {
             SendLoadScriptTest(gCurrentURL, gLoadTimeout);
@@ -1384,37 +1379,10 @@ function StartCurrentURI(aState)
 
 function DoneTests()
 {
-    gDumpLog("REFTEST FINISHED: Slowest test took " + gSlowestTestTime +
-         "ms (" + gSlowestTestURL + ")\n");
+    logger.suiteEnd(extra={'results': gTestResults});
+    logger.info("Slowest test took " + gSlowestTestTime + "ms (" + gSlowestTestURL + ")");
+    logger.info("Total canvas count = " + gRecycledCanvases.length);
 
-    gDumpLog("REFTEST INFO | Result summary:\n");
-    var count = gTestResults.Pass + gTestResults.LoadOnly;
-    gDumpLog("REFTEST INFO | Successful: " + count + " (" +
-             gTestResults.Pass + " pass, " +
-             gTestResults.LoadOnly + " load only)\n");
-    count = gTestResults.Exception + gTestResults.FailedLoad +
-            gTestResults.UnexpectedFail + gTestResults.UnexpectedPass +
-            gTestResults.AssertionUnexpected +
-            gTestResults.AssertionUnexpectedFixed;
-    gDumpLog("REFTEST INFO | Unexpected: " + count + " (" +
-             gTestResults.UnexpectedFail + " unexpected fail, " +
-             gTestResults.UnexpectedPass + " unexpected pass, " +
-             gTestResults.AssertionUnexpected + " unexpected asserts, " +
-             gTestResults.AssertionUnexpectedFixed + " unexpected fixed asserts, " +
-             gTestResults.FailedLoad + " failed load, " +
-             gTestResults.Exception + " exception)\n");
-    count = gTestResults.KnownFail + gTestResults.AssertionKnown +
-            gTestResults.Random + gTestResults.Skip + gTestResults.Slow;
-    gDumpLog("REFTEST INFO | Known problems: " + count + " (" +
-             gTestResults.KnownFail + " known fail, " +
-             gTestResults.AssertionKnown + " known asserts, " +
-             gTestResults.Random + " random, " +
-             gTestResults.Skip + " skipped, " +
-             gTestResults.Slow + " slow)\n");
-
-    gDumpLog("REFTEST INFO | Total canvas count = " + gRecycledCanvases.length + "\n");
-
-    gDumpLog("REFTEST TEST-START | Shutdown\n");
     function onStopped() {
         let appStartup = CC["@mozilla.org/toolkit/app-startup;1"].getService(CI.nsIAppStartup);
         appStartup.quit(CI.nsIAppStartup.eForceQuit);
@@ -1462,7 +1430,7 @@ function DoDrawWindow(ctx, x, y, w, h)
         // browser element
         flags |= ctx.DRAWWINDOW_USE_WIDGET_LAYERS;
     } else if (gBrowserIsRemote) {
-        gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | " + gCurrentURL + " | can't drawWindow remote content\n");
+        logger.error(gCurrentURL + " | can't drawWindow remote content");
         ++gTestResults.Exception;
     }
 
@@ -1475,22 +1443,21 @@ function DoDrawWindow(ctx, x, y, w, h)
         } else {
             // Output a special warning because we need to be able to detect
             // this whenever it happens.
-            gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | WARNING: USE_WIDGET_LAYERS disabled\n");
+            logger.error("WARNING: USE_WIDGET_LAYERS disabled");
         }
-        gDumpLog("REFTEST INFO | drawWindow flags = " + flagsStr +
-                 "; window size = " + gContainingWindow.innerWidth + "," + gContainingWindow.innerHeight +
-                 "; test browser size = " + testRect.width + "," + testRect.height +
-                 "\n");
+        logger.info("drawWindow flags = " + flagsStr +
+                    "; window size = " + gContainingWindow.innerWidth + "," + gContainingWindow.innerHeight +
+                    "; test browser size = " + testRect.width + "," + testRect.height);
     }
 
-    LogInfo("DoDrawWindow " + x + "," + y + "," + w + "," + h);
+    TestBuffer("DoDrawWindow " + x + "," + y + "," + w + "," + h);
     ctx.drawWindow(gContainingWindow, x, y, w, h, "rgb(255,255,255)",
                    gDrawWindowFlags);
 }
 
 function InitCurrentCanvasWithSnapshot()
 {
-    LogInfo("Initializing canvas snapshot");
+    TestBuffer("Initializing canvas snapshot");
 
     if (gURLs[0].type == TYPE_LOAD || gURLs[0].type == TYPE_SCRIPT) {
         // We don't want to snapshot this kind of test
@@ -1508,7 +1475,7 @@ function InitCurrentCanvasWithSnapshot()
 
 function UpdateCurrentCanvasForInvalidation(rects)
 {
-    LogInfo("Updating canvas for invalidation");
+    TestBuffer("Updating canvas for invalidation");
 
     if (!gCurrentCanvas) {
         return;
@@ -1538,7 +1505,7 @@ function UpdateCurrentCanvasForInvalidation(rects)
 
 function UpdateWholeCurrentCanvasForInvalidation()
 {
-    LogInfo("Updating entire canvas for invalidation");
+    TestBuffer("Updating entire canvas for invalidation");
 
     if (!gCurrentCanvas) {
         return;
@@ -1550,7 +1517,7 @@ function UpdateWholeCurrentCanvasForInvalidation()
 
 function RecordResult(testRunTime, errorMsg, scriptResults)
 {
-    LogInfo("RecordResult fired");
+    TestBuffer("RecordResult fired");
 
     // Keep track of which test was slowest, and how long it took.
     if (testRunTime > gSlowestTestTime) {
@@ -1560,26 +1527,26 @@ function RecordResult(testRunTime, errorMsg, scriptResults)
 
     // Not 'const ...' because of 'EXPECTED_*' value dependency.
     var outputs = {};
-    const randomMsg = "(EXPECTED RANDOM)";
     outputs[EXPECTED_PASS] = {
-        true:  {s: "TEST-PASS"                  , n: "Pass"},
-        false: {s: "TEST-UNEXPECTED-FAIL"       , n: "UnexpectedFail"}
+        true:  {s: ["PASS", "PASS"], n: "Pass"},
+        false: {s: ["FAIL", "PASS"], n: "UnexpectedFail"}
     };
     outputs[EXPECTED_FAIL] = {
-        true:  {s: "TEST-UNEXPECTED-PASS"       , n: "UnexpectedPass"},
-        false: {s: "TEST-KNOWN-FAIL"            , n: "KnownFail"}
+        true:  {s: ["PASS", "FAIL"], n: "UnexpectedPass"},
+        false: {s: ["FAIL", "FAIL"], n: "KnownFail"}
     };
     outputs[EXPECTED_RANDOM] = {
-        true:  {s: "TEST-PASS" + randomMsg      , n: "Random"},
-        false: {s: "TEST-KNOWN-FAIL" + randomMsg, n: "Random"}
+        true:  {s: ["PASS", "PASS"], n: "Random"},
+        false: {s: ["FAIL", "FAIL"], n: "Random"}
     };
     outputs[EXPECTED_FUZZY] = outputs[EXPECTED_PASS];
 
     var output;
+    var extra;
 
     if (gURLs[0].type == TYPE_LOAD) {
         ++gTestResults.LoadOnly;
-        gDumpLog("REFTEST TEST-PASS | " + gURLs[0].prettyPath + " | (LOAD ONLY)\n");
+        logger.testEnd(gURLs[0].identifier, "PASS", "PASS", "(LOAD ONLY)");
         gCurrentCanvas = null;
         FinishTestItem();
         return;
@@ -1597,17 +1564,14 @@ function RecordResult(testRunTime, errorMsg, scriptResults)
              if (!gURLs[0].allowSilentFail)
                  errorMsg = "No test results reported. (SCRIPT)\n";
              else
-                 gDumpLog("REFTEST INFO | An expected silent failure occurred \n");
+                 logger.info("An expected silent failure occurred");
         }
 
         if (errorMsg) {
             output = outputs[expected][false];
+            extra = { status_msg: output.n };
             ++gTestResults[output.n];
-            var result = "REFTEST " + output.s + " | " +
-                gURLs[0].prettyPath + " | " + // the URL being tested
-                errorMsg;
-
-            gDumpLog(result);
+            logger.testEnd(gURLs[0].identifier, output.s[0], output.s[1], errorMsg, null, extra);
             FinishTestItem();
             return;
         }
@@ -1627,16 +1591,15 @@ function RecordResult(testRunTime, errorMsg, scriptResults)
         var index = 0;
         scriptResults.forEach(function(result) {
                 var output = outputPair[result.passed];
+                var extra = { status_msg: output.n };
 
                 ++gTestResults[output.n];
-                result = "REFTEST " + output.s + " | " +
-                    gURLs[0].prettyPath + " | " + // the URL being tested
-                    result.description + " item " + (++index) + "\n";
-                gDumpLog(result);
+                logger.testEnd(gURLs[0].identifier, output.s[0], output.s[1],
+                               result.description + " item " + (++index), null, extra);
             });
 
         if (anyFailed && expected == EXPECTED_PASS) {
-            FlushTestLog();
+            FlushTestBuffer();
         }
 
         FinishTestItem();
@@ -1648,7 +1611,7 @@ function RecordResult(testRunTime, errorMsg, scriptResults)
         gCurrentCanvas = gURICanvases[gCurrentURL];
     }
     if (gCurrentCanvas == null) {
-        gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | " + gCurrentURL + " | program error managing snapshots\n");
+        logger.error(gCurrentURL, "program error managing snapshots");
         ++gTestResults.Exception;
     }
     if (gState == 1) {
@@ -1691,7 +1654,7 @@ function RecordResult(testRunTime, errorMsg, scriptResults)
                     throw "Inconsistent result from compareCanvases.";
                 }
                 equal = expected == EXPECTED_FUZZY;
-                gDumpLog("REFTEST fuzzy match\n");
+                logger.info("REFTEST fuzzy match");
             }
 
             var failedExtraCheck = gFailedNoPaint || gFailedOpaqueLayer || gFailedAssignedLayer;
@@ -1700,6 +1663,7 @@ function RecordResult(testRunTime, errorMsg, scriptResults)
             var test_passed = (equal == (gURLs[0].type == TYPE_REFTEST_EQUAL)) && !failedExtraCheck;
 
             output = outputs[expected][test_passed];
+            extra = { status_msg: output.n };
 
             ++gTestResults[output.n];
 
@@ -1718,39 +1682,21 @@ function RecordResult(testRunTime, errorMsg, scriptResults)
                     failures.push("failed reftest-assigned-layer: " + gFailedAssignedLayerMessages.join(", "));
                 }
                 var failureString = failures.join(", ");
-                if (expected == EXPECTED_FAIL) {
-                    gDumpLog("REFTEST TEST-KNOWN-FAIL | " + gURLs[0].prettyPath + " | " + failureString + "\n");
-                } else {
-                    gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | " + gURLs[0].prettyPath + " | " + failureString + "\n");
-                }
+                logger.testEnd(gURLs[0].identifier, output.s[0], output.s[1], failureString, null, extra);
             } else {
-                var result = "REFTEST " + output.s + " | " +
-                             gURLs[0].prettyPath + " | "; // the URL being tested
-                switch (gURLs[0].type) {
-                    case TYPE_REFTEST_NOTEQUAL:
-                        result += "image comparison (!=)";
-                        break;
-                    case TYPE_REFTEST_EQUAL:
-                        result += "image comparison (==)";
-                        break;
-                }
-
                 if (!test_passed && expected == EXPECTED_PASS ||
                     !test_passed && expected == EXPECTED_FUZZY ||
                     test_passed && expected == EXPECTED_FAIL) {
                     if (!equal) {
-                        result += ", max difference: " + maxDifference.value + ", number of differing pixels: " + differences + "\n";
-                        result += "REFTEST   IMAGE 1 (TEST): " + gCanvas1.toDataURL() + "\n";
-                        result += "REFTEST   IMAGE 2 (REFERENCE): " + gCanvas2.toDataURL() + "\n";
+                        extra.max_difference = maxDifference.value;
+                        extra.differences = differences;
+                        extra.image1 = gCanvas1.toDataURL();
+                        extra.image2 = gCanvas2.toDataURL();
                     } else {
-                        result += "\n";
-                        result += "REFTEST   IMAGE: " + gCanvas1.toDataURL() + "\n";
+                        extra.image1 = gCanvas1.toDataURL();
                     }
-                } else {
-                    result += "\n";
                 }
-
-                gDumpLog(result);
+                logger.testEnd(gURLs[0].identifier, output.s[0], output.s[1], null, null, extra);
 
                 if (gURLs[0].prefSettings1.length == 0) {
                     UpdateCanvasCache(gURLs[0].url1, gCanvas1);
@@ -1761,7 +1707,7 @@ function RecordResult(testRunTime, errorMsg, scriptResults)
             }
 
             if ((!test_passed && expected == EXPECTED_PASS) || (test_passed && expected == EXPECTED_FAIL)) {
-                FlushTestLog();
+                FlushTestBuffer();
             }
 
             CleanUpCrashDumpFiles();
@@ -1778,11 +1724,10 @@ function LoadFailed(why)
     // Once bug 896840 is fixed, this can go away, but for now it will give log
     // output that is TBPL starable for bug 789751 and bug 720452.
     if (!why) {
-        gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | load failed with unknown reason\n");
+        logger.error("load failed with unknown reason");
     }
-    gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | " +
-         gURLs[0]["url" + gState].spec + " | load failed: " + why + "\n");
-    FlushTestLog();
+    logger.testEnd(gURLs[0]["url" + gState].spec, "FAIL", "PASS", "load failed: " + why);
+    FlushTestBuffer();
     FinishTestItem();
 }
 
@@ -1819,11 +1764,9 @@ function FindUnexpectedCrashDumpFiles()
             if (!foundCrashDumpFile) {
                 ++gTestResults.UnexpectedFail;
                 foundCrashDumpFile = true;
-                gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | " + gCurrentURL +
-                         " | This test left crash dumps behind, but we weren't expecting it to!\n");
+                logger.testEnd(gCurrentURL, "FAIL", "PASS", "This test left crash dumps behind, but we weren't expecting it to!");
             }
-            gDumpLog("REFTEST INFO | Found unexpected crash dump file " + path +
-                     ".\n");
+            logger.info("Found unexpected crash dump file " + path);
             gUnexpectedCrashDumpFiles[path] = true;
         }
     }
@@ -1840,7 +1783,7 @@ function FinishTestItem()
 {
     // Replace document with BLANK_URL_FOR_CLEARING in case there are
     // assertions when unloading.
-    gDumpLog("REFTEST INFO | Loading a blank page\n");
+    logger.debug("Loading a blank page");
     // After clearing, content will notify us of the assertion count
     // and tests will continue.
     SendClear();
@@ -1875,18 +1818,18 @@ function DoAssertionCheck(numAsserts)
 
         if (numAsserts < minAsserts) {
             ++gTestResults.AssertionUnexpectedFixed;
-            gDumpLog("REFTEST TEST-UNEXPECTED-PASS | " + gURLs[0].prettyPath +
-                 " | assertion count " + numAsserts + " is less than " +
-                 expectedAssertions + "\n");
+            dump("REFTEST TEST-UNEXPECTED-PASS | " + gURLs[0].prettyPath +
+                 " | assertion count" + numAsserts + " is less than " +
+                    expectedAssertions + "\n");
         } else if (numAsserts > maxAsserts) {
             ++gTestResults.AssertionUnexpected;
-            gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | " + gURLs[0].prettyPath +
+            dump("REFTEST TEST-UNEXPECTED-FAIL | " + gURLs[0].prettyPath +
                  " | assertion count " + numAsserts + " is more than " +
-                 expectedAssertions + "\n");
+                    expectedAssertions + "\n");
         } else if (numAsserts != 0) {
             ++gTestResults.AssertionKnown;
-            gDumpLog("REFTEST TEST-KNOWN-FAIL | " + gURLs[0].prettyPath +
-                 " | assertion count " + numAsserts + " matches " +
+            dump("REFTEST TEST-KNOWN-FAIL | " + gURLs[0].prettyPath +
+                 "assertion count " + numAsserts + " matches " +
                  expectedAssertions + "\n");
         }
     }
@@ -1894,7 +1837,6 @@ function DoAssertionCheck(numAsserts)
     if (gURLs[0].chaosMode) {
         gWindowUtils.leaveChaosMode();
     }
-    gDumpLog("REFTEST TEST-END | " + gURLs[0].prettyPath + "\n");
 
     // And start the next test.
     gURLs.shift();
@@ -1923,7 +1865,7 @@ function RestoreChangedPreferences()
             } else if (ps.type == PREF_INTEGER) {
                 prefs.setIntPref(ps.name, value);
             }
-            gDumpLog("RESTORE PREFERENCE pref(" + ps.name + "," + value + ")\n");
+            logger.info("RESTORE PREFERENCE pref(" + ps.name + "," + value + ")");
         });
         gPrefsToRestore = [];
     }
@@ -2004,7 +1946,7 @@ function RecvContentReady()
 
 function RecvException(what)
 {
-    gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | " + gCurrentURL + " | " + what + "\n");
+    logger.error(gCurrentURL + " | " + what);
     ++gTestResults.Exception;
 }
 
@@ -2036,13 +1978,13 @@ function RecvInitCanvasWithSnapshot()
 
 function RecvLog(type, msg)
 {
-    msg = "[CONTENT] "+ msg;
+    msg = "[CONTENT] " + msg;
     if (type == "info") {
-        LogInfo(msg);
+        TestBuffer(msg);
     } else if (type == "warning") {
-        LogWarning(msg);
+        logger.warning(msg);
     } else {
-        gDumpLog("REFTEST TEST-UNEXPECTED-FAIL | " + gCurrentURL + " | unknown log type " + type + "\n");
+        logger.error("REFTEST TEST-UNEXPECTED-FAIL | " + gCurrentURL + " | unknown log type " + type + "\n");
         ++gTestResults.Exception;
     }
 }
