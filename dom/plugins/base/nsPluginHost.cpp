@@ -139,6 +139,9 @@ using mozilla::dom::FakePluginTagInit;
 static const char *kPrefWhitelist = "plugin.allowed_types";
 static const char *kPrefDisableFullPage = "plugin.disable_full_page_plugin_for_types";
 static const char *kPrefJavaMIME = "plugin.java.mime";
+#if defined(XP_WIN)
+static const char *kPrefPluginsAllowedWhitelist = "plugin.allowed_whitelist.enabled";
+#endif
 
 // How long we wait before unloading an idle plugin process.
 // Defaults to 30 seconds.
@@ -2031,9 +2034,51 @@ struct CompareFilesByTime
 
 } // namespace
 
+bool
+nsPluginHost::ShouldAddPlugin(nsPluginTag* aPluginTag)
+{
+#if defined(XP_WIN)
+  // On windows, the only plugins we should load are flash and
+  // silverlight when plugin whitelist is enabled (True). 
+  // Use library filename and MIME type to check.
+  // Restart required when preference toggled.
+  if (Preferences::GetBool(kPrefPluginsAllowedWhitelist, false)) {
+	  if (StringBeginsWith(aPluginTag->FileName(), NS_LITERAL_CSTRING("NPSWF"), nsCaseInsensitiveCStringComparator()) &&
+		  (aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-shockwave-flash")) ||
+		   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-shockwave-flash-test")))) {
+		return true;
+	  }
+	  if (StringBeginsWith(aPluginTag->FileName(), NS_LITERAL_CSTRING("npctrl"), nsCaseInsensitiveCStringComparator()) &&
+		  (aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-silverlight-test")) ||
+		   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-silverlight-2")) ||
+		   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-silverlight")))) {
+		return true;
+	  }
+	  // Accept the test plugin MIME types, so mochitests still work.
+	  if (aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-test")) ||
+		  aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-Second-Test")) ||
+		  aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-test"))) {
+		return true;
+	  }
+#ifdef PLUGIN_LOGGING
+  PLUGIN_LOG(PLUGIN_LOG_NORMAL,
+             ("ShouldAddPlugin : Ignoring non-flash plugin library %s\n", aPluginTag->FileName().get()));
+#endif // PLUGIN_LOGGING
+	  return false;
+  } else {
+	  return true;
+  }
+#else
+  return true;
+#endif // defined(XP_WIN)
+}
+
 void
 nsPluginHost::AddPluginTag(nsPluginTag* aPluginTag)
 {
+  if (!ShouldAddPlugin(aPluginTag)) {
+    return;
+  }
   aPluginTag->mNext = mPlugins;
   mPlugins = aPluginTag;
 
@@ -3224,6 +3269,10 @@ nsPluginHost::ReadPluginInfo()
 
     MOZ_LOG(nsPluginLogging::gPluginLog, PLUGIN_LOG_BASIC,
       ("LoadCachedPluginsInfo : Loading Cached plugininfo for %s\n", tag->FileName().get()));
+
+    if (!ShouldAddPlugin(tag)) {
+      continue;
+    }
 
     tag->mNext = mCachedPlugins;
     mCachedPlugins = tag;

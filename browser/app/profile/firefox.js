@@ -825,6 +825,11 @@ pref("plugin.state.npnisp", 2);
 pref("plugin.state.iprint", 2);
 #endif
 
+// Toggle plugin whitelist (Flash, Silverlight)
+#ifdef XP_WIN
+pref("plugin.allowed_whitelist.enabled", false);
+#endif
+
 pref("browser.preferences.animateFadeIn", true);
 
 #ifdef XP_WIN
