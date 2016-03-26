@@ -32,6 +32,19 @@ import httpd
 
 here = os.path.abspath(os.path.dirname(__file__))
 
+def update_mozinfo(path=None):
+    """walk up directories to find mozinfo.json and update the info"""
+
+    path = path or here
+    dirs = set()
+    while path != os.path.expanduser('~'):
+        if path in dirs:
+            break
+        dirs.add(path)
+        path = os.path.split(path)[0]
+
+    return mozinfo.find_and_update_from_json(*dirs)
+
 
 class MarionetteTest(TestResult):
 
@@ -553,6 +566,7 @@ class BaseMarionetteTestRunner(object):
         self.socket_timeout = socket_timeout
         self._device = None
         self._capabilities = None
+        self._appinfo = None
         self._appName = None
         self.shuffle = shuffle
         self.shuffle_seed = shuffle_seed
@@ -649,6 +663,23 @@ class BaseMarionetteTestRunner(object):
         self._capabilities = self.marionette.session_capabilities
         self.marionette.delete_session()
         return self._capabilities
+
+    @property
+    def appinfo(self):
+        if self._appinfo:
+            return self._appinfo
+
+        self.marionette.start_session()
+        with self.marionette.using_context('chrome'):
+            self._appinfo = self.marionette.execute_script("""
+            try {
+              return Services.appinfo;
+            } catch (e) {
+              return null;
+            }""")
+        self.marionette.delete_session()
+        self._appinfo = self._appinfo or {}
+        return self._appinfo
 
     @property
     def device(self):
@@ -982,11 +1013,15 @@ setReq.onerror = function() {
             filters = []
             if self.test_tags:
                 filters.append(tags(self.test_tags))
+            e10s = self.appinfo.get('browserTabsRemoteAutostart', False)
+            json_path = update_mozinfo(filepath)
+            self.logger.info("mozinfo updated with the following: {}".format(None))
             manifest_tests = manifest.active_tests(exists=False,
                                                    disabled=True,
                                                    filters=filters,
                                                    device=self.device,
                                                    app=self.appName,
+                                                   e10s=e10s,
                                                    **mozinfo.info)
             if len(manifest_tests) == 0:
                 self.logger.error("no tests to run using specified "

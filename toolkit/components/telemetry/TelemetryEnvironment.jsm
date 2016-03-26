@@ -171,6 +171,7 @@ const PREF_PARTNER_ID = "mozilla.partner.id";
 const PREF_UPDATE_ENABLED = "app.update.enabled";
 const PREF_UPDATE_AUTODOWNLOAD = "app.update.auto";
 const PREF_SEARCH_COHORT = "browser.search.cohort";
+const PREF_E10S_COHORT = "e10s.rollout.cohort";
 
 const EXPERIMENTS_CHANGED_TOPIC = "experiments-changed";
 const SEARCH_ENGINE_MODIFIED_TOPIC = "browser-search-engine-modified";
@@ -1086,6 +1087,7 @@ EnvironmentCache.prototype = {
     this._currentEnvironment.settings = {
       blocklistEnabled: Preferences.get(PREF_BLOCKLIST_ENABLED, true),
       e10sEnabled: Services.appinfo.browserTabsRemoteAutostart,
+      e10sCohort: Preferences.get(PREF_E10S_COHORT, "unknown"),
       telemetryEnabled: Utils.isTelemetryEnabled,
       isInOptoutSample: TelemetryController.isInOptoutSample,
       locale: getBrowserLocale(),

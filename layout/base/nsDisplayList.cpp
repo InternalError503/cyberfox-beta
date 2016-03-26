@@ -604,13 +604,13 @@ nsDisplayListBuilder::nsDisplayListBuilder(nsIFrame* aReferenceFrame,
       mUsedAGRBudget(0),
       mDirtyRect(-1,-1,-1,-1),
       mGlassDisplayItem(nullptr),
-      mPendingScrollInfoItems(nullptr),
-      mCommittedScrollInfoItems(nullptr),
+      mScrollInfoItemsForHoisting(nullptr),
       mMode(aMode),
       mCurrentScrollParentId(FrameMetrics::NULL_SCROLL_ID),
       mCurrentScrollbarTarget(FrameMetrics::NULL_SCROLL_ID),
       mCurrentScrollbarFlags(0),
       mPerspectiveItemIndex(0),
+      mSVGEffectsBuildingDepth(0),
       mIsBuildingScrollbar(false),
       mCurrentScrollbarWillHaveLayer(false),
       mBuildCaret(aBuildCaret),
@@ -1009,14 +1009,13 @@ nsDisplayListBuilder::AllocateDisplayItemClip(const DisplayItemClip& aOriginal)
 
 DisplayItemScrollClip*
 nsDisplayListBuilder::AllocateDisplayItemScrollClip(const DisplayItemScrollClip* aParent,
-                                                    const DisplayItemScrollClip* aCrossStackingContextParent,
                                                     nsIScrollableFrame* aScrollableFrame,
                                                     const DisplayItemClip* aClip,
                                                     bool aIsAsyncScrollable)
 {
   void* p = Allocate(sizeof(DisplayItemScrollClip));
   DisplayItemScrollClip* c =
-    new (p) DisplayItemScrollClip(aParent, aCrossStackingContextParent, aScrollableFrame, aClip, aIsAsyncScrollable);
+    new (p) DisplayItemScrollClip(aParent, aScrollableFrame, aClip, aIsAsyncScrollable);
   mScrollClipsToDestroy.AppendElement(c);
   return c;
 }
@@ -1348,27 +1347,35 @@ nsDisplayListBuilder::AddToAGRBudget(nsIFrame* aFrame)
   return onBudget;
 }
 
-nsDisplayList*
-nsDisplayListBuilder::EnterScrollInfoItemHoisting(nsDisplayList* aScrollInfoItemStorage)
+void
+nsDisplayListBuilder::EnterSVGEffectsContents(nsDisplayList* aHoistedItemsStorage)
 {
-  MOZ_ASSERT(ShouldBuildScrollInfoItemsForHoisting());
-  nsDisplayList* old = mPendingScrollInfoItems;
-  mPendingScrollInfoItems = aScrollInfoItemStorage;
-  return old;
+  MOZ_ASSERT(mSVGEffectsBuildingDepth >= 0);
+  MOZ_ASSERT(aHoistedItemsStorage);
+  if (mSVGEffectsBuildingDepth == 0) {
+    MOZ_ASSERT(!mScrollInfoItemsForHoisting);
+    mScrollInfoItemsForHoisting = aHoistedItemsStorage;
+  }
+  mSVGEffectsBuildingDepth++;
 }
 
 void
-nsDisplayListBuilder::LeaveScrollInfoItemHoisting(nsDisplayList* aScrollInfoItemStorage)
+nsDisplayListBuilder::ExitSVGEffectsContents()
 {
-  MOZ_ASSERT(ShouldBuildScrollInfoItemsForHoisting());
-  mPendingScrollInfoItems = aScrollInfoItemStorage;
+  mSVGEffectsBuildingDepth--;
+  MOZ_ASSERT(mSVGEffectsBuildingDepth >= 0);
+  MOZ_ASSERT(mScrollInfoItemsForHoisting);
+  if (mSVGEffectsBuildingDepth == 0) {
+    mScrollInfoItemsForHoisting = nullptr;
+  }
 }
 
 void
 nsDisplayListBuilder::AppendNewScrollInfoItemForHoisting(nsDisplayScrollInfoLayer* aScrollInfoItem)
 {
   MOZ_ASSERT(ShouldBuildScrollInfoItemsForHoisting());
-  mPendingScrollInfoItems->AppendNewToTop(aScrollInfoItem);
+  MOZ_ASSERT(mScrollInfoItemsForHoisting);
+  mScrollInfoItemsForHoisting->AppendNewToTop(aScrollInfoItem);
 }
 
 void
@@ -1444,7 +1451,21 @@ nsDisplayList::GetScrollClippedBoundsUpTo(nsDisplayListBuilder* aBuilder,
                                           const DisplayItemScrollClip* aIncludeScrollClipsUpTo) const {
   nsRect bounds;
   for (nsDisplayItem* i = GetBottom(); i != nullptr; i = i->GetAbove()) {
-    bounds.UnionRect(bounds, i->GetScrollClippedBoundsUpTo(aBuilder, aIncludeScrollClipsUpTo));
+    nsRect r = i->GetClippedBounds(aBuilder);
+    if (r.IsEmpty()) {
+      continue;
+    }
+    for (auto* sc = i->ScrollClip(); sc && sc != aIncludeScrollClipsUpTo; sc = sc->mParent) {
+      if (sc->mClip && sc->mClip->HasClip()) {
+        if (sc->mIsAsyncScrollable) {
+          // Assume the item can move anywhere in the scroll clip's clip rect.
+          r = sc->mClip->GetClipRect();
+        } else {
+          r = sc->mClip->ApplyNonRoundedIntersection(r);
+        }
+      }
+    }
+    bounds.UnionRect(bounds, r);
   }
   return bounds;
 }
@@ -2125,9 +2146,14 @@ void nsDisplayList::Sort(SortLEQ aCmp, void* aClosure) {
 }
 
 nsDisplayItem::nsDisplayItem(nsDisplayListBuilder* aBuilder, nsIFrame* aFrame)
+ : nsDisplayItem(aBuilder, aFrame, aBuilder->ClipState().GetCurrentInnermostScrollClip())
+{}
+
+nsDisplayItem::nsDisplayItem(nsDisplayListBuilder* aBuilder, nsIFrame* aFrame,
+                             const DisplayItemScrollClip* aScrollClip)
   : mFrame(aFrame)
   , mClip(aBuilder->ClipState().GetCurrentCombinedClip(aBuilder))
-  , mScrollClip(aBuilder->ClipState().GetCurrentInnermostScrollClip())
+  , mScrollClip(aScrollClip)
   , mAnimatedGeometryRoot(nullptr)
 #ifdef MOZ_DUMP_PAINTING
   , mPainted(false)
@@ -2230,21 +2256,6 @@ nsDisplayItem::GetClippedBounds(nsDisplayListBuilder* aBuilder)
   bool snap;
   nsRect r = GetBounds(aBuilder, &snap);
   return GetClip().ApplyNonRoundedIntersection(r);
-}
-
-nsRect
-nsDisplayItem::GetScrollClippedBoundsUpTo(nsDisplayListBuilder* aBuilder,
-                                          const DisplayItemScrollClip* aIncludeScrollClipsUpTo)
-{
-  nsRect r = GetClippedBounds(aBuilder);
-  for (const DisplayItemScrollClip* sc = mScrollClip;
-       sc && sc != aIncludeScrollClipsUpTo;
-       sc = sc->mParent) {
-    if (sc->mClip) {
-      r = sc->mClip->ApplyNonRoundedIntersection(r);
-    }
-  }
-  return r;
 }
 
 nsRect
@@ -3790,7 +3801,14 @@ nsDisplayBoxShadowInner::ComputeVisibility(nsDisplayListBuilder* aBuilder,
 
 nsDisplayWrapList::nsDisplayWrapList(nsDisplayListBuilder* aBuilder,
                                      nsIFrame* aFrame, nsDisplayList* aList)
-  : nsDisplayItem(aBuilder, aFrame)
+  : nsDisplayWrapList(aBuilder, aFrame, aList,
+                      aBuilder->ClipState().GetCurrentInnermostScrollClip())
+{}
+
+nsDisplayWrapList::nsDisplayWrapList(nsDisplayListBuilder* aBuilder,
+                                     nsIFrame* aFrame, nsDisplayList* aList,
+                                     const DisplayItemScrollClip* aScrollClip)
+  : nsDisplayItem(aBuilder, aFrame, aScrollClip)
   , mOverrideZIndex(0)
   , mHasZIndexOverride(false)
 {
@@ -4050,10 +4068,9 @@ nsresult nsDisplayWrapper::WrapListsInPlace(nsDisplayListBuilder* aBuilder,
 
 nsDisplayOpacity::nsDisplayOpacity(nsDisplayListBuilder* aBuilder,
                                    nsIFrame* aFrame, nsDisplayList* aList,
-                                   const DisplayItemScrollClip* aScrollClipForSameAGRChildren,
+                                   const DisplayItemScrollClip* aScrollClip,
                                    bool aForEventsOnly)
-    : nsDisplayWrapList(aBuilder, aFrame, aList)
-    , mScrollClipForSameAGRChildren(aScrollClipForSameAGRChildren)
+    : nsDisplayWrapList(aBuilder, aFrame, aList, aScrollClip)
     , mOpacity(aFrame->StyleDisplay()->mOpacity)
     , mForEventsOnly(aForEventsOnly)
 {
@@ -4251,8 +4268,10 @@ nsDisplayOpacity::WriteDebugInfo(std::stringstream& aStream)
 }
 
 nsDisplayMixBlendMode::nsDisplayMixBlendMode(nsDisplayListBuilder* aBuilder,
-                                             nsIFrame* aFrame, nsDisplayList* aList)
-: nsDisplayWrapList(aBuilder, aFrame, aList) {
+                                             nsIFrame* aFrame, nsDisplayList* aList,
+                                             const DisplayItemScrollClip* aScrollClip)
+  : nsDisplayWrapList(aBuilder, aFrame, aList, aScrollClip)
+{
   MOZ_COUNT_CTOR(nsDisplayMixBlendMode);
 }
 
@@ -4274,11 +4293,7 @@ nsDisplayMixBlendMode::GetLayerState(nsDisplayListBuilder* aBuilder,
                                      LayerManager* aManager,
                                      const ContainerLayerParameters& aParameters)
 {
-  CompositionOp op =
-    nsCSSRendering::GetGFXBlendMode(mFrame->StyleDisplay()->mMixBlendMode);
-  return aManager->SupportsMixBlendMode(op)
-       ? LAYER_ACTIVE
-       : LAYER_INACTIVE;
+  return LAYER_ACTIVE;
 }
 
 // nsDisplayMixBlendMode uses layers for rendering
@@ -4332,10 +4347,9 @@ bool nsDisplayMixBlendMode::TryMerge(nsDisplayItem* aItem) {
 
 nsDisplayBlendContainer::nsDisplayBlendContainer(nsDisplayListBuilder* aBuilder,
                                                  nsIFrame* aFrame, nsDisplayList* aList,
-                                                 BlendModeSet& aContainedBlendModes)
-    : nsDisplayWrapList(aBuilder, aFrame, aList)
+                                                 const DisplayItemScrollClip* aScrollClip)
+    : nsDisplayWrapList(aBuilder, aFrame, aList, aScrollClip)
     , mIndex(0)
-    , mContainedBlendModes(aContainedBlendModes)
     , mCanBeActive(true)
 {
   MOZ_COUNT_CTOR(nsDisplayBlendContainer);
@@ -4382,10 +4396,7 @@ nsDisplayBlendContainer::GetLayerState(nsDisplayListBuilder* aBuilder,
                                        LayerManager* aManager,
                                        const ContainerLayerParameters& aParameters)
 {
-  if (mCanBeActive && aManager->SupportsMixBlendModes(mContainedBlendModes)) {
-    return mozilla::LAYER_ACTIVE;
-  }
-  return mozilla::LAYER_INACTIVE;
+  return mCanBeActive ? mozilla::LAYER_ACTIVE : mozilla::LAYER_INACTIVE;
 }
 
 bool nsDisplayBlendContainer::TryMerge(nsDisplayItem* aItem) {
@@ -4742,7 +4753,6 @@ nsDisplayScrollInfoLayer::nsDisplayScrollInfoLayer(
   , mScrollFrame(aScrollFrame)
   , mScrolledFrame(aScrolledFrame)
   , mScrollParentId(aBuilder->GetCurrentScrollParentId())
-  , mIgnoreIfCompositorSupportsBlending(false)
 {
 #ifdef NS_BUILD_REFCNT_LOGGING
   MOZ_COUNT_CTOR(nsDisplayScrollInfoLayer);
@@ -4765,16 +4775,6 @@ nsDisplayScrollInfoLayer::BuildLayer(nsDisplayListBuilder* aBuilder,
   // scrollinfo layers. However, in some cases, there might be content that
   // cannot be layerized, and so needs to scroll synchronously. To handle those
   // cases, we still want to generate scrollinfo layers.
-
-  if (mIgnoreIfCompositorSupportsBlending) {
-    // This item was created pessimistically because, during display list
-    // building, we encountered a mix blend mode. If our layer manager
-    // supports compositing this mix blend mode, we don't actually need to
-    // create a scroll info layer.
-    if (aManager->SupportsMixBlendModes(mContainedBlendModes)) {
-      return nullptr;
-    }
-  }
 
   ContainerLayerParameters params = aContainerParameters;
   if (mScrolledFrame->GetContent() &&
@@ -4819,24 +4819,7 @@ nsDisplayScrollInfoLayer::ComputeFrameMetrics(Layer* aLayer,
   return UniquePtr<FrameMetrics>(new FrameMetrics(metrics));
 }
 
-void
-nsDisplayScrollInfoLayer::IgnoreIfCompositorSupportsBlending(BlendModeSet aBlendModes)
-{
-  mContainedBlendModes += aBlendModes;
-  mIgnoreIfCompositorSupportsBlending = true;
-}
 
-void
-nsDisplayScrollInfoLayer::UnsetIgnoreIfCompositorSupportsBlending()
-{
-  mIgnoreIfCompositorSupportsBlending = false;
-}
-
-bool
-nsDisplayScrollInfoLayer::ContainedInMixBlendMode() const
-{
-  return mIgnoreIfCompositorSupportsBlending;
-}
 
 void
 nsDisplayScrollInfoLayer::WriteDebugInfo(std::stringstream& aStream)
