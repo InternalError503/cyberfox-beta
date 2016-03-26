@@ -51,3 +51,7 @@ Source: "{content}\browser\{#PackageType}\uninstall\helper.exe"; DestDir: "{app}
 #if PackageType == "amd86" || PackageType == "amd64"
 Source: "{content}\browser\{#PackageType}\vcomp*.dll"; DestDir: "{app}"; Flags: ignoreversion 
 #endif
+#if PackageType == "beta86" || PackageType == "beta64"
+Source: "{content}\browser\{#PackageType}\browser\features\firefox@getpocket.com.xpi"; DestDir: "{app}\browser\features"; Tasks: pocket; Flags: promptifolder replacesameversion
+Source: "{content}\browser\{#PackageType}\browser\features\e10srollout@mozilla.org.xpi"; DestDir: "{app}\browser\features"; Flags: promptifolder replacesameversion
+#endif

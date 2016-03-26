@@ -14,6 +14,8 @@ en.CleanInstallDescription=Perform clean installation.
 en.CleanInstallGroupDescription=Installation Options
 en.LoopInstallDescription=Install firefox hello chat (Optional)
 en.LoopInstallGroupDescription=Firefox hello
+en.PocketInstallDescription=Install firefox pocket (Optional)
+en.PocketInstallGroupDescription=Pocket
 ;Albanian
 al.ProcessName={#MyAppName}
 al.IsAppRunning= tashmë është i rrjedhshëm, Ju lutemi mbyllni {#MyAppName} pastaj të drejtuar installer përsëri.
@@ -29,6 +31,8 @@ al.CleanInstallDescription=Perform clean installation.
 al.CleanInstallGroupDescription=Installation Options
 al.LoopInstallDescription=Install firefox hello chat (Optional)
 al.LoopInstallGroupDescription=Firefox hello
+al.PocketInstallDescription=Install firefox pocket (Optional)
+al.PocketInstallGroupDescription=Pocket
 ;Afrikaans
 af.ProcessName={#MyAppName}
 af.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -44,6 +48,8 @@ af.CleanInstallDescription=Perform clean installation.
 af.CleanInstallGroupDescription=Installation Options
 af.LoopInstallDescription=Install firefox hello chat (Optional)
 af.LoopInstallGroupDescription=Firefox hello
+af.PocketInstallDescription=Install firefox pocket (Optional)
+af.PocketInstallGroupDescription=Pocket
 ;Arabic
 ar.ProcessName={#MyAppName}
 ar.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -59,6 +65,8 @@ ar.CleanInstallDescription=Perform clean installation.
 ar.CleanInstallGroupDescription=Installation Options
 ar.LoopInstallDescription=Install firefox hello chat (Optional)
 ar.LoopInstallGroupDescription=Firefox hello
+ar.PocketInstallDescription=Install firefox pocket (Optional)
+ar.PocketInstallGroupDescription=Pocket
 ;Bengali
 be.ProcessName={#MyAppName}
 be.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -74,6 +82,8 @@ be.CleanInstallDescription=Perform clean installation.
 be.CleanInstallGroupDescription=Installation Options
 be.LoopInstallDescription=Install firefox hello chat (Optional)
 be.LoopInstallGroupDescription=Firefox hello
+be.PocketInstallDescription=Install firefox pocket (Optional)
+be.PocketInstallGroupDescription=Pocket
 ;Bosnian
 bo.ProcessName={#MyAppName}
 bo.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -89,6 +99,8 @@ bo.CleanInstallDescription=Perform clean installation.
 bo.CleanInstallGroupDescription=Installation Options
 bo.LoopInstallDescription=Install firefox hello chat (Optional)
 bo.LoopInstallGroupDescription=Firefox hello
+bo.PocketInstallDescription=Install firefox pocket (Optional)
+bo.PocketInstallGroupDescription=Pocket
 ;BrazilianPortuguese
 br_pt.ProcessName={#MyAppName}
 br_pt.IsAppRunning= já está em execução, feche {#MyAppName} em seguida, execute o instalador novamente.
@@ -104,6 +116,8 @@ br_pt.CleanInstallDescription=Perform clean installation.
 br_pt.CleanInstallGroupDescription=Installation Options
 br_pt.LoopInstallDescription=Install firefox hello chat (Optional)
 br_pt.LoopInstallGroupDescription=Firefox hello
+br_pt.PocketInstallDescription=Install firefox pocket (Optional)
+br_pt.PocketInstallGroupDescription=Pocket
 ;Catalan
 ca.ProcessName={#MyAppName}
 ca.IsAppRunning= ja s'està executant, tancament{#MyAppName} a continuació, executeu el programa d'instal · lació de nou.
@@ -119,6 +133,8 @@ ca.CleanInstallDescription=Perform clean installation.
 ca.CleanInstallGroupDescription=Installation Options
 ca.LoopInstallDescription=Install firefox hello chat (Optional)
 ca.LoopInstallGroupDescription=Firefox hello
+ca.PocketInstallDescription=Install firefox pocket (Optional)
+ca.PocketInstallGroupDescription=Pocket
 ;Chinese (Simplified)
 cns.ProcessName={#MyAppName}
 cns.IsAppRunning= 已经在运行，请关闭 {#MyAppName} 然后再次运行安装程序。
@@ -134,6 +150,8 @@ cns.CleanInstallDescription=Perform clean installation.
 cns.CleanInstallGroupDescription=Installation Options
 cns.LoopInstallDescription=Install firefox hello chat (Optional)
 cns.LoopInstallGroupDescription=Firefox hello
+cns.PocketInstallDescription=Install firefox pocket (Optional)
+cns.PocketInstallGroupDescription=Pocket
 ;Corsican
 cr.ProcessName={#MyAppName}
 cr.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -149,6 +167,8 @@ cr.CleanInstallDescription=Perform clean installation.
 cr.CleanInstallGroupDescription=Installation Options
 cr.LoopInstallDescription=Install firefox hello chat (Optional)
 cr.LoopInstallGroupDescription=Firefox hello
+cr.PocketInstallDescription=Install firefox pocket (Optional)
+cr.PocketInstallGroupDescription=Pocket
 ;Croatian
 cro.ProcessName={#MyAppName}
 cro.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -164,6 +184,8 @@ cro.CleanInstallDescription=Perform clean installation.
 cro.CleanInstallGroupDescription=Installation Options
 cro.LoopInstallDescription=Install firefox hello chat (Optional)
 cro.LoopInstallGroupDescription=Firefox hello
+cro.PocketInstallDescription=Install firefox pocket (Optional)
+cro.PocketInstallGroupDescription=Pocket
 ;Czech
 cz.ProcessName={#MyAppName}
 cz.IsAppRunning= je již spuštěna, prosím zavřete {#MyAppName} spusťte instalační program znovu.
@@ -179,6 +201,8 @@ cz.CleanInstallDescription=Perform clean installation.
 cz.CleanInstallGroupDescription=Installation Options
 cz.LoopInstallDescription=Install firefox hello chat (Optional)
 cz.LoopInstallGroupDescription=Firefox hello
+cz.PocketInstallDescription=Install firefox pocket (Optional)
+cz.PocketInstallGroupDescription=Pocket
 ;Danish
 da.ProcessName={#MyAppName}
 da.IsAppRunning= allerede kører, Luk {#MyAppName} derefter køre installationsprogrammet igen.
@@ -194,6 +218,8 @@ da.CleanInstallDescription=Perform clean installation.
 da.CleanInstallGroupDescription=Installation Options
 da.LoopInstallDescription=Install firefox hello chat (Optional)
 da.LoopInstallGroupDescription=Firefox hello
+da.PocketInstallDescription=Install firefox pocket (Optional)
+da.PocketInstallGroupDescription=Pocket
 ;German
 de.ProcessName={#MyAppName}
 de.IsAppRunning= läuft noch. Bitte schliessen sie {#MyAppName} und starten sie den Installationsprozess erneut.
@@ -209,6 +235,8 @@ de.CleanInstallDescription=Perform clean installation.
 de.CleanInstallGroupDescription=Installation Options
 de.LoopInstallDescription=Install firefox hello chat (Optional)
 de.LoopInstallGroupDescription=Firefox hello
+de.PocketInstallDescription=Install firefox pocket (Optional)
+de.PocketInstallGroupDescription=Pocket
 ;Dutch
 nl.ProcessName={#MyAppName}
 nl.IsAppRunning= wordt al uitgevoerd, Sluit {#MyAppName} dan weer het installatieprogramma.
@@ -224,6 +252,8 @@ nl.CleanInstallDescription=Perform clean installation.
 nl.CleanInstallGroupDescription=Installation Options
 nl.LoopInstallDescription=Install firefox hello chat (Optional)
 nl.LoopInstallGroupDescription=Firefox hello
+nl.PocketInstallDescription=Install firefox pocket (Optional)
+nl.PocketInstallGroupDescription=Pocket
 ;Finnish
 fi.ProcessName={#MyAppName}
 fi.IsAppRunning= on jo käynnissä, sulje {#MyAppName} suorita sitten asennusohjelma uudelleen.
@@ -239,6 +269,8 @@ fi.CleanInstallDescription=Perform clean installation.
 fi.CleanInstallGroupDescription=Installation Options
 fi.LoopInstallDescription=Install firefox hello chat (Optional)
 fi.LoopInstallGroupDescription=Firefox hello
+fi.PocketInstallDescription=Install firefox pocket (Optional)
+fi.PocketInstallGroupDescription=Pocket
 ;French
 fr.ProcessName={#MyAppName}
 fr.IsAppRunning= est en cours d’exécution. Veuillez fermer {#MyAppName} puis redémarrer de nouveau le programme d’installation.
@@ -254,6 +286,8 @@ fr.CleanInstallDescription=Perform clean installation.
 fr.CleanInstallGroupDescription=Installation Options
 fr.LoopInstallDescription=Install firefox hello chat (Optional)
 fr.LoopInstallGroupDescription=Firefox hello
+fr.PocketInstallDescription=Install firefox pocket (Optional)
+fr.PocketInstallGroupDescription=Pocket
 ;Greek
 gr.ProcessName={#MyAppName}
 gr.IsAppRunning= εκτελείται ήδη, παρακαλώ κλείστε {#MyAppName} Στη συνέχεια, εκτελέστε ξανά το πρόγραμμα εγκατάστασης.
@@ -269,6 +303,8 @@ gr.CleanInstallDescription=Perform clean installation.
 gr.CleanInstallGroupDescription=Installation Options
 gr.LoopInstallDescription=Install firefox hello chat (Optional)
 gr.LoopInstallGroupDescription=Firefox hello
+gr.PocketInstallDescription=Install firefox pocket (Optional)
+gr.PocketInstallGroupDescription=Pocket
 ;Hebrew
 he.ProcessName={#MyAppName}
 he.IsAppRunning= כבר פועל, אנא סגור {#MyAppName} לאחר מכן הפעל שוב את תוכנית ההתקנה.
@@ -284,6 +320,8 @@ he.CleanInstallDescription=Perform clean installation.
 he.CleanInstallGroupDescription=Installation Options
 he.LoopInstallDescription=Install firefox hello chat (Optional)
 he.LoopInstallGroupDescription=Firefox hello
+he.PocketInstallDescription=Install firefox pocket (Optional)
+he.PocketInstallGroupDescription=Pocket
 ;Hindi
 hi.ProcessName={#MyAppName}
 hi.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -299,6 +337,8 @@ hi.CleanInstallDescription=Perform clean installation.
 hi.CleanInstallGroupDescription=Installation Options
 hi.LoopInstallDescription=Install firefox hello chat (Optional)
 hi.LoopInstallGroupDescription=Firefox hello
+hi.PocketInstallDescription=Install firefox pocket (Optional)
+hi.PocketInstallGroupDescription=Pocket
 ;Hungarian
 hu.ProcessName={#MyAppName}
 hu.IsAppRunning= már fut, zárja {#MyAppName} majd futtassa újra a telepítőt.
@@ -314,6 +354,8 @@ hu.CleanInstallDescription=Perform clean installation.
 hu.CleanInstallGroupDescription=Installation Options
 hu.LoopInstallDescription=Install firefox hello chat (Optional)
 hu.LoopInstallGroupDescription=Firefox hello
+hu.PocketInstallDescription=Install firefox pocket (Optional)
+hu.PocketInstallGroupDescription=Pocket
 ;Indonesian
 in.ProcessName={#MyAppName}
 in.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -329,6 +371,8 @@ in.CleanInstallDescription=Perform clean installation.
 in.CleanInstallGroupDescription=Installation Options
 in.LoopInstallDescription=Install firefox hello chat (Optional)
 in.LoopInstallGroupDescription=Firefox hello
+in.PocketInstallDescription=Install firefox pocket (Optional)
+in.PocketInstallGroupDescription=Pocket
 ;Italian
 it.ProcessName={#MyAppName}
 it.IsAppRunning= è già in esecuzione, chiudere {#MyAppName} quindi eseguire nuovamente il programma di installazione.
@@ -344,6 +388,8 @@ it.CleanInstallDescription=Perform clean installation.
 it.CleanInstallGroupDescription=Installation Options
 it.LoopInstallDescription=Install firefox hello chat (Optional)
 it.LoopInstallGroupDescription=Firefox hello
+it.PocketInstallDescription=Install firefox pocket (Optional)
+it.PocketInstallGroupDescription=Pocket
 ;Korean
 kor.ProcessName={#MyAppName}
 kor.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -359,6 +405,8 @@ kor.CleanInstallDescription=Perform clean installation.
 kor.CleanInstallGroupDescription=Installation Options
 kor.LoopInstallDescription=Install firefox hello chat (Optional)
 kor.LoopInstallGroupDescription=Firefox hello
+kor.PocketInstallDescription=Install firefox pocket (Optional)
+kor.PocketInstallGroupDescription=Pocket
 ;Japanese
 ja.ProcessName={#MyAppName}
 ja.IsAppRunning= はすでに実行されています。{#MyAppName} を閉じて、もう一度インストーラーを実行してください。
@@ -374,6 +422,8 @@ ja.CleanInstallDescription=クリーン インストールを実行する
 ja.CleanInstallGroupDescription=インストール オプション
 ja.LoopInstallDescription=Firefox Hello チャットをインストールする(オプション)
 ja.LoopInstallGroupDescription=Firefox Hello
+ja.PocketInstallDescription=Install firefox pocket (Optional)
+ja.PocketInstallGroupDescription=Pocket
 ;Norwegian
 nr.ProcessName={#MyAppName}
 nr.IsAppRunning= er allerede i gang, Vennligst lukk {#MyAppName} deretter kjøre installasjonsprogrammet på nytt.
@@ -389,6 +439,8 @@ nr.CleanInstallDescription=Perform clean installation.
 nr.CleanInstallGroupDescription=Installation Options
 nr.LoopInstallDescription=Install firefox hello chat (Optional)
 nr.LoopInstallGroupDescription=Firefox hello
+nr.PocketInstallDescription=Install firefox pocket (Optional)
+nr.PocketInstallGroupDescription=Pocket
 ;Polish
 pl.ProcessName={#MyAppName}
 pl.IsAppRunning= już działa, proszę zamknąć {#MyAppName} następnie ponownie uruchom program instalacyjny.
@@ -404,6 +456,8 @@ pl.CleanInstallDescription=Perform clean installation.
 pl.CleanInstallGroupDescription=Installation Options
 pl.LoopInstallDescription=Install firefox hello chat (Optional)
 pl.LoopInstallGroupDescription=Firefox hello
+pl.PocketInstallDescription=Install firefox pocket (Optional)
+pl.PocketInstallGroupDescription=Pocket
 ;Portuguese
 pt.ProcessName={#MyAppName}
 pt.IsAppRunning= já está em execução, feche {#MyAppName} em seguida, execute o instalador novamente.
@@ -419,6 +473,8 @@ pt.CleanInstallDescription=Perform clean installation.
 pt.CleanInstallGroupDescription=Installation Options
 pt.LoopInstallDescription=Install firefox hello chat (Optional)
 pt.LoopInstallGroupDescription=Firefox hello
+pt.PocketInstallDescription=Install firefox pocket (Optional)
+pt.PocketInstallGroupDescription=Pocket
 ;Russian
 ru.ProcessName={#MyAppName}
 ru.IsAppRunning= уже запущен, закройте {#MyAppName} и запустите программу установки повторно.
@@ -434,6 +490,8 @@ ru.CleanInstallDescription=Выполнить чистую установку.
 ru.CleanInstallGroupDescription=Настройки установки
 ru.LoopInstallDescription=Установить чат Firefox hello (необязательно)
 ru.LoopInstallGroupDescription=Firefox hello
+ru.PocketInstallDescription=Install firefox pocket (Optional)
+ru.PocketInstallGroupDescription=Pocket
 ;SerbianCyrillic
 sbc.ProcessName={#MyAppName}
 sbc.IsAppRunning= је већ покренут, затворите Молимо {#MyAppName} затим покрените инсталер поново.
@@ -449,6 +507,8 @@ sbc.CleanInstallDescription=Perform clean installation.
 sbc.CleanInstallGroupDescription=Installation Options
 sbc.LoopInstallDescription=Install firefox hello chat (Optional)
 sbc.LoopInstallGroupDescription=Firefox hello
+sbc.PocketInstallDescription=Install firefox pocket (Optional)
+sbc.PocketInstallGroupDescription=Pocket
 ;SerbianLatin
 sbl.ProcessName={#MyAppName}
 sbl.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -464,6 +524,8 @@ sbl.CleanInstallDescription=Perform clean installation.
 sbl.CleanInstallGroupDescription=Installation Options
 sbl.LoopInstallDescription=Install firefox hello chat (Optional)
 sbl.LoopInstallGroupDescription=Firefox hello
+sbl.PocketInstallDescription=Install firefox pocket (Optional)
+sbl.PocketInstallGroupDescription=Pocket
 ;Slovenian
 sl.ProcessName={#MyAppName}
 sl.IsAppRunning= že teče, Prosimo, zaprite {#MyAppName} nato ponovno zaženite namestitveni program.
@@ -479,6 +541,8 @@ sl.CleanInstallDescription=Perform clean installation.
 sl.CleanInstallGroupDescription=Installation Options
 sl.LoopInstallDescription=Install firefox hello chat (Optional)
 sl.LoopInstallGroupDescription=Firefox hello
+sl.PocketInstallDescription=Install firefox pocket (Optional)
+sl.PocketInstallGroupDescription=Pocket
 ;Swedish
 sw.ProcessName={#MyAppName}
 sw.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
@@ -494,6 +558,8 @@ sw.CleanInstallDescription=Perform clean installation.
 sw.CleanInstallGroupDescription=Installation Options
 sw.LoopInstallDescription=Install firefox hello chat (Optional)
 sw.LoopInstallGroupDescription=Firefox hello
+sw.PocketInstallDescription=Install firefox pocket (Optional)
+sw.PocketInstallGroupDescription=Pocket
 ;Turkish
 tr.ProcessName={#MyAppName}
 tr.IsAppRunning= zaten çalışıyor, Lütfen {#MyAppName} kapatın ve kurulumu tekrar çalıştırın.
@@ -509,6 +575,8 @@ tr.CleanInstallDescription=Temiz Bir Kurulum Gerçekleştir.
 tr.CleanInstallGroupDescription=Kurulum Seçenekleri
 tr.LoopInstallDescription=Install firefox hello chat (Optional)
 tr.LoopInstallGroupDescription=Firefox hello
+tr.PocketInstallDescription=Install firefox pocket (Optional)
+tr.PocketInstallGroupDescription=Pocket
 ;Spanish
 en_es.ProcessName={#MyAppName}
 en_es.IsAppRunning= ya se está ejecutando, cierre {#MyAppName} a continuación, ejecute el programa de instalación de nuevo.
@@ -524,6 +592,8 @@ en_es.CleanInstallDescription=Perform clean installation.
 en_es.CleanInstallGroupDescription=Installation Options
 en_es.LoopInstallDescription=Install firefox hello chat (Optional)
 en_es.LoopInstallGroupDescription=Firefox hello
+en_es.PocketInstallDescription=Install firefox pocket (Optional)
+en_es.PocketInstallGroupDescription=Pocket
 ;Ukrainian
 ukr.ProcessName={#MyAppName}
 ukr.IsAppRunning= вже запущений, закрийте {#MyAppName} потім запустити програму установки ще раз.
@@ -539,3 +609,5 @@ ukr.CleanInstallDescription=Perform clean installation.
 ukr.CleanInstallGroupDescription=Installation Options
 ukr.LoopInstallDescription=Install firefox hello chat (Optional)
 ukr.LoopInstallGroupDescription=Firefox hello
+ukr.PocketInstallDescription=Install firefox pocket (Optional)
+ukr.PocketInstallGroupDescription=Pocket
