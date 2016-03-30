@@ -130,7 +130,10 @@ Bindings::initWithTemporaryStorage(ExclusiveContext* cx, MutableHandle<Bindings>
     // any time, such accesses are mediated by DebugScopeProxy (see
     // DebugScopeProxy::handleUnaliasedAccess).
     uint32_t nslots = CallObject::RESERVED_SLOTS;
-    uint32_t aliasedBodyLevelLexicalBegin = UINT16_MAX;
+
+    // Unless there are aliased body-level lexical bindings at all, set the
+    // begin index to an impossible slot number.
+    uint32_t aliasedBodyLevelLexicalBegin = LOCALNO_LIMIT;
     for (BindingIter bi(self); bi; bi++) {
         if (bi->aliased()) {
             // Per ES6, lexical bindings cannot be accessed until
@@ -4332,7 +4335,7 @@ LazyScript::CreateRaw(ExclusiveContext* cx, HandleFunction fun,
     p.bindingsAccessedDynamically = false;
     p.hasDebuggerStatement = false;
     p.hasDirectEval = false;
-    p.usesArgumentsApplyAndThis = false;
+    p.isLikelyConstructorWrapper = false;
     p.isDerivedClassConstructor = false;
     p.needsHomeObject = false;
 

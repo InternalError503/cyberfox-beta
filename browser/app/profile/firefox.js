@@ -1623,6 +1623,8 @@ pref("browser.esedbreader.loglevel", "Error");
 
 pref("browser.laterrun.enabled", false);
 
+pref("extensions.pocket.enabled", true);
+
 //Minimize ram useage on browser minimizes to taskbar
 pref("config.trim_on_minimize", true);
 
