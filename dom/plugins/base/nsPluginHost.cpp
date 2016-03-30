@@ -141,6 +141,7 @@ static const char *kPrefDisableFullPage = "plugin.disable_full_page_plugin_for_t
 static const char *kPrefJavaMIME = "plugin.java.mime";
 #if defined(XP_WIN)
 static const char *kPrefPluginsAllowedWhitelist = "plugin.allowed_whitelist.enabled";
+static const char *kPrefPluginsJavaAllowed = "plugin.java_allowed";
 #endif
 
 // How long we wait before unloading an idle plugin process.
@@ -2038,6 +2039,59 @@ bool
 nsPluginHost::ShouldAddPlugin(nsPluginTag* aPluginTag)
 {
 #if defined(XP_WIN)
+	  // On windows, Users control java plugin by preference
+	  // Use library filename and MIME type to check.
+	  // Restart required when preference toggled.
+	  if (!Preferences::GetBool(kPrefPluginsJavaAllowed, false)) {
+		  if ((aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet (Java Applet)")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean (JavaBeans)")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-vm")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.1.1")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.1.1")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.1")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.1")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-vm")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.2")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.2")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.1.3")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.1.3")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.1.2")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.1.2")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.3")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.3")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.2.2")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.2.2")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.2.1")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.2.1")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.3.1")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.3.1")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.4")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.4")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.4.1")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.4.1")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.4.2")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.4.2")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.5")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.5")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.6")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.6")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.7")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.7")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;version=1.8")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;version=1.8")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;jpi-version=1.8.0_77")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean;jpi-version=1.8.0_77")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-vm-npruntime")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;deploy=11.77.2")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet;javafx=8.0.72")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/java-deployment-toolkit")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-vm-npruntime")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-test")))) {
+			return false;
+		  }
+	  }
   // On windows, the only plugins we should load are flash and
   // silverlight when plugin whitelist is enabled (True). 
   // Use library filename and MIME type to check.
@@ -2053,7 +2107,7 @@ nsPluginHost::ShouldAddPlugin(nsPluginTag* aPluginTag)
 		   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-silverlight-2")) ||
 		   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-silverlight")))) {
 		return true;
-	  }
+	  }	  
 	  // Accept the test plugin MIME types, so mochitests still work.
 	  if (aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-test")) ||
 		  aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-Second-Test")) ||

@@ -825,9 +825,11 @@ pref("plugin.state.npnisp", 2);
 pref("plugin.state.iprint", 2);
 #endif
 
-// Toggle plugin whitelist (Flash, Silverlight)
 #ifdef XP_WIN
+// Toggle plugin whitelist (Flash, Silverlight)
 pref("plugin.allowed_whitelist.enabled", false);
+// Toggle Java plugin allowed state regardless of whitelist.
+pref("plugin.java_allowed", true);
 #endif
 
 pref("browser.preferences.animateFadeIn", true);
