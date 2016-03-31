@@ -249,7 +249,7 @@
                   accesskey="&useSmoothScrolling.accesskey;"
                   preference="general.smoothScroll"/>
         <checkbox id="allowHWAccel"
-                  label="&allowHWAccel.label;"
+                  label="&allowHWAccel.label; (&restartRequiredMSG.label;)"
                   accesskey="&allowHWAccel.accesskey;"
                   preference="layers.acceleration.disabled"/>
         <checkbox id="checkSpelling"
