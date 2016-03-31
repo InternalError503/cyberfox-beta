@@ -1112,7 +1112,9 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!-- about:config Menu Tweak -->
 <!ENTITY turnoffmenuabout.label "Turn on about:config menu item.">
 
-<!-- Loop Toggle Tweak -->
+<!-- System Addons Tweak -->
+<!ENTITY systemaddons.label "System Addons">
+<!ENTITY systemaddonsmsg.label "If these system addons are installed you can toggle them here.">
 <!ENTITY enablehellochat.label "Enable hello chat.">
 
 <!-- Helpful ToolTips -->
