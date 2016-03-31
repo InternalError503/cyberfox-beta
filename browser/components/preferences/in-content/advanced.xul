@@ -111,7 +111,10 @@
 						   type="bool"/>
  	  <preference id="plugin.allowed_whitelist.enabled" 
 						   name="plugin.allowed_whitelist.enabled" 
-						   type="bool"/>						   
+						   type="bool"/>
+ 	  <preference id="plugin.java_allowed" 
+						   name="plugin.java_allowed" 
+						   type="bool"/>
 <!-- Cyberfeatures -->
    			  
 #ifdef MOZ_TELEMETRY_REPORTING
@@ -507,7 +510,10 @@
 				<caption label="&browserplugins.label;"/>				          	              	
 					<checkbox id="plugin.allowed_whitelist.enabled" label="&browserpluginswhitelist.label; (&restartRequiredMSG.label;)"
 							preference="plugin.allowed_whitelist.enabled"
-							tooltiptext="&restartRequiredMSG.label;"/>						
+							tooltiptext="&restartRequiredMSG.label;"/>
+					<checkbox id="plugin.java_allowed" label="&browserpluginsjavaenabled.label;  (&restartRequiredMSG.label;)"
+							preference="plugin.java_allowed"
+							tooltiptext="&restartRequiredMSG.label;"/>							
 			</groupbox>
 			
 			<!-- System Addons -->
