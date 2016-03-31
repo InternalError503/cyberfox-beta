@@ -109,6 +109,9 @@
  	  <preference id="extensions.pocket.enabled" 
 						   name="extensions.pocket.enabled" 
 						   type="bool"/>
+ 	  <preference id="plugin.allowed_whitelist.enabled" 
+						   name="plugin.allowed_whitelist.enabled" 
+						   type="bool"/>						   
 <!-- Cyberfeatures -->
    			  
 #ifdef MOZ_TELEMETRY_REPORTING
@@ -497,6 +500,14 @@
 				<caption label="&cyberfoxOptions.label;"/>				          	              	
 					<checkbox id="browser.preferences.inContent" label="&incontent.label;"
 							preference="browser.preferences.inContent"/>						
+			</groupbox>
+			
+			<!-- Plugin Settings -->
+			<groupbox id="alternateOptionsPlugins" orient="vertical">
+				<caption label="&browserplugins.label;"/>				          	              	
+					<checkbox id="plugin.allowed_whitelist.enabled" label="&browserpluginswhitelist.label; (&restartRequiredMSG.label;)"
+							preference="plugin.allowed_whitelist.enabled"
+							tooltiptext="&restartRequiredMSG.label;"/>						
 			</groupbox>
 			
 			<!-- System Addons -->
