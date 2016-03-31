@@ -137,7 +137,7 @@
 	  }
 		
 	  #main-window[defaultfxtheme="true"] #ctraddon_restart-button {
-		list-style-image: url("chrome://classic_theme_restorer/content/images/ctrrestart2x.png");
+		list-style-image: url("chrome://classic_theme_restorer/content/images/ctrrestart@2x.png");
 	  }
 
 	  #main-window[defaultfxtheme="true"] :-moz-any(#ctraddon_back-button, #ctraddon_forward-button, #ctraddon_bookmarks-menu-toolbar-button, #ctraddon_bookmarks-button, #ctraddon_history-button,#ctraddon_history-menu-toolbar-button, #ctraddon_reload-button, #ctraddon_stop-button,#ctraddon_ctr-button,#ctraddon_go-button,#ctraddon_preferences-button,#ctraddon_restart-button) > .toolbarbutton-icon {
@@ -265,6 +265,14 @@
 	  background-position: left, left, right;
 	  background-size: auto, 1px 100%, 1px 100%;
 	  background-repeat: no-repeat;
+	}
+	
+	#main-window[defaultfxtheme="true"] #ctraddon_addon-bar toolbarbutton[type="menu-button"] > toolbarbutton,
+	#main-window[defaultfxtheme="true"] #ctraddon_addon-bar toolbarbutton[type="menu-button"] > dropmarker {
+	  -moz-appearance: none !important;
+	  border-style: none !important;
+	  background: none !important;
+	  box-shadow: none !important;
 	}
 	
 	/* Hide Windows OS window controls*/

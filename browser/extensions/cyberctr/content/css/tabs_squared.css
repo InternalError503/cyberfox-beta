@@ -124,12 +124,6 @@
 	  margin-bottom: 1px !important;
 	}
 
-	/*.tab-background-start[visuallyselected=true]::after,
-	.tab-background-start[visuallyselected=true]::before,
-	.tab-background-start,
-	.tab-background-end,
-	.tab-background-end[visuallyselected=true]::after,
-	.tab-background-end[visuallyselected=true]::before,*/
 	#tabbrowser-tabs,
 	#TabsToolbar {
 	  min-height: 0px !important;
@@ -280,10 +274,7 @@
       background-size: calc(100% - 0px) calc(100% - 4px) !important;
 	}
 	
-	/* trick to use code for win8+*/
-	@media all and (-moz-windows-compositor) {
-	@media not all and (-moz-os-version: windows-vista){
-	@media not all and (-moz-os-version: windows-win7){
+	@media (-moz-os-version: windows-win8){
 		#TabsToolbar[tabsontop="false"] .tabbrowser-tab[pinned] {
 		  background-size: calc(100% - 0px) calc(100% - 4px) !important;
 		}
@@ -291,7 +282,7 @@
 		  border-image: url("chrome://classic_theme_restorer/content/images/taba.png") 3 3 0 fill repeat stretch !important;
 		  border-style: solid !important;
 		}
-	}}}
+	}
 	
 	#main-window[tabsontop="false"] #navigator-toolbox #TabsToolbar #tabbrowser-tabs .tabbrowser-tab[pinned],
 	#main-window[tabsontop="false"] #navigator-toolbox #TabsToolbar #tabbrowser-tabs[overflow] .tabbrowser-tab[pinned] {

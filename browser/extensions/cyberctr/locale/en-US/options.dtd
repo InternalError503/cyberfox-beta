@@ -124,8 +124,8 @@
 <!ENTITY Ctr_altoptionsd	"Default appearance">
 <!ENTITY Ctr_altoptionsp	"Alternative appearance">
 <!ENTITY Ctr_altoptionsw	"Open options page in a window">
-<!ENTITY Ctr_altoptionsww	"Width">
-<!ENTITY Ctr_altoptionswh	"Height">
+<!ENTITY Ctr_altoptionsww	"Width:">
+<!ENTITY Ctr_altoptionswh	"Height:">
 <!ENTITY Ctr_altoptionsi	"The simulated options window is not a dialog anymore but a 'browser window' with all toolbars hidden. The 'Use Current Page' feature only adds urls of pages opened in the current window, which is only 'about:preferences' in this case. The 'options' toolbar button gets replaced by a new one to be able to open options in a window.">
 <!ENTITY Ctr_options_rem	"Remember last selected category">
 <!ENTITY Ctr_svgfilters		"SVG colors for default toolbar button icons">
@@ -246,14 +246,16 @@
 <!ENTITY Ctr_ib_graycolor	"Gray color for unknown identity and chrome pages">
 <!ENTITY Ctr_verifiedcolors	"Button colors for verified websites, secure and not secure connections">
 <!ENTITY Ctr_ibinfoico		"Replace 'i'-icon with globe icon">
-<!ENTITY Ctr_faviconurl		"Favicon: current website icon">
+<!ENTITY Ctr_ibinfoico2		"Hide 'i'-icon (if possible)">
+<!ENTITY Ctr_iblabels		"Hide labels">
+<!ENTITY Ctr_faviconurl		"Favicon: current websites icon">
 <!ENTITY Ctr_padlock		"Padlock icon for secure connections">
 <!ENTITY Ctr_padlock_hid	"hidden">
 <!ENTITY Ctr_padlock_def	"default">
 <!ENTITY Ctr_padlock_cla	"classic">
 <!ENTITY Ctr_padlock_mod	"modern">
 <!ENTITY Ctr_padlock_ext	"'&brandShortName;' icon for valid 'about' pages">
-<!ENTITY Ctr_icopageinfo	"Clicking on icon opens 'page info' window">
+<!ENTITY Ctr_icopageinfo	"Favicon/globe-/'i'-icon: 'click' opens 'page info window'">
 <!ENTITY Ctr_lbsbsize		"Custom width for location bar and search bar">
 <!ENTITY Ctr_searchbar		"Search bar">
 <!ENTITY Ctr_lbsugresi		"Display as many results in suggestions popup as possible (without scrollbar)">
@@ -314,6 +316,7 @@
 
 <!ENTITY Ctr_closeabarbut	"Add-on bar: hide close button">
 <!ENTITY Ctr_highaddonsbar	"Increase height">
+<!ENTITY Ctr_lessaddonsbar	"Decrease height">
 <!ENTITY Ctr_addonbarfs		"In fullscreen mode">
 
 <!ENTITY Ctr_animation		"Animation">
@@ -331,7 +334,7 @@
 <!ENTITY Ctr_puictrbutton	"Button in main panel menu">
 
 <!ENTITY Ctr_otherctroptns	"Other settings">
-<!ENTITY Ctr_cuibotbuttons	"Extra buttons in 'customizing' mode">
+<!ENTITY Ctr_cuibotbuttons	"Extra buttons in 'Customize' mode">
 <!ENTITY Ctr_nodevtheme		"Prevent 'Developer Edition Theme' from being enabled">
 
 <!ENTITY Ctr_experttweaks	"Advanced">
@@ -342,7 +345,7 @@
 <!ENTITY Ctr_fx36prefs2		"Note: Old preference window does not contain all recently added browser preferences!">
 <!ENTITY Ctr_fx38reader		"Unchecking this preference disables the 'reader mode' and removes its icon from location bar.">
 <!ENTITY Ctr_fx38pocket		"Unchecking this preference disables the 'Pocket' feature and removes 'Pocket' button from toolbars.">
-<!ENTITY Ctr_fx38pocket2	"Note: Moving 'Pocket'-button to 'customizing palette' before disabling this preference also removes 'Pocket' entries from bookmarks and reader menus.">
+<!ENTITY Ctr_fx38pocket2	"Note: Moving Pocket button to 'Additional Tools and Features' area in 'Customize' mode before disabling this preference removes all Pocket-related entries from Bookmarks-menu and Reader-menu popups.">
 <!ENTITY Ctr_e_searchui		"Search appearance">
 <!ENTITY Ctr_e_loop			"Calling and conversation / Loop">
 <!ENTITY Ctr_e_deved		"Developer Edition Theme">

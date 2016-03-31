@@ -121,6 +121,8 @@ pref("extensions.classicthemerestorer.ib_nohovcolor",false);
 pref("extensions.classicthemerestorer.ib_graycolor",false);
 pref("extensions.classicthemerestorer.verifiedcolors",false);
 pref("extensions.classicthemerestorer.ibinfoico",false);
+pref("extensions.classicthemerestorer.ibinfoico2",false);
+pref("extensions.classicthemerestorer.iblabels",false);
 pref("extensions.classicthemerestorer.faviconurl",false);
 pref("extensions.classicthemerestorer.padlock","padlock_default");
 pref("extensions.classicthemerestorer.padlockex",true);
@@ -170,6 +172,7 @@ pref("extensions.classicthemerestorer.menubarnofog",false);
 
 pref("extensions.classicthemerestorer.closeabarbut",false);
 pref("extensions.classicthemerestorer.highaddonsbar",false);
+pref("extensions.classicthemerestorer.lessaddonsbar",false);
 pref("extensions.classicthemerestorer.addonbarfs",false);
 pref("extensions.classicthemerestorer.noaddonbarbg",false);
 
@@ -269,7 +272,7 @@ pref("extensions.classicthemerestorer.tabc_hov_unl",false);
 pref("extensions.classicthemerestorer.optionsrem",true);
 pref("extensions.classicthemerestorer.aboutprefs",'category-general');
 pref("extensions.classicthemerestorer.aboutprefsInd",0);
-pref("extensions.classicthemerestorer.aboutprefsww",700);
+pref("extensions.classicthemerestorer.aboutprefsww",850);
 pref("extensions.classicthemerestorer.aboutprefswh",670);
 
 // first run/reset preference
