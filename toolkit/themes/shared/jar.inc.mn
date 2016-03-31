@@ -46,8 +46,6 @@ toolkit.jar:
   skin/classic/global/reader/RM-Type-Controls-Arrow.svg    (../../shared/reader/RM-Type-Controls-Arrow.svg)
 
   # Add files for cyberfox preferences
-  skin/classic/global/in-content/check.png                    (../../shared/in-content/check.png)
-  skin/classic/global/in-content/check@2x.png                 (../../shared/in-content/check@2x.png)
   skin/classic/global/in-content/header.png							(../../shared/in-content/header.png)
   skin/classic/global/in-content/header@2x.png						(../../shared/in-content/header@2x.png)	
   skin/classic/global/in-content/dropdown.png                 (../../shared/in-content/dropdown.png)

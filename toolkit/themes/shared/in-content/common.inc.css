@@ -541,14 +541,6 @@ xul|*.checkbox-label-box {
   -moz-padding-start: 0;
 }
 
-@media (min-resolution: 2dppx) {
-  xul|*.checkbox-check[checked] {
-    background-size: 12px 12px, auto;
-    background-image: url("chrome://global/skin/in-content/check@2x.png"),
-                      linear-gradient(#fff, rgba(255,255,255,0.8)) !important;
-  }
-}
-
 xul|richlistitem > xul|*.checkbox-check {
   margin: 3px 6px;
 }
