@@ -1116,6 +1116,7 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY systemaddons.label "System Addons">
 <!ENTITY systemaddonsmsg.label "If these system addons are installed you can toggle them here.">
 <!ENTITY enablehellochat.label "Enable hello chat.">
+<!ENTITY enablepocket.label "Enable pocket.">
 
 <!-- Helpful ToolTips -->
 <!ENTITY restartRequiredMSG.label "Browser Restart Required.">

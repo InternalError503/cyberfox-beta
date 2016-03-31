@@ -106,6 +106,9 @@
  	  <preference id="app.update.startup.check" 
 						   name="app.update.startup.check" 
 						   type="bool"/>
+ 	  <preference id="extensions.pocket.enabled" 
+						   name="extensions.pocket.enabled" 
+						   type="bool"/>
 <!-- Cyberfeatures -->
    			  
 #ifdef MOZ_TELEMETRY_REPORTING
@@ -502,7 +505,9 @@
 				<label>&systemaddonsmsg.label;</label>
  					<checkbox id="loop.enabled" label="&enablehellochat.label; (&restartRequiredMSG.label;)"
 							preference="loop.enabled" 
-							tooltiptext="&restartRequiredMSG.label;" />							
+							tooltiptext="&restartRequiredMSG.label;" />	
+ 					<checkbox id="extensions.pocket.enabled" label="&enablepocket.label;"
+							preference="extensions.pocket.enabled" />
 			</groupbox>
 			
 			<!-- Update Settings -->
