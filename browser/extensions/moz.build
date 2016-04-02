@@ -6,7 +6,6 @@
 
 DIRS += [
     'cyberctr',
-    'e10srollout',
     'loop',
     'pdfjs',
     'pocket',
