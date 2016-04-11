@@ -109,12 +109,14 @@
  	  <preference id="extensions.pocket.enabled" 
 						   name="extensions.pocket.enabled" 
 						   type="bool"/>
+#ifdef XP_WIN
  	  <preference id="plugin.allowed_whitelist.enabled" 
 						   name="plugin.allowed_whitelist.enabled" 
 						   type="bool"/>
  	  <preference id="plugin.java_allowed" 
 						   name="plugin.java_allowed" 
 						   type="bool"/>
+#endif
 <!-- Cyberfeatures -->
    			  
 #ifdef MOZ_TELEMETRY_REPORTING
@@ -505,6 +507,7 @@
 							preference="browser.preferences.inContent"/>						
 			</groupbox>
 			
+#ifdef XP_WIN			
 			<!-- Plugin Settings -->
 			<groupbox id="alternateOptionsPlugins" orient="vertical">
 				<caption label="&browserplugins.label;"/>				          	              	
@@ -515,7 +518,8 @@
 							preference="plugin.java_allowed"
 							tooltiptext="&restartRequiredMSG.label;"/>							
 			</groupbox>
-			
+#endif
+	
 			<!-- System Addons -->
 			<groupbox id="alternateOptionsSystem" orient="vertical">
 				<caption label="&systemaddons.label;"/>
