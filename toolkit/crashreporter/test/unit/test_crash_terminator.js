@@ -9,7 +9,22 @@ function setup_crash() {
   Components.utils.import("resource://gre/modules/Services.jsm");
 
   Services.prefs.setBoolPref("toolkit.terminator.testing", true);
-  Services.prefs.setIntPref("toolkit.asyncshutdown.crash_timeout", 10);
+
+  // For Windows XP and Vista we use toolkit.asyncshutdown.crash_timeout_winxp
+  // See bug 1248358.
+  var crashTimeoutPref = "toolkit.asyncshutdown.crash_timeout";
+  var os = Components.classes["@mozilla.org/xre/app-info;1"]
+             .getService(Components.interfaces.nsIXULRuntime).OS;
+  if (os == "Windows") {
+    var version = Components.classes["@mozilla.org/system-info;1"]
+                    .getService(Components.interfaces.nsIPropertyBag2)
+                    .getProperty("version");
+    if (parseFloat(version) < 6.1) {
+      // Less than Win7.
+      crashTimeoutPref = "toolkit.asyncshutdown.crash_timeout_winxp";
+    }
+  }
+  Services.prefs.setIntPref(crashTimeoutPref, 10);
 
   // Initialize the terminator
   // (normally, this is done through the manifest file, but xpcshell
@@ -21,6 +36,7 @@ function setup_crash() {
   // Inform the terminator that shutdown has started
   // Pick an arbitrary notification
   terminator.observe(null, "xpcom-will-shutdown", null);
+  terminator.observe(null, "profile-before-change", null);
 
   dump("Waiting (actively) for the crash\n");
   while(true) {
@@ -30,7 +46,8 @@ function setup_crash() {
 
 
 function after_crash(mdump, extra) {
-  Assert.equal(extra.ShutdownProgress, "xpcom-will-shutdown");
+  do_print("Crash signature: " + JSON.stringify(extra, null, "\t"));
+  Assert.equal(extra.ShutdownProgress, "profile-before-change");
 }
 
 function run_test() {
