@@ -116,6 +116,7 @@ pref("extensions.classicthemerestorer.hideprbutton",false);
 pref("extensions.classicthemerestorer.urlbardropm",false);
 pref("extensions.classicthemerestorer.urlbardropm2",false);
 pref("extensions.classicthemerestorer.altreaderico",false);
+pref("extensions.classicthemerestorer.altautocompl",false);
 
 pref("extensions.classicthemerestorer.ib_nohovcolor",false);
 pref("extensions.classicthemerestorer.ib_graycolor",false);
@@ -277,6 +278,9 @@ pref("extensions.classicthemerestorer.aboutprefswh",670);
 
 // first run/reset preference
 pref("extensions.classicthemerestorer.ctrreset",true);
+
+// other
+pref("extensions.classicthemerestorer.cstatextlb",false);
 
 /*CyberCTR customization settings*/
 
