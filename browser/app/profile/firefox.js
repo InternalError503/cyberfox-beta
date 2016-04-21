@@ -1291,7 +1291,6 @@ pref("services.sync.prefs.sync.security.tls.version.min", true);
 pref("services.sync.prefs.sync.security.tls.version.max", true);
 pref("services.sync.prefs.sync.signon.rememberSignons", true);
 pref("services.sync.prefs.sync.spellchecker.dictionary", true);
-pref("services.sync.prefs.sync.xpinstall.whitelist.required", true);
 
 #ifdef NIGHTLY_BUILD
 pref("services.sync.syncedTabsUIRefresh", true);
@@ -1490,7 +1489,7 @@ pref("media.eme.apiVisible", false);
 
 // Decode using Gecko Media Plugins in <video>, if a system decoder is not
 // availble and the preferred GMP is available.
-pref("media.gmp.decoder.enabled", true);
+pref("media.gmp.decoder.enabled", false);
 
 // If decoding-via-GMP is turned on for <video>, use Adobe's GMP for decoding,
 // if it's available. Note: We won't fallback to another GMP if Adobe's is not
