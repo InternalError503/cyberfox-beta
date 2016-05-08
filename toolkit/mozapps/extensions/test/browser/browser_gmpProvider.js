@@ -21,7 +21,8 @@ for (let plugin of GMPScope.GMP_PLUGINS) {
       id: plugin.id,
       isValid: true,
       isInstalled: false,
-      isEME: plugin.id.indexOf("gmp-eme-") == 0 ? true : false,
+      isEME: (plugin.id == "gmp-widevinecdm" ||
+              plugin.id.indexOf("gmp-eme-") == 0) ? true : false,
   });
   gMockAddons.push(mockAddon);
 }
@@ -384,6 +385,15 @@ add_task(function* testEmeSupport() {
       } else {
         Assert.ok(!item,
                   "Adobe EME not supported, couldn't find add-on element.");
+      }
+    } else if (addon.id == GMPScope.WIDEVINE_ID) {
+      if ((Services.appinfo.OS == "WINNT" &&
+          Services.sysinfo.getPropertyAsInt32("version") >= 6) ||
+          Services.appinfo.OS == "Darwin") {
+        Assert.ok(item, "Widevine supported, found add-on element.");
+      } else {
+        Assert.ok(!item,
+                  "Widevine not supported, couldn't find add-on element.");
       }
     } else {
       Assert.ok(item, "Found add-on element.");

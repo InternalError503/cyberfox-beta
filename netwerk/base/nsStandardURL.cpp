@@ -991,6 +991,8 @@ NS_INTERFACE_MAP_END
 NS_IMETHODIMP
 nsStandardURL::GetSpec(nsACString &result)
 {
+    MOZ_ASSERT(mSpec.Length() <= (uint32_t) net_GetURLMaxLength(),
+               "The spec should never be this long, we missed a check.");
     result = mSpec;
     return NS_OK;
 }
@@ -1185,6 +1187,29 @@ nsStandardURL::GetOriginCharset(nsACString &result)
     return NS_OK;
 }
 
+static bool
+IsSpecialProtocol(const nsACString &input)
+{
+    nsACString::const_iterator start, end;
+    input.BeginReading(start);
+    nsACString::const_iterator iterator(start);
+    input.EndReading(end);
+
+    while (iterator != end && *iterator != ':') {
+        iterator++;
+    }
+
+    nsAutoCString protocol(nsDependentCSubstring(start.get(), iterator.get()));
+
+    return protocol.LowerCaseEqualsLiteral("http") ||
+           protocol.LowerCaseEqualsLiteral("https") ||
+           protocol.LowerCaseEqualsLiteral("ftp") ||
+           protocol.LowerCaseEqualsLiteral("ws") ||
+           protocol.LowerCaseEqualsLiteral("wss") ||
+           protocol.LowerCaseEqualsLiteral("file") ||
+           protocol.LowerCaseEqualsLiteral("gopher");
+}
+
 NS_IMETHODIMP
 nsStandardURL::SetSpec(const nsACString &input)
 {
@@ -1215,11 +1240,34 @@ nsStandardURL::SetSpec(const nsACString &input)
     Clear();
 
     // filter out unexpected chars "\r\n\t" if necessary
-    nsAutoCString buf1;
-    if (net_FilterURIString(spec, buf1)) {
-        spec = buf1.get();
-        specLength = buf1.Length();
+    nsAutoCString filteredURI;
+    if (!net_FilterURIString(spec, filteredURI)) {
+        // Copy the content into filteredURI even if no whitespace was stripped.
+        // We need a non-const buffer to perform backslash replacement.
+        filteredURI = input;
     }
+
+    if (IsSpecialProtocol(filteredURI)) {
+        // Bug 652186: Replace all backslashes with slashes when parsing paths
+        // Stop when we reach the query or the hash.
+        nsAutoCString::iterator start;
+        nsAutoCString::iterator end;
+        filteredURI.BeginWriting(start);
+        filteredURI.EndWriting(end);
+        while (start != end) {
+            if (*start == '?' || *start == '#') {
+                break;
+            }
+            if (*start == '\\') {
+                *start = '/';
+            }
+            start++;
+        }
+    }
+
+    spec = filteredURI.get();
+    specLength = filteredURI.Length();
+
 
     // parse the given URL...
     nsresult rv = ParseURL(spec, specLength);
@@ -1279,6 +1327,10 @@ nsStandardURL::SetScheme(const nsACString &input)
         return NS_ERROR_UNEXPECTED;
     }
 
+    if (mSpec.Length() + input.Length() - Scheme().Length() > (uint32_t) net_GetURLMaxLength()) {
+        return NS_ERROR_MALFORMED_URI;
+    }
+
     InvalidateCache();
 
     int32_t shift = ReplaceSegment(mScheme.mPos, mScheme.mLen, scheme);
@@ -1314,6 +1366,10 @@ nsStandardURL::SetUserPass(const nsACString &input)
     if (mAuthority.mLen < 0) {
         NS_WARNING("uninitialized");
         return NS_ERROR_NOT_INITIALIZED;
+    }
+
+    if (mSpec.Length() + input.Length() - Userpass(true).Length() > (uint32_t) net_GetURLMaxLength()) {
+        return NS_ERROR_MALFORMED_URI;
     }
 
     InvalidateCache();
@@ -1416,6 +1472,10 @@ nsStandardURL::SetUsername(const nsACString &input)
     if (username.IsEmpty())
         return SetUserPass(username);
 
+    if (mSpec.Length() + input.Length() - Username().Length() > (uint32_t) net_GetURLMaxLength()) {
+        return NS_ERROR_MALFORMED_URI;
+    }
+
     InvalidateCache();
 
     // escape username if necessary
@@ -1460,6 +1520,10 @@ nsStandardURL::SetPassword(const nsACString &input)
     if (mUsername.mLen <= 0) {
         NS_WARNING("cannot set password without existing username");
         return NS_ERROR_FAILURE;
+    }
+
+    if (mSpec.Length() + input.Length() - Password().Length() > (uint32_t) net_GetURLMaxLength()) {
+        return NS_ERROR_MALFORMED_URI;
     }
 
     InvalidateCache();
@@ -1624,6 +1688,10 @@ nsStandardURL::SetHost(const nsACString &input)
     if (strchr(host, ' '))
         return NS_ERROR_MALFORMED_URI;
 
+    if (mSpec.Length() + strlen(host) - Host().Length() > (uint32_t) net_GetURLMaxLength()) {
+        return NS_ERROR_MALFORMED_URI;
+    }
+
     InvalidateCache();
     mHostEncoding = eEncoding_ASCII;
 
@@ -1672,7 +1740,7 @@ nsStandardURL::SetHost(const nsACString &input)
 
     return NS_OK;
 }
-             
+
 NS_IMETHODIMP
 nsStandardURL::SetPort(int32_t port)
 {
@@ -1693,51 +1761,57 @@ nsStandardURL::SetPort(int32_t port)
     }
 
     InvalidateCache();
-
-    if (mPort == -1) {
-        // need to insert the port number in the URL spec
-        nsAutoCString buf;
-        buf.Assign(':');
-        buf.AppendInt(port);
-        mSpec.Insert(buf, mAuthority.mPos + mAuthority.mLen);
-        mAuthority.mLen += buf.Length();
-        ShiftFromPath(buf.Length());
+    if (port == mDefaultPort) {
+      port = -1;
     }
-    else if (port == -1 || port == mDefaultPort) {
-        // Don't allow mPort == mDefaultPort
-        port = -1;
 
-        // compute length of the current port
-        nsAutoCString buf;
-        buf.Assign(':');
-        buf.AppendInt(mPort);
-
-        // need to remove the port number from the URL spec
-        uint32_t start = mAuthority.mPos + mAuthority.mLen - buf.Length();
-        int32_t lengthToCut = buf.Length();
-        mSpec.Cut(start, lengthToCut);
-        mAuthority.mLen -= lengthToCut;
-        ShiftFromPath(-lengthToCut);
-    }
-    else {
-        // need to replace the existing port
-        nsAutoCString buf;
-        buf.Assign(':');
-        buf.AppendInt(mPort);
-        uint32_t start = mAuthority.mPos + mAuthority.mLen - buf.Length();
-        uint32_t length = buf.Length();
-
-        buf.Assign(':');
-        buf.AppendInt(port);
-        mSpec.Replace(start, length, buf);
-        if (buf.Length() != length) {
-            mAuthority.mLen += buf.Length() - length;
-            ShiftFromPath(buf.Length() - length);
-        }
-    }
+    ReplacePortInSpec(port);
 
     mPort = port;
     return NS_OK;
+}
+
+/**
+ * Replaces the existing port in mSpec with aNewPort.
+ *
+ * The caller is responsible for:
+ *  - Calling InvalidateCache (since our mSpec is changing).
+ *  - Checking whether aNewPort is mDefaultPort (in which case the
+ *    caller should pass aNewPort=-1).
+ */
+void
+nsStandardURL::ReplacePortInSpec(int32_t aNewPort)
+{
+    MOZ_ASSERT(mMutable, "Caller should ensure we're mutable");
+    NS_ASSERTION(aNewPort != mDefaultPort,
+                 "Caller should check its passed-in value and pass -1 instead of "
+                 "mDefaultPort, to avoid encoding default port into mSpec");
+
+    // Create the (possibly empty) string that we're planning to replace:
+    nsAutoCString buf;
+    if (mPort != -1) {
+        buf.Assign(':');
+        buf.AppendInt(mPort);
+    }
+    // Find the position & length of that string:
+    const uint32_t replacedLen = buf.Length();
+    const uint32_t replacedStart =
+        mAuthority.mPos + mAuthority.mLen - replacedLen;
+
+    // Create the (possibly empty) replacement string:
+    if (aNewPort == -1) {
+        buf.Truncate();
+    } else {
+        buf.Assign(':');
+        buf.AppendInt(aNewPort);
+    }
+    // Perform the replacement:
+    mSpec.Replace(replacedStart, replacedLen, buf);
+
+    // Bookkeeping to reflect the new length:
+    int32_t shift = buf.Length() - replacedLen;
+    mAuthority.mLen += shift;
+    ShiftFromPath(shift);
 }
 
 NS_IMETHODIMP
@@ -1976,12 +2050,15 @@ nsStandardURL::Resolve(const nsACString &in, nsACString &out)
     // filter out unexpected chars "\r\n\t" if necessary
     nsAutoCString buf;
     int32_t relpathLen;
-    if (net_FilterURIString(relpath, buf)) {
-        relpath = buf.get();
-        relpathLen = buf.Length();
-    } else
-        relpathLen = flat.Length();
-    
+    if (!net_FilterURIString(relpath, buf)) {
+        // Copy the content into filteredURI even if no whitespace was stripped.
+        // We need a non-const buffer to perform backslash replacement.
+        buf = in;
+    }
+
+    relpath = buf.get();
+    relpathLen = buf.Length();
+
     char *result = nullptr;
 
     LOG(("nsStandardURL::Resolve [this=%p spec=%s relpath=%s]\n",
@@ -2017,6 +2094,30 @@ nsStandardURL::Resolve(const nsACString &in, nsACString &out)
     // if the parser fails (for example because there is no valid scheme)
     // reset the scheme and assume a relative url
     if (NS_FAILED(rv)) scheme.Reset(); 
+
+    nsAutoCString protocol(Segment(scheme));
+    nsAutoCString baseProtocol(Scheme());
+
+    // We need to do backslash replacement for the following cases:
+    // 1. The input is an absolute path with a http/https/ftp scheme
+    // 2. The input is a relative path, and the base URL has a http/https/ftp scheme
+    if ((protocol.IsEmpty() && IsSpecialProtocol(baseProtocol)) ||
+         IsSpecialProtocol(protocol)) {
+
+        nsAutoCString::iterator start;
+        nsAutoCString::iterator end;
+        buf.BeginWriting(start);
+        buf.EndWriting(end);
+        while (start != end) {
+            if (*start == '?' || *start == '#') {
+                break;
+            }
+            if (*start == '\\') {
+                *start = '/';
+            }
+            start++;
+        }
+    }
 
     if (scheme.mLen >= 0) {
         // add some flags to coalesceFlag if it is an ftp-url
@@ -2432,6 +2533,10 @@ nsStandardURL::SetQuery(const nsACString &input)
     if (mPath.mLen < 0)
         return SetPath(flat);
 
+    if (mSpec.Length() + input.Length() - Query().Length() > (uint32_t) net_GetURLMaxLength()) {
+        return NS_ERROR_MALFORMED_URI;
+    }
+
     InvalidateCache();
 
     if (!query || !*query) {
@@ -2504,6 +2609,10 @@ nsStandardURL::SetRef(const nsACString &input)
     if (mPath.mLen < 0)
         return SetPath(flat);
 
+    if (mSpec.Length() + input.Length() - Ref().Length() > (uint32_t) net_GetURLMaxLength()) {
+        return NS_ERROR_MALFORMED_URI;
+    }
+
     InvalidateCache();
 
     if (!ref || !*ref) {
@@ -2571,6 +2680,10 @@ nsStandardURL::SetFileName(const nsACString &input)
 
     if (mPath.mLen < 0)
         return SetPath(flat);
+
+    if (mSpec.Length() + input.Length() - Filename().Length() > (uint32_t) net_GetURLMaxLength()) {
+        return NS_ERROR_MALFORMED_URI;
+    }
 
     int32_t shift = 0;
 
@@ -2833,20 +2946,8 @@ nsStandardURL::Init(uint32_t urlType,
         mOriginCharset = charset;
     }
 
-    if (baseURI) {
-        uint32_t start, end;
-        // pull out the scheme and where it ends
-        nsresult rv = net_ExtractURLScheme(spec, &start, &end, nullptr);
-        if (NS_SUCCEEDED(rv) && spec.Length() > end+2) {
-            nsACString::const_iterator slash;
-            spec.BeginReading(slash);
-            slash.advance(end+1);
-            // then check if // follows
-            // if it follows, aSpec is really absolute ... 
-            // ignore aBaseURI in this case
-            if (*slash == '/' && *(++slash) == '/')
-                baseURI = nullptr;
-        }
+    if (baseURI && net_IsAbsoluteURL(spec)) {
+        baseURI = nullptr;
     }
 
     if (!baseURI)
@@ -2857,6 +2958,25 @@ nsStandardURL::Init(uint32_t urlType,
     if (NS_FAILED(rv)) return rv;
 
     return SetSpec(buf);
+}
+
+NS_IMETHODIMP
+nsStandardURL::SetDefaultPort(int32_t aNewDefaultPort)
+{
+    ENSURE_MUTABLE();
+
+    InvalidateCache();
+
+    // If we're already using the new default-port as a custom port, then clear
+    // it off of our mSpec & set mPort to -1, to indicate that we'll be using
+    // the default from now on (which happens to match what we already had).
+    if (mPort == aNewDefaultPort) {
+        ReplacePortInSpec(-1);
+        mPort = -1;
+    }
+    mDefaultPort = aNewDefaultPort;
+
+    return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -2997,6 +3117,8 @@ nsStandardURL::Read(nsIObjectInputStream *stream)
 NS_IMETHODIMP
 nsStandardURL::Write(nsIObjectOutputStream *stream)
 {
+    MOZ_ASSERT(mSpec.Length() <= (uint32_t) net_GetURLMaxLength(),
+               "The spec should never be this long, we missed a check.");
     nsresult rv;
 
     rv = stream->Write32(mURLType);
@@ -3093,6 +3215,8 @@ FromIPCSegment(const mozilla::ipc::StandardURLSegment& aSegment)
 void
 nsStandardURL::Serialize(URIParams& aParams)
 {
+    MOZ_ASSERT(mSpec.Length() <= (uint32_t) net_GetURLMaxLength(),
+               "The spec should never be this long, we missed a check.");
     StandardURLParams params;
 
     params.urlType() = mURLType;

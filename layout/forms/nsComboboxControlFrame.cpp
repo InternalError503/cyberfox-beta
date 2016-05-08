@@ -30,7 +30,8 @@
 #include "nsIScrollableFrame.h"
 #include "nsListControlFrame.h"
 #include "nsAutoPtr.h"
-#include "nsStyleSet.h"
+#include "mozilla/StyleSetHandle.h"
+#include "mozilla/StyleSetHandleInlines.h"
 #include "nsNodeInfoManager.h"
 #include "nsContentCreatorFunctions.h"
 #include "nsLayoutUtils.h"
@@ -1355,7 +1356,7 @@ nsComboboxControlFrame::CreateFrameFor(nsIContent*      aContent)
 
   // Get PresShell
   nsIPresShell *shell = PresContext()->PresShell();
-  nsStyleSet *styleSet = shell->StyleSet();
+  StyleSetHandle styleSet = shell->StyleSet();
 
   // create the style contexts for the anonymous block frame and text frame
   RefPtr<nsStyleContext> styleContext;
@@ -1551,7 +1552,7 @@ nsComboboxControlFrame::BuildDisplayList(nsDisplayListBuilder*   aBuilder,
   // draw a focus indicator only when focus rings should be drawn
   nsIDocument* doc = mContent->GetComposedDoc();
   if (doc) {
-    nsPIDOMWindow* window = doc->GetWindow();
+    nsPIDOMWindowOuter* window = doc->GetWindow();
     if (window && window->ShouldShowFocusRing()) {
       nsPresContext *presContext = PresContext();
       const nsStyleDisplay *disp = StyleDisplay();

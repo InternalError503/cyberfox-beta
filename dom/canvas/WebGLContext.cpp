@@ -70,6 +70,10 @@
 #include "WebGLVertexArray.h"
 #include "WebGLVertexAttribData.h"
 
+#ifdef MOZ_WIDGET_COCOA
+#include "nsCocoaFeatures.h"
+#endif
+
 // Generated
 #include "mozilla/dom/WebGLRenderingContextBinding.h"
 
@@ -106,10 +110,10 @@ WebGLContext::WebGLContext()
     , mMaxFetchedVertices(0)
     , mMaxFetchedInstances(0)
     , mBypassShaderValidation(false)
-    , mGLMaxSamples(1)
     , mNeedsFakeNoAlpha(false)
     , mNeedsFakeNoDepth(false)
     , mNeedsFakeNoStencil(false)
+    , mNeedsEmulatedLoneDepthStencil(false)
 {
     mGeneration = 0;
     mInvalidated = false;
@@ -892,6 +896,14 @@ WebGLContext::SetDimensions(int32_t signedWidth, int32_t signedHeight)
 
         if (!mOptions.stencil && gl->Caps().stencil)
             mNeedsFakeNoStencil = true;
+
+#ifdef MOZ_WIDGET_COCOA
+        if (!nsCocoaFeatures::IsAtLeastVersion(10, 12) &&
+            gl->Vendor() == GLVendor::Intel)
+        {
+            mNeedsEmulatedLoneDepthStencil = true;
+        }
+#endif
     }
 
     // Update mOptions.
@@ -1304,8 +1316,7 @@ WebGLContext::ClearScreen()
 
     const bool changeDrawBuffers = (mDefaultFB_DrawBuffer0 != LOCAL_GL_BACK);
     if (changeDrawBuffers) {
-        const GLenum back = LOCAL_GL_BACK;
-        gl->fDrawBuffers(1, &back);
+        gl->Screen()->SetDrawBuffer(LOCAL_GL_BACK);
     }
 
     GLbitfield bufferBits = LOCAL_GL_COLOR_BUFFER_BIT;
@@ -1317,7 +1328,7 @@ WebGLContext::ClearScreen()
     ForceClearFramebufferWithDefaultValues(bufferBits, mNeedsFakeNoAlpha);
 
     if (changeDrawBuffers) {
-        gl->fDrawBuffers(1, &mDefaultFB_DrawBuffer0);
+        gl->Screen()->SetDrawBuffer(mDefaultFB_DrawBuffer0);
     }
 }
 
@@ -1849,8 +1860,17 @@ WebGLContext::ScopedMaskWorkaround::~ScopedMaskWorkaround()
         mWebGL.gl->fEnable(LOCAL_GL_DEPTH_TEST);
     }
     if (mFakeNoStencil) {
+        MOZ_ASSERT(mWebGL.mStencilTestEnabled);
         mWebGL.gl->fEnable(LOCAL_GL_STENCIL_TEST);
     }
+}
+
+/*static*/ bool
+WebGLContext::ScopedMaskWorkaround::HasDepthButNoStencil(const WebGLFramebuffer* fb)
+{
+    const auto& depth = fb->DepthAttachment();
+    const auto& stencil = fb->StencilAttachment();
+    return depth.IsDefined() && !stencil.IsDefined();
 }
 
 ////////////////////////////////////////

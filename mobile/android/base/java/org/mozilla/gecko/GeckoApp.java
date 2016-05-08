@@ -43,8 +43,6 @@ import org.mozilla.gecko.util.NativeEventListener;
 import org.mozilla.gecko.util.NativeJSObject;
 import org.mozilla.gecko.util.PrefUtils;
 import org.mozilla.gecko.util.ThreadUtils;
-import org.mozilla.gecko.webapp.EventListener;
-import org.mozilla.gecko.webapp.UninstallListener;
 import org.mozilla.gecko.widget.ButtonToast;
 
 import android.annotation.SuppressLint;
@@ -144,7 +142,6 @@ public abstract class GeckoApp
         NORMAL,     /* normal application start */
         URL,        /* launched with a passed URL */
         PREFETCH,   /* launched with a passed URL that we prefetch */
-        WEBAPP,     /* launched as a webapp runtime */
         GUEST,      /* launched in guest browsing */
         RESTRICTED, /* launched with restricted profile */
         SHORTCUT    /* launched from a homescreen shortcut */
@@ -213,8 +210,6 @@ public abstract class GeckoApp
 
     private volatile HealthRecorder mHealthRecorder;
     private volatile Locale mLastLocale;
-
-    private EventListener mWebappEventListener;
 
     private Intent mRestartIntent;
 
@@ -691,9 +686,7 @@ public abstract class GeckoApp
     @Override
     public void handleMessage(String event, JSONObject message) {
         try {
-            if (event.equals("Gecko:DelayedStartup")) {
-                ThreadUtils.postToBackgroundThread(new UninstallListener.DelayedStartupTask(this));
-            } else if (event.equals("Gecko:Ready")) {
+            if (event.equals("Gecko:Ready")) {
                 mGeckoReadyStartupTimer.stop();
                 geckoConnected();
 
@@ -711,10 +704,6 @@ public abstract class GeckoApp
                 doShutdown();
                 return;
 
-            } else if ("NativeApp:IsDebuggable".equals(event)) {
-                JSONObject ret = new JSONObject();
-                ret.put("isDebuggable", getIsDebuggable());
-                EventDispatcher.sendResponse(message, ret);
             } else if (event.equals("Accessibility:Event")) {
                 GeckoAccessibility.sendAccessibilityEvent(message);
             }
@@ -1163,7 +1152,7 @@ public abstract class GeckoApp
             enableStrictMode();
         }
 
-        if (!isSupportedSystem()) {
+        if (!HardwareUtils.isSupportedSystem()) {
             // This build does not support the Android version of the device: Show an error and finish the app.
             super.onCreate(savedInstanceState);
             showSDKVersionError();
@@ -1268,10 +1257,8 @@ public abstract class GeckoApp
 
         EventDispatcher.getInstance().registerGeckoThreadListener((GeckoEventListener)this,
             "Gecko:Ready",
-            "Gecko:DelayedStartup",
             "Gecko:Exited",
-            "Accessibility:Event",
-            "NativeApp:IsDebuggable");
+            "Accessibility:Event");
 
         EventDispatcher.getInstance().registerGeckoThreadListener((NativeEventListener)this,
             "Accessibility:Ready",
@@ -1298,11 +1285,6 @@ public abstract class GeckoApp
 
         EventDispatcher.getInstance().registerBackgroundThreadListener((BundleEventListener) this,
                 "History:GetPrePathLastVisitedTimeMilliseconds");
-
-        if (mWebappEventListener == null) {
-            mWebappEventListener = new EventListener();
-            mWebappEventListener.registerEvents();
-        }
 
         GeckoThread.launch();
 
@@ -1902,9 +1884,16 @@ public abstract class GeckoApp
 
         final String action = intent.getAction();
 
+        final String uri = getURIFromIntent(intent);
+        final String passedUri;
+        if (!TextUtils.isEmpty(uri)) {
+            passedUri = uri;
+        } else {
+            passedUri = null;
+        }
+
         if (ACTION_LOAD.equals(action)) {
-            String uri = intent.getDataString();
-            Tabs.getInstance().loadUrl(uri);
+            Tabs.getInstance().loadUrl(intent.getDataString());
         } else if (Intent.ACTION_VIEW.equals(action)) {
             processActionViewIntent(new Runnable() {
                 @Override
@@ -1916,10 +1905,8 @@ public abstract class GeckoApp
                 }
             });
         } else if (ACTION_HOMESCREEN_SHORTCUT.equals(action)) {
-            String uri = getURIFromIntent(intent);
             GeckoAppShell.sendEventToGecko(GeckoEvent.createBookmarkLoadEvent(uri));
         } else if (Intent.ACTION_SEARCH.equals(action)) {
-            String uri = getURIFromIntent(intent);
             GeckoAppShell.sendEventToGecko(GeckoEvent.createURILoadEvent(uri));
         } else if (ACTION_ALERT_CALLBACK.equals(action)) {
             processAlertCallback(intent);
@@ -1932,6 +1919,9 @@ public abstract class GeckoApp
             settingsIntent.putExtras(intent.getUnsafe());
             startActivity(settingsIntent);
         }
+
+        final StartupAction startupAction = getStartupAction(passedUri, action);
+        Telemetry.addToHistogram("FENNEC_GECKOAPP_STARTUP_ACTION", startupAction.ordinal());
     }
 
     /**
@@ -2086,7 +2076,7 @@ public abstract class GeckoApp
 
     @Override
     public void onDestroy() {
-        if (!isSupportedSystem()) {
+        if (!HardwareUtils.isSupportedSystem()) {
             // This build does not support the Android version of the device:
             // We did not initialize anything, so skip cleaning up.
             super.onDestroy();
@@ -2095,10 +2085,8 @@ public abstract class GeckoApp
 
         EventDispatcher.getInstance().unregisterGeckoThreadListener((GeckoEventListener)this,
             "Gecko:Ready",
-            "Gecko:DelayedStartup",
             "Gecko:Exited",
-            "Accessibility:Event",
-            "NativeApp:IsDebuggable");
+            "Accessibility:Event");
 
         EventDispatcher.getInstance().unregisterGeckoThreadListener((NativeEventListener)this,
             "Accessibility:Ready",
@@ -2124,11 +2112,6 @@ public abstract class GeckoApp
 
         EventDispatcher.getInstance().unregisterBackgroundThreadListener((BundleEventListener) this,
                 "History:GetPrePathLastVisitedTimeMilliseconds");
-
-        if (mWebappEventListener != null) {
-            mWebappEventListener.unregisterEvents();
-            mWebappEventListener = null;
-        }
 
         deleteTempFiles();
 
@@ -2192,32 +2175,6 @@ public abstract class GeckoApp
             // Exiting, so kill our own process.
             Process.killProcess(Process.myPid());
         }
-    }
-
-    protected boolean isSupportedSystem() {
-        if (Build.VERSION.SDK_INT < Versions.MIN_SDK_VERSION ||
-            Build.VERSION.SDK_INT > Versions.MAX_SDK_VERSION) {
-            return false;
-        }
-
-        // See http://developer.android.com/ndk/guides/abis.html
-        boolean isSystemARM = Build.CPU_ABI != null && Build.CPU_ABI.startsWith("arm");
-        boolean isSystemX86 = Build.CPU_ABI != null && Build.CPU_ABI.startsWith("x86");
-
-        boolean isAppARM = AppConstants.ANDROID_CPU_ARCH.startsWith("arm");
-        boolean isAppX86 = AppConstants.ANDROID_CPU_ARCH.startsWith("x86");
-
-        // Only reject known incompatible ABIs. Better safe than sorry.
-        if ((isSystemX86 && isAppARM) || (isSystemARM && isAppX86)) {
-            return false;
-        }
-
-        if ((isSystemX86 && isAppX86) || (isSystemARM && isAppARM)) {
-            return true;
-        }
-
-        Log.w(LOGTAG, "Unknown app/system ABI combination: " + AppConstants.MOZ_APP_ABI + " / " + Build.CPU_ABI);
-        return true;
     }
 
     public void showSDKVersionError() {
@@ -2689,23 +2646,6 @@ public abstract class GeckoApp
             Log.wtf(LOGTAG, getPackageName() + " not found", e);
         }
         return versionCode;
-    }
-
-    protected boolean getIsDebuggable() {
-        // Return false so Fennec doesn't appear to be debuggable.  WebappImpl
-        // then overrides this and returns the value of android:debuggable for
-        // the webapp APK, so webapps get the behavior supported by this method
-        // (i.e. automatic configuration and enabling of the remote debugger).
-        return false;
-
-        // If we ever want to expose this for Fennec, here's how we would do it:
-        // int flags = 0;
-        // try {
-        //     flags = getPackageManager().getPackageInfo(getPackageName(), 0).applicationInfo.flags;
-        // } catch (NameNotFoundException e) {
-        //     Log.wtf(LOGTAG, getPackageName() + " not found", e);
-        // }
-        // return (flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0;
     }
 
     // FHR reason code for a session end prior to a restart for a

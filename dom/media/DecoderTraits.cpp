@@ -13,9 +13,6 @@
 #include "OggDecoder.h"
 #include "OggReader.h"
 
-#include "WaveDecoder.h"
-#include "WaveReader.h"
-
 #include "WebMDecoder.h"
 #include "WebMDemuxer.h"
 
@@ -51,8 +48,14 @@
 #include "MP3Decoder.h"
 #include "MP3Demuxer.h"
 
+#include "WaveDecoder.h"
+#include "WaveDemuxer.h"
+#include "WaveReader.h"
+
 #include "ADTSDecoder.h"
 #include "ADTSDemuxer.h"
+
+#include "nsPluginHost.h"
 
 namespace mozilla
 {
@@ -133,8 +136,10 @@ static const char* const gWaveTypes[5] = {
   nullptr
 };
 
-static char const *const gWaveCodecs[2] = {
+static char const *const gWaveCodecs[4] = {
   "1", // Microsoft PCM Format
+  "6", // aLaw Encoding
+  "7", // uLaw Encoding
   nullptr
 };
 
@@ -333,6 +338,13 @@ IsAACSupportedType(const nsACString& aType,
   return ADTSDecoder::CanHandleMediaType(aType, aCodecs);
 }
 
+static bool
+IsWAVSupportedType(const nsACString& aType,
+                   const nsAString& aCodecs = EmptyString())
+{
+  return WaveDecoder::CanHandleMediaType(aType, aCodecs);
+}
+
 /* static */
 bool DecoderTraits::ShouldHandleMediaType(const char* aMIMEType)
 {
@@ -344,6 +356,18 @@ bool DecoderTraits::ShouldHandleMediaType(const char* aMIMEType)
     // means.
     return false;
   }
+
+  // If an external plugin which can handle quicktime video is available
+  // (and not disabled), prefer it over native playback as there several
+  // codecs found in the wild that we do not handle.
+  if (nsDependentCString(aMIMEType).EqualsASCII("video/quicktime")) {
+    RefPtr<nsPluginHost> pluginHost = nsPluginHost::GetInst();
+    if (pluginHost &&
+        pluginHost->HavePluginForType(nsDependentCString(aMIMEType))) {
+      return false;
+    }
+  }
+
   return CanHandleMediaType(aMIMEType, false, EmptyString()) != CANPLAY_NO;
 }
 
@@ -617,6 +641,9 @@ MediaDecoderReader* DecoderTraits::CreateReader(const nsACString& aType, Abstrac
   } else
   if (IsAACSupportedType(aType)) {
     decoderReader = new MediaFormatReader(aDecoder, new ADTSDemuxer(aDecoder->GetResource()));
+  } else
+  if (IsWAVSupportedType(aType)) {
+    decoderReader = new MediaFormatReader(aDecoder, new WAVDemuxer(aDecoder->GetResource()));
   } else
 #ifdef MOZ_RAW
   if (IsRawType(aType)) {

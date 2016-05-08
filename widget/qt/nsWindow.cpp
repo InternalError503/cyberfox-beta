@@ -143,7 +143,7 @@ nsWindow::Create(nsIWidget* aParent,
     nsIWidget *baseParent = aParent;
 
     // initialize all the common bits of this class
-    BaseCreate(baseParent, aRect, aInitData);
+    BaseCreate(baseParent, aInitData);
 
     mVisible = true;
 
@@ -1593,7 +1593,7 @@ nsWindow::CheckForRollup(double aMouseX, double aMouseY,
         // the current submenu
         uint32_t popupsToRollup = UINT32_MAX;
         if (rollupListener) {
-            nsAutoTArray<nsIWidget*, 5> widgetChain;
+            AutoTArray<nsIWidget*, 5> widgetChain;
             uint32_t sameTypeCount = rollupListener->GetSubmenuWidgetChain(&widgetChain);
             for (uint32_t i=0; i<widgetChain.Length(); ++i) {
                 nsIWidget* widget =  widgetChain[i];

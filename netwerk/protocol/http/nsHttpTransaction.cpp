@@ -127,6 +127,7 @@ nsHttpTransaction::nsHttpTransaction()
     , mContentDecoding(false)
     , mContentDecodingCheck(false)
     , mDeferredSendProgress(false)
+    , mWaitingOnPipeOut(false)
     , mReportedStart(false)
     , mReportedResponseHeader(false)
     , mForTakeResponseHead(nullptr)
@@ -137,7 +138,7 @@ nsHttpTransaction::nsHttpTransaction()
     , mCountRecv(0)
     , mCountSent(0)
     , mAppId(NECKO_NO_APP_ID)
-    , mIsInBrowser(false)
+    , mIsInIsolatedMozBrowser(false)
     , mClassOfService(0)
 {
     LOG(("Creating nsHttpTransaction @%p\n", this));
@@ -247,7 +248,7 @@ nsHttpTransaction::Init(uint32_t caps,
     mChannel = do_QueryInterface(eventsink);
     nsCOMPtr<nsIChannel> channel = do_QueryInterface(eventsink);
     if (channel) {
-        NS_GetAppInfo(channel, &mAppId, &mIsInBrowser);
+        NS_GetAppInfo(channel, &mAppId, &mIsInIsolatedMozBrowser);
     }
 
 #ifdef MOZ_WIDGET_GONK
@@ -832,9 +833,10 @@ nsHttpTransaction::WriteSegments(nsAHttpSegmentWriter *writer,
     if (rv == NS_BASE_STREAM_WOULD_BLOCK) {
         nsCOMPtr<nsIEventTarget> target;
         gHttpHandler->GetSocketThreadTarget(getter_AddRefs(target));
-        if (target)
+        if (target) {
             mPipeOut->AsyncWait(this, 0, 0, target);
-        else {
+            mWaitingOnPipeOut = true;
+        } else {
             NS_ERROR("no socket thread event target");
             rv = NS_ERROR_UNEXPECTED;
         }
@@ -867,9 +869,9 @@ nsHttpTransaction::SaveNetworkStats(bool enforce)
     }
 
     // Create the event to save the network statistics.
-    // the event is then dispathed to the main thread.
+    // the event is then dispatched to the main thread.
     RefPtr<nsRunnable> event =
-        new SaveNetworkStatsEvent(mAppId, mIsInBrowser, mActiveNetworkInfo,
+        new SaveNetworkStatsEvent(mAppId, mIsInIsolatedMozBrowser, mActiveNetworkInfo,
                                   mCountRecv, mCountSent, false);
     NS_DispatchToMainThread(event);
 
@@ -2179,6 +2181,7 @@ NS_IMPL_QUERY_INTERFACE(nsHttpTransaction,
 NS_IMETHODIMP
 nsHttpTransaction::OnInputStreamReady(nsIAsyncInputStream *out)
 {
+    MOZ_ASSERT(PR_GetCurrentThread() == gSocketThread);
     if (mConnection) {
         mConnection->TransactionHasDataToWrite(this);
         nsresult rv = mConnection->ResumeSend();
@@ -2196,6 +2199,8 @@ nsHttpTransaction::OnInputStreamReady(nsIAsyncInputStream *out)
 NS_IMETHODIMP
 nsHttpTransaction::OnOutputStreamReady(nsIAsyncOutputStream *out)
 {
+    MOZ_ASSERT(PR_GetCurrentThread() == gSocketThread);
+    mWaitingOnPipeOut = false;
     if (mConnection) {
         mConnection->TransactionHasDataToRecv(this);
         nsresult rv = mConnection->ResumeRecv();

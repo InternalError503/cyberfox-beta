@@ -16,7 +16,6 @@
 #include "mozilla/layout/FrameChildList.h"
 #include "nsThreadUtils.h"
 #include "nsIPrincipal.h"
-#include "nsCSSPseudoElements.h"
 #include "FrameMetrics.h"
 #include "nsIWidget.h"
 #include "nsCSSProperty.h"
@@ -54,7 +53,7 @@ class nsIFrame;
 class nsStyleCoord;
 class nsStyleCorners;
 class gfxContext;
-class nsPIDOMWindow;
+class nsPIDOMWindowOuter;
 class imgIRequest;
 class nsIDocument;
 struct gfxPoint;
@@ -63,6 +62,7 @@ struct nsStyleImageOrientation;
 struct nsOverflowAreas;
 
 namespace mozilla {
+enum class CSSPseudoElementType : uint8_t;
 class EventListenerManager;
 class SVGImageContext;
 struct IntrinsicSize;
@@ -241,6 +241,11 @@ public:
    * Check whether the given element has a critical display port.
    */
   static bool HasCriticalDisplayPort(nsIContent* aContent);
+
+  /**
+   * Remove the displayport for the given element.
+   */
+  static void RemoveDisplayPort(nsIContent* aContent);
 
   /**
    * Use heuristics to figure out the child list that
@@ -656,7 +661,7 @@ public:
    */
   static bool HasPseudoStyle(nsIContent* aContent,
                                nsStyleContext* aStyleContext,
-                               nsCSSPseudoElements::Type aPseudoElement,
+                               mozilla::CSSPseudoElementType aPseudoElement,
                                nsPresContext* aPresContext);
 
   /**
@@ -1086,7 +1091,9 @@ public:
 
   class BoxCallback {
   public:
+    BoxCallback() : mIncludeCaptionBoxForTable(true) {}
     virtual void AddBox(nsIFrame* aFrame) = 0;
+    bool mIncludeCaptionBoxForTable;
   };
   /**
    * Collect all CSS boxes associated with aFrame and its
@@ -1976,7 +1983,7 @@ public:
    * complicated than it ought to be in multi-monitor situations.
    */
   static nsDeviceContext*
-  GetDeviceContextForScreenInfo(nsPIDOMWindow* aWindow);
+  GetDeviceContextForScreenInfo(nsPIDOMWindowOuter* aWindow);
 
   /**
    * Some frames with 'position: fixed' (nsStylePosition::mDisplay ==
@@ -2192,7 +2199,8 @@ public:
    */
   static bool GetAnimationContent(const nsIFrame* aFrame,
                                   nsIContent* &aContentResult,
-                                  nsCSSPseudoElements::Type &aPseudoTypeResult);
+                                  mozilla::CSSPseudoElementType
+                                    &aPseudoTypeResult);
 
   /**
    * Returns true if the frame has current (i.e. running or scheduled-to-run)
@@ -2283,7 +2291,7 @@ public:
    * Checks whether support for the CSS text-align (and -moz-text-align-last)
    * 'true' value is enabled.
    */
-  static bool IsTextAlignTrueValueEnabled();
+  static bool IsTextAlignUnsafeValueEnabled();
 
   /**
    * Checks if CSS variables are currently enabled.
@@ -2673,14 +2681,10 @@ public:
    * displayport yet (as tracked by |aBuilder|), calculate and set a
    * displayport.
    *
-   * If this function creates a displayport, it computes margins and stores
-   * |aDisplayPortBase| as the base rect.
-   *
    * This is intended to be called during display list building.
    */
   static void MaybeCreateDisplayPort(nsDisplayListBuilder& aBuilder,
-                                     nsIFrame* aScrollFrame,
-                                     nsRect aDisplayPortBase);
+                                     nsIFrame* aScrollFrame);
 
   static nsIScrollableFrame* GetAsyncScrollableAncestorFrame(nsIFrame* aTarget);
 
@@ -2690,6 +2694,12 @@ public:
    */
   static void SetZeroMarginDisplayPortOnAsyncScrollableAncestors(nsIFrame* aFrame,
                                                                  RepaintMode aRepaintMode);
+  /**
+   * Finds the closest ancestor async scrollable frame from aFrame that has a
+   * displayport and attempts to trigger the displayport expiry on that
+   * ancestor.
+   */
+  static void ExpireDisplayPortOnAsyncScrollableAncestor(nsIFrame* aFrame);
 
   static bool IsOutlineStyleAutoEnabled();
 
@@ -2708,6 +2718,15 @@ public:
    */
   static void SetScrollPositionClampingScrollPortSize(nsIPresShell* aPresShell,
                                                       CSSSize aSize);
+
+  /**
+   * Returns true if the given scroll origin is "higher priority" than APZ.
+   * In general any content programmatic scrolls (e.g. scrollTo calls) are
+   * higher priority, and take precedence over APZ scrolling. This function
+   * returns true for those, and returns false for other origins like APZ
+   * itself, or scroll position updates from the history restore code.
+   */
+  static bool CanScrollOriginClobberApz(nsIAtom* aScrollOrigin);
 
   static FrameMetrics ComputeFrameMetrics(nsIFrame* aForFrame,
                                           nsIFrame* aScrollFrame,
@@ -2782,6 +2801,11 @@ public:
    */
   static CSSRect GetBoundingContentRect(const nsIContent* aContent,
                                         const nsIScrollableFrame* aRootScrollFrame);
+
+  /**
+   * Returns the first ancestor who is a float containing block.
+   */
+  static nsBlockFrame* GetFloatContainingBlock(nsIFrame* aFrame);
 
 private:
   static uint32_t sFontSizeInflationEmPerLine;

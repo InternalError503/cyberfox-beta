@@ -246,7 +246,7 @@ this.TabCrashHandler = {
 
     let dumpID = this.getDumpID(browser);
     if (!dumpID) {
-      message.target.sendAsyncMessge("SetCrashReportAvailable", {
+      message.target.sendAsyncMessage("SetCrashReportAvailable", {
         hasReport: false,
       });
       return;
