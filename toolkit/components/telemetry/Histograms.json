@@ -27,6 +27,14 @@
     "n_buckets": 50,
     "description": "time spent updating accessibility (ms)"
   },
+  "ADDON_MANAGER_UPGRADE_UI_SHOWN": {
+    "expires_in_version": "53",
+    "kind": "count",
+    "description": "Recorded when the addon manager shows the modal upgrade UI. Should only be recorded once per upgrade.",
+    "releaseChannelCollection": "opt-out",
+    "bug_numbers": [1268548],
+    "alert_emails": ["kev@mozilla.com"]
+  },
   "ADDON_SHIM_USAGE": {
     "expires_in_version": "never",
     "kind": "enumerated",
@@ -6112,6 +6120,21 @@
     "description": "Whether Ogg audio/video encountered are chained or not.",
     "bug_numbers": [1230295]
   },
+  "MEDIA_HLS_CANPLAY_REQUESTED": {
+    "alert_emails": ["ajones@mozilla.com", "giles@mozilla.com"],
+    "expires_in_version": "50",
+    "kind": "boolean",
+    "description": "Reports a true value when a page requests canPlayType for an HTTP Live Streaming media type (or generic m3u playlist).",
+    "bug_numbers": [1262659]
+  },
+  "MEDIA_HLS_DECODER_SUCCESS": {
+    "alert_emails": ["ajones@mozilla.com", "giles@mozilla.com"],
+    "expires_in_version": "50",
+    "kind": "boolean",
+    "description": "Reports whether a decoder for an HTTP Live Streaming media type was created when requested.",
+    "bug_numbers": [1262659]
+
+  },
   "VIDEO_MFT_OUTPUT_NULL_SAMPLES": {
     "alert_emails": ["cpearce@mozilla.com"],
     "expires_in_version": "53",
@@ -10428,6 +10451,16 @@
     "keyed": true,
     "description": "Measures the size of IPC messages by message name"
   },
+  "IPC_REPLY_SIZE": {
+    "alert_emails": ["wmccloskey@mozilla.com"],
+    "bug_numbers": [1264820],
+    "expires_in_version": "55",
+    "kind": "exponential",
+    "high": 8000000,
+    "n_buckets": 50,
+    "keyed": true,
+    "description": "Measures the size of IPC messages by message name"
+  },
   "MESSAGE_MANAGER_MESSAGE_SIZE": {
     "alert_emails": ["wmccloskey@mozilla.com"],
     "bug_numbers": [1260908],
@@ -10437,5 +10470,38 @@
     "n_buckets": 50,
     "keyed": true,
     "description": "Measures the size of message manager messages by message name"
+  },
+  "SUBPROCESS_KILL_HARD": {
+    "alert_emails": ["wmccloskey@mozilla.com"],
+    "bug_numbers": [1269961],
+    "expires_in_version": "never",
+    "kind": "count",
+    "keyed": true,
+    "releaseChannelCollection": "opt-out",
+    "description": "Counts the number of times a subprocess was forcibly killed, and the reason."
+  },
+  "FX_CONTENT_CRASH_DUMP_UNAVAILABLE": {
+    "alert_emails": ["wmccloskey@mozilla.com"],
+    "bug_numbers": [1269961],
+    "expires_in_version": "never",
+    "kind": "count",
+    "releaseChannelCollection": "opt-out",
+    "description": "Counts the number of times that about:tabcrashed was unable to find a crash dump."
+  },
+  "FX_CONTENT_CRASH_PRESENTED": {
+    "alert_emails": ["wmccloskey@mozilla.com"],
+    "bug_numbers": [1269961],
+    "expires_in_version": "never",
+    "kind": "count",
+    "releaseChannelCollection": "opt-out",
+    "description": "Counts the number of times that about:tabcrashed appeared and found a crash dump."
+  },
+  "FX_CONTENT_CRASH_NOT_SUBMITTED": {
+    "alert_emails": ["wmccloskey@mozilla.com"],
+    "bug_numbers": [1269961],
+    "expires_in_version": "never",
+    "kind": "count",
+    "releaseChannelCollection": "opt-out",
+    "description": "Counts the number of times that about:tabcrashed was unloaded without submitting."
   }
 }
