@@ -71,6 +71,7 @@
 #include "nsThreadUtils.h"              // for NS_IsMainThread
 #include "prsystem.h"                   // for PR_GetPhysicalMemorySize
 #include "SharedMemoryBasic.h"          // for SharedMemoryBasic
+#include "ScrollSnap.h"                 // for ScrollSnapUtils
 #include "WheelScrollAnimation.h"
 
 #define ENABLE_APZC_LOGGING 0
@@ -690,7 +691,13 @@ public:
       // snap point, so we request one now. If there are no snap points, this will
       // do nothing. If there are snap points, we'll get a scrollTo that snaps us
       // back to the nearest valid snap point.
-      mApzc.RequestSnap();
+      // The scroll snapping is done in a deferred task, otherwise the state
+      // change to NOTHING caused by the overscroll animation ending would
+      // clobber a possible state change to SMOOTH_SCROLL in ScrollSnap().
+      if (!mDeferredTasks.append(NewRunnableMethod(&mApzc,
+                                                   &AsyncPanZoomController::ScrollSnap))) {
+        MOZ_CRASH();
+      }
       return false;
     }
     return true;
@@ -708,7 +715,6 @@ private:
 class SmoothScrollAnimation : public AsyncPanZoomAnimation {
 public:
   SmoothScrollAnimation(AsyncPanZoomController& aApzc,
-                        ScrollSource aSource,
                         const nsPoint &aInitialPosition,
                         const nsPoint &aInitialVelocity,
                         const nsPoint& aDestination, double aSpringConstant,
@@ -859,6 +865,7 @@ AsyncPanZoomController::AsyncPanZoomController(uint64_t aLayersId,
      // mTreeManager must be initialized before GetFrameTime() is called
      mTreeManager(aTreeManager),
      mSharingFrameMetricsAcrossProcesses(false),
+     mFrameMetrics(mScrollMetadata.GetMetrics()),
      mMonitor("AsyncPanZoomController"),
      mX(this),
      mY(this),
@@ -923,7 +930,7 @@ AsyncPanZoomController::Destroy()
 {
   APZThreadUtils::AssertOnCompositorThread();
 
-  CancelAnimation(CancelAnimationFlags::RequestSnap);
+  CancelAnimation(CancelAnimationFlags::ScrollSnap);
 
   { // scope the lock
     MonitorAutoLock lock(mRefPtrMonitor);
@@ -1540,6 +1547,20 @@ nsEventStatus AsyncPanZoomController::OnScaleEnd(const PinchGestureInput& aEvent
 
   {
     ReentrantMonitorAutoEnter lock(mMonitor);
+    ScheduleComposite();
+    RequestContentRepaint();
+    UpdateSharedCompositorFrameMetrics();
+  }
+
+  // Non-negative focus point would indicate that one finger is still down
+  if (aEvent.mFocusPoint.x != -1 && aEvent.mFocusPoint.y != -1) {
+    mPanDirRestricted = false;
+    mX.StartTouch(aEvent.mFocusPoint.x, aEvent.mTime);
+    mY.StartTouch(aEvent.mFocusPoint.y, aEvent.mTime);
+    SetState(TOUCHING);
+  } else {
+    // Otherwise, handle the fingers being lifted.
+    ReentrantMonitorAutoEnter lock(mMonitor);
 
     // We can get into a situation where we are overscrolled at the end of a
     // pinch if we go into overscroll with a two-finger pan, and then turn
@@ -1555,21 +1576,8 @@ nsEventStatus AsyncPanZoomController::OnScaleEnd(const PinchGestureInput& aEvent
       ClearOverscroll();
     }
     // Along with clearing the overscroll, we also want to snap to the nearest
-    // snap point as appropriate, so ask the main thread (which knows about such
-    // things) to handle it.
-    RequestSnap();
-
-    ScheduleComposite();
-    RequestContentRepaint();
-    UpdateSharedCompositorFrameMetrics();
-  }
-
-  // Non-negative focus point would indicate that one finger is still down
-  if (aEvent.mFocusPoint.x != -1 && aEvent.mFocusPoint.y != -1) {
-    mPanDirRestricted = false;
-    mX.StartTouch(aEvent.mFocusPoint.x, aEvent.mTime);
-    mY.StartTouch(aEvent.mFocusPoint.y, aEvent.mTime);
-    SetState(TOUCHING);
+    // snap point as appropriate.
+    ScrollSnap();
   }
 
   return nsEventStatus_eConsumeNoDefault;
@@ -1993,7 +2001,7 @@ nsEventStatus AsyncPanZoomController::OnPanEnd(const PanGestureInput& aEvent) {
   RequestContentRepaint();
 
   if (!aEvent.mFollowedByMomentum) {
-    RequestSnap();
+    ScrollSnap();
   }
 
   return nsEventStatus_eConsumeNoDefault;
@@ -2008,7 +2016,7 @@ nsEventStatus AsyncPanZoomController::OnPanMomentumStart(const PanGestureInput& 
   }
 
   SetState(PAN_MOMENTUM);
-  RequestSnapToDestination();
+  ScrollSnapToDestination();
 
   // Call into OnPan in order to process any delta included in this event.
   OnPan(aEvent, false);
@@ -2473,51 +2481,18 @@ void AsyncPanZoomController::AcceptFling(FlingHandoffState& aHandoffState) {
     mY.SetVelocity(mY.GetVelocity() + aHandoffState.mVelocity.y);
     aHandoffState.mVelocity.y = 0;
   }
-  SetState(FLING);
-  FlingAnimation *fling = new FlingAnimation(*this,
-      aHandoffState.mChain,
-      !aHandoffState.mIsHandoff,  // only apply acceleration if this is an initial fling
-      aHandoffState.mScrolledApzc);
-  RequestSnapToDestination();
-  StartAnimation(fling);
-}
 
-void
-AsyncPanZoomController::RequestSnapToDestination()
-{
-  ReentrantMonitorAutoEnter lock(mMonitor);
-
-  float friction = gfxPrefs::APZFlingFriction();
-  ParentLayerPoint velocity(mX.GetVelocity(), mY.GetVelocity());
-  ParentLayerPoint predictedDelta;
-  // "-velocity / log(1.0 - friction)" is the integral of the deceleration
-  // curve modeled for flings in the "Axis" class.
-  if (velocity.x != 0.0f) {
-    predictedDelta.x = -velocity.x / log(1.0 - friction);
-  }
-  if (velocity.y != 0.0f) {
-    predictedDelta.y = -velocity.y / log(1.0 - friction);
-  }
-  CSSPoint predictedDestination = mFrameMetrics.GetScrollOffset() + predictedDelta / mFrameMetrics.GetZoom();
-
-  // If the fling will overscroll, don't request a fling snap, because the
-  // resulting content scrollTo() would unnecessarily cancel the overscroll
-  // animation.
-  bool flingWillOverscroll = IsOverscrolled() && ((velocity.x * mX.GetOverscroll() >= 0) ||
-                                                  (velocity.y * mY.GetOverscroll() >= 0));
-  if (!flingWillOverscroll) {
-    RefPtr<GeckoContentController> controller = GetGeckoContentController();
-    if (controller) {
-      APZC_LOG("%p fling snapping.  friction: %f velocity: %f, %f "
-               "predictedDelta: %f, %f position: %f, %f "
-               "predictedDestination: %f, %f\n",
-               this, friction, velocity.x, velocity.y, (float)predictedDelta.x,
-               (float)predictedDelta.y, (float)mFrameMetrics.GetScrollOffset().x,
-               (float)mFrameMetrics.GetScrollOffset().y,
-               (float)predictedDestination.x, (float)predictedDestination.y);
-      controller->RequestFlingSnap(mFrameMetrics.GetScrollId(),
-                                   predictedDestination);
-    }
+  // If there's a scroll snap point near the predicted fling destination,
+  // scroll there using a smooth scroll animation. Otherwise, start a
+  // fling animation.
+  ScrollSnapToDestination();
+  if (mState != SMOOTH_SCROLL) {
+    SetState(FLING);
+    FlingAnimation *fling = new FlingAnimation(*this,
+        aHandoffState.mChain,
+        !aHandoffState.mIsHandoff,  // only apply acceleration if this is an initial fling
+        aHandoffState.mScrolledApzc);
+    StartAnimation(fling);
   }
 }
 
@@ -2560,21 +2535,28 @@ void AsyncPanZoomController::HandleSmoothScrollOverscroll(const ParentLayerPoint
   HandleFlingOverscroll(aVelocity, BuildOverscrollHandoffChain(), nullptr);
 }
 
-void AsyncPanZoomController::StartSmoothScroll(ScrollSource aSource) {
-  SetState(SMOOTH_SCROLL);
-  nsPoint initialPosition = CSSPoint::ToAppUnits(mFrameMetrics.GetScrollOffset());
-  // Cast velocity from ParentLayerPoints/ms to CSSPoints/ms then convert to
-  // appunits/second
-  nsPoint initialVelocity = CSSPoint::ToAppUnits(CSSPoint(mX.GetVelocity(),
-                                                          mY.GetVelocity())) * 1000.0f;
-  nsPoint destination = CSSPoint::ToAppUnits(mFrameMetrics.GetSmoothScrollOffset());
+void AsyncPanZoomController::SmoothScrollTo(const CSSPoint& aDestination) {
+  if (mState == SMOOTH_SCROLL && mAnimation) {
+    APZC_LOG("%p updating destination on existing animation\n", this);
+    RefPtr<SmoothScrollAnimation> animation(
+      static_cast<SmoothScrollAnimation*>(mAnimation.get()));
+    animation->SetDestination(CSSPoint::ToAppUnits(aDestination));
+  } else {
+    CancelAnimation();
+    SetState(SMOOTH_SCROLL);
+    nsPoint initialPosition = CSSPoint::ToAppUnits(mFrameMetrics.GetScrollOffset());
+    // Cast velocity from ParentLayerPoints/ms to CSSPoints/ms then convert to
+    // appunits/second
+    nsPoint initialVelocity = CSSPoint::ToAppUnits(CSSPoint(mX.GetVelocity(),
+                                                            mY.GetVelocity())) * 1000.0f;
+    nsPoint destination = CSSPoint::ToAppUnits(aDestination);
 
-  StartAnimation(new SmoothScrollAnimation(*this,
-                                           aSource,
-                                           initialPosition, initialVelocity,
-                                           destination,
-                                           gfxPrefs::ScrollBehaviorSpringConstant(),
-                                           gfxPrefs::ScrollBehaviorDampingRatio()));
+    StartAnimation(new SmoothScrollAnimation(*this,
+                                             initialPosition, initialVelocity,
+                                             destination,
+                                             gfxPrefs::ScrollBehaviorSpringConstant(),
+                                             gfxPrefs::ScrollBehaviorDampingRatio()));
+  }
 }
 
 void AsyncPanZoomController::StartOverscrollAnimation(const ParentLayerPoint& aVelocity) {
@@ -2655,9 +2637,9 @@ void AsyncPanZoomController::CancelAnimation(CancelAnimationFlags aFlags) {
     repaint = true;
   }
   // Similar to relieving overscroll, we also need to snap to any snap points
-  // if appropriate, so ask the main thread to do that.
-  if (aFlags & CancelAnimationFlags::RequestSnap) {
-    RequestSnap();
+  // if appropriate.
+  if (aFlags & CancelAnimationFlags::ScrollSnap) {
+    ScrollSnap();
   }
   if (repaint) {
     RequestContentRepaint();
@@ -2854,7 +2836,7 @@ bool AsyncPanZoomController::SnapBackIfOverscrolled() {
   // main thread to snap to any nearby snap points, assuming we haven't already
   // done so when we started this fling
   if (mState != FLING) {
-    RequestSnap();
+    ScrollSnap();
   }
   return false;
 }
@@ -3249,14 +3231,16 @@ bool AsyncPanZoomController::IsCurrentlyCheckerboarding() const {
   return true;
 }
 
-void AsyncPanZoomController::NotifyLayersUpdated(const FrameMetrics& aLayerMetrics,
+void AsyncPanZoomController::NotifyLayersUpdated(const ScrollMetadata& aScrollMetadata,
                                                  bool aIsFirstPaint,
                                                  bool aThisLayerTreeUpdated)
 {
   APZThreadUtils::AssertOnCompositorThread();
 
   ReentrantMonitorAutoEnter lock(mMonitor);
-  bool isDefault = mFrameMetrics.IsDefault();
+  bool isDefault = mScrollMetadata.IsDefault();
+
+  const FrameMetrics& aLayerMetrics = aScrollMetadata.GetMetrics();
 
   mLastContentPaintMetrics = aLayerMetrics;
 
@@ -3332,7 +3316,7 @@ void AsyncPanZoomController::NotifyLayersUpdated(const FrameMetrics& aLayerMetri
     // that was just painted is something we knew nothing about previously
     CancelAnimation();
 
-    mFrameMetrics = aLayerMetrics;
+    mScrollMetadata = aScrollMetadata;
     if (scrollOffsetUpdated) {
       AcknowledgeScrollUpdate();
     }
@@ -3388,8 +3372,9 @@ void AsyncPanZoomController::NotifyLayersUpdated(const FrameMetrics& aLayerMetri
     mFrameMetrics.SetHasScrollgrab(aLayerMetrics.GetHasScrollgrab());
     mFrameMetrics.SetLineScrollAmount(aLayerMetrics.GetLineScrollAmount());
     mFrameMetrics.SetPageScrollAmount(aLayerMetrics.GetPageScrollAmount());
-    mFrameMetrics.SetClipRect(aLayerMetrics.GetClipRect());
-    mFrameMetrics.SetMaskLayerIndex(aLayerMetrics.GetMaskLayerIndex());
+    mScrollMetadata.SetSnapInfo(ScrollSnapInfo(aScrollMetadata.GetSnapInfo()));
+    mScrollMetadata.SetClipRect(aScrollMetadata.GetClipRect());
+    mScrollMetadata.SetMaskLayerIndex(aScrollMetadata.GetMaskLayerIndex());
     mFrameMetrics.SetIsLayersIdRoot(aLayerMetrics.IsLayersIdRoot());
     mFrameMetrics.SetUsesContainerScrolling(aLayerMetrics.UsesContainerScrolling());
     mFrameMetrics.SetIsScrollInfoLayer(aLayerMetrics.IsScrollInfoLayer());
@@ -3442,16 +3427,7 @@ void AsyncPanZoomController::NotifyLayersUpdated(const FrameMetrics& aLayerMetri
     AcknowledgeScrollUpdate();
     mExpectedGeckoMetrics = aLayerMetrics;
 
-    if (mState == SMOOTH_SCROLL && mAnimation) {
-      APZC_LOG("%p updating destination on existing animation\n", this);
-      RefPtr<SmoothScrollAnimation> animation(
-        static_cast<SmoothScrollAnimation*>(mAnimation.get()));
-      animation->SetDestination(
-        CSSPoint::ToAppUnits(aLayerMetrics.GetSmoothScrollOffset()));
-    } else {
-      CancelAnimation();
-      StartSmoothScroll(ScrollSource::DOM);
-    }
+    SmoothScrollTo(mFrameMetrics.GetSmoothScrollOffset());
   }
 
   if (needContentRepaint) {
@@ -3664,7 +3640,7 @@ AsyncPanZoomController::CancelAnimationAndGestureState()
 {
   mX.CancelGesture();
   mY.CancelGesture();
-  CancelAnimation(CancelAnimationFlags::RequestSnap);
+  CancelAnimation(CancelAnimationFlags::ScrollSnap);
 }
 
 bool
@@ -3841,12 +3817,62 @@ void AsyncPanZoomController::ShareCompositorFrameMetrics() {
   }
 }
 
-void AsyncPanZoomController::RequestSnap() {
-  if (RefPtr<GeckoContentController> controller = GetGeckoContentController()) {
-    APZC_LOG("%p requesting snap near %s\n", this,
-        Stringify(mFrameMetrics.GetScrollOffset()).c_str());
-    controller->RequestFlingSnap(mFrameMetrics.GetScrollId(),
-                                 mFrameMetrics.GetScrollOffset());
+void AsyncPanZoomController::ScrollSnapNear(const CSSPoint& aDestination) {
+  mMonitor.AssertCurrentThreadIn();
+  APZC_LOG("%p scroll snapping near %s\n", this, Stringify(aDestination).c_str());
+  CSSRect scrollRange = mFrameMetrics.CalculateScrollRange();
+  if (Maybe<nsPoint> snapPoint = ScrollSnapUtils::GetSnapPointForDestination(
+          mScrollMetadata.GetSnapInfo(),
+          nsIScrollableFrame::DEVICE_PIXELS,
+          CSSSize::ToAppUnits(mFrameMetrics.CalculateCompositedSizeInCssPixels()),
+          CSSRect::ToAppUnits(scrollRange),
+          CSSPoint::ToAppUnits(mFrameMetrics.GetScrollOffset()),
+          CSSPoint::ToAppUnits(aDestination))) {
+    CSSPoint cssSnapPoint = CSSPoint::FromAppUnits(snapPoint.ref());
+    // GetSnapPointForDestination() can produce a destination that's outside
+    // of the scroll frame's scroll range. Clamp it here (this matches the
+    // behaviour of the main-thread code path, which clamps it in
+    // nsGfxScrollFrame::ScrollTo()).
+    cssSnapPoint = scrollRange.ClampPoint(cssSnapPoint);
+    SmoothScrollTo(cssSnapPoint);
+  }
+}
+
+void AsyncPanZoomController::ScrollSnap() {
+  ReentrantMonitorAutoEnter lock(mMonitor);
+  ScrollSnapNear(mFrameMetrics.GetScrollOffset());
+}
+
+void AsyncPanZoomController::ScrollSnapToDestination() {
+  ReentrantMonitorAutoEnter lock(mMonitor);
+
+  float friction = gfxPrefs::APZFlingFriction();
+  ParentLayerPoint velocity(mX.GetVelocity(), mY.GetVelocity());
+  ParentLayerPoint predictedDelta;
+  // "-velocity / log(1.0 - friction)" is the integral of the deceleration
+  // curve modeled for flings in the "Axis" class.
+  if (velocity.x != 0.0f) {
+    predictedDelta.x = -velocity.x / log(1.0 - friction);
+  }
+  if (velocity.y != 0.0f) {
+    predictedDelta.y = -velocity.y / log(1.0 - friction);
+  }
+  CSSPoint predictedDestination = mFrameMetrics.GetScrollOffset() + predictedDelta / mFrameMetrics.GetZoom();
+
+  // If the fling will overscroll, don't scroll snap, because then the user
+  // user would not see any overscroll animation.
+  bool flingWillOverscroll = IsOverscrolled() && ((velocity.x * mX.GetOverscroll() >= 0) ||
+                                                  (velocity.y * mY.GetOverscroll() >= 0));
+  if (!flingWillOverscroll) {
+    APZC_LOG("%p fling snapping.  friction: %f velocity: %f, %f "
+             "predictedDelta: %f, %f position: %f, %f "
+             "predictedDestination: %f, %f\n",
+             this, friction, velocity.x, velocity.y, (float)predictedDelta.x,
+             (float)predictedDelta.y, (float)mFrameMetrics.GetScrollOffset().x,
+             (float)mFrameMetrics.GetScrollOffset().y,
+             (float)predictedDestination.x, (float)predictedDestination.y);
+
+    ScrollSnapNear(predictedDestination);
   }
 }
 
