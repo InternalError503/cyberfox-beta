@@ -231,8 +231,16 @@ procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 	if not UninstallSilent() then
 		begin
 			if FileOrDirExists(ExpandConstant('{app}\distribution')) then
-				DelTree(ExpandConstant('{app}'), True, True, True);
-		
+				DelTree(ExpandConstant('{app}\distribution'), True, True, True);
+				
+			#if Arch == "i368"	
+			if FileExists(ExpandConstant('{userdesktop}\{#MyAppName} (x86).LNK')) then
+				DeleteFile(ExpandConstant('{userdesktop}\{#MyAppName} (x86).LNK'));
+			#elif Arch == "amd64"	
+			if FileExists(ExpandConstant('{userdesktop}\{#MyAppName}.LNK')) then
+				DeleteFile(ExpandConstant('{userdesktop}\{#MyAppName}.LNK'));
+			#endif
+			
 			if MsgBox(ExpandConstant('{cm:DeleteProfileData}'), mbConfirmation, MB_YESNO) = IDYES  then begin
 			if MsgBox(ExpandConstant('{cm:ConfirmDeleteProfileData}'),mbConfirmation, MB_YESNO) = IDYES then begin
 				begin
@@ -247,7 +255,16 @@ procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 		else
 			if FileOrDirExists(ExpandConstant('{app}\distribution')) then
 			begin
-				DelTree(ExpandConstant('{app}'), True, True, True);
+				DelTree(ExpandConstant('{app}\distribution'), True, True, True);
+				
+			#if Arch == "i368"	
+			if FileExists(ExpandConstant('{userdesktop}\{#MyAppName} (x86).LNK')) then
+				DeleteFile(ExpandConstant('{userdesktop}\{#MyAppName} (x86).LNK'));
+			#elif Arch == "amd64"	
+			if FileExists(ExpandConstant('{userdesktop}\{#MyAppName}.LNK')) then
+				DeleteFile(ExpandConstant('{userdesktop}\{#MyAppName}.LNK'));
+			#endif
+				
 		end				
 	end
 end;
