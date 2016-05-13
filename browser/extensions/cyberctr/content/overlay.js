@@ -149,6 +149,8 @@ classicthemerestorerjs.ctr = {
 	try{if (this.appversion >= 44) document.getElementById("main-window").setAttribute('fx44plus',true);} catch(e){}
 	try{if (this.appversion >= 45) document.getElementById("main-window").setAttribute('fx45plus',true);} catch(e){}
 	try{if (this.appversion >= 46) document.getElementById("main-window").setAttribute('fx46plus',true);} catch(e){}
+	try{if (this.appversion >= 47) document.getElementById("main-window").setAttribute('fx47plus',true);} catch(e){}
+	try{if (this.appversion >= 48) document.getElementById("main-window").setAttribute('fx48plus',true);} catch(e){}
 
 	// add CTR version number to '#main-window' node, so other add-ons/themes can easier distinguish between versions
 	AddonManager.getAddonByID('ClassicThemeRestorer@ArisT2Noia4dev', function(addon) {
@@ -230,6 +232,9 @@ classicthemerestorerjs.ctr = {
 	
 	// move 'Tools' menus dev tools into application buttons popup 
 	this.moveDevtoolsmenu();
+	
+	// prevent browser from disablning CTRs reload button for no reason
+	this.preventReloaddisabling();
 	
 	// CTR Preferences listener
 	function PrefListener(branch_name, callback) {
@@ -657,6 +662,7 @@ classicthemerestorerjs.ctr = {
 			
 			classicthemerestorerjs.ctr.loadUnloadCSS('closeicon_red',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('closeicon_w7',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('closeicon_w7v2',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('closeicon_w8',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('closeicon_w10',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('closeicon_w10i',false);
@@ -673,6 +679,7 @@ classicthemerestorerjs.ctr = {
 			
 			classicthemerestorerjs.ctr.loadUnloadCSS('closeicong_red',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('closeicong_w7',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('closeicong_w7v2',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('closeicong_w8',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('closeicong_w10',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('closeicong_w10i',false);
@@ -1969,6 +1976,11 @@ classicthemerestorerjs.ctr = {
 			if (branch.getBoolPref("alt_newtabp")) classicthemerestorerjs.ctr.loadUnloadCSS("alt_newtabp",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("alt_newtabp",false);
 		  break;
+
+		  case "nosnippets":
+			if (branch.getBoolPref("nosnippets")) classicthemerestorerjs.ctr.loadUnloadCSS("nosnippets",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("nosnippets",false);
+		  break;
 		  
 		  case "ctroldsearch":
 			if (branch.getBoolPref("ctroldsearch") && classicthemerestorerjs.ctr.appversion >= 43) {
@@ -2143,22 +2155,23 @@ classicthemerestorerjs.ctr = {
 		  case "hideeditbm":
 		    if(classicthemerestorerjs.ctr.appversion >= 47) {
 				if (branch.getBoolPref("hideeditbm")) {
-					var editBookmark_popup = document.getElementById('editBookmarkPanel');
 
 					document.getElementById("bookmarks-menu-button").addEventListener("click", function(e) {
+											
+						document.getElementById('editBookmarkPanel').style.visibility = 'hidden';
 						
-						editBookmark_popup.addEventListener("popupshown", function(){
+						document.getElementById('editBookmarkPanel').addEventListener("popupshown", function(){
 							
-						  if (document.getElementById('bookmarks-menu-button').getAttribute('notification')) {
+						  if (document.getElementById('bookmarks-menu-button').hasAttribute('notification')) {
 							StarUI.panel.hidePopup();
 							StarUI.quitEditMode();
-							editBookmark_popup.removeAttribute('panelopen');
-							editBookmark_popup.removeAttribute('animate');
+							document.getElementById('editBookmarkPanel').removeAttribute('panelopen');
+							document.getElementById('editBookmarkPanel').removeAttribute('animate');
 
 							if(e.target.localName == "toolbarbutton" && e.originalTarget.getAttribute("anonid") == "button"){
 								e.originalTarget.removeAttribute('open');
 							}
-						  }
+						  } else document.getElementById('editBookmarkPanel').style.visibility = 'visible';
 
 						}, false);
 
@@ -2192,6 +2205,11 @@ classicthemerestorerjs.ctr = {
 			  classicthemerestorerjs.ctr.loadUnloadCSS("bmbunsortbm",false);
 			  classicthemerestorerjs.ctr.loadUnloadCSS("bmbunsortbm2",false);
 			}
+		  break;
+
+		  case "bmbviewbmsb":
+			if (branch.getBoolPref("bmbviewbmsb")) classicthemerestorerjs.ctr.loadUnloadCSS("bmbviewbmsb",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("bmbviewbmsb",false);
 		  break;
 		  
 		  case "bmbviewbmtb":
@@ -2362,22 +2380,16 @@ classicthemerestorerjs.ctr = {
 				if (newURL=='') newURL='about:newtab';
 				
 				try{
-					if (classicthemerestorerjs.ctr.appversion >= 44) aboutNewTabService.newTabURL = newURL;
-					else  {
-					  var {NewTabURL} = Cu.import("resource:///modules/NewTabURL.jsm", {});
-					  NewTabURL.override(newURL);
-					}
+				  var {NewTabURL} = Cu.import("resource:///modules/NewTabURL.jsm", {});
+				  NewTabURL.override(newURL);
 				} catch(e){}
 
 				classicthemerestorerjs.ctr.altnewtabpageOn = true;
 				
 			} else if (classicthemerestorerjs.ctr.appversion >= 41 && classicthemerestorerjs.ctr.altnewtabpageOn==true) {
 				try{
-				  if (classicthemerestorerjs.ctr.appversion >= 44) aboutNewTabService.resetNewTabURL();
-				  else {
-					var {NewTabURL} = Cu.import("resource:///modules/NewTabURL.jsm", {});
-					NewTabURL.reset();
-				  }
+				  var {NewTabURL} = Cu.import("resource:///modules/NewTabURL.jsm", {});
+				  NewTabURL.reset();
 				} catch(e){}
 				
 				classicthemerestorerjs.ctr.altnewtabpageOn = false;
@@ -3146,7 +3158,7 @@ classicthemerestorerjs.ctr = {
 	// NoiaButtons
 	var NBListener = {
 	   onEnabled: function(addon) {
-		  if(addon.id == 'NoiaButtons@ArisT2_Noia4dev') { 
+		  if(addon.id == 'NoiaButtons@ArisT2_Noia4dev') {
 		  
 		    if(Services.prefs.getBranch("extensions.classicthemerestorer.").getBoolPref("smallnavbut"))
 			  Services.prefs.getBranch("extensions.classicthemerestorer.").setBoolPref("smallnavbut",false);
@@ -3208,6 +3220,17 @@ classicthemerestorerjs.ctr = {
 	     try{
 		   document.getElementById("main-window").setAttribute('colorfultabs',true);
 		 } catch(e){}
+		 
+	   }
+	  });
+	},300);
+	
+	// Searchbar autoresizer add-on
+	setTimeout(function(){
+	  AddonManager.getAddonByID('{655397ca-4766-496b-b7a8-3a5b176ee4c2}', function(addon) {
+	   if(addon && addon.isActive) {
+	     
+	      Services.prefs.getBranch("extensions.classicthemerestorer.").setBoolPref('osearch_iwidth',false);
 		 
 	   }
 	  });
@@ -3693,6 +3716,26 @@ classicthemerestorerjs.ctr = {
 	},500);
   },
   
+  // prevent browser from disablning CTRs reload button for no reason
+  preventReloaddisabling: function(){
+	window.addEventListener("DOMContentLoaded", function preventRelDis(event){
+	  window.removeEventListener("DOMContentLoaded", preventRelDis, false);
+
+	  setTimeout(function(){
+		var observer = new MutationObserver(function(mutations) {
+		  mutations.forEach(function(mutation) {
+			try {
+				if(document.querySelector('#ctraddon_reload-button').hasAttribute('disabled'))
+				  document.querySelector('#ctraddon_reload-button').removeAttribute('disabled');
+			} catch(e){}
+		  });    
+		});
+		
+		observer.observe(document.querySelector('#ctraddon_reload-button'), { attributes: true, attributeFilter: ['disabled'] });
+	  },1000);
+	},false);
+  },
+  
   // tab width stuff
   updateTabWidth: function() {
   	window.addEventListener("DOMWindowCreated", function load(event){
@@ -4009,6 +4052,7 @@ classicthemerestorerjs.ctr = {
 		
 		case "closeicon_red": 			manageCSS("close_icon_t_red.css");  	break;
 		case "closeicon_w7": 			manageCSS("close_icon_t_w7.css");  		break;
+		case "closeicon_w7v2": 			manageCSS("close_icon_t_w7v2.css");  	break;
 		case "closeicon_w8": 			manageCSS("close_icon_t_w8.css");  		break;
 		case "closeicon_w10": 			manageCSS("close_icon_t_w10.css");  	break;
 		case "closeicon_w10i": 			manageCSS("close_icon_t_w10i.css");  	break;
@@ -4017,6 +4061,7 @@ classicthemerestorerjs.ctr = {
 		
 		case "closeicong_red": 			manageCSS("close_icon_g_red.css");  	break;
 		case "closeicong_w7": 			manageCSS("close_icon_g_w7.css");  		break;
+		case "closeicong_w7v2": 		manageCSS("close_icon_g_w7v2.css");  	break;
 		case "closeicong_w8": 			manageCSS("close_icon_g_w8.css");  		break;
 		case "closeicong_w10": 			manageCSS("close_icon_g_w10.css");  	break;
 		case "closeicong_w10i": 		manageCSS("close_icon_g_w10i.css");  	break;
@@ -4238,6 +4283,7 @@ classicthemerestorerjs.ctr = {
 		case "noemptypticon": 		manageCSS("empty_favicon_pt.css");		break;
 		case "hidezoomres": 		manageCSS("hide_zoomreset.css");		break;
 		case "alt_newtabp": 		manageCSS("alt_newtabpage.css");		break;
+		case "nosnippets": 			manageCSS("nosnippets.css");			break;
 		case "ctroldsearch": 		manageCSS("oldsearch.css");				break;
 		case "osearch_dm": 			manageCSS("oldsearch_dm.css");			break;
 		case "am_nowarning":		manageCSS("am_nowarnings.css");			break;
@@ -4258,6 +4304,7 @@ classicthemerestorerjs.ctr = {
 		case "bmbutpanelm": 		manageCSS("bmbut_pmenu.css");			break;
 		case "bmbunsortbm": 		manageCSS("bmbut_unsortedbookm.css");	break;
 		case "bmbunsortbm2": 		manageCSS("bmbut_unsortedbookm2.css");	break;
+		case "bmbviewbmsb": 		manageCSS("bmbut_bmbviewbmsb.css");		break;
 		case "bmbviewbmtb": 		manageCSS("bmbut_bmbviewbmtb.css");		break;
 		case "bmbnounsort": 		manageCSS("bmbut_bmbnounsort.css");		break;
 		case "bmbutnotext": 		manageCSS("bmbut_no_label.css");		break;
@@ -6864,7 +6911,7 @@ classicthemerestorerjs.ctr = {
   
   // open prefwindow and specific category
   additionalToolbars: function(){
-	Services.prefs.getBranch("extensions.classicthemerestorer.").setIntPref('pref_actindx',11);
+	Services.prefs.getBranch("extensions.classicthemerestorer.").setIntPref('pref_actindx',12);
 	
 	setTimeout(function(){
 	  classicthemerestorerjs.ctr.openCTRPreferences();

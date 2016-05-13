@@ -144,7 +144,7 @@
 <!ENTITY Ctr_hideprivmask	"Navigation privée : masquer l’icône « masque »">
 <!ENTITY Ctr_navsmallicons	"Petites icônes">
 <!ENTITY Ctr_navlargeicons	"Grandes icônes">
-<!ENTITY Ctr_nbisizedelay0	"Délai avant l’activation (au démarrage du navigateur)">
+<!ENTITY Ctr_nbisizedelay0	"">
 <!ENTITY Ctr_nbisizedelay	"ms (1000 ms = 1 s)">
 <!ENTITY Ctr_findbar		"Position de la barre de recherche">
 <!ENTITY Ctr_findbar_def	"En bas (par défaut)">
@@ -160,10 +160,13 @@
 <!ENTITY Ctr_cpanelmenus	"Compacter les éléments du panneau latéral (marque-pages, historique, etc.)">
 <!ENTITY Ctr_hidezoomres	"Boutons de zoom sur une barre d’outils : Masquer « Réinitialiser le niveau de zoom »">
 <!ENTITY Ctr_alt_newtabp	"Page Nouvel onglet (about:newtab) : autre aspect">
+<!ENTITY Ctr_nosnippets		"Start page (about:home): hide snippets">
+<!ENTITY Ctr_search_ui		"Barre de recherche">
 <!ENTITY Ctr_ctroldsearch	"Ancienne barre de recherche">
 <!ENTITY Ctr_ctroldsearchc	"Effacer le champ de la boîte de recherche après une recherche">
 <!ENTITY Ctr_search_oit		"Ouvrir la recherche dans un nouvel onglet (préférence about:config)">
 <!ENTITY Ctr_osearch_meoit	"Clic central : recherche dans un nouvel onglet au premier plan">
+<!ENTITY Ctr_osearch_iwidth	"Automatically adjust popup width">
 <!ENTITY Ctr_osearch_dm		"Petite « dropmarker »">
 <!ENTITY Ctr_addonmanager	"Gestionnaire de modules complémentaires">
 <!ENTITY Ctr_alt_addonsp	"Page « Plus de détails » des modules : autre aspect">
@@ -182,6 +185,7 @@
 <!ENTITY Ctr_bmbutpanelm	"Popup : apparence Panneau menu">
 <!ENTITY Ctr_bmbunsortbm	"Popup : sous menu des « marque-pages non triés »">
 <!ENTITY Ctr_bmbunsortbm2	"Menu au-dessus des marque-pages">
+<!ENTITY Ctr_bmbviewbmsb	"Popup: show 'View Sidebar'">
 <!ENTITY Ctr_bmbviewbmtb	"Popup : afficher « Voir la barre d’outils »">
 <!ENTITY Ctr_bmbnounsort	"Popup : cacher les « marque-pages non triés »">
 <!ENTITY Ctr_bmbutnotext	"Masquer « Marque-pages » sur la barre personnelle">
@@ -238,9 +242,7 @@
 <!ENTITY Ctr_urlbardropm	"Placer le dropmarker en dernier">
 <!ENTITY Ctr_urlbardropm2	"Dropmarker toujours visible">
 <!ENTITY Ctr_altreaderico	"Autres icônes du « lecteur »">
-<!ENTITY Ctr_altautocompl	"Alternative 'autocomplete popup' (experimental)">
 <!ENTITY Ctr_hideprbutton	"Masquer l’icône de notification quand un popup est bloqué">
-<!ENTITY Ctr_urlbar_uc		"Disable 'Unified autocomplete' feature (about:config preference)">
 <!ENTITY Ctr_locsearchbw10	"Réduire la hauteur de la barre d’adresse et la barre de recherche (expérimental)">
 <!ENTITY Ctr_urlbar_ib		"Bouton d’identité du site">
 <!ENTITY Ctr_ib_nohovcolor	"Ne pas afficher d’arrière-plan gris au survol">
@@ -259,8 +261,11 @@
 <!ENTITY Ctr_icopageinfo	"Favicon/globe-/'i'-icon: 'click' opens 'page info window'">
 <!ENTITY Ctr_lbsbsize		"Largeurs personnalisées pour la barre d’adresse et la barre de recherche">
 <!ENTITY Ctr_searchbar		"Barre de recherche">
-<!ENTITY Ctr_lbsugresi		"Afficher le plus de résultats possible dans les suggestions contextuelles (sans ascenseur)">
-<!ENTITY Ctr_lbsugres		"Nombre de résultats dans les suggestions contextuelles (préf. about:config)">
+<!ENTITY Ctr_urlbar_uc		"Désactiver la fonctionnalité « Autocomplétion unifiée » (paramètre about:config)">
+<!ENTITY Ctr_autocomplete	"Autocomplete popup">
+<!ENTITY Ctr_altautocompl	"Alternative appearance (experimental)">
+<!ENTITY Ctr_lbsugresi		"Disable height limit">
+<!ENTITY Ctr_lbsugres		"Number of results (about:config preference)">
 
 <!ENTITY Ctr_menubar_items	"Position de la barre de menus">
 <!ENTITY Ctr_extrabar		"Barres d’outils supplémentaires">

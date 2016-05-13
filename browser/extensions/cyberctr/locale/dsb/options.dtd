@@ -129,7 +129,7 @@
 <!ENTITY Ctr_options_rem	"Kategoriju se spomnjeś, kótaraž jo se ako slědna wubrała">
 <!ENTITY Ctr_svgfilters		"SVG-barwy za symbole tłocaškow symbolowych rědkow">
 <!ENTITY Ctr_wincontrols	"Pśesuwajobne wóźeńske elementy połneje wobrazowki">
-<!ENTITY Ctr_html5warning	"HTML5 full screen warning">
+<!ENTITY Ctr_html5warning	"Warnowanje połneje wobrazowki HTML5">
 <!ENTITY Ctr_oldtoplevimg	"Wobraze 'nejwušeje domeny': Klasiski wenkowny naglěd">
 <!ENTITY Ctr_altalertbox	"'Warnowański kašćik': Alternatiwny wenkowny naglěd">
 <!ENTITY Ctr_emptygfavico	"Powšykny fawority symbol wuměniś">
@@ -160,10 +160,13 @@
 <!ENTITY Ctr_cpanelmenus	"Menijowe wuskokujuce wokna (cytańske znamjenja, historija atd.): Kompaktny naglěd">
 <!ENTITY Ctr_hidezoomres	"Skalěrowańske elementy na symbolowej rědce: Tłocašk za slědkstajenje skalěrowanja schowaś">
 <!ENTITY Ctr_alt_newtabp	"Bok nowego rejtarka (about:newtab): Alternatiwne wuglědanje">
+<!ENTITY Ctr_nosnippets		"Start page (about:home): hide snippets">
+<!ENTITY Ctr_search_ui		"Search">
 <!ENTITY Ctr_ctroldsearch	"Stare pytanje">
 <!ENTITY Ctr_ctroldsearchc	"Pó pytanju pytańske pólo wuprozniś">
 <!ENTITY Ctr_search_oit		"Pytanje w nowem rejtarku wócyniś (about:config preference)">
 <!ENTITY Ctr_osearch_meoit	"Srjejźne kliknjenja: Pytanje w nowem 'prědkowem rejtarku'">
+<!ENTITY Ctr_osearch_iwidth	"Automatically adjust popup width">
 <!ENTITY Ctr_osearch_dm		"Mały wuběrański tłocašk">
 <!ENTITY Ctr_addonmanager	"Zastojnik dodankow">
 <!ENTITY Ctr_alt_addonsp	"'Bok Dalšne info': Alternatiwny pórěd">
@@ -182,6 +185,7 @@
 <!ENTITY Ctr_bmbutpanelm	"Wuskokujucy meni: Naglěd menijowego wuskokujucego wokna">
 <!ENTITY Ctr_bmbunsortbm	"Wuskokujucy meni: Meni 'Njesortěrowane cytańske znamjenja'">
 <!ENTITY Ctr_bmbunsortbm2	"Meni nad cytańskimi znamjenjami">
+<!ENTITY Ctr_bmbviewbmsb	"Popup: show 'View Sidebar'">
 <!ENTITY Ctr_bmbviewbmtb	"Wuskokujucy meni: 'Rědku cytańskich znamjenjow pokazaś' pokazaś">
 <!ENTITY Ctr_bmbnounsort	"Wuskokujucy meni: 'Njesortěrowane cytańske znamjenja' schowaś">
 <!ENTITY Ctr_bmbutnotext	"Tekst na rědce cytańskich znamjenjow schowaś">
@@ -238,9 +242,7 @@
 <!ENTITY Ctr_urlbardropm	"Tłocašk špica šypki do slědneje móžneje pozicije pśesunuś">
 <!ENTITY Ctr_urlbardropm2	"Tłocašk špica šypki pśecej pokazaś">
 <!ENTITY Ctr_altreaderico	"Alternatiwne 'cytakowe' symbole">
-<!ENTITY Ctr_altautocompl	"Alternative 'autocomplete popup' (experimental)">
 <!ENTITY Ctr_hideprbutton	"Zdźěleński symbol schowaś, gaž wuskokujuce wokno se blokěrujo">
-<!ENTITY Ctr_urlbar_uc		"Funkciju 'Zjadnośone awotwudopołnjenje' znjemóžniś (nastajenje about:config)">
 <!ENTITY Ctr_locsearchbw10	"Wusokosć adresowych a pytańskich pólow reducěrowaś (eksperimentelne)">
 <!ENTITY Ctr_urlbar_ib		"Tłocašk sedłoweje identity">
 <!ENTITY Ctr_ib_nohovcolor	"Šeru barwu pód kursorom myški njepokazaś">
@@ -259,8 +261,11 @@
 <!ENTITY Ctr_icopageinfo	"Faworitowy symbol/globusowy symbol/'i'-symbol: 'Kliknjenje' wokno 'Info wó boku' wócynja">
 <!ENTITY Ctr_lbsbsize		"Swójska šyrokosć za adresowe pólo a pytańske pólo">
 <!ENTITY Ctr_searchbar		"Pytańske pólo">
-<!ENTITY Ctr_lbsugresi		"Tak wjele wuslědkow ako móžno we wuskokujucem meniju naraźenjow pokazaá (bźez suwańskeje rědki)">
-<!ENTITY Ctr_lbsugres		"Licba wuslědkow we wuskokujucem meniju naraźenjow (nastajenje about:config)">
+<!ENTITY Ctr_autocomplete	"Autocomplete popup">
+<!ENTITY Ctr_altautocompl	"Alternative appearance (experimental)">
+<!ENTITY Ctr_urlbar_uc		"Funkciju 'zjadnośone awotwudopołnjenje' znjemóžniś (nastajenje about:config)">
+<!ENTITY Ctr_lbsugresi		"Disable height limit">
+<!ENTITY Ctr_lbsugres		"Number of results (about:config preference)">
 
 <!ENTITY Ctr_menubar_items	"Pozicija menijowych zapiskow">
 <!ENTITY Ctr_extrabar		"Pśidatne symbolowe rědki">

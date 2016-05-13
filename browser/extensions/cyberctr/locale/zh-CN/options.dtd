@@ -159,10 +159,13 @@
 <!ENTITY Ctr_cpanelmenus	"面板菜单: 更紧凑的视图 (书签、历史等等)">
 <!ENTITY Ctr_hidezoomres	"当缩放控制按钮在工具栏上时: 隐藏重置缩放按钮">
 <!ENTITY Ctr_alt_newtabp	"新标签页页面 (about:newtab): 备选的外观">
+<!ENTITY Ctr_nosnippets		"Start page (about:home): hide snippets">
+<!ENTITY Ctr_search_ui		"Search">
 <!ENTITY Ctr_ctroldsearch	"旧式搜索">
 <!ENTITY Ctr_ctroldsearchc	"搜索后清除搜索框">
 <!ENTITY Ctr_search_oit		"在新标签页中搜索 (about:config 选项)">
 <!ENTITY Ctr_osearch_meoit	"中键点击: 在新的“前台标签页”中搜索">
+<!ENTITY Ctr_osearch_iwidth	"Automatically adjust popup width">
 <!ENTITY Ctr_osearch_dm		"较小的下拉按钮">
 <!ENTITY Ctr_addonmanager	"附加组件管理器">
 <!ENTITY Ctr_alt_addonsp	"附加组件“更多”页面: 备选的外观">
@@ -181,6 +184,7 @@
 <!ENTITY Ctr_bmbutpanelm	"弹出式菜单: 面板式菜单外观">
 <!ENTITY Ctr_bmbunsortbm	"弹出式菜单: “未分类书签”子菜单">
 <!ENTITY Ctr_bmbunsortbm2	"菜单在书签之上">
+<!ENTITY Ctr_bmbviewbmsb	"Popup: show 'View Sidebar'">
 <!ENTITY Ctr_bmbviewbmtb	"弹出式菜单: 显示“查看工具栏”">
 <!ENTITY Ctr_bmbnounsort	"弹出式菜单: 隐藏“未分类书签”">
 <!ENTITY Ctr_bmbutnotext	"隐藏书签工具栏上的文本标签">
@@ -237,9 +241,7 @@
 <!ENTITY Ctr_urlbardropm	"尽可能移动下拉按钮到最后的位置">
 <!ENTITY Ctr_urlbardropm2	"下拉按钮总是可见">
 <!ENTITY Ctr_altreaderico	"备选的 “阅读模式” 图标">
-<!ENTITY Ctr_altautocompl	"备选的 “自动完成弹出框” (实验性)">
 <!ENTITY Ctr_hideprbutton	"当弹出窗口被阻止时隐藏通知图标">
-<!ENTITY Ctr_urlbar_uc		"禁用 “统一自动完成” 功能 (about:config 选项)">
 <!ENTITY Ctr_locsearchbw10	"减小地址栏与搜索栏高度(实验性)">
 <!ENTITY Ctr_urlbar_ib		"网站身份标识按钮 (身份标识框)">
 <!ENTITY Ctr_ib_nohovcolor	"鼠标悬停时不显示灰色">
@@ -258,8 +260,11 @@
 <!ENTITY Ctr_icopageinfo	"网站图标/地球/“i”图标: “点击” 打开 “页面信息窗口”">
 <!ENTITY Ctr_lbsbsize		"自定义地址栏和搜索栏的宽度">
 <!ENTITY Ctr_searchbar		"搜索栏">
-<!ENTITY Ctr_lbsugresi		"尽可能在建议弹出框中多显示结果 (不带滚动条)">
-<!ENTITY Ctr_lbsugres		"建议弹出框中的结果个数(about:config 选项)">
+<!ENTITY Ctr_autocomplete	"Autocomplete popup">
+<!ENTITY Ctr_altautocompl	"Alternative appearance (experimental)">
+<!ENTITY Ctr_urlbar_uc		"禁用 “统一自动完成” 功能 (about:config 选项)">
+<!ENTITY Ctr_lbsugresi		"Disable height limit">
+<!ENTITY Ctr_lbsugres		"Number of results (about:config preference)">
 
 <!ENTITY Ctr_menubar_items	"菜单项目位置">
 <!ENTITY Ctr_extrabar		"附加工具栏">

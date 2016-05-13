@@ -45,7 +45,7 @@
 <!ENTITY Ctr_tabsontop3		"Tabs unten (v2) --- '[tabsontop=false]'-Attribut gesetzt">
 <!ENTITY Ctr_tabsontopW1	"v2 ist nur für einige Add-ons und vollständige Themen sinnvoll!">
 <!ENTITY Ctr_tabsontopI1	"[tabsontop=true/false]-Attribut wird gesetzt für">
-<!ENTITY Ctr_tabsintitlebar	"&brandShortName;-Titelleiste (about:config-Einstellung)">
+<!ENTITY Ctr_tabsintitlebar	"Verwende &brandShortName;-Titelleiste anstatt der Betriebssystem-Titelleiste (about:config-Einstellung)">
 <!ENTITY Ctr_tabwidthdef	"(Standard)">
 <!ENTITY Ctr_tabwidthcla	"(klassisch)">
 <!ENTITY Ctr_tabminheight	"Höhe:">
@@ -160,10 +160,13 @@
 <!ENTITY Ctr_cpanelmenus	"Kompakte 'Panel-Aufklappmenüs' (Lesezeichen, Chronik etc.)">
 <!ENTITY Ctr_hidezoomres	"Zoom-Schaltflächen auf Leisten: 'Normalgröße'-Schaltfläche verstecken">
 <!ENTITY Ctr_alt_newtabp	"Seite 'Neuer Tab' (about:newtab): alternative Darstellung">
-<!ENTITY Ctr_ctroldsearch	"Alte 'Suche'">
+<!ENTITY Ctr_nosnippets		"Startseite (about:home): Snippets verstecken">
+<!ENTITY Ctr_search_ui		"Suche">
+<!ENTITY Ctr_ctroldsearch	"Alte Suche">
 <!ENTITY Ctr_ctroldsearchc	"Eingabefeld nach der Suche leeren">
 <!ENTITY Ctr_search_oit		"Suche in neuem Tab öffnen (about:config-Einstellung)">
 <!ENTITY Ctr_osearch_meoit	"Mittelklick: Suche im Vordergrund-Tab öffnen">
+<!ENTITY Ctr_osearch_iwidth	"Popupbreite automatisch der Suchfeldbreite anpassen">
 <!ENTITY Ctr_osearch_dm		"Kleinere Aufklapp-Schaltfläche">
 <!ENTITY Ctr_addonmanager	"Add-ons-Manager">
 <!ENTITY Ctr_alt_addonsp	"'Mehr Details'-Seite: Alternative Anordnung">
@@ -182,6 +185,7 @@
 <!ENTITY Ctr_bmbutpanelm	"Aufklappmenü: 'Panel'-Darstellung">
 <!ENTITY Ctr_bmbunsortbm	"Aufklappmenü: 'Unsortierte Lesezeichen'-Menü anzeigen">
 <!ENTITY Ctr_bmbunsortbm2	"Menü über den Lesezeichen">
+<!ENTITY Ctr_bmbviewbmsb	"Aufklappmenü: 'Lesezeichen-Seitenleiste' anzeigen">
 <!ENTITY Ctr_bmbviewbmtb	"Aufklappmenü: 'Lesezeichen-Symbolleiste' anzeigen">
 <!ENTITY Ctr_bmbnounsort	"Aufklappmenü: 'Unsortierte Lesezeichen' verstecken">
 <!ENTITY Ctr_bmbutnotext	"Text auch auf der Lesezeichen-Symbolleiste verstecken">
@@ -238,13 +242,11 @@
 <!ENTITY Ctr_urlbardropm	"Aufklapp-Schaltfläche an die letztmögliche Position verschieben">
 <!ENTITY Ctr_urlbardropm2	"Aufklapp-Schaltfläche immer anzeigen">
 <!ENTITY Ctr_altreaderico	"Alternatives Symbol für die 'Lesemodus'-Schaltfläche">
-<!ENTITY Ctr_altautocompl	"Alternatives 'Autovervollständigungs'-Pop-up (experimentell)">
 <!ENTITY Ctr_hideprbutton	"'Infosymbol' verstecken (wenn ein Pop-up-Fenster blockiert wurde)">
-<!ENTITY Ctr_urlbar_uc		"'Vereinigte Autovervollständigung' deaktivieren (about:config-Einstellung)">
 <!ENTITY Ctr_locsearchbw10	"Höhe der Adress- und Suchleiste reduzieren (experimentell)">
 <!ENTITY Ctr_urlbar_ib		"Schaltfläche zur Webseitenidentität">
 <!ENTITY Ctr_ib_nohovcolor	"Graue Farbe beim 'Hovern' nicht anzeigen">
-<!ENTITY Ctr_ib_graycolor	"Graue Farbe für 'Chrome'-Seiten und Seiten mit unbekannter Identität">
+<!ENTITY Ctr_ib_graycolor	"Graue Farbe für 'about:'-Seiten und Seiten mit unbekannter Identität">
 <!ENTITY Ctr_verifiedcolors	"Farbig bei verifizierten Webseiten, sicheren und unsicheren Verbindungen">
 <!ENTITY Ctr_ibinfoico		"'i'-Symbol durch Globus-Symbol ersetzen">
 <!ENTITY Ctr_ibinfoico2		"'i'-Symbol verstecken (falls möglich)">
@@ -259,8 +261,11 @@
 <!ENTITY Ctr_icopageinfo	"Globus-/Lesezeichen-/'i'-Symbol: 'Seiteninfo'-Fenster per Klick öffnen">
 <!ENTITY Ctr_lbsbsize		"Benutzerdefinierte Breite für die Adressleiste und die Suchleiste">
 <!ENTITY Ctr_searchbar		"Suchleiste">
-<!ENTITY Ctr_lbsugresi		"Vorschläge im Aufklappmenü ohne Bildlaufleiste anzeigen (falls möglich)">
-<!ENTITY Ctr_lbsugres		"Anzahl der Vorschläge im Aufklappmenü (about:config-Einstellung)">
+<!ENTITY Ctr_autocomplete	"Autovervollständigungs-Pop-up">
+<!ENTITY Ctr_altautocompl	"Alternative Darstellung (experimentell)">
+<!ENTITY Ctr_urlbar_uc		"'Vereinigte Autovervollständigung' deaktivieren (about:config-Einstellung)">
+<!ENTITY Ctr_lbsugresi		"Höhenlimit deaktivieren">
+<!ENTITY Ctr_lbsugres		"Anzahl der Vorschläge (about:config-Einstellung)">
 
 <!ENTITY Ctr_menubar_items	"Position der Menüeinträge">
 <!ENTITY Ctr_extrabar		"Extraleisten">
@@ -368,7 +373,7 @@
 
 <!ENTITY Ctr_special_font	"Hintergrundfarbeinstellungen sind nur für das Standard-Thema vorhanden!">
 <!ENTITY Ctr_special_info	"Einige Optionen haben nur in bestimmten Fällen sichtbare Auswirkungen!">
-<!ENTITY Ctr_special_info2	"Diese Einstellungen sind für das Standard-Thema und funktionieren evtl. nicht mit allen Themen!">
+<!ENTITY Ctr_special_info2	"Vollständiges 'Thema' erkannt! Einige Einstellungen funktionieren nicht mit Themen!">
 <!ENTITY Ctr_support		"Hilfe-Forum">
 <!ENTITY Ctr_newversion		"Neue Version?">
 

@@ -13,7 +13,7 @@
 <!ENTITY Ctr_puibseparator	"Διαχωριστικό (για το κουμπί του κύριου μενού πίνακα)">
 <!ENTITY Ctr_navthrobber	"Ενδείκτης δραστηριότητας">
 <!ENTITY Ctr_sidebarbutton	"(Πλευρική στήλη)">
-<!ENTITY Ctr_windowcontrols	"Ελαχιστοποίηση/επαναφορά/κλείσιμο (Πλήρης οθόνη)">
+<!ENTITY Ctr_windowcontrols	"Ελαχιστοποίηση/Μεγιστοποίηση/Κλείσιμο (Πλήρης οθόνη)">
 <!ENTITY Ctr_rr				"Απαιτείται επανεκκίνηση!">
 <!ENTITY Ctr_window			"Παράθυρο">
 
@@ -128,7 +128,7 @@
 <!ENTITY Ctr_options_rem	"Απομνημόνευση τελευταία επιλεχθείσας κατηγορίας">
 <!ENTITY Ctr_svgfilters		"Χρώματα SVG για προεπιλεγμένα εικονίδια κουμπιών εργαλειοθήκης">
 <!ENTITY Ctr_wincontrols	"Μετακινήσιμα στοιχεία ελέγχου παραθύρου σε προβολή πλήρους οθόνης">
-<!ENTITY Ctr_html5warning	"HTML5 full screen warning">
+<!ENTITY Ctr_html5warning	"Προειδοποίηση πλήρους οθόνης HTML5">
 <!ENTITY Ctr_oldtoplevimg	"Εικόνες τομέα «ανώτατου επιπέδου»: κλασική εμφάνιση">
 <!ENTITY Ctr_altalertbox	"«Πλαίσιο ειδοποίησης»: εναλλακτική εμφάνιση">
 <!ENTITY Ctr_emptygfavico	"Αντικατάσταση εικονιδίου γενικής χρήσης">
@@ -159,10 +159,13 @@
 <!ENTITY Ctr_cpanelmenus	"Αναδυόμενα μενού πίνακα (σελιδοδείκτες, ιστορικό κλπ): συνεπτυγμένη προβολή">
 <!ENTITY Ctr_hidezoomres	"Στοιχεία ελέγχου μεγέθυνσης σε εργαλειοθήκη: απόκρυψη κουμπιού επεναφοράς επιπέδου μεγέθυνσης">
 <!ENTITY Ctr_alt_newtabp	"Σελίδα νέας καρτέλας (about:newtab): εναλλακτική εμφάνιση">
+<!ENTITY Ctr_nosnippets		"Start page (about:home): hide snippets">
+<!ENTITY Ctr_search_ui		"Search">
 <!ENTITY Ctr_ctroldsearch	"Παλιότερη διεπαφή αναζήτησης">
 <!ENTITY Ctr_ctroldsearchc	"Κένωση πλαισίου αναζήτησης μετά την αναζήτηση">
 <!ENTITY Ctr_search_oit		"Άνοιγμα αναζήτησης σε νέα καρτέλα (προτίμηση «about:config»)">
-<!ENTITY Ctr_osearch_meoit	"Μεσαίο κλικ: search in new 'foreground tab'">
+<!ENTITY Ctr_osearch_meoit	"Μεσαίο κλικ: αναζήτηση σε νέα καρτέλα στο προσκήνιο">
+<!ENTITY Ctr_osearch_iwidth	"Automatically adjust popup width">
 <!ENTITY Ctr_osearch_dm		"Μικρός δείκτης ανάπτυξης">
 <!ENTITY Ctr_addonmanager	"Διαχειριστής πρόσθετων">
 <!ENTITY Ctr_alt_addonsp	"Σελίδα «Περισσότερα»: εναλλακτική σειρά περιεχομένου">
@@ -181,6 +184,7 @@
 <!ENTITY Ctr_bmbutpanelm	"Αναδυόμενο: εμφάνιση ως μενού πίνακα">
 <!ENTITY Ctr_bmbunsortbm	"Αναδυόμενο: υπομενού «Αταξινόμητοι σελιδοδείκτες»">
 <!ENTITY Ctr_bmbunsortbm2	"Πάνω από τους σελιδοδείκτες">
+<!ENTITY Ctr_bmbviewbmsb	"Popup: show 'View Sidebar'">
 <!ENTITY Ctr_bmbviewbmtb	"Αναδυόμενο: εμφάνιση «Προβολή εργαλειοθήκης σελιδοδεικτών»">
 <!ENTITY Ctr_bmbnounsort	"Αναδυόμενο: απόκρυψη «Αταξινόμητοι σελιδοδείκτες»">
 <!ENTITY Ctr_bmbutnotext	"Απόκρυψη ετικέτας στην εργαλειοθήκη σελιδοδεικτών">
@@ -237,9 +241,7 @@
 <!ENTITY Ctr_urlbardropm	"Μετακίνηση του δείκτη ανάπτυξης στην τελευταία δυνατή θέση">
 <!ENTITY Ctr_urlbardropm2	"Να είναι πάντα ορατός ο δείκτης ανάπτυξης">
 <!ENTITY Ctr_altreaderico	"Εναλλακτικά εικονίδια «λειτουργίας ανάγνωσης»">
-<!ENTITY Ctr_altautocompl	"Alternative 'autocomplete popup' (experimental)">
 <!ENTITY Ctr_hideprbutton	"Απόκρυψη εικονιδίου ειδοποίησης φραγής αναδυόμενου παραθύρου">
-<!ENTITY Ctr_urlbar_uc		"Απενεργοποίηση χαρακτηριστικού ενιαίας αυτόματης συμπλήρωσης (προτίμηση «about:config»)">
 <!ENTITY Ctr_locsearchbw10	"Μείωση ύψους γραμμών τοποθεσιών και αναζήτησης (πειραματικό)">
 <!ENTITY Ctr_urlbar_ib		"Κουμπί ταυτοποίησης τοποθεσιών (πλαίσιο ταυτοποίησης)">
 <!ENTITY Ctr_ib_nohovcolor	"Μη εμφάνιση γκρι χρώματος κατά την κατάδειξη">
@@ -258,8 +260,11 @@
 <!ENTITY Ctr_icopageinfo	"Εικονίδιο υδρογείου/ιστότοπου/«i»: Άνοιγμα παραθύρου «Πληροφορίες σελίδας» με κλικ στο εικονίδιο">
 <!ENTITY Ctr_lbsbsize		"Προσαρμοσμένο εύρος γραμμών διευθύνσεων και αναζήτησης">
 <!ENTITY Ctr_searchbar		"Γραμμή αναζήτησης">
-<!ENTITY Ctr_lbsugresi		"Προβολή όσο το δυνατόν περισσότερων αποτελεσμάτων στο αναδυόμενο υποδείξεων (χωρίς γραμμή κύλισης)">
-<!ENTITY Ctr_lbsugres		"Αριθμός αποτελεσμάτων στο αναδυόμενο υποδείξεων (προτίμηση «about:config»)">
+<!ENTITY Ctr_autocomplete	"Autocomplete popup">
+<!ENTITY Ctr_altautocompl	"Alternative appearance (experimental)">
+<!ENTITY Ctr_urlbar_uc		"Απενεργοποίηση χαρακτηριστικού ενιαίας αυτόματης συμπλήρωσης (προτίμηση «about:config»)">
+<!ENTITY Ctr_lbsugresi		"Disable height limit">
+<!ENTITY Ctr_lbsugres		"Number of results (about:config preference)">
 
 <!ENTITY Ctr_menubar_items	"Θέση στοιχείων μενού της εργαλειοθήκης μενού">
 <!ENTITY Ctr_extrabar		"Επιπρόσθετες εργαλειοθήκες">
@@ -375,7 +380,7 @@
 <!ENTITY appMenuGettingStarted.label	"Ξεκινώντας">
 <!ENTITY goCmd.label					"Μετάβαση">
 <!ENTITY Ctr_menu_restart.label			"Επανεκκίνηση">
-<!ENTITY Ctr_restartapp					"«Επανεκκίνηση» στα μενού κουμπιού &brandShortName; και «Αρχείο»">
+<!ENTITY Ctr_restartapp					"Στοιχείο «Επανεκκίνηση» στα μενού κουμπιού &brandShortName; και «Αρχείο»">
 
 <!-- For page context entries. Have to be adjusted for every locale! -->
 <!ENTITY backCmd.accesskey				"Π">

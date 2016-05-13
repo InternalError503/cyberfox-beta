@@ -159,10 +159,13 @@
 <!ENTITY Ctr_cpanelmenus	"Компактная панель меню (закладки, история и т.д.)">
 <!ENTITY Ctr_hidezoomres	"Кнопки масштаба: скрыть сброс масштабирования">
 <!ENTITY Ctr_alt_newtabp	"Страница новой вкладки (about:newtab): альтернативный вид">
+<!ENTITY Ctr_nosnippets		"Start page (about:home): hide snippets">
+<!ENTITY Ctr_search_ui		"Search">
 <!ENTITY Ctr_ctroldsearch	"Старая форма поиска">
 <!ENTITY Ctr_ctroldsearchc	"Очистить форму после поиска">
 <!ENTITY Ctr_search_oit		"Открывать поиск в ноовй вкладке (опция about:config)">
 <!ENTITY Ctr_osearch_meoit	"Клик средней кнопкой: поиск в новой активной вкладке">
+<!ENTITY Ctr_osearch_iwidth	"Automatically adjust popup width">
 <!ENTITY Ctr_osearch_dm		"Маленький маркер">
 <!ENTITY Ctr_addonmanager	"Управление дополнениями">
 <!ENTITY Ctr_alt_addonsp	"Альтернативное представление страницы дополнительной информации о дополнениях">
@@ -181,6 +184,7 @@
 <!ENTITY Ctr_bmbutpanelm	"Всплывающее меню: вид панели меню">
 <!ENTITY Ctr_bmbunsortbm	"Всплывающее меню: подменю 'несортированные закладки'">
 <!ENTITY Ctr_bmbunsortbm2	"Меню над закладками">
+<!ENTITY Ctr_bmbviewbmsb	"Popup: show 'View Sidebar'">
 <!ENTITY Ctr_bmbviewbmtb	"Всплывающее меню: показывать 'Просмотр Панели инструментов'">
 <!ENTITY Ctr_bmbnounsort	"Всплывающее меню: скрыть 'несортированные закладки'">
 <!ENTITY Ctr_bmbutnotext	"Скрыть текст на панели закладок">
@@ -237,9 +241,7 @@
 <!ENTITY Ctr_urlbardropm	"Перемещать маркер на последнюю возможную позицию">
 <!ENTITY Ctr_urlbardropm2	"Сделать маркер видимым постоянно">
 <!ENTITY Ctr_altreaderico	"Альтернативные иконки 'Режима чтения'">
-<!ENTITY Ctr_altautocompl	"Alternative 'autocomplete popup' (experimental)">
 <!ENTITY Ctr_hideprbutton	"Скрыть значок уведомления, когда блокируется всплывающее окно">
-<!ENTITY Ctr_urlbar_uc		"Отключить возможность 'Унифицированное автозавершение' (настройка about:config)">
 <!ENTITY Ctr_locsearchbw10	"Уменьшить высоту панелей адреса и поиска (экспериментально)">
 <!ENTITY Ctr_urlbar_ib		"Кнопка подлинности сайта">
 <!ENTITY Ctr_ib_nohovcolor	"Не отображать серый цвет при зависании">
@@ -258,6 +260,9 @@
 <!ENTITY Ctr_icopageinfo	"Значок Избранного/глобуса/'i': клик открывает окно 'информация о странице'">
 <!ENTITY Ctr_lbsbsize		"Настройка ширины панелей адреса и поиска">
 <!ENTITY Ctr_searchbar		"Панель поиска">
+<!ENTITY Ctr_autocomplete	"Autocomplete popup">
+<!ENTITY Ctr_altautocompl	"Alternative appearance (experimental)">
+<!ENTITY Ctr_urlbar_uc		"Отключить функцию «автозаполнение» (настройка about:config)">
 <!ENTITY Ctr_lbsugresi		"Отображать максимально возможное количество результатов в подсказках (без прокрутки)">
 <!ENTITY Ctr_lbsugres		"Количество всплывающих результатов (настройка about:config)">
 

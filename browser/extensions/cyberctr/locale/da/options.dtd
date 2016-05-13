@@ -160,10 +160,13 @@
 <!ENTITY Ctr_cpanelmenus	"Panelmenu-popups: kompakt visning (bogmærker, historik, osv.): kompakt visning">
 <!ENTITY Ctr_hidezoomres	"Zoom-knapper på værktøjslinje: skjul zoom-nulstil-knapper">
 <!ENTITY Ctr_alt_newtabp	"Nyt faneblad-side (about:newtab): alternativt udseende">
+<!ENTITY Ctr_nosnippets		"Start page (about:home): hide snippets">
+<!ENTITY Ctr_search_ui		"Search">
 <!ENTITY Ctr_ctroldsearch	"Gamle søgning">
 <!ENTITY Ctr_ctroldsearchc	"Ryd søgeboks efter søgning">
 <!ENTITY Ctr_search_oit		"Åbn søgning i nyt faneblad (about:config-indstilling)">
 <!ENTITY Ctr_osearch_meoit	"Mellemklik: søg i nyt 'forgrundsfaneblad'">
+<!ENTITY Ctr_osearch_iwidth	"Automatically adjust popup width">
 <!ENTITY Ctr_osearch_dm		"Lille rullepil">
 <!ENTITY Ctr_addonmanager	"Tilføjelseshåndtering">
 <!ENTITY Ctr_alt_addonsp	"'Mere info'-side: alternativ rækkefølge">
@@ -182,6 +185,7 @@
 <!ENTITY Ctr_bmbutpanelm	"Popup: panelmenu udseende">
 <!ENTITY Ctr_bmbunsortbm	"Popup: 'usorterede bogmærker'-undermenu">
 <!ENTITY Ctr_bmbunsortbm2	"Menu above bookmarks">
+<!ENTITY Ctr_bmbviewbmsb	"Popup: show 'View Sidebar'">
 <!ENTITY Ctr_bmbviewbmtb	"Popup: vis 'Vis værktøjslinje'">
 <!ENTITY Ctr_bmbnounsort	"Popup: skjul 'usorterede bogmærker'">
 <!ENTITY Ctr_bmbutnotext	"Skjul etiket på bogmærkelinje">
@@ -238,9 +242,7 @@
 <!ENTITY Ctr_urlbardropm	"Flyt rullemenu-pilen til den sidst mulige position">
 <!ENTITY Ctr_urlbardropm2	"Make dropmarker always visible">
 <!ENTITY Ctr_altreaderico	"Alternative 'Læser'-ikoner">
-<!ENTITY Ctr_altautocompl	"Alternative 'autocomplete popup' (experimental)">
 <!ENTITY Ctr_hideprbutton	"Skjul notifikationsikonet når en popup blokeres">
-<!ENTITY Ctr_urlbar_uc		"Disable 'Unified autocomplete' feature (about:config preference)">
 <!ENTITY Ctr_locsearchbw10	"Reducér adresselinjers og søgelinjers højde (eksperimentel)">
 <!ENTITY Ctr_urlbar_ib		"Knappen Identitet for websted (Identitet boks)">
 <!ENTITY Ctr_ib_nohovcolor	"Vis ikke grå farve når der peges på">
@@ -259,8 +261,11 @@
 <!ENTITY Ctr_icopageinfo	"Favicon/globe-/'i'-icon: 'click' opens 'page info window'">
 <!ENTITY Ctr_lbsbsize		"Brugerdefineret brede for adresselinje og søgelinje">
 <!ENTITY Ctr_searchbar		"Søgelinje">
-<!ENTITY Ctr_lbsugresi		"Vis så mange resultater som muligt i forslag-popup (uden rullepanel)">
-<!ENTITY Ctr_lbsugres		"Antal resultater i forslag-popup (about:config-indstilling)">
+<!ENTITY Ctr_autocomplete	"Autocomplete popup">
+<!ENTITY Ctr_altautocompl	"Alternative appearance (experimental)">
+<!ENTITY Ctr_urlbar_uc		"Disable 'unified autocomplete' feature (about:config preference)">
+<!ENTITY Ctr_lbsugresi		"Disable height limit">
+<!ENTITY Ctr_lbsugres		"Number of results (about:config preference)">
 
 <!ENTITY Ctr_menubar_items	"Placering af menupunkter">
 <!ENTITY Ctr_extrabar		"Yderligere værktøjslinjer">
