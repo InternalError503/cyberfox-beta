@@ -1,4 +1,8 @@
 ﻿[CustomMessages]
+
+;Don't translate this.
+ApplicationDescription=Cyberfox delivers safe, easy web browsing. A familiar user interface, enhanced security features including protection from online identity theft, and integrated search let you get the most out of the web.
+
 ;English
 en.ProcessName={#MyAppName}
 en.IsAppRunning= is already running, Please close {#MyAppName} then run the installer again.
