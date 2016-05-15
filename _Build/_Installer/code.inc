@@ -151,11 +151,13 @@ var
 		if (forcedInstallation(ParamCount())) then
 	begin
 		ShellExec('open','taskkill.exe','/f /im {#MyAppExeName}','',SW_HIDE,ewNoWait,ErrorCode);
+		log(ExpandConstant ('Installation was forced, {#MyAppExeName} was running!'));
 		Result := true;
 #if Arch == "amd64"		
 		if not IsWin64 then
 		begin
 			msgbox(ExpandConstant ('{cm:Isx64BitOS}'), mbInformation, MB_OK)
+			log('Incompatible OS: Unable to install x64bit application on x86 operating system!');
 			ExitProcess(10); // Our Exit code for incompatible OS.
 		end	
 #endif
@@ -173,6 +175,7 @@ var
 		if not IsWin64 then
 		begin
 			msgbox(ExpandConstant ('{cm:Isx64BitOS}'), mbInformation, MB_OK)
+			log('Incompatible OS: Unable to install x64bit application on x86 operating system!');
 			ExitProcess(10); // Our Exit code for incompatible OS.
 		end;	
 #endif
