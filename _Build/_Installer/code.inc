@@ -124,6 +124,20 @@ begin
 		end
 end;
 
+//Check for windows Vista.
+function CheckIfVista: boolean;
+var 
+	Version: TWindowsVersion;
+begin
+	GetWindowsVersionEx(Version);
+	Result := False;
+	if (Version.Major = 6) and (Version.Minor = 0) then
+	begin
+		log('Windows vista detected ' + IntToStr(Version.Major) + '.' + IntToStr(Version.Minor));
+		Result := True;
+	end
+end;
+
 //Initialize installer run check for running process.	
 #if Arch == "amd64"
 //Check and warn user if installing Cyberfox x64 bit on x86 OS.
@@ -160,8 +174,14 @@ var
 		begin
 			msgbox(ExpandConstant ('{cm:Isx64BitOS}'), mbInformation, MB_OK)
 			ExitProcess(10); // Our Exit code for incompatible OS.
-		end	
-#endif		
+		end;	
+#endif
+		//Check if running windows vista, We no longer support it but still allow the executables to run.
+		//When run in silent or verysilent modes the user must pass /suppressmsgboxes to suppress the warning notification.
+		if CheckIfVista() then
+		begin
+			SuppressibleMsgBox(ExpandConstant('{cm:IsAppRunningOnVista}'), mbCriticalError, MB_OK, IDOK)
+		end		
 	end
 end;
 //After initializing installer event.
