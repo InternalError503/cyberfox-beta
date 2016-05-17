@@ -830,6 +830,8 @@ pref("plugin.state.iprint", 2);
 #endif
 
 #ifdef XP_WIN
+// Toggle all browser plugins
+pref("plugins.disabled", false);
 // Toggle plugin whitelist (Flash, Silverlight)
 pref("plugin.allowed_whitelist.enabled", false);
 // Toggle Java plugin allowed state regardless of whitelist.

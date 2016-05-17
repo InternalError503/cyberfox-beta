@@ -141,6 +141,7 @@ static const char *kPrefLoadInParentPrefix = "plugin.load_in_parent_process.";
 static const char *kPrefDisableFullPage = "plugin.disable_full_page_plugin_for_types";
 static const char *kPrefJavaMIME = "plugin.java.mime";
 #if defined(XP_WIN)
+static const char *kPrefPluginsDisabled = "plugins.disabled";
 static const char *kPrefPluginsAllowedWhitelist = "plugin.allowed_whitelist.enabled";
 static const char *kPrefPluginsJavaAllowed = "plugin.java_allowed";
 #endif
@@ -2041,9 +2042,13 @@ bool
 nsPluginHost::ShouldAddPlugin(nsPluginTag* aPluginTag)
 {
 #if defined(XP_WIN)
+	  //Disable all browser plugins.
+	  if (Preferences::GetBool(kPrefPluginsDisabled, true)) {
+		return false;
+	  }
 	  // On windows, Users control java plugin by preference
 	  // Use library filename and MIME type to check.
-	  // Restart required when preference toggled.
+	  // Restart required when preference toggled.	  
 	  if (!Preferences::GetBool(kPrefPluginsJavaAllowed, false)) {
 		  if ((aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-applet (Java Applet)")) ||
 			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-bean (JavaBeans)")) ||
