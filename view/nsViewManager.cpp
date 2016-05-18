@@ -385,7 +385,7 @@ nsViewManager::ProcessPendingUpdatesForView(nsView* aView,
     }
   }
   if (rootShell->GetViewManager() != this) {
-    return; // 'this' might have been destroyed
+    return; // presentation might have been torn down
   }
   if (aFlushDirtyRegion) {
     profiler_tracing("Paint", "DisplayList", TRACING_INTERVAL_START);
@@ -431,7 +431,7 @@ nsViewManager::ProcessPendingUpdatesPaint(nsIWidget* aWidget)
   if (aWidget->NeedsPaint()) {
     // If an ancestor widget was hidden and then shown, we could
     // have a delayed resize to handle.
-    for (nsViewManager *vm = this; vm;
+    for (RefPtr<nsViewManager> vm = this; vm;
          vm = vm->mRootView->GetParent()
            ? vm->mRootView->GetParent()->GetViewManager()
            : nullptr) {
@@ -693,15 +693,16 @@ void nsViewManager::InvalidateViews(nsView *aView)
 
 void nsViewManager::WillPaintWindow(nsIWidget* aWidget)
 {
-  if (aWidget) {
-    nsView* view = nsView::GetViewFor(aWidget);
-    LayerManager *manager = aWidget->GetLayerManager();
+  RefPtr<nsIWidget> widget(aWidget);
+  if (widget) {
+    nsView* view = nsView::GetViewFor(widget);
+    LayerManager* manager = widget->GetLayerManager();
     if (view &&
         (view->ForcedRepaint() || !manager->NeedsWidgetInvalidation())) {
       ProcessPendingUpdates();
       // Re-get the view pointer here since the ProcessPendingUpdates might have
       // destroyed it during CallWillPaintOnObservers.
-      view = nsView::GetViewFor(aWidget);
+      view = nsView::GetViewFor(widget);
       if (view) {
         view->SetForcedRepaint(false);
       }
@@ -1095,6 +1096,7 @@ nsViewManager::ProcessPendingUpdates()
   if (mPresShell) {
     mPresShell->GetPresContext()->RefreshDriver()->RevokeViewManagerFlush();
 
+    RefPtr<nsViewManager> strongThis(this);
     CallWillPaintOnObservers();
 
     ProcessPendingUpdatesForView(mRootView, true);
@@ -1111,6 +1113,7 @@ nsViewManager::UpdateWidgetGeometry()
 
   if (mHasPendingWidgetGeometryChanges) {
     mHasPendingWidgetGeometryChanges = false;
+    RefPtr<nsViewManager> strongThis(this);
     ProcessPendingUpdatesForView(mRootView, false);
   }
 }

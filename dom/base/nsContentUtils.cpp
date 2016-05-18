@@ -263,6 +263,7 @@ nsString* nsContentUtils::sModifierSeparator = nullptr;
 
 bool nsContentUtils::sInitialized = false;
 bool nsContentUtils::sIsFullScreenApiEnabled = false;
+bool nsContentUtils::sIsUnprefixedFullscreenApiEnabled = false;
 bool nsContentUtils::sTrustedFullScreenOnly = true;
 bool nsContentUtils::sIsCutCopyAllowed = true;
 bool nsContentUtils::sIsFrameTimingPrefEnabled = false;
@@ -537,6 +538,9 @@ nsContentUtils::Init()
 
   Preferences::AddBoolVarCache(&sIsFullScreenApiEnabled,
                                "full-screen-api.enabled");
+
+  Preferences::AddBoolVarCache(&sIsUnprefixedFullscreenApiEnabled,
+                               "full-screen-api.unprefix.enabled");
 
   Preferences::AddBoolVarCache(&sTrustedFullScreenOnly,
                                "full-screen-api.allow-trusted-requests-only");
@@ -7573,27 +7577,31 @@ nsContentUtils::TransferableToIPCTransferable(nsITransferable* aTransferable,
             RefPtr<mozilla::gfx::SourceSurface> surface =
               image->GetFrame(imgIContainer::FRAME_CURRENT,
                               imgIContainer::FLAG_SYNC_DECODE);
-            if (surface) {
-              RefPtr<mozilla::gfx::DataSourceSurface> dataSurface =
-                surface->GetDataSurface();
-              size_t length;
-              int32_t stride;
-              mozilla::UniquePtr<char[]> surfaceData =
-                nsContentUtils::GetSurfaceData(dataSurface, &length, &stride);
-
-              IPCDataTransferItem* item = aIPCDataTransfer->items().AppendElement();
-              item->flavor() = nsCString(flavorStr);
-              // Turn item->data() into an nsCString prior to accessing it.
-              item->data() = EmptyCString();
-              item->data().get_nsCString().Adopt(surfaceData.release(), length);
-
-              IPCDataTransferImage& imageDetails = item->imageDetails();
-              mozilla::gfx::IntSize size = dataSurface->GetSize();
-              imageDetails.width() = size.width;
-              imageDetails.height() = size.height;
-              imageDetails.stride() = stride;
-              imageDetails.format() = static_cast<uint8_t>(dataSurface->GetFormat());
+            if (!surface) {
+              continue;
             }
+            RefPtr<mozilla::gfx::DataSourceSurface> dataSurface =
+              surface->GetDataSurface();
+            if (!dataSurface) {
+              continue;
+            }
+            size_t length;
+            int32_t stride;
+            mozilla::UniquePtr<char[]> surfaceData =
+              nsContentUtils::GetSurfaceData(dataSurface, &length, &stride);
+
+            IPCDataTransferItem* item = aIPCDataTransfer->items().AppendElement();
+            item->flavor() = nsCString(flavorStr);
+            // Turn item->data() into an nsCString prior to accessing it.
+            item->data() = EmptyCString();
+            item->data().get_nsCString().Adopt(surfaceData.release(), length);
+
+            IPCDataTransferImage& imageDetails = item->imageDetails();
+            mozilla::gfx::IntSize size = dataSurface->GetSize();
+            imageDetails.width() = size.width;
+            imageDetails.height() = size.height;
+            imageDetails.stride() = stride;
+            imageDetails.format() = static_cast<uint8_t>(dataSurface->GetFormat());
 
             continue;
           }
