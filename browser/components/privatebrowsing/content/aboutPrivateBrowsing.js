@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("startTour").setAttribute("href",
                      formatURLPref("privacy.trackingprotection.introURL"));
   document.getElementById("learnMore").setAttribute("href",
-                     formatURLPref("app.learn.more.baseURI") + "private-browsing");
+                     formatURLPref("app.learn.more.baseURI"));
 
   // Update state that depends on preferences.
   prefObserver.observe();

@@ -1707,7 +1707,7 @@ pref("app.learn.more.baseURI", "https://support.mozilla.org/%LOCALE%/kb/private-
 pref("app.feedback.baseURL", "https://8pecxstudios.com/Forums/viewforum.php?f=9");
 
 //Add SafeBrowsing Warning URL.
-pref("browser.safebrowsing.warning.infoURL", "https://www.mozilla.org/%LOCALE%/Firefox/phishing-protection/");
+pref("browser.safebrowsing.warning.infoURL", "https://support.mozilla.org/en-US/kb/how-does-phishing-and-malware-protection-work");
 
 //Add information Url for click to play
 pref("plugins.clickToActivateInfo.url", "https://support.mozilla.org/1/Firefox/%VERSION%/%OS%/%LOCALE%/clicktoplay"); 

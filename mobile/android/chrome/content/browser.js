@@ -5188,8 +5188,8 @@ var ErrorPageEventHandler = {
 
             // This is the "Why is this site blocked" button. We redirect
             // to the generic page describing phishing/malware protection.
-            let url = Services.urlFormatter.formatURLPref("app.helpdoc.baseURI");
-            BrowserApp.selectedBrowser.loadURI(url + "phishing-malware");
+            let url = Services.urlFormatter.formatURLPref("browser.safebrowsing.warning.infoURL");
+            BrowserApp.selectedBrowser.loadURI(url);
           } else if (target == errorDoc.getElementById("ignoreWarningButton") &&
                      Services.prefs.getBoolPref("browser.safebrowsing.allowOverride")) {
             if (sendTelemetry) {

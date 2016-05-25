@@ -2763,8 +2763,8 @@ var BrowserOnClick = {
 
         // We log even if malware/phishing/unwanted info URL couldn't be found:
         // the measurement is for how many users clicked the WHY BLOCKED button
-
-        openHelpLink("phishing-malware", false, "current");
+		let url = Services.urlFormatter.formatURLPref("browser.safebrowsing.warning.infoURL");
+        openUILinkIn(url, false, "current");
         break;
 
       case "ignoreWarningButton":
