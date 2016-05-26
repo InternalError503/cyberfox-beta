@@ -126,6 +126,10 @@
 <!ENTITY Ctr_options_rem	"Ricorda l'ultima categoria selezionata">
 <!ENTITY Ctr_svgfilters		"Colori SVG per le icone dei pulsanti della barra strumenti">
 <!ENTITY Ctr_wincontrols	"Angoli finestra mobili in modalità schermo intero">
+<!ENTITY Ctr_puibuttonsep	"Menu button separator">
+<!ENTITY Ctr_puibut_no_sep	"Hidden">
+<!ENTITY Ctr_puibut_l_sep	"Left">
+<!ENTITY Ctr_puibut_r_sep	"Right">
 <!ENTITY Ctr_html5warning	"HTML5 full screen warning">
 <!ENTITY Ctr_oldtoplevimg	"Immagini 'Top level domain': aspetto classico">
 <!ENTITY Ctr_altalertbox	"'Alert box': aspetto alternativo">
@@ -133,7 +137,7 @@
 <!ENTITY Ctr_mstatusbar		"Barra di stato mobile">
 <!ENTITY Ctr_mstatusbars4e	"La barra di stato è gestita da 'Status-4-Evar'">
 <!ENTITY Ctr_mstatusbartpp	"La barra di stato è gestita da 'ThePuzzlePiece'">
-<!ENTITY Ctr_mstatusbarpzt	"La barra di stato è gestita da 'Puzzle Toolbars'">
+<!ENTITY Ctr_mstatusbarpzt	"La barra di stato è gestita da 'Puzzle Bars'">
 <!ENTITY Ctr_mstatusbarabr	"La barra di stato è gestita da 'The Addon Bar (Restored)'">
 <!ENTITY Ctr_combrelstop	"Unisci i pulsanti Stop e Ricarica">
 <!ENTITY Ctr_stoprel1		"Importante: disporre il pulsante Ricarica a destra del pulsante Stop!">
@@ -161,9 +165,11 @@
 <!ENTITY Ctr_search_ui		"Search">
 <!ENTITY Ctr_ctroldsearch	"Ricerca vecchio stile">
 <!ENTITY Ctr_ctroldsearchc	"Pulisci la casella di ricerca dopo aver effettuato la ricerca">
+<!ENTITY Ctr_ctroldsearchr	"Revert to default search engine after search">
 <!ENTITY Ctr_search_oit		"Apri la ricerca in una nuova scheda (preferenza in  about:config)">
 <!ENTITY Ctr_osearch_meoit	"Clic sul tasto centrale: ricerca in una nuova scheda attiva">
 <!ENTITY Ctr_osearch_iwidth	"Automatically adjust popup width">
+<!ENTITY Ctr_osearch_cwidth	"Custom width for search popups">
 <!ENTITY Ctr_osearch_dm		"Freccia verso il basso piccola">
 <!ENTITY Ctr_addonmanager	"Gestione componenti aggiuntivi">
 <!ENTITY Ctr_alt_addonsp	"Pagina 'Altro' dei componenti aggiuntivi: aspetto alternativo">
@@ -299,6 +305,7 @@
 <!ENTITY Ctr_menubarnofog	"Elimina l’effetto nebbia o il colore di sfondo (Windows AeroGlass e Windows 8)">
 
 <!ENTITY Ctr_aerocolors		"Colori Blu Aero per le barre degli strumenti e le schede">
+<!ENTITY Ctr_aerocolorsg	"Grey-blue Aero colors">
 <!ENTITY Ctr_transpttbw10	"Barre del titolo/menu/schede: rimuovi il colore di sfondo">
 <!ENTITY Ctr_transpttbew10	"Modifiche aggiuntive per alcuni temi del SO">
 <!ENTITY Ctr_transptcw10	"Nascondi i pulsanti di controllo finestra di sistema">
@@ -380,6 +387,10 @@
 <!ENTITY goCmd.label					"Vai">
 <!ENTITY Ctr_menu_restart.label			"Riavvia">
 <!ENTITY Ctr_restartapp					"'Riavvia' nel menu del Pulsante &brandShortName; e nel menu File">
+
+<!ENTITY Ctr_openInCurrentTab			"Open inputs in current tab">
+<!ENTITY Ctr_openInNewTab				"Open inputs in a new tab">
+<!ENTITY Ctr_openInNewWindow			"Open inputs in a new window">
 
 <!-- For page context entries. Have to be adjusted for every locale! -->
 <!ENTITY backCmd.accesskey            "I">

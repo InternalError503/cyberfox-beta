@@ -127,6 +127,10 @@
 <!ENTITY Ctr_options_rem	"Pamatovat poslední zvolenou kategorii">
 <!ENTITY Ctr_svgfilters		"SVG barvy pro defaultní ikony tlačítek lišty">
 <!ENTITY Ctr_wincontrols	"Přesunutelné ovládací prvky okna v režimu celé obrazovky">
+<!ENTITY Ctr_puibuttonsep	"Menu button separator">
+<!ENTITY Ctr_puibut_no_sep	"Hidden">
+<!ENTITY Ctr_puibut_l_sep	"Left">
+<!ENTITY Ctr_puibut_r_sep	"Right">
 <!ENTITY Ctr_html5warning	"Varování HTML5 při full screenu">
 <!ENTITY Ctr_oldtoplevimg	"'Top level domain' obrázků: klasický vzhled">
 <!ENTITY Ctr_altalertbox	"'Alert box': alternativní vzhled">
@@ -134,7 +138,7 @@
 <!ENTITY Ctr_mstatusbar		"Přesunutelný stavový řádek">
 <!ENTITY Ctr_mstatusbars4e	"Stavový řádek je nastaven pomocí rozšíření 'Status-4-Evar'">
 <!ENTITY Ctr_mstatusbartpp	"Stavový řádek je nastaven pomocí rozšíření 'ThePuzzlePiece'">
-<!ENTITY Ctr_mstatusbarpzt	"Stavový řádek je nastaven pomocí rozšíření 'Puzzle Toolbars'">
+<!ENTITY Ctr_mstatusbarpzt	"Stavový řádek je nastaven pomocí rozšíření 'Puzzle Bars'">
 <!ENTITY Ctr_mstatusbarabr	"Stavový řádek je nastaven pomocí rozšíření 'The Addon Bar (Restored)'">
 <!ENTITY Ctr_combrelstop	"Spojit tlačítka zastavit &amp; obnovit">
 <!ENTITY Ctr_stoprel1		"Důležité: umístěte tlačítko Obnovit za tlačítko Zastavit!">
@@ -162,9 +166,11 @@
 <!ENTITY Ctr_search_ui		"Search">
 <!ENTITY Ctr_ctroldsearch	"Starý styl vyhledávání">
 <!ENTITY Ctr_ctroldsearchc	"Po vyhledávání vyčistit pole hledání">
+<!ENTITY Ctr_ctroldsearchr	"Revert to default search engine after search">
 <!ENTITY Ctr_search_oit		"Otevřít vyhledávání v novém panelu (předvolba about:config)">
 <!ENTITY Ctr_osearch_meoit	"Klik kolečkem myši: prohledávat nové panely 'na pozadí'">
 <!ENTITY Ctr_osearch_iwidth	"Automatically adjust popup width">
+<!ENTITY Ctr_osearch_cwidth	"Custom width for search popups">
 <!ENTITY Ctr_osearch_dm		"Malá rozevírací šipka">
 <!ENTITY Ctr_addonmanager	"Správce rozšíření">
 <!ENTITY Ctr_alt_addonsp	"Stránka rozšíření lišty 'další info': alternativní vzhled">
@@ -300,6 +306,7 @@
 <!ENTITY Ctr_menubarnofog	"Odstranit barevné/zamlžené pozadí (Windows AeroGlass/8)">
 
 <!ENTITY Ctr_aerocolors		"Barvy 'Blue Aero' pro hlavní lištu a panely">
+<!ENTITY Ctr_aerocolorsg	"Grey-blue Aero colors">
 <!ENTITY Ctr_transpttbw10	"Lišta title/menu/tabs: odstranit barvu pozadí">
 <!ENTITY Ctr_transpttbew10	"Další tweaky pro některá témata OS">
 <!ENTITY Ctr_transptcw10	"Skrýt defaultní OS tlačítka min/max/close">
@@ -381,6 +388,10 @@
 <!ENTITY goCmd.label					"Přejít">
 <!ENTITY Ctr_menu_restart.label			"Restart">
 <!ENTITY Ctr_restartapp					"'Restart' in &brandShortName;-menu and file menu">
+
+<!ENTITY Ctr_openInCurrentTab			"Open inputs in current tab">
+<!ENTITY Ctr_openInNewTab				"Open inputs in a new tab">
+<!ENTITY Ctr_openInNewWindow			"Open inputs in a new window">
 
 <!-- For page context entries. Have to be adjusted for every locale! -->
 <!ENTITY backCmd.accesskey				"Z">

@@ -48,6 +48,7 @@ pref("extensions.classicthemerestorer.findbar","findbar_default");
 pref("extensions.classicthemerestorer.nav_txt_ico","icons");
 pref("extensions.classicthemerestorer.iat_notf_vt",false);
 pref("extensions.classicthemerestorer.wincontrols",false);
+pref("extensions.classicthemerestorer.puibuttonsep",'puib_nosep');
 pref("extensions.classicthemerestorer.oldtoplevimg",false);
 pref("extensions.classicthemerestorer.altalertbox",false);
 pref("extensions.classicthemerestorer.emptyfavico_g",'emptyfavico_g_def');
@@ -58,9 +59,13 @@ pref("extensions.classicthemerestorer.alt_newtabp",false);
 //pref("extensions.classicthemerestorer.nosnippets",false);
 pref("extensions.classicthemerestorer.ctroldsearch",false);
 pref("extensions.classicthemerestorer.ctroldsearchc",false);
+pref("extensions.classicthemerestorer.ctroldsearchr",false);
 pref("extensions.classicthemerestorer.osearch_meoit",false);
 pref("extensions.classicthemerestorer.osearch_dm",false);
 pref("extensions.classicthemerestorer.osearch_iwidth",true);
+pref("extensions.classicthemerestorer.osearch_cwidth",false);
+pref("extensions.classicthemerestorer.os_spsize_minw",200);
+pref("extensions.classicthemerestorer.os_spsize_maxw",200);
 //pref("extensions.classicthemerestorer.addonversion",true);
 pref("extensions.classicthemerestorer.alt_addonsm",false);
 pref("extensions.classicthemerestorer.am_nowarning",false);
@@ -132,6 +137,7 @@ pref("extensions.classicthemerestorer.padlockex",true);
 pref("extensions.classicthemerestorer.icopageinfo",false);
 
 pref("extensions.classicthemerestorer.extraurlkeycb",false);
+pref("extensions.classicthemerestorer.extraurltarget",'tab');
 pref("extensions.classicthemerestorer.locsearchbw10",false);
 
 pref("extensions.classicthemerestorer.lbsbsize",false);
@@ -147,6 +153,7 @@ pref("extensions.classicthemerestorer.sbradius_right",0);
 
 // Toolbar settings
 pref("extensions.classicthemerestorer.aerocolors",false);
+pref("extensions.classicthemerestorer.aerocolorsg",false);
 pref("extensions.classicthemerestorer.transpttbw10",false);
 pref("extensions.classicthemerestorer.transpttbew10",false);
 pref("extensions.classicthemerestorer.transptcw10",false);

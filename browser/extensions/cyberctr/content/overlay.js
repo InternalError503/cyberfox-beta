@@ -63,6 +63,7 @@ classicthemerestorerjs.ctr = {
 
   locsearchbarsize: sheetIO,
   locsearchbarradius:	sheetIO,
+  searchpopupwidth:	sheetIO,
 
   navbarpadding: sheetIO,
   
@@ -836,7 +837,7 @@ classicthemerestorerjs.ctr = {
 		  break;
 		  
 		  /*Aero Colors*/
-		  case "aerocolors":
+		  case "aerocolors": case "aerocolorsg":
 		 
 			var devtheme=false;
 
@@ -1063,6 +1064,16 @@ classicthemerestorerjs.ctr = {
 		  case "wincontrols":
 			if (branch.getBoolPref("wincontrols")) classicthemerestorerjs.ctr.loadUnloadCSS("wincontrols",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("wincontrols",false);
+		  break;
+		  
+		  case "puibuttonsep":
+			classicthemerestorerjs.ctr.loadUnloadCSS('puib_leftsep',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('puib_rightsep',false);
+		
+			if (branch.getCharPref("puibuttonsep")!="puib_nosep"){
+			  classicthemerestorerjs.ctr.loadUnloadCSS(branch.getCharPref("puibuttonsep"),true);
+			}
+
 		  break;
 
 		  case "altalertbox":
@@ -2002,6 +2013,18 @@ classicthemerestorerjs.ctr = {
 			classicthemerestorerjs.ctr.loadUnloadCSS('cui_buttons',true);
 		  break;
 		  
+		  case "osearch_iwidth":
+			if (branch.getBoolPref("osearch_iwidth")) classicthemerestorerjs.ctr.loadUnloadCSS("osearch_iwidth",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("osearch_iwidth",false);
+		  break;
+		  
+		  case "osearch_cwidth": case "os_spsize_minw": case "os_spsize_maxw":
+		    if (branch.getBoolPref("osearch_cwidth")) 
+			  classicthemerestorerjs.ctr.loadUnloadCSS("osearch_cwidth",true);
+		    else
+			  classicthemerestorerjs.ctr.loadUnloadCSS("osearch_cwidth",false);
+		  break;
+
 		  case "osearch_dm":
 			if (branch.getBoolPref("osearch_dm") && branch.getBoolPref("ctroldsearch") &&
 				classicthemerestorerjs.ctr.appversion >= 43) classicthemerestorerjs.ctr.loadUnloadCSS("osearch_dm",true);
@@ -2926,9 +2949,7 @@ classicthemerestorerjs.ctr = {
 	// Remove current windows preference listeners once the window gets closed
 	// to prevent memory leaks and other issues in a multi window environment.
 	window.addEventListener("unload", function unregisterCTRListeners(event){
-		
-		//console.log("unregistered!"); // log stuff for testing
-		
+	
 		ctrSettingsListener.unregister();
 		ctrSettingsListener_forCTB.unregister();
 		ctrSettingsListener_forTabSettings.unregister();
@@ -3736,7 +3757,9 @@ classicthemerestorerjs.ctr = {
 		  });    
 		});
 		
-		observer.observe(document.querySelector('#ctraddon_reload-button'), { attributes: true, attributeFilter: ['disabled'] });
+		try {
+		  observer.observe(document.querySelector('#ctraddon_reload-button'), { attributes: true, attributeFilter: ['disabled'] });
+		} catch(e){}
 	  },1000);
 	},false);
   },
@@ -4228,6 +4251,8 @@ classicthemerestorerjs.ctr = {
 		case "mbarforceleft": 		manageCSS("menuitems_forceleft.css");	break;
 		case "mbarforceright": 		manageCSS("menuitems_forceright.css");	break;
 		case "wincontrols": 		manageCSS("windowcontrols.css");		break;
+		case "puib_leftsep": 		manageCSS("puibutton_leftsep.css");		break;
+		case "puib_rightsep": 		manageCSS("puibutton_rightsep.css");	break;
 		case "oldtoplevimg": 		manageCSS("old_toplevel_img.css");		break;
 		case "altalertbox": 		manageCSS("alt_alertboxfx44.css");		break;
 		case "navthrobber": 		manageCSS("navthrobber.css");			break;
@@ -4290,6 +4315,7 @@ classicthemerestorerjs.ctr = {
 		case "alt_newtabp": 		manageCSS("alt_newtabpage.css");		break;
 		case "nosnippets": 			manageCSS("nosnippets.css");			break;
 		case "ctroldsearch": 		manageCSS("oldsearch.css");				break;
+		case "osearch_iwidth": 		manageCSS("oldsearch_iwidth.css");		break;
 		case "osearch_dm": 			manageCSS("oldsearch_dm.css");			break;
 		case "am_nowarning":		manageCSS("am_nowarnings.css");			break;
 		case "am_compact":			manageCSS("am_compact.css");			break;
@@ -4461,13 +4487,18 @@ classicthemerestorerjs.ctr = {
 			removeOldSheet(this.aerocolors);
 			
 			if(enable==true) {
+				
+				var main_ab_color = '#dbeaf9';
+				
+				if (this.prefs.getBoolPref("aerocolorsg"))
+				  main_ab_color = '#cfdbec';
 			
 				var aero_color_addonsm = '';
 				
 				if (this.prefs.getBoolPref("alt_addonsm")) {
 					aero_color_addonsm = '\
 						#addons-page {\
-						  background: linear-gradient(to bottom right, #edf6ff,#dbeaf9,#edf6ff,#dbeaf9) !important;\
+						  background: linear-gradient(to bottom right, #edf6ff,'+main_ab_color+',#edf6ff,'+main_ab_color+') !important;\
 						}\
 					';
 				}
@@ -4478,7 +4509,7 @@ classicthemerestorerjs.ctr = {
 					aero_color_optionsp = '\
 					  @-moz-document url(about:preferences),url-prefix(about:preferences){\
 						page, #dialogBox .groupbox-title {\
-						  background: linear-gradient(to bottom right, #edf6ff,#dbeaf9,#edf6ff,#dbeaf9) !important;\
+						  background: linear-gradient(to bottom right, #edf6ff,'+main_ab_color+',#edf6ff,'+main_ab_color+') !important;\
 						}\
 					  }\
 					';
@@ -4676,7 +4707,7 @@ classicthemerestorerjs.ctr = {
 					@-moz-document url(chrome://browser/content/browser.xul) {\
 						/* Toolbars */\
 						#main-window[defaultfxtheme="true"] :not(#theFoxOnlyBetter-slimChrome-toolbars) > #nav-bar:not(:-moz-lwtheme){\
-						  background-image: linear-gradient(#eaf2fb,#dbeaf9) !important;\
+						  background-image: linear-gradient(#eaf2fb,'+main_ab_color+') !important;\
 						  box-shadow:unset !important;\
 						}\
 						#main-window[defaultfxtheme="true"][tabsontop="false"] #TabsToolbar:not(:-moz-lwtheme),\
@@ -4684,18 +4715,18 @@ classicthemerestorerjs.ctr = {
 						#main-window[defaultfxtheme="true"] #theFoxOnlyBetter-slimChrome-container > *:not(#theFoxOnlyBetter-slimChrome-toolbars-bottom):not(:-moz-lwtheme),\
 						#main-window[defaultfxtheme="true"] #ctraddon_urlextrabar:not(:-moz-lwtheme){\
 						  background-image:unset !important;\
-						  background-color:#dbeaf9 !important;\
+						  background-color:'+main_ab_color+' !important;\
 						}\
 						@media all and (-moz-windows-classic) {\
 						  #main-window[defaultfxtheme="true"]:not([tabsintitlebar]) #navigator-toolbox:not(:-moz-lwtheme),\
 						  #main-window[defaultfxtheme="true"]:not([tabsintitlebar])[tabsontop="false"] #toolbar-menubar:not(:-moz-lwtheme){\
 							-moz-appearance: none !important;\
 							background-image:unset !important;\
-							background-color:#dbeaf9 !important;\
+							background-color:'+main_ab_color+' !important;\
 						  }\
 						}\
 						#main-window[defaultfxtheme="true"] #theFoxOnlyBetter-slimChrome-slimmer:not([collapsed]) ~ #theFoxOnlyBetter-slimChrome-container > *:not(#theFoxOnlyBetter-slimChrome-toolbars-bottom):not(:-moz-lwtheme){\
-						  background-image: linear-gradient(#eaf2fb 0px, #dbeaf9 36px, #dbeaf9) !important;\
+						  background-image: linear-gradient(#eaf2fb 0px, '+main_ab_color+' 36px, '+main_ab_color+') !important;\
 						}\
 						#main-window[defaultfxtheme="true"] #theFoxOnlyBetter-slimChrome-slimmer:not([collapsed]) {\
 						  background: #eaf2fb !important;\
@@ -6487,13 +6518,15 @@ classicthemerestorerjs.ctr = {
 				}
 				
 				this.locsearchbarradius=ios.newURI("data:text/css;charset=utf-8," + encodeURIComponent('\
-					#urlbar {\
+					#urlbar,\
+					#urlbar .autocomplete-textbox-container {\
 					  border-top-left-radius: '+this.prefs.getIntPref('lbradius_left')+'px !important;\
 					  border-bottom-left-radius: '+this.prefs.getIntPref('lbradius_left')+'px !important;\
 					  border-top-right-radius: '+this.prefs.getIntPref('lbradius_right')+'px !important;\
 					  border-bottom-right-radius: '+this.prefs.getIntPref('lbradius_right')+'px !important;\
 					}\
-					.searchbar-textbox {\
+					.searchbar-textbox,\
+					.searchbar-textbox .autocomplete-textbox-container{\
 					  border-top-left-radius: '+this.prefs.getIntPref('sbradius_left')+'px !important;\
 					  border-bottom-left-radius: '+this.prefs.getIntPref('sbradius_left')+'px !important;\
 					  border-top-right-radius: '+this.prefs.getIntPref('sbradius_right')+'px !important;\
@@ -6525,6 +6558,24 @@ classicthemerestorerjs.ctr = {
 				'), null, null);
 				
 				applyNewSheet(this.navbarpadding);
+			}
+		
+		break;
+		
+		case "osearch_cwidth":
+			removeOldSheet(this.searchpopupwidth);
+			
+			if(enable==true && this.prefs.getBoolPref('osearch_cwidth')){			
+				
+				this.searchpopupwidth=ios.newURI("data:text/css;charset=utf-8," + encodeURIComponent('\
+					#PopupAutoComplete[autocompleteinput="searchbar"],\
+					#searchbar .searchbar-popup {\
+					  min-width: '+this.prefs.getIntPref('os_spsize_minw')+'px !important;\
+					  max-width: '+this.prefs.getIntPref('os_spsize_maxw')+'px !important;\
+					}\
+				'), null, null);
+				
+				applyNewSheet(this.searchpopupwidth);
 			}
 		
 		break;
@@ -6965,7 +7016,7 @@ classicthemerestorerjs.ctr = {
   
   // open prefwindow and specific category
   additionalToolbars: function(){
-	Services.prefs.getBranch("extensions.classicthemerestorer.").setIntPref('pref_actindx',12);
+	Services.prefs.getBranch("extensions.classicthemerestorer.").setIntPref('pref_actindx',13);
 	
 	setTimeout(function(){
 	  classicthemerestorerjs.ctr.openCTRPreferences();
@@ -7596,9 +7647,15 @@ switch (appButtonState){
   
   openUrlFromUrlExtraBar: function() {
     try{
-		delayedOpenTab(document.getElementById('ctraddon_extraurlbar_tb').value, null, null, null, true);
+		if(classicthemerestorerjs.ctr.prefs.getCharPref('extraurltarget')=="current")
+		  openUILinkIn(document.getElementById('ctraddon_extraurlbar_tb').value,"current", true, null, null);
+		else if(classicthemerestorerjs.ctr.prefs.getCharPref('extraurltarget')=="window")
+		  openUILinkIn(document.getElementById('ctraddon_extraurlbar_tb').value,"window", true, null, null);
+		else
+		  openUILinkIn(document.getElementById('ctraddon_extraurlbar_tb').value,"tab", true, null, null);
+		
 		document.getElementById('ctraddon_urlextrabar').setAttribute('collapsed',true);
-	} catch(e){}
+	} catch(e){}		
   },
   
   togglePersonalBarItem: function() {

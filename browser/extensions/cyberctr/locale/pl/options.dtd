@@ -122,10 +122,14 @@
 <!ENTITY Ctr_altoptionsw	"Otwieraj stronę ustawień w oknie">
 <!ENTITY Ctr_altoptionsww	"Szerokość">
 <!ENTITY Ctr_altoptionswh	"Wysokość">
-<!ENTITY Ctr_altoptionsi	"Symulowane okno opcji nie jest już oknem dialogowym, ale 'oknem przeglądarki' z ukrytymi wszystkimi paskami narzędzi. Funkcja 'Użyj bieżących stron' dodaje tylko adresy stron otwartych w bieżącym oknie, w tym przypadku tylko 'about:preferences'. Przycisk 'opcji' paska narzędzi zostaje zastąpiony nowym, aby mógł otwierać opcje w oknie.">
+<!ENTITY Ctr_altoptionsi	"Symulowane okno opcji nie jest już oknem dialogowym, ale 'oknem przeglądarki' z ukrytymi wszystkimi paskami narzędzi. Funkcja 'Użyj bieżących stron' dodaje tylko adresy stron otwartych w bieżącym oknie, w tym przypadku tylko 'about:preferences'. 'Przycisk opcji paska narzędzi' zostaje zastąpiony nowym, aby mógł otwierać opcje w oknie.">
 <!ENTITY Ctr_options_rem	"Pamiętaj ostatnio wybraną kategorię">
 <!ENTITY Ctr_svgfilters		"Kolory SVG ikon przycisków domyślnego paska narzędzi">
 <!ENTITY Ctr_wincontrols	"Ruchome kontrolki okna pełnego ekranu">
+<!ENTITY Ctr_puibuttonsep	"Menu button separator">
+<!ENTITY Ctr_puibut_no_sep	"Hidden">
+<!ENTITY Ctr_puibut_l_sep	"Left">
+<!ENTITY Ctr_puibut_r_sep	"Right">
 <!ENTITY Ctr_html5warning	"Ostrzeżenie o pełnym ekranie HTML5">
 <!ENTITY Ctr_oldtoplevimg	"Obrazy 'domeny najwyższego poziomu': klasyczny wygląd">
 <!ENTITY Ctr_altalertbox	"'Pole powiadomień': alternatywny wygląd">
@@ -133,7 +137,7 @@
 <!ENTITY Ctr_mstatusbar		"Ruchomy panel paska statusu">
 <!ENTITY Ctr_mstatusbars4e	"Panel paska statusu jest kontrolowany przez 'Status-4-Evar'">
 <!ENTITY Ctr_mstatusbartpp	"Panel paska statusu jest kontrolowany przez 'ThePuzzlePiece'">
-<!ENTITY Ctr_mstatusbarpzt	"Panel paska statusu jest kontrolowany przez 'Puzzle Toolbars'">
+<!ENTITY Ctr_mstatusbarpzt	"Panel paska statusu jest kontrolowany przez 'Puzzle Bars'">
 <!ENTITY Ctr_mstatusbarabr	"Panel paska statusu jest kontrolowany przez 'The Addon Bar (Restored)'">
 <!ENTITY Ctr_combrelstop	"Połącz przyciski zatrzymania i odświeżania">
 <!ENTITY Ctr_stoprel1		"Ważne: umieść przycisk odświeżania za przyciskiem zatrzymania!">
@@ -161,9 +165,11 @@
 <!ENTITY Ctr_search_ui		"Wyszukiwanie">
 <!ENTITY Ctr_ctroldsearch	"Stara wyszukiwarka">
 <!ENTITY Ctr_ctroldsearchc	"Czyść pole wyszukiwania po wyszukaniu">
+<!ENTITY Ctr_ctroldsearchr	"Revert to default search engine after search">
 <!ENTITY Ctr_search_oit		"Otwórz wyszukiwanie w nowej karcie (ustawienie about:config)">
 <!ENTITY Ctr_osearch_meoit	"Kliknięcia środkowym przyciskiem: wyszukaj w nowej 'karcie pierwszoplanowej'">
 <!ENTITY Ctr_osearch_iwidth	"Automatycznie dostosuj szerokość menu podręcznego">
+<!ENTITY Ctr_osearch_cwidth	"Custom width for search popups">
 <!ENTITY Ctr_osearch_dm		"Mały przycisk podręczny">
 <!ENTITY Ctr_addonmanager	"Menedżer dodatków">
 <!ENTITY Ctr_alt_addonsp	"Strona 'więcej informacji': alternatywny porządek">
@@ -263,7 +269,7 @@
 <!ENTITY Ctr_urlbar_uc		"Wyłącz funkcję 'ujednolicone autouzupełnianie' (ustawienie about:config)">
 <!ENTITY Ctr_lbsugresi		"Wyłącz ograniczenie wysokości">
 <!ENTITY Ctr_lbsugres		"Liczba wyników (ustawienie about:config)">
-<!ENTITY Ctr_lbsbradius		"Custom border radius for location bar and search bar">
+<!ENTITY Ctr_lbsbradius		"Niestandardowe zaokrąglenia obrzeży paska adresu i paska wyszukiwania">
 
 <!ENTITY Ctr_menubar_items	"Pozycje elementów menu">
 <!ENTITY Ctr_extrabar		"Dodatkowe paski narzędzi">
@@ -299,6 +305,7 @@
 <!ENTITY Ctr_menubarnofog	"Usuń kolor tła i mgłę (Windows AeroGlass/8)">
 
 <!ENTITY Ctr_aerocolors		"Niebieskie kolory Aero pasków narzędzi (i kart)">
+<!ENTITY Ctr_aerocolorsg	"Grey-blue Aero colors">
 <!ENTITY Ctr_transpttbw10	"Pasek tytułu/menu/kart: usuń kolor tła">
 <!ENTITY Ctr_transpttbew10	"Dodatkowe poprawki dla niektórych kompozycji systemu">
 <!ENTITY Ctr_transptcw10	"Ukryj domyślne przyciski systemowe: Minimalizuj, Maksymalizuj, Zamknij">
@@ -380,6 +387,10 @@
 <!ENTITY goCmd.label					"Przejdź">
 <!ENTITY Ctr_menu_restart.label			"Zrestartuj">
 <!ENTITY Ctr_restartapp					"'Zrestartuj' w menu programu &brandShortName; oraz w menu Plik">
+
+<!ENTITY Ctr_openInCurrentTab			"Otwórz dane wejściowe w bieżącej karcie">
+<!ENTITY Ctr_openInNewTab				"Otwórz dane wejściowe w nowej karcie">
+<!ENTITY Ctr_openInNewWindow			"Otwórz dane wejściowe w nowym oknie">
 
 <!-- For page context entries. Have to be adjusted for every locale! -->
 <!ENTITY backCmd.accesskey				"W">
