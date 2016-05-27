@@ -514,9 +514,7 @@ menuitem:not([type]):not(.menuitem-tooltip):not(.menuitem-iconic-tooltip) {
 }
 
 #subscribeToPageMenuitem:not([disabled]),
-#subscribeToPageMenupopup,
-#BMB_subscribeToPageMenuitem:not([disabled]),
-#BMB_subscribeToPageMenupopup {
+#subscribeToPageMenupopup {
   list-style-image: url("chrome://browser/skin/page-livemarks.png");
 }
 
@@ -1752,7 +1750,13 @@ toolbarbutton.chevron > .toolbarbutton-icon {
 %include ../shared/fullscreen/warning.inc.css
 %include ../../../devtools/client/themes/responsivedesign.inc.css
 %include ../../../devtools/client/themes/commandline.inc.css
+
 %include ../shared/plugin-doorhanger.inc.css
+
+notification.pluginVulnerable > .notification-inner > .messageCloseButton:not(:hover) {
+  background-image: -moz-image-rect(url("chrome://global/skin/icons/close.svg"), 0, 80, 16, 64);
+}
+
 %include ../shared/login-doorhanger.inc.css
 
 %include downloads/indicator.css
