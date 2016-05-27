@@ -602,26 +602,20 @@ classicthemerestorerjso.ctr = {
 					document.getElementById('ctraddon_ctabouthomecusthlttb').disabled = false;
 					document.getElementById('ctraddon_ctabouthomecusthltcp').disabled = false;
 				}
-				//Disable custom background image on Light|dark theme styles.
-				if (branch.getCharPref("abouthome") === "dark" || 
-					branch.getCharPref("abouthome") === "darkalt" ||
-					branch.getCharPref("abouthome") === "light" ||
+				
+				
+				//Custom background image on lightalt|darkalt theme styles have bg image streched.
+				if (branch.getCharPref("abouthome") === "darkalt" ||
 					branch.getCharPref("abouthome") === "lightalt"){
-					document.getElementById('ctraddon_ctabouthome_custbg').disabled = true;
-					document.getElementById('ctraddon_ctabouthome_custbgl').disabled = true;
-					document.getElementById('ctraddon_ctabouthome_bg_urlbox').disabled = true;
 					document.getElementById('ctraddon_ctabouthome_custbgstretch').disabled = true;
-					branch.setBoolPref("abouthomecustombg", false);
-
 				}else{
-					document.getElementById('ctraddon_ctabouthome_custbg').disabled = false;
-					document.getElementById('ctraddon_ctabouthome_custbgl').disabled = false;
-					document.getElementById('ctraddon_ctabouthome_bg_urlbox').disabled = false;
 					document.getElementById('ctraddon_ctabouthome_custbgstretch').disabled = false;
 				}
+
 				if (branch.getCharPref("abouthome") === "simplicitycustom"){
 					document.getElementById('noicons').disabled = true;
 				}
+							
 			break;
 
 			case "abouthomecustomurl":
@@ -768,24 +762,15 @@ classicthemerestorerjso.ctr = {
 		if (this.prefs.getCharPref("abouthome") === "simplicitycustom"){
 			document.getElementById('noicons').disabled = true;
 		}	
-	
-		//Disable custom background image on Light|dark theme styles.
-		if (this.prefs.getCharPref("abouthome") === "dark" || 
-			this.prefs.getCharPref("abouthome") === "darkalt" ||
-			this.prefs.getCharPref("abouthome") === "light" ||
+
+		//Custom background image on lightalt|darkalt theme styles have bg image streched.
+		if (this.prefs.getCharPref("abouthome") === "darkalt" ||
 			this.prefs.getCharPref("abouthome") === "lightalt"){
-			document.getElementById('ctraddon_ctabouthome_custbg').disabled = true;
-			document.getElementById('ctraddon_ctabouthome_custbgl').disabled = true;
-			document.getElementById('ctraddon_ctabouthome_bg_urlbox').disabled = true;
-			document.getElementById('ctraddon_ctabouthome_custbgstretch').disabled = true;			
-			this.prefs.setBoolPref("abouthomecustombg", false);
+			document.getElementById('ctraddon_ctabouthome_custbgstretch').disabled = true;
 			
 		}else{
-			document.getElementById('ctraddon_ctabouthome_custbg').disabled = false;
-			document.getElementById('ctraddon_ctabouthome_custbgl').disabled = false;
-			document.getElementById('ctraddon_ctabouthome_bg_urlbox').disabled = false;
 			document.getElementById('ctraddon_ctabouthome_custbgstretch').disabled = false;
-		}
+		}	
 
 		//Disable custom highlight colors on default theme in firefox.	
 		if (Services.appinfo.name.toLowerCase() === "Firefox".toLowerCase() && this.prefs.getCharPref("abouthome") === "default") {
@@ -1539,6 +1524,8 @@ classicthemerestorerjso.ctr = {
 
 	/* Export CTR preferences Text|Json */
     ExportPreferences: function(aPattern) {
+			
+			if (!aPattern == "txt" || !aPattern == "json") return false;
 		
         var preferenceList = Services.prefs.getChildList("extensions.classicthemerestorer.");
         var preferenceArray = null;
@@ -1600,8 +1587,6 @@ classicthemerestorerjso.ctr = {
                     });
                 }
 
-                //Clear preferenceArray after export.
-                preferenceArray = [];
             } catch (e) {
                 // Report errors to console
                 Cu.reportError(e);
@@ -1609,11 +1594,15 @@ classicthemerestorerjso.ctr = {
         }
         // Use new less bulky export for text.
         classicthemerestorerjso.ctr.saveToFile(preferenceArray, aPattern);
+        //Clear preferenceArray after export.
+        preferenceArray = [];
         return true;
     },
 	
 	/* Import CTR preferences Text|Json */
 	ImportPreferences: function(aPattern) {
+		
+		if (!aPattern == "txt" || !aPattern == "json") return false;
 		
 		var stringBundle = Services.strings.createBundle("chrome://classic_theme_restorer/locale/messages.file");
 		var pattern = null;
@@ -1697,9 +1686,8 @@ classicthemerestorerjso.ctr = {
 	
 	saveToFile: function(aPattern, aType) {
 		try{
-			if (aType === "txt" || aType === "json") {} else {
-			  return false;
-			}
+			
+			if (!aType === "txt" || !aType === "json" || aPattern.length === 0) return false;
 
 			const nsIFilePicker = Ci.nsIFilePicker;
 			var fp = Cc["@mozilla.org/filepicker;1"].createInstance(nsIFilePicker);
