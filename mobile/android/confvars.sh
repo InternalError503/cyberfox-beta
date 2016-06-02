@@ -107,7 +107,7 @@ if test "$NIGHTLY_BUILD"; then
 fi
 
 # Enable checking that add-ons are signed by the trusted root
-MOZ_ADDON_SIGNING=0
+MOZ_ADDON_SIGNING=
 
 # Enable the Switchboard A/B framework code.
 # Note: The framework is always included in the app. This flag controls
