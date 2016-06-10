@@ -1,5 +1,5 @@
 # Cyberfox Install & Shortcut Desktop
-# Version: 1.0
+# Version: 1.1
 # Release, Beta channels linux
 
 #!/bin/bash
@@ -17,7 +17,7 @@ select yn in "Yes" "No" "Quit"; do
         Yes )        
         if [ -f $Dir/Cyberfox*.tar.bz2 ]; then
             # Make directory if not already exist
-            if [ -d $HOME/Apps ]; then
+            if ! [ -d $HOME/Apps ]; then
                 echo "Making $HOME/Apps directory!"
                 mkdir $HOME/Apps
             fi
