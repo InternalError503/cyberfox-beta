@@ -293,8 +293,6 @@ pref("browser.urlbar.doubleClickSelectsAll", false);
 pref("browser.urlbar.autoFill", true);
 pref("browser.urlbar.autoFill.typed", true);
 
-pref("browser.urlbar.unifiedcomplete", true);
-
 // 0: Match anywhere (e.g., middle of words)
 // 1: Match on word boundaries and then try matching anywhere
 // 2: Match only on word boundaries (e.g., after / or .)
@@ -1421,6 +1419,7 @@ pref("browser.tabs.crashReporting.email", "");
 #ifndef MOZ_MULET
 pref("layers.async-pan-zoom.enabled", true);
 #endif
+pref("apz.velocity_bias", "0.0");
 
 // Enable e10s add-on interposition by default.
 pref("extensions.interposition.enabled", true);
