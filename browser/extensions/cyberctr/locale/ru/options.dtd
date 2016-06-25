@@ -232,6 +232,7 @@
 <!ENTITY Ctr_ntabhov		"Ожидающая новая вкладка">
 <!ENTITY Ctr_bold			"Полужирный">
 <!ENTITY Ctr_italic			"Курсив">
+<!ENTITY Ctr_underlined		"Underlined">
 <!ENTITY Ctr_notabhov		"Разрешить перезапись настроек при 'зависании'">
 <!ENTITY Ctr_tabc_act_tb	"Цвет фона панели инструментов">
 
@@ -268,6 +269,8 @@
 <!ENTITY Ctr_autocomplete	"Автозавершение">
 <!ENTITY Ctr_altautocompl	"Альтернативный внешний вид">
 <!ENTITY Ctr_autocompl_it	"Удалить пункты «Искать в...» и «Посетить» (при наличии)">
+<!ENTITY Ctr_autocompl_hl	"Highlighting of text hits">
+<!ENTITY Ctr_autocompl_sep	"Show separator between results">
 <!ENTITY Ctr_urlbar_uc		"Отключить функцию «автозаполнение»">
 <!ENTITY Ctr_lbsugresi		"Отображать максимально возможное количество результатов в подсказках (без прокрутки)">
 <!ENTITY Ctr_lbsugres		"Количество всплывающих результатов">
@@ -298,7 +301,7 @@
 <!ENTITY Ctr_notabfog		"Отключить затуманивание фона панели вкладок (Windows AeroGlass / Win8)">
 <!ENTITY Ctr_notabbg		"Удалить цвет фона (Windows AeroGlass / Win8)">
 <!ENTITY Ctr_hightabpos		"Уменьшить пространство над панелями инструментов (если возможно)">
-<!ENTITY Ctr_showalltabsb	"Always show 'all tabs' button">
+<!ENTITY Ctr_showalltabsb	"Всегда показывать кнопку 'все вкладки'">
 <!ENTITY Ctr_alttabstb		"Заменить цвет фона">
 <!ENTITY Ctr_alttabstb2		"В развернутом режиме (вкладки сверху)">
 
@@ -368,6 +371,12 @@
 <!ENTITY Ctr_e_pocket		"Карман">
 <!ENTITY Ctr_e_tabsaudioico	"Значок проигрывания аудио на вкладках">
 <!ENTITY Ctr_fx42tabsaudico	"Снимите галочку для удаления с вкладок значка 'проигрывание аудио'.">
+<!ENTITY Ctr_e_containertab	"Container Tabs">
+<!ENTITY Ctr_fx50containert	"Unchecking this preference removes 'container tabs'.">
+<!ENTITY Ctr_e_findbarhl	"Findbar highlighting">
+<!ENTITY Ctr_fx50findbarhl	"Unchecking these preferences removes findbars 'highlight' features.">
+<!ENTITY Ctr_e_flyweb		"Flyweb">
+<!ENTITY Ctr_fx50flyweb		"Unchecking this preference disables 'flyweb'.">
 
 
 <!ENTITY Ctr_pw_settings	"Настройки">
@@ -439,6 +448,7 @@
 <!ENTITY ctr_toolbarsearchbarcustwidth.label	"Разрешить изменение максимальной ширины">
 <!ENTITY ctr_toolbarsearchbarwidth.label	"Максимальная ширина панели поиска: ">
 <!ENTITY ctr_colapseaddonsearchbar.label	"Сворачиваемая панель поиска дополнений на странице about:addons">
+<!ENTITY Ctr_alwaysshowaddonversion.label	"(Always Show)">
 
 <!ENTITY ctr_bookmarkfontsize.description   "Панель закладок">
 <!ENTITY ctr_custombookmarkfontsize.label   "Изменить размер шрифта панели закладок">

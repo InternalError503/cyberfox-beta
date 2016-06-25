@@ -232,6 +232,7 @@
 <!ENTITY Ctr_ntabhov		"Neuer Tab (hover)">
 <!ENTITY Ctr_bold			"Fett">
 <!ENTITY Ctr_italic			"Kursiv">
+<!ENTITY Ctr_underlined		"Unterstrichen">
 <!ENTITY Ctr_notabhov		"Aktivierte Einstellungen ersetzen 'Hover-Einstellungen'">
 <!ENTITY Ctr_tabc_act_tb	"Tab-Hintergrundfarbe auf Leisten">
 
@@ -268,6 +269,8 @@
 <!ENTITY Ctr_autocomplete	"Autovervollständigungs-Pop-up">
 <!ENTITY Ctr_altautocompl	"Alternative Darstellung">
 <!ENTITY Ctr_autocompl_it	"'Mit ... suchen' und 'Aufrufen' Elemente entfernen (falls vorhanden)">
+<!ENTITY Ctr_autocompl_hl	"Hervorhebung von Texttreffern">
+<!ENTITY Ctr_autocompl_sep	"Trennlinie zwischen den Ergebnissen anzeigen">
 <!ENTITY Ctr_urlbar_uc		"'Vereinigte Autovervollständigung' deaktivieren">
 <!ENTITY Ctr_lbsugresi		"Höhenlimit deaktivieren">
 <!ENTITY Ctr_lbsugres		"Anzahl der Vorschläge">
@@ -368,6 +371,12 @@
 <!ENTITY Ctr_e_pocket		"Pocket">
 <!ENTITY Ctr_e_tabsaudioico	"Audio-Abspiel-Symbol auf Tabs">
 <!ENTITY Ctr_fx42tabsaudico	"Das Deaktivieren dieser Option entfernt das 'Audio-Abspiel-Symbol' von den Tabs.">
+<!ENTITY Ctr_e_containertab	"'Tab in Umgebung' / 'Kontainer Tabs'">
+<!ENTITY Ctr_fx50containert	"Das Deaktivieren dieser Option entfernt die Funktion 'Tab in Umgebung' / 'Kontainer Tabs'.">
+<!ENTITY Ctr_e_findbarhl	"Seitensuchhervorhebung">
+<!ENTITY Ctr_fx50findbarhl	"Das Deaktivieren dieser Optionen entfernt die 'Seitensuchhervorhebung'.">
+<!ENTITY Ctr_e_flyweb		"Flyweb">
+<!ENTITY Ctr_fx50flyweb		"Das Deaktivieren dieser Option entfernt 'Flyweb'.">
 
 
 <!ENTITY Ctr_pw_settings	"Einstellungen">
@@ -439,6 +448,7 @@
 <!ENTITY ctr_toolbarsearchbarcustwidth.label	"Enable custom maximum width">
 <!ENTITY ctr_toolbarsearchbarwidth.label	"Search-bar maximum width: ">
 <!ENTITY ctr_colapseaddonsearchbar.label	"Collapsible about:addons search bar">
+<!ENTITY Ctr_alwaysshowaddonversion.label	"(Always Show)">
 
 <!ENTITY ctr_bookmarkfontsize.description	"Bookmarks Tool-Bar">
 <!ENTITY ctr_custombookmarkfontsize.label	"Enable custom font size on bookmarks tool-bar">

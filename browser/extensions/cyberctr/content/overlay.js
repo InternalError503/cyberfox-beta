@@ -154,6 +154,7 @@ classicthemerestorerjs.ctr = {
 	try{if (this.appversion >= 46) document.getElementById("main-window").setAttribute('fx46plus',true);} catch(e){}
 	try{if (this.appversion >= 47) document.getElementById("main-window").setAttribute('fx47plus',true);} catch(e){}
 	try{if (this.appversion >= 48) document.getElementById("main-window").setAttribute('fx48plus',true);} catch(e){}
+	try{if (this.appversion >= 50) document.getElementById("main-window").setAttribute('fx50plus',true);} catch(e){}
 
 	// add CTR version number to '#main-window' node, so other add-ons/themes can easier distinguish between versions
 	AddonManager.getAddonByID('ClassicThemeRestorer@ArisT2Noia4dev', function(addon) {
@@ -1341,6 +1342,26 @@ classicthemerestorerjs.ctr = {
 			if (branch.getBoolPref("autocompl_it") && branch.getBoolPref("urlresults") && classicthemerestorerjs.ctr.appversion >= 48) classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_it",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_it",false);
 		  break;
+		  
+		  case "autocompl_hlb":
+			if (branch.getBoolPref("autocompl_hlb")) classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_hlb",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_hlb",false);
+		  break;
+
+		  case "autocompl_hlu":
+			if (branch.getBoolPref("autocompl_hlu")) classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_hlu",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_hlu",false);
+		  break;
+
+		  case "autocompl_hli":
+			if (branch.getBoolPref("autocompl_hli")) classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_hli",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_hli",false);
+		  break;
+
+		  case "autocompl_sep":
+			if (branch.getBoolPref("autocompl_sep")) classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_sep",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_sep",false);
+		  break;
 
 		  case "locsearchbw10":
 			if (branch.getBoolPref("locsearchbw10") && classicthemerestorerjs.ctr.fxdefaulttheme==true) classicthemerestorerjs.ctr.loadUnloadCSS("locsearchbw10",true);
@@ -2089,10 +2110,11 @@ classicthemerestorerjs.ctr = {
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("alt_addonsm",false);
 		  break;
 
-		  case "addonversion":
+/*		  case "addonversion":
 			if (branch.getBoolPref("addonversion") && classicthemerestorerjs.ctr.appversion >= 40) classicthemerestorerjs.ctr.loadUnloadCSS("addonversion",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("addonversion",false);
 		  break;
+*/
 		  
 		  case "hiderecentbm":
 		    if(classicthemerestorerjs.ctr.appversion >= 47) {
@@ -2771,9 +2793,15 @@ classicthemerestorerjs.ctr = {
 		  break;	
 
 		  case "loadcustomcss": case "customcssurl":
-		  try{ 	
+				try{ 	
 					classicthemerestorerjs.ctr.loadUnloadCSS("cctrcustomcsss",branch.getBoolPref("loadcustomcss"));
 			  	} catch(e){}		
+		  break;
+		  
+		  case "alwaysshowaddonversion":
+				try{ 	
+				classicthemerestorerjs.ctr.loadUnloadCSS("alwaysshowaddonversion",branch.getBoolPref("alwaysshowaddonversion") );
+			  	} catch(e){}	
 		  break;
 		  
 		}
@@ -3359,14 +3387,21 @@ classicthemerestorerjs.ctr = {
 	  if(gBrowser.tabContainer.tabbrowser.visibleTabs.length < 2) {
 		
 		// optionally reduces delay on startup (because it can cause glitches with Windows Classic visual style)
-		if(Services.prefs.getBranch("extensions.classicthemerestorer.").getBoolPref("hidetbwote"))
-		  document.getElementById("TabsToolbar").style.visibility = 'collapse';
+		if(Services.prefs.getBranch("extensions.classicthemerestorer.").getBoolPref("hidetbwote")) {
+		  
+		  // MacOSX + 47+: this combo does not like 'style.visibility' for tabs toolbar
+		  if(classicthemerestorerjs.ctr.osstring=="Darwin" && tabsintitlebar==true && classicthemerestorerjs.ctr.appversion >= 47) {
+			classicthemerestorerjs.ctr.loadUnloadCSS("hidetabsbarwot",true);
+			document.getElementById("TabsToolbar").collapsed = true;
+		  } 		  
+		  else document.getElementById("TabsToolbar").style.visibility = 'collapse';
+		}
 		else {
 		  classicthemerestorerjs.ctr.loadUnloadCSS("hidetabsbarwot",true);
 		  document.getElementById("TabsToolbar").collapsed = true;
 		}
 		
-		// correct titlebar appearance, if the user wants it (not required for all visual styles)
+		// correct titlebar appearance, if needed (not required for all visual styles)
 		if(Services.prefs.getBranch("extensions.classicthemerestorer.").getBoolPref("hidetbwote2")) {
 		
 		  if(classicthemerestorerjs.ctr.osstring=="WINNT" && tabsintitlebar==true){ // Windows
@@ -3382,8 +3417,14 @@ classicthemerestorerjs.ctr = {
 	  }
 	  else {
 		
-		if(Services.prefs.getBranch("extensions.classicthemerestorer.").getBoolPref("hidetbwote"))
-		   document.getElementById("TabsToolbar").style.visibility = 'visible';
+		if(Services.prefs.getBranch("extensions.classicthemerestorer.").getBoolPref("hidetbwote")) {
+			
+		  if(classicthemerestorerjs.ctr.osstring=="Darwin" && tabsintitlebar==true && classicthemerestorerjs.ctr.appversion >= 47) {
+			classicthemerestorerjs.ctr.loadUnloadCSS("hidetabsbarwot",false);
+			document.getElementById("TabsToolbar").collapsed = false;
+		  } 
+		  else document.getElementById("TabsToolbar").style.visibility = 'visible';
+		}
 		else {
 		  classicthemerestorerjs.ctr.loadUnloadCSS("hidetabsbarwot",false);
 		  document.getElementById("TabsToolbar").collapsed = false;
@@ -3859,7 +3900,8 @@ classicthemerestorerjs.ctr = {
 		  }
 		  try{
 		    classicthemerestorerjs.ctr.activityObserver.observe(gBrowser.selectedTab, { attributes: true, attributeFilter: ['busy'] });
-		  }catch(e){}
+		  }catch(e){}	  
+		  
 		}
 	}
 	
@@ -4285,6 +4327,10 @@ classicthemerestorerjs.ctr = {
 		case "altreaderico": 		manageCSS("alt_reader_icons.css");		break;
 		case "altautocompl": 		manageCSS("alt_autocomplete.css");		break;
 		case "autocompl_it": 		manageCSS("alt_autocompl_items.css");	break;
+		case "autocompl_hlb": 		manageCSS("alt_autocompl_hl_b.css");	break;
+		case "autocompl_hlu": 		manageCSS("alt_autocompl_hl_u.css");	break;
+		case "autocompl_hli": 		manageCSS("alt_autocompl_hl_i.css");	break;
+		case "autocompl_sep": 		manageCSS("alt_autocompl_sep.css");		break;
 		case "locsearchbw10": 		manageCSS("locationsearchbarw10.css");	break;
 		case "combrelstop":			manageCSS("combrelstop.css");			break;
 		case "panelmenucol": 		manageCSS("panelmenucolor.css");		break;
@@ -4344,11 +4390,13 @@ classicthemerestorerjs.ctr = {
 		case "am_hovshowb": 		manageCSS("am_hovshowbut.css");			break;
 		case "alt_addonsp": 		manageCSS("alt_addonspage.css");		break;
 		case "alt_addonsm": 		manageCSS("alt_addonsmanager.css");		break;
-		
+
+/*		
 		case "addonversion":
 			if (classicthemerestorerjs.ctr.appversion < 46) manageCSS("addonversion.css");
 			else manageCSS("addonversion46.css");
 		break;
+*/
 		
 		case "hiderecentbm": 		manageCSS("hide_recently_bm.css");		break;
 		case "bmbutpanelm": 		manageCSS("bmbut_pmenu.css");			break;
@@ -4470,6 +4518,10 @@ classicthemerestorerjs.ctr = {
 		case "throbber_alt3": 		manageCSS("cctr/throbberalt_3.css");			break;
 		case "throbber_alt4": 		manageCSS("cctr/throbberalt_4.css");			break;
 		case "throbber_alt5": 		manageCSS("cctr/throbberalt_5.css");			break;
+		
+		case "alwaysshowaddonversion":
+			manageCSS("cctr/alwaysshowaddonversion.css");
+		break;
 		
 		case "thirdpartythemes": 	manageCSS("thirdpartythemes.css");		break;
 		
@@ -7000,7 +7052,7 @@ classicthemerestorerjs.ctr = {
 
   // open prefwindow and specific category
   additionalToolbars: function(){
-	Services.prefs.getBranch("extensions.classicthemerestorer.").setIntPref('pref_actindx',13);
+	Services.prefs.getBranch("extensions.classicthemerestorer.").setIntPref('pref_actindx',14);
 	
 	setTimeout(function(){
 	  classicthemerestorerjs.ctr.openCTRPreferences();

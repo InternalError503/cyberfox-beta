@@ -232,6 +232,7 @@
 <!ENTITY Ctr_ntabhov		"Nuova scheda al passaggio del mouse">
 <!ENTITY Ctr_bold			"Grassetto">
 <!ENTITY Ctr_italic			"Corsivo">
+<!ENTITY Ctr_underlined		"Underlined">
 <!ENTITY Ctr_notabhov		"Le impostazioni attivate prevalgono su quelle del passaggio del mouse">
 <!ENTITY Ctr_tabc_act_tb	"Colore di sfondo delle barre degli strumenti">
 
@@ -268,6 +269,8 @@
 <!ENTITY Ctr_autocomplete	"Completamento automatico">
 <!ENTITY Ctr_altautocompl	"Aspetto alternativo">
 <!ENTITY Ctr_autocompl_it	"Remove 'Search with...' and 'Visit' items (if present)">
+<!ENTITY Ctr_autocompl_hl	"Highlighting of text hits">
+<!ENTITY Ctr_autocompl_sep	"Show separator between results">
 <!ENTITY Ctr_urlbar_uc		"Disattiva il completamento automatico">
 <!ENTITY Ctr_lbsugresi		"Disattiva il limite di altezza">
 <!ENTITY Ctr_lbsugres		"Numero di risultati">
@@ -368,6 +371,12 @@
 <!ENTITY Ctr_e_pocket		"Pocket">
 <!ENTITY Ctr_e_tabsaudioico	"Icone altoparlanti nelle schede">
 <!ENTITY Ctr_fx42tabsaudico	"Deselezionando questa preferenza vengono rimosse le icone degli altoparlanti nelle schede che stanno riproducendo dei suoni.">
+<!ENTITY Ctr_e_containertab	"Container Tabs">
+<!ENTITY Ctr_fx50containert	"Unchecking this preference removes 'container tabs'.">
+<!ENTITY Ctr_e_findbarhl	"Findbar highlighting">
+<!ENTITY Ctr_fx50findbarhl	"Unchecking these preferences removes findbars 'highlight' features.">
+<!ENTITY Ctr_e_flyweb		"Flyweb">
+<!ENTITY Ctr_fx50flyweb		"Unchecking this preference disables 'flyweb'.">
 
 
 <!ENTITY Ctr_pw_settings	"Impostazioni">
@@ -439,6 +448,7 @@
 <!ENTITY ctr_toolbarsearchbarcustwidth.label	"Enable custom maximum width">
 <!ENTITY ctr_toolbarsearchbarwidth.label	"Search-bar maximum width: ">
 <!ENTITY ctr_colapseaddonsearchbar.label	"Collapsible about:addons search bar">
+<!ENTITY Ctr_alwaysshowaddonversion.label	"(Always Show)">
 
 <!ENTITY ctr_bookmarkfontsize.description	"Bookmarks Tool-Bar">
 <!ENTITY ctr_custombookmarkfontsize.label	"Enable custom font size on bookmarks tool-bar">

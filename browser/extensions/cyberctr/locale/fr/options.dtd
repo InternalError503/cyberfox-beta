@@ -232,6 +232,7 @@
 <!ENTITY Ctr_ntabhov		"Nouvel onglet (au survol)">
 <!ENTITY Ctr_bold			"Gras">
 <!ENTITY Ctr_italic			"Italique">
+<!ENTITY Ctr_underlined		"Underlined">
 <!ENTITY Ctr_notabhov		"Les valeurs paramétrées supplantent celles « au survol »">
 <!ENTITY Ctr_tabc_act_tb	"Couleur d’arrière-plan des barres d’outils">
 
@@ -269,6 +270,8 @@
 <!ENTITY Ctr_autocomplete	"Fenêtre surgissante d'autocomplétion">
 <!ENTITY Ctr_altautocompl	"Apparence alternative">
 <!ENTITY Ctr_autocompl_it	"Remove 'Search with...' and 'Visit' items (if present)">
+<!ENTITY Ctr_autocompl_hl	"Highlighting of text hits">
+<!ENTITY Ctr_autocompl_sep	"Show separator between results">
 <!ENTITY Ctr_lbsugresi		"Désactiver la limite de hauteur">
 <!ENTITY Ctr_lbsugres		"Nombre de résultats :">
 <!ENTITY Ctr_lbsbradius		"Rayon de bordure personnalisé pour la barre d'adresse et la barre de recherche">
@@ -368,7 +371,12 @@
 <!ENTITY Ctr_e_pocket		"Sac de rangement (« Pocket »)">
 <!ENTITY Ctr_e_tabsaudioico	"Icône de lecture audio sur les onglets">
 <!ENTITY Ctr_fx42tabsaudico	"Décocher cette préférence pour ne plus afficher d’icône audio sur les onglets.">
-
+<!ENTITY Ctr_e_containertab	"Container Tabs">
+<!ENTITY Ctr_fx50containert	"Unchecking this preference removes 'container tabs'.">
+<!ENTITY Ctr_e_findbarhl	"Findbar highlighting">
+<!ENTITY Ctr_fx50findbarhl	"Unchecking these preferences removes findbars 'highlight' features.">
+<!ENTITY Ctr_e_flyweb		"Flyweb">
+<!ENTITY Ctr_fx50flyweb		"Unchecking this preference disables 'flyweb'.">
 
 <!ENTITY Ctr_pw_settings	"Réglages">
 <!ENTITY Ctr_pw_set_reset	"Restaurer les réglages par défaut">
@@ -442,6 +450,7 @@
 <!ENTITY ctr_toolbarsearchbarcustwidth.label "Permettre de personnaliser la largeur maximale">
 <!ENTITY ctr_toolbarsearchbarwidth.label	"Largeur maximale de la barre de recherche : ">
 <!ENTITY ctr_colapseaddonsearchbar.label	"Barre de recherche de about:addons compressible">
+<!ENTITY Ctr_alwaysshowaddonversion.label	"(Always Show)">
 
 <!ENTITY ctr_bookmarkfontsize.description	"Barre personnelle">
 <!ENTITY ctr_custombookmarkfontsize.label	"Permettre de choisir la taille de la police utilisée dans la barre personnelle">

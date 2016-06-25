@@ -125,6 +125,10 @@ pref("extensions.classicthemerestorer.urlbardropm2",false);
 pref("extensions.classicthemerestorer.altreaderico",false);
 pref("extensions.classicthemerestorer.altautocompl",false);
 pref("extensions.classicthemerestorer.autocompl_it",false);
+pref("extensions.classicthemerestorer.autocompl_hlb",false);
+pref("extensions.classicthemerestorer.autocompl_hlu",false);
+pref("extensions.classicthemerestorer.autocompl_hli",false);
+pref("extensions.classicthemerestorer.autocompl_sep",false);
 
 pref("extensions.classicthemerestorer.ib_nohovcolor",false);
 pref("extensions.classicthemerestorer.ib_graycolor",false);
@@ -344,8 +348,11 @@ pref("extensions.classicthemerestorer.abouthomebgstretch", false);
 pref("extensions.classicthemerestorer.customsearchbarwidth", false);
 pref("extensions.classicthemerestorer.searchbarwidth", 150);
 
-//Custom colalpible about:addons search bar.
+//Custom collapsible about:addons search bar.
 pref("extensions.classicthemerestorer.colapsesearchaddons", false);
+
+//Custom force about:addons addon version to always show and not vanish at screen width 850px.
+pref("extensions.classicthemerestorer.alwaysshowaddonversion", false);
 
 //Custom bookmarks bar font size.
 pref("extensions.classicthemerestorer.custbookmarkfontsize", false);
@@ -363,7 +370,7 @@ pref("extensions.classicthemerestorer.loadcustomcss", false);
 pref("extensions.classicthemerestorer.customcssurl", "");
 
 //CyberCTR version
-pref("extensions.classicthemerestorer.version", "1.5.5");
+pref("extensions.classicthemerestorer.version", "1.5.6");
 
 //CyberCTR Pre-set Configuration
 pref("extensions.classicthemerestorer.ctrpref.firstrun", true);

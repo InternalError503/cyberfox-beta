@@ -183,11 +183,6 @@ classicthemerestorerjso.ctr = {
 	document.getElementById('ctraddon_pw_cappbutctcc').disabled = true;
 	document.getElementById('ctraddon_cappbutnotxtsh').disabled = true;
 	
-	//pref e10s tabs
-	document.getElementById('ctraddon_pw_e10stabs').disabled = true;
-	document.getElementById('ctraddon_pw_e10stabs').style.visibility = 'collapse';
-	document.getElementById('ctraddon_pw_e10stabsdescr').style.visibility = 'collapse';
-	
 	//ColorfulTabs info label
 	document.getElementById('ctraddon_coltabsinfo').style.visibility = 'collapse';
 
@@ -502,6 +497,10 @@ classicthemerestorerjso.ctr = {
 	  document.getElementById('ctraddon_pw_hideeditbm').style.visibility = 'collapse';
 	}
 	
+	if (this.appversion >= 47 && Services.appinfo.OS=="Darwin") {
+	  document.getElementById('ctraddon_pw_hidetbwote').style.visibility = 'collapse';
+	}
+	
 	if (this.appversion < 48) {
 	  document.getElementById('ctraddon_pw_altautocompl').style.visibility = 'collapse';
 	  document.getElementById('ctraddon_pw_autocompl_it').style.visibility = 'collapse';
@@ -510,6 +509,12 @@ classicthemerestorerjso.ctr = {
 	if (this.appversion >= 49) {
 	  document.getElementById('ctraddon_pw_urlbar_uc').style.visibility = 'collapse';
 	  document.getElementById('ctraddon_pw_urlbar_uc_desc').style.visibility = 'collapse';
+	}
+	
+	if (this.appversion < 50) {
+	  document.getElementById('ctraddon_pw_containertabgb').style.visibility = 'collapse';
+	  document.getElementById('ctraddon_pw_findbarhlgb').style.visibility = 'collapse';
+	  document.getElementById('ctraddon_pw_flywebgb').style.visibility = 'collapse';
 	}
 	
 	function PrefListener(branch_name, callback) {
@@ -1023,9 +1028,13 @@ classicthemerestorerjso.ctr = {
 	  which=true; itemvis = 'collapse';
 	}
 	
-    document.getElementById('ctraddon_pw_hidetbwote').disabled = which;
+    if (this.appversion >= 47 && Services.appinfo.OS=="Darwin") {}
+	else {
+	  document.getElementById('ctraddon_pw_hidetbwote').disabled = which;
+	  document.getElementById('ctraddon_pw_hidetbwote').style.visibility = itemvis;
+	}
+	
 	document.getElementById('ctraddon_pw_hidetbwote2').disabled = which;
-	document.getElementById('ctraddon_pw_hidetbwote').style.visibility = itemvis;
 	document.getElementById('ctraddon_pw_hidetbwote_winc').style.visibility = itemvis;
 	document.getElementById('ctraddon_pw_hidetbwote2').style.visibility = itemvis;
   },

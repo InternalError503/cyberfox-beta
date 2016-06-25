@@ -232,6 +232,7 @@
 <!ENTITY Ctr_ntabhov		"Nova Aba (Flutuante)">
 <!ENTITY Ctr_bold			"Negrito">
 <!ENTITY Ctr_italic			"Itálico">
+<!ENTITY Ctr_underlined		"Underlined">
 <!ENTITY Ctr_notabhov		"As Configurações Habilitadas Substituirão as Configurações 'Flutuantes'">
 <!ENTITY Ctr_tabc_act_tb	"Cor de Fundo nas Barras de Ferramentas">
 
@@ -268,6 +269,8 @@
 <!ENTITY Ctr_autocomplete	"Autocomplete popup">
 <!ENTITY Ctr_altautocompl	"Alternative appearance">
 <!ENTITY Ctr_autocompl_it	"Remove 'Search with...' and 'Visit' items (if present)">
+<!ENTITY Ctr_autocompl_hl	"Highlighting of text hits">
+<!ENTITY Ctr_autocompl_sep	"Show separator between results">
 <!ENTITY Ctr_urlbar_uc		"Disable 'unified autocomplete' feature">
 <!ENTITY Ctr_lbsugresi		"Disable height limit">
 <!ENTITY Ctr_lbsugres		"Number of results">
@@ -368,6 +371,12 @@
 <!ENTITY Ctr_e_pocket		"Pocket">
 <!ENTITY Ctr_e_tabsaudioico	"Audio playing icon on tabs">
 <!ENTITY Ctr_fx42tabsaudico	"Unchecking this preference removes 'audio playing icon' from tabs.">
+<!ENTITY Ctr_e_containertab	"Container Tabs">
+<!ENTITY Ctr_fx50containert	"Unchecking this preference removes 'container tabs'.">
+<!ENTITY Ctr_e_findbarhl	"Findbar highlighting">
+<!ENTITY Ctr_fx50findbarhl	"Unchecking these preferences removes findbars 'highlight' features.">
+<!ENTITY Ctr_e_flyweb		"Flyweb">
+<!ENTITY Ctr_fx50flyweb		"Unchecking this preference disables 'flyweb'.">
 
 
 <!ENTITY Ctr_pw_settings	"Configurações">
@@ -439,6 +448,7 @@
 <!ENTITY ctr_toolbarsearchbarcustwidth.label	"Enable custom maximum width">
 <!ENTITY ctr_toolbarsearchbarwidth.label	"Search-bar maximum width: ">
 <!ENTITY ctr_colapseaddonsearchbar.label	"Collapsible about:addons search bar">
+<!ENTITY Ctr_alwaysshowaddonversion.label	"(Always Show)">
 
 <!ENTITY ctr_bookmarkfontsize.description	"Bookmarks Tool-Bar">
 <!ENTITY ctr_custombookmarkfontsize.label	"Enable custom font size on bookmarks tool-bar">
