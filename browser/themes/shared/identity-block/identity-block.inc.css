@@ -51,6 +51,11 @@
   background-color: var(--identity-box-selected-background-color);
 }
 
+#identity-box:hover > :not(#identity-icon),
+#identity-box[open=true] > :not(#identity-icon) {
+  filter: grayscale(100%);
+}
+
 #urlbar[pageproxystate="valid"] > #identity-box.verifiedIdentity {
   color: var(--identity-box-verified-color);
 }
@@ -59,8 +64,12 @@
   color: var(--identity-box-chrome-color);
 }
 
-#identity-icon-labels {
-  padding-inline-start: 2px;
+#identity-icon-labels:-moz-locale-dir(ltr) {
+  padding-left: 2px;
+}
+
+#identity-icon-labels:-moz-locale-dir(rtl) {
+  padding-right: 2px;
 }
 
 #notification-popup-box:not([hidden]) + #identity-box {

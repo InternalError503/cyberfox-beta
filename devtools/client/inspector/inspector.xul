@@ -110,6 +110,10 @@
       <menuitem id="node-menu-screenshotnode"
         label="&inspectorScreenshotNode.label;"
         oncommand="inspector.screenshotNode()" />
+      <menuitem id="node-menu-add"
+        label="&inspectorAddNode.label;"
+        accesskey="&inspectorAddNode.accesskey;"
+        oncommand="inspector.addNode()"/>
       <menuitem id="node-menu-duplicatenode"
         label="&inspectorDuplicateNode.label;"
         oncommand="inspector.duplicateNode()"/>
@@ -157,10 +161,11 @@
       <toolbar id="inspector-toolbar"
         class="devtools-toolbar"
         nowindowdrag="true">
-        <arrowscrollbox id="inspector-breadcrumbs"
-          class="breadcrumbs-widget-container"
-          flex="1" orient="horizontal"
-          clicktoscroll="true"/>
+        <toolbarbutton id="inspector-element-add-button"
+          class="devtools-toolbarbutton"
+          tooltiptext="&inspectorAddNode.label;"
+          oncommand="inspector.addNode()" />
+        <spacer flex="1"/>
         <box id="inspector-searchlabel" />
         <textbox id="inspector-searchbox"
           type="search"
@@ -173,6 +178,14 @@
       </toolbar>
       <vbox flex="1" id="markup-box">
       </vbox>
+      <toolbar id="inspector-breadcrumbs-toolbar"
+        class="devtools-toolbar"
+        nowindowdrag="true">
+        <arrowscrollbox id="inspector-breadcrumbs"
+          class="breadcrumbs-widget-container"
+          flex="1" orient="horizontal"
+          clicktoscroll="true"/>
+      </toolbar>
     </vbox>
     <splitter class="devtools-side-splitter"/>
     <tabbox id="inspector-sidebar" handleCtrlTab="false" class="devtools-sidebar-tabs" hidden="true">
@@ -279,7 +292,11 @@
         <tabpanel id="sidebar-panel-layoutview" class="devtools-monospace theme-sidebar inspector-tabpanel">
           <html:div id="layout-container">
             <html:p id="layout-header">
-              <html:span id="layout-element-size"></html:span><html:span id="layout-element-position"></html:span>
+              <html:span id="layout-element-size"></html:span>
+              <html:section id="layout-position-group">
+                <html:button class="devtools-button" id="layout-geometry-editor" title="&geometry.button.tooltip;"></html:button>
+                <html:span id="layout-element-position"></html:span>
+              </html:section>
             </html:p>
 
             <html:div id="layout-main">

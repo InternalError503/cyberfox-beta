@@ -29,6 +29,15 @@ OuterDocAccessible::
   AccessibleWrap(aContent, aDoc)
 {
   mType = eOuterDocType;
+
+  // Request document accessible for the content document to make sure it's
+  // created. It will appended to outerdoc accessible children asynchronously.
+  nsIDocument* outerDoc = mContent->GetUncomposedDoc();
+  if (outerDoc) {
+    nsIDocument* innerDoc = outerDoc->GetSubDocumentFor(mContent);
+    if (innerDoc)
+      GetAccService()->GetDocAccessible(innerDoc);
+  }
 }
 
 OuterDocAccessible::~OuterDocAccessible()
@@ -75,12 +84,6 @@ OuterDocAccessible::ChildAtPoint(int32_t aX, int32_t aY,
 void
 OuterDocAccessible::Shutdown()
 {
-  // XXX: sometimes outerdoc accessible is shutdown because of layout style
-  // change however the presshell of underlying document isn't destroyed and
-  // the document doesn't get pagehide events. Schedule a document rebind
-  // to its parent document. Otherwise a document accessible may be lost if its
-  // outerdoc has being recreated (see bug 862863 for details).
-
 #ifdef A11Y_LOG
   if (logging::IsEnabled(logging::eDocDestroy))
     logging::OuterDocDestroy(this);
@@ -95,25 +98,18 @@ OuterDocAccessible::Shutdown()
     }
 #endif
     RemoveChild(child);
-    mDoc->BindChildDocument(child->AsDoc());
+
+    // XXX: sometimes outerdoc accessible is shutdown because of layout style
+    // change however the presshell of underlying document isn't destroyed and
+    // the document doesn't get pagehide events. Schedule a document rebind
+    // to its parent document. Otherwise a document accessible may be lost if
+    // its outerdoc has being recreated (see bug 862863 for details).
+    if (!mDoc->IsDefunct()) {
+      mDoc->BindChildDocument(child->AsDoc());
+    }
   }
 
   AccessibleWrap::Shutdown();
-}
-
-void
-OuterDocAccessible::InvalidateChildren()
-{
-  // Do not invalidate children because DocManager is responsible for
-  // document accessible lifetime when DOM document is created or destroyed. If
-  // DOM document isn't destroyed but its presshell is destroyed (for example,
-  // when DOM node of outerdoc accessible is hidden), then outerdoc accessible
-  // notifies DocManager about this. If presshell is created for existing
-  // DOM document (for example when DOM node of outerdoc accessible is shown)
-  // then allow DocManager to handle this case since the document
-  // accessible is created and appended as a child when it's requested.
-
-  SetChildrenFlag(eChildrenUninitialized);
 }
 
 bool
@@ -166,23 +162,6 @@ OuterDocAccessible::RemoveChild(Accessible* aAccessible)
                "This child document of outerdoc accessible wasn't removed!");
 
   return wasRemoved;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Accessible protected
-
-void
-OuterDocAccessible::CacheChildren()
-{
-  // Request document accessible for the content document to make sure it's
-  // created. It will appended to outerdoc accessible children asynchronously.
-  nsIDocument* outerDoc = mContent->GetCurrentDoc();
-  if (outerDoc) {
-    nsIDocument* innerDoc = outerDoc->GetSubDocumentFor(mContent);
-    if (innerDoc)
-      GetAccService()->GetDocAccessible(innerDoc);
-  }
 }
 
 ProxyAccessible*

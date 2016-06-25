@@ -210,7 +210,9 @@ public:
                                             mState.mStackingContextAncestorSC);
     }
     mState = mSavedState;
+#ifdef DEBUG
     mRestored = true;
+#endif
   }
   ~AutoSaveRestore()
   {
@@ -221,7 +223,9 @@ public:
   {
     NS_ASSERTION(!mRestored, "Already restored!");
     mState.Clear();
+#ifdef DEBUG
     mClipUsed = false;
+#endif
   }
 
   void EnterStackingContextContents(bool aClear)
@@ -269,21 +273,27 @@ public:
   {
     NS_ASSERTION(!mRestored, "Already restored!");
     mState.TurnClipIntoScrollClipForContentDescendants(aBuilder, aScrollableFrame);
+#ifdef DEBUG
     mClipUsed = true;
+#endif
   }
 
   void TurnClipIntoScrollClipForContainingBlockDescendants(nsDisplayListBuilder* aBuilder, nsIScrollableFrame* aScrollableFrame)
   {
     NS_ASSERTION(!mRestored, "Already restored!");
     mState.TurnClipIntoScrollClipForContainingBlockDescendants(aBuilder, aScrollableFrame);
+#ifdef DEBUG
     mClipUsed = true;
+#endif
   }
 
   DisplayItemScrollClip* InsertInactiveScrollClipForContentDescendants(nsDisplayListBuilder* aBuilder, nsIScrollableFrame* aScrollableFrame)
   {
     NS_ASSERTION(!mRestored, "Already restored!");
     DisplayItemScrollClip* scrollClip = mState.InsertInactiveScrollClipForContentDescendants(aBuilder, aScrollableFrame);
+#ifdef DEBUG
     mClipUsed = true;
+#endif
     return scrollClip;
   }
 
@@ -291,7 +301,9 @@ public:
   {
     NS_ASSERTION(!mRestored, "Already restored!");
     DisplayItemScrollClip* scrollClip = mState.InsertInactiveScrollClipForContainingBlockDescendants(aBuilder, aScrollableFrame);
+#ifdef DEBUG
     mClipUsed = true;
+#endif
     return scrollClip;
   }
 
@@ -305,7 +317,9 @@ public:
   {
     NS_ASSERTION(!mRestored, "Already restored!");
     NS_ASSERTION(!mClipUsed, "mClip already used");
+#ifdef DEBUG
     mClipUsed = true;
+#endif
     mState.ClipContainingBlockDescendants(aRect, aRadii, mClip);
   }
 
@@ -314,7 +328,9 @@ public:
   {
     NS_ASSERTION(!mRestored, "Already restored!");
     NS_ASSERTION(!mClipUsed, "mClip already used");
+#ifdef DEBUG
     mClipUsed = true;
+#endif
     mState.ClipContentDescendants(aRect, aRadii, mClip);
   }
 
@@ -324,7 +340,9 @@ public:
   {
     NS_ASSERTION(!mRestored, "Already restored!");
     NS_ASSERTION(!mClipUsed, "mClip already used");
+#ifdef DEBUG
     mClipUsed = true;
+#endif
     mState.ClipContentDescendants(aRect, aRoundedRect, aRadii, mClip);
   }
 
@@ -342,7 +360,9 @@ public:
   {
     NS_ASSERTION(!mRestored, "Already restored!");
     NS_ASSERTION(!mClipUsed, "mClip already used");
+#ifdef DEBUG
     mClipUsed = true;
+#endif
     mState.ClipContainingBlockDescendantsToContentBox(aBuilder, aFrame, mClip, aFlags);
   }
 
@@ -350,8 +370,10 @@ protected:
   DisplayListClipState& mState;
   DisplayListClipState mSavedState;
   DisplayItemClip mClip;
-  DebugOnly<bool> mClipUsed;
-  DebugOnly<bool> mRestored;
+#ifdef DEBUG
+  bool mClipUsed;
+  bool mRestored;
+#endif
   bool mClearedForStackingContextContents;
 };
 
@@ -362,7 +384,9 @@ public:
                                                  uint32_t aFlags = 0)
     : AutoSaveRestore(aBuilder)
   {
+#ifdef DEBUG
     mClipUsed = true;
+#endif
     mState.ClipContainingBlockDescendantsToContentBox(aBuilder, aFrame, mClip, aFlags);
   }
 };
@@ -376,7 +400,9 @@ class DisplayListClipState::AutoClipMultiple : public AutoSaveRestore {
 public:
   explicit AutoClipMultiple(nsDisplayListBuilder* aBuilder)
     : AutoSaveRestore(aBuilder)
+#ifdef DEBUG
     , mExtraClipUsed(false)
+#endif
   {}
 
   /**
@@ -402,13 +428,17 @@ public:
   {
     NS_ASSERTION(!mRestored, "Already restored!");
     NS_ASSERTION(!mExtraClipUsed, "mExtraClip already used");
+#ifdef DEBUG
     mExtraClipUsed = true;
+#endif
     mState.ClipContainingBlockDescendants(aRect, aRadii, mExtraClip);
   }
 
 protected:
   DisplayItemClip mExtraClip;
-  DebugOnly<bool> mExtraClipUsed;
+#ifdef DEBUG
+  bool mExtraClipUsed;
+#endif
 };
 
 } // namespace mozilla

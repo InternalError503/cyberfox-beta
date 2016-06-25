@@ -18,10 +18,16 @@
 </head>
 <body class="aboutPageWideContainer">
 <h1>about:buildconfig</h1>
+#ifdef MOZ_SOURCE_URL
+<h2>Source</h2>
+<p>Built from <a href="@MOZ_SOURCE_URL@">@MOZ_SOURCE_URL@</a></p>
+#endif
+#ifndef MOZ_SOURCE_URL
 	<h2>Source</h2>
-		<p>Built from <a href="__SOURCEURL__">__SOURCEURLNAME__</a></p>
-		<p>SHA512:__HASHSUM__</p>
-		<p>Using cyberfox source code repository <a href="__GITURL__">__GITURL__</a></p>
+		<p>Built from <a href="ftp://ftp.mozilla.org/pub/firefox/candidates/48.0b1-candidates/build3/source/firefox-48.0b1.source.tar.xz">firefox-48.0b1.source.tar.xz</a></p>
+		<p>SHA512:F69D383F6B6D07BC30F42067D2CDA71E36C70E9B4FA1D9AF073CE6A13E6185EB88E5598FB0DAC4F4C2D7095E05253780264E9C060749CD5711B6C4EF78FBAC4E</p>
+		<p>Using cyberfox source code repository <a href="https://github.com/InternalError503/cyberfox-beta">https://github.com/InternalError503/cyberfox-beta</a></p>
+#endif
 <h2>Build platform</h2>
 <table>
   <tbody>
@@ -48,15 +54,15 @@
     </tr>
     <tr>
       <td>@CXX@</td>
-      <td>@CXX_VERSION@</td>
+      <td>@CC_VERSION@</td>
 #ifndef BUILD_FASTER
       <td>@CXXFLAGS@ @CPPFLAGS@</td>
 #endif
     </tr>
   </tbody>
 </table>
-<h2>Configure arguments</h2>
-<p>@ac_configure_args@</p>
+<h2>Configure options</h2>
+<p>@MOZ_CONFIGURE_OPTIONS@</p>
 #ifdef ANDROID
 <h2>Package name</h2>
 <p>@ANDROID_PACKAGE_NAME@</p>
