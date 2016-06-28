@@ -497,21 +497,21 @@ pref("plugin.default.state", 1);
 // product URLs
 // The breakpad report server to link to in about:crashes
 pref("breakpad.reportURL", "https://crash-stats.mozilla.com/report/index/");
-pref("app.support.baseURL", "http://support.mozilla.org/1/mobile/%VERSION%/%OS%/%LOCALE%/");
+pref("app.support.baseURL", "https://support.mozilla.org/1/mobile/%VERSION%/%OS%/%LOCALE%/");
 
 // URL for feedback page
 // This should be kept in sync with the "feedback_link" string defined in strings.xml.in
 pref("app.feedbackURL", "https://input.mozilla.org/feedback/android/%VERSION%/%CHANNEL%/?utm_source=feedback-prompt");
 
 pref("app.privacyURL", "https://www.mozilla.org/privacy/firefox/");
-pref("app.creditsURL", "http://www.mozilla.org/credits/");
-pref("app.channelURL", "http://www.mozilla.org/%LOCALE%/firefox/channel/");
+pref("app.creditsURL", "https://www.mozilla.org/credits/");
+pref("app.channelURL", "https://www.mozilla.org/%LOCALE%/firefox/channel/");
 #if MOZ_UPDATE_CHANNEL == aurora
-pref("app.releaseNotesURL", "http://www.mozilla.com/%LOCALE%/mobile/%VERSION%/auroranotes/");
+pref("app.releaseNotesURL", "https://www.mozilla.com/%LOCALE%/mobile/%VERSION%/auroranotes/");
 #elif MOZ_UPDATE_CHANNEL == beta
-pref("app.releaseNotesURL", "http://www.mozilla.com/%LOCALE%/mobile/%VERSION%beta/releasenotes/");
+pref("app.releaseNotesURL", "https://www.mozilla.com/%LOCALE%/mobile/%VERSION%beta/releasenotes/");
 #else
-pref("app.releaseNotesURL", "http://www.mozilla.com/%LOCALE%/mobile/%VERSION%/releasenotes/");
+pref("app.releaseNotesURL", "https://www.mozilla.com/%LOCALE%/mobile/%VERSION%/releasenotes/");
 #endif
 
 pref("app.faqURL", "https://support.mozilla.org/1/mobile/%VERSION%/%OS%/%LOCALE%/faq");
@@ -967,7 +967,7 @@ pref("dom.serviceWorkers.openWindow.enabled", true);
 pref("dom.push.debug", false);
 // The upstream autopush endpoint must have the Google API key corresponding to
 // the App's sender ID; we bake this assumption directly into the URL.
-pref("dom.push.serverURL", "https://updates-autopush.stage.mozaws.net/v1/gcm/@MOZ_ANDROID_GCM_SENDERID@");
+pref("dom.push.serverURL", "https://updates.push.services.mozilla.com/v1/gcm/@MOZ_ANDROID_GCM_SENDERID@");
 
 #ifdef MOZ_ANDROID_GCM
 pref("dom.push.enabled", true);

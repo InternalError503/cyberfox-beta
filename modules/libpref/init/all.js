@@ -591,6 +591,7 @@ pref("apz.fling_curve_function_x2", "1.0");
 pref("apz.fling_curve_function_y2", "1.0");
 pref("apz.fling_curve_threshold_inches_per_ms", "-1.0");
 pref("apz.fling_friction", "0.002");
+pref("apz.fling_min_velocity_threshold", "0.5");
 pref("apz.fling_stop_on_tap_threshold", "0.05");
 pref("apz.fling_stopped_threshold", "0.01");
 pref("apz.highlight_checkerboarded_areas", false);
@@ -621,7 +622,7 @@ pref("apz.record_checkerboarding", false);
 pref("apz.test.logging_enabled", false);
 pref("apz.touch_start_tolerance", "0.1");
 pref("apz.touch_move_tolerance", "0.03");
-pref("apz.velocity_bias", "1.0");
+pref("apz.velocity_bias", "0.0");
 pref("apz.velocity_relevance_time_ms", 150);
 pref("apz.x_skate_highmem_adjust", "0.0");
 pref("apz.y_skate_highmem_adjust", "0.0");
@@ -636,7 +637,7 @@ pref("apz.zoom_animation_duration_ms", 250);
 pref("apz.allow_zooming", true);
 pref("apz.enlarge_displayport_when_clipped", true);
 pref("apz.y_skate_size_multiplier", "1.5");
-pref("apz.y_stationary_size_multiplier", "1.8");
+pref("apz.y_stationary_size_multiplier", "1.5");
 #endif
 
 #ifdef XP_MACOSX
@@ -4641,7 +4642,7 @@ pref("dom.mozAlarms.enabled", false);
 
 pref("dom.push.enabled", false);
 
-pref("dom.push.loglevel", "error");
+pref("dom.push.loglevel", "off");
 
 pref("dom.push.serverURL", "wss://push.services.mozilla.com/");
 pref("dom.push.userAgentID", "");
