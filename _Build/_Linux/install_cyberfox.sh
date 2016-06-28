@@ -1,5 +1,5 @@
-# Cyberfox Install & Shortcut Desktop, Cyberfox uninstall
-# Version: 1.2
+# Cyberfox Installation, Shortcut Desktop, (Optional) Shortcut Menu, Cyberfox Uninstall
+# Version: 1.3
 # Release, Beta channels linux
 
 #!/bin/bash
@@ -54,14 +54,32 @@ select yn in "Install" "Uninstall" "Quit"; do
             # Create desktop shortcut
             echo "Generating desktop shortcut"
             echo "[Desktop Entry]" > ~/Desktop/cyberfox.desktop
+            echo "Encoding=UTF-8" >> ~/Desktop/cyberfox.desktop
             echo "Name=Cyberfox" >> ~/Desktop/cyberfox.desktop
             echo "Comment=Starts Cyberfox Web Browser" >> ~/Desktop/cyberfox.desktop
             echo "Exec=$HOME/Apps/Cyberfox/Cyberfox" >> ~/Desktop/cyberfox.desktop
             echo "Icon=$HOME/Apps/Cyberfox/browser/icons/mozicon128.png" >> ~/Desktop/cyberfox.desktop
             echo "Terminal=false" >> ~/Desktop/cyberfox.desktop
+            echo "X-MuiltpleArgs=false" >> ~/Desktop/cyberfox.desktop
+            echo "StartupWMClass=Cyberfox" >> ~/Desktop/cyberfox.desktop
             echo "Type=Application" >> ~/Desktop/cyberfox.desktop
-            echo "StartupNotify=true" >> ~/Desktop/cyberfox.desktop
+            echo "Categories=Network;WebBrowser;" >> ~/Desktop/cyberfox.desktop
+            echo "MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;x-scheme-handler/chrome;video/webm;application/x-xpinstall;" >> ~/Desktop/cyberfox.desktop
             chmod +x ~/Desktop/cyberfox.desktop
+
+            # Clone shortcut to /usr/share/applications for access in menus i.e mint, ubuntu search etc
+            echo "Do you wish to add a shortcut to your startmenu (Requires SUDO)?"
+            select yn in "Yes" "No"; do
+                case $yn in
+                    Yes )
+                        echo "To add a copy of the desktop shortcut to /usr/share/applications SUDO is required!"
+                        echo "Generating menu shortcut"
+                        # Requires admin permissions to write the file to /usr/share/applications directory.
+                        sudo cp ~/Desktop/cyberfox.desktop /usr/share/applications
+                    break;;
+                    No ) break;;
+                esac
+            done
             echo "Cyberfox is now ready for use!"
         else
             echo "You must place this script next to the 'Cyberfox' tar.bz2 package."
@@ -82,6 +100,14 @@ select yn in "Install" "Uninstall" "Quit"; do
             if [ -f ~/Desktop/cyberfox.desktop ]; then
                 rm -vf ~/Desktop/cyberfox.desktop;
             fi
+			
+            # Remove menu icon if exists.
+            # Requires admin permissions to write the file to /usr/share/applications directory.
+            # This should only prompt if the user installed it, Meaning if the check for the file returns true.
+            if [ -f /usr/share/applications/cyberfox.desktop ]; then
+                sudo rm -vf /usr/share/applications/cyberfox.desktop;
+            fi
+			
         break;;
 	  "Quit" )
             echo "If I’m not back in five minutes, just wait longer."
