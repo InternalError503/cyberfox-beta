@@ -118,12 +118,12 @@
 
 	#nav-bar #notification-popup-box[hidden] + *,
 	#nav-bar #notification-popup-box + * {
-	  -moz-padding-start: 4px !important;
+	  /*-moz-padding-start: 4px !important;*/
 	  transition: none !important;
 	}
 	
-	#main-window[fx42plus="true"] #nav-bar #notification-popup-box[hidden] + *,
-	#main-window[fx42plus="true"] #nav-bar #notification-popup-box + * {
+	#main-window #nav-bar #notification-popup-box[hidden] + *,
+	#main-window #nav-bar #notification-popup-box + * {
 	  -moz-padding-start: 6px !important;
 	}
 
@@ -140,7 +140,7 @@
 	  -moz-box-align: center !important;
 	}
 
-	#main-window[fx42plus="true"][defaultfxtheme="true"] #urlbar {
+	#main-window[defaultfxtheme="true"] #urlbar {
 	  min-height: 24px;
 	}
 
