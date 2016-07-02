@@ -143,6 +143,7 @@ toolbar[brighttext] #downloads-button-additional[cui-areatype="toolbar"]{
 	-moz-image-region: rect(0px 72px 32px 40px);
 }
 notification[value='cyberfoxupdate'] {
+	-moz-appearance:none;
 	color: white;
 	border-color: rgb(35, 35, 37);
 	font-weight: bold;
