@@ -1056,6 +1056,20 @@
     "n_buckets": 50,
     "description": "PNG image decode speed (Kbytes/sec)"
   },
+  "IMAGE_OPTIMIZE_TO_SINGLE_COLOR_USED": {
+    "expires_in_version": "54",
+    "kind": "boolean",
+    "description": "Records true each time a decoded image is optimized to a single color.",
+    "alert_emails": ["seth@mozilla.com"],
+    "bug_numbers": [1281680]
+  },
+  "IMAGE_OPTIMIZE_TO_565_USED": {
+    "expires_in_version": "54",
+    "kind": "boolean",
+    "description": "Records true each time a decoded image is optimized to R5G6B5 format.",
+    "alert_emails": ["seth@mozilla.com"],
+    "bug_numbers": [1281680]
+  },
   "CANVAS_2D_USED": {
     "expires_in_version": "never",
     "kind": "boolean",
@@ -8793,7 +8807,7 @@
     "n_values": 12,
     "releaseChannelCollection": "opt-out",
     "bug_numbers": [1241294],
-    "description": "Why e10s is enabled or disabled (0=ENABLED_BY_USER, 1=ENABLED_BY_DEFAULT, 2=DISABLED_BY_USER, 3=DISABLED_IN_SAFE_MODE, 4=DISABLED_FOR_ACCESSIBILITY, 5=DISABLED_FOR_MAC_GFX, 6=DISABLED_FOR_BIDI, 7=DISABLED_FOR_ADDONS)"
+    "description": "Why e10s is enabled or disabled (0=ENABLED_BY_USER, 1=ENABLED_BY_DEFAULT, 2=DISABLED_BY_USER, 3=DISABLED_IN_SAFE_MODE, 4=DISABLED_FOR_ACCESSIBILITY, 5=DISABLED_FOR_MAC_GFX, 6=DISABLED_FOR_BIDI, 7=DISABLED_FOR_ADDONS, 8=FORCE_DISABLED, 9=DISABLED_FOR_XPLAYERS, 10=DISABLED_FOR_OS_VERSION)"
   },
   "E10S_WINDOW": {
     "expires_in_version": "never",
