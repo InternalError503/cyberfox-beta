@@ -227,20 +227,6 @@ browser.jar:
   skin/classic/browser/e10s-64@2x.png (../shared/e10s-64@2x.png)
 #endif
 
-# Add Files For Cyberfox
-#Whimsy replacement
-  skin/classic/browser/customizableui/8pecx.png  (../shared/customizableui/8pecx.png)
-  skin/classic/browser/customizableui/8pecx@2x.png  (../shared/customizableui/8pecx@2x.png)
-  skin/classic/browser/customizableui/8pecx-bw.png  (../shared/customizableui/8pecx-bw.png)
-  skin/classic/browser/customizableui/8pecx-bw@2x.png  (../shared/customizableui/8pecx-bw@2x.png)
-#Browser Theme Core
-  skin/classic/browser/newtab/noise.png               (newtab/noise.png)
-#Browser Theme Core Menu
-  skin/classic/browser/appmenu-icons.png
-  skin/classic/browser/appmenu-icons-cf.png
-# Browser downloads
-	skin/classic/browser/downloads/downloadsWindow.css   (downloads/downloadsWindow.css)  
-
 [extensions/{972ce4c6-7e08-4474-a285-3208198ce6fd}] chrome.jar:
 % override chrome://browser/skin/page-livemarks.png                   chrome://browser/skin/feeds/feedIcon16.png
 % override chrome://browser/skin/feeds/audioFeedIcon.png              chrome://browser/skin/feeds/feedIcon.png

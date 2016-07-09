@@ -160,8 +160,6 @@ toolbarbutton.bookmark-item[open="true"] {
   display: -moz-box !important;
 }
 
-%include cyberfox-css.inc
-
 .bookmark-item > .toolbarbutton-menu-dropmarker {
   display: none;
 }
@@ -1968,3 +1966,4 @@ notification.pluginVulnerable > .notification-inner > .messageCloseButton:not(:h
 }
 
 %include ../shared/usercontext/usercontext.inc.css
+%include ../shared/browser-cyberfox.inc

@@ -3658,3 +3658,4 @@ menulist.translate-infobar-element > .menulist-dropmarker {
 }
 
 %include ../shared/usercontext/usercontext.inc.css
+%include ../shared/browser-cyberfox.inc

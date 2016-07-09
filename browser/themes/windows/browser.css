@@ -211,8 +211,6 @@
   }
 }
 
-%include cyberfox-css.inc
-
 /**
  * In the classic themes, the titlebar has a horizontal gradient, which is
  * problematic for reading the text of background tabs when they're in the
@@ -2739,3 +2737,4 @@ notification.pluginVulnerable > .notification-inner > .messageCloseButton {
 }
 
 %include ../shared/usercontext/usercontext.inc.css
+%include ../shared/browser-cyberfox.inc

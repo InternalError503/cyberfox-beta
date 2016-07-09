@@ -170,3 +170,17 @@
   skin/classic/browser/usercontext/work.svg                    (../shared/usercontext/work.svg)
   skin/classic/browser/usercontext/banking.svg                 (../shared/usercontext/banking.svg)
   skin/classic/browser/usercontext/shopping.svg                (../shared/usercontext/shopping.svg)
+
+# Add files for cyberfox
+# Whimsy replacement
+  skin/classic/browser/customizableui/8pecx.png  (../shared/customizableui/8pecx.png)
+  skin/classic/browser/customizableui/8pecx@2x.png  (../shared/customizableui/8pecx@2x.png)
+  skin/classic/browser/customizableui/8pecx-bw.png  (../shared/customizableui/8pecx-bw.png)
+  skin/classic/browser/customizableui/8pecx-bw@2x.png  (../shared/customizableui/8pecx-bw@2x.png)
+# Browser Theme Core
+  skin/classic/browser/newtab/noise.png                        (../shared/newtab/noise.png)
+# Browser Theme Core Menu
+  skin/classic/browser/appmenu-icons.png                        (../shared/appmenu-icons.png)
+  skin/classic/browser/appmenu-icons-cf.png                    (../shared/appmenu-icons-cf.png)
+# Browser downloads
+	skin/classic/browser/downloads/downloadsWindow.css   (../shared/downloads/downloadsWindow.css) 
