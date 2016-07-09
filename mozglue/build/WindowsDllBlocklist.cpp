@@ -278,6 +278,10 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
   { "rlls.dll", ALL_VERSIONS },
   { "rlls64.dll", ALL_VERSIONS },
 
+  // NHASUSSTRIXOSD.DLL, bug 1269244
+  { "nhasusstrixosd.dll", ALL_VERSIONS },
+  { "nhasusstrixdevprops.dll", ALL_VERSIONS },
+
   { nullptr, 0 }
 };
 
