@@ -58,11 +58,19 @@ GetComputedTimingDictionary(const ComputedTiming& aComputedTiming,
 
 namespace dom {
 
-NS_IMPL_CYCLE_COLLECTION_INHERITED(KeyframeEffectReadOnly,
-                                   AnimationEffectReadOnly,
-                                   mTarget,
-                                   mAnimation,
-                                   mTiming)
+NS_IMPL_CYCLE_COLLECTION_CLASS(KeyframeEffectReadOnly)
+NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN_INHERITED(KeyframeEffectReadOnly,
+                                                AnimationEffectReadOnly)
+  if (tmp->mTiming) {
+    tmp->mTiming->Unlink();
+  }
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mTarget, mAnimation, mTiming)
+NS_IMPL_CYCLE_COLLECTION_UNLINK_END
+
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN_INHERITED(KeyframeEffectReadOnly,
+                                                  AnimationEffectReadOnly)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mTarget, mAnimation, mTiming)
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 NS_IMPL_CYCLE_COLLECTION_TRACE_BEGIN_INHERITED(KeyframeEffectReadOnly,
                                                AnimationEffectReadOnly)
@@ -525,11 +533,18 @@ KeyframeEffectReadOnly::UpdateProperties(nsStyleContext* aStyleContext)
 
   nsTArray<AnimationProperty> properties;
   if (mTarget) {
+    // When GetAnimationPropertiesFromKeyframes calculates computed values
+    // from |mKeyframes|, if it triggers a subsequent restyle where we
+    // rebuild animations, we could find that |mKeyframes| is overwritten
+    // while it is being iterated over. Normally that shouldn't happen,
+    // but, just in case, we make a copy of |mKeyframes| first and iterate over
+    // that instead.
+    auto keyframesCopy(mFrames);
     properties =
       KeyframeUtils::GetAnimationPropertiesFromKeyframes(aStyleContext,
                                                          mTarget,
                                                          mPseudoType,
-                                                         mFrames);
+                                                         keyframesCopy);
   }
 
   if (mProperties == properties) {
