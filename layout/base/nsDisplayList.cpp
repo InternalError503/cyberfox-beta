@@ -720,7 +720,8 @@ nsDisplayListBuilder::nsDisplayListBuilder(nsIFrame* aReferenceFrame,
       mWindowDraggingAllowed(false),
       mIsBuildingForPopup(nsLayoutUtils::IsPopup(aReferenceFrame)),
       mForceLayerForScrollParent(false),
-      mAsyncPanZoomEnabled(nsLayoutUtils::AsyncPanZoomEnabled(aReferenceFrame))
+      mAsyncPanZoomEnabled(nsLayoutUtils::AsyncPanZoomEnabled(aReferenceFrame)),
+      mBuildingInvisibleItems(false)
 {
   MOZ_COUNT_CTOR(nsDisplayListBuilder);
   PL_InitArenaPool(&mPool, "displayListArena", 4096,
@@ -855,8 +856,10 @@ void nsDisplayListBuilder::MarkOutOfFlowFrameForDisplay(nsIFrame* aDirtyFrame,
     overflowRect.Inflate(nsPresContext::CSSPixelsToAppUnits(32));
   }
 
-  if (!dirty.IntersectRect(dirty, overflowRect))
+  if (!dirty.IntersectRect(dirty, overflowRect) &&
+      !(aFrame->GetStateBits() & NS_FRAME_FORCE_DISPLAY_LIST_DESCEND_INTO)) {
     return;
+  }
 
   const DisplayItemClip* oldClip = mClipState.GetClipForContainingBlockDescendants();
   const DisplayItemScrollClip* sc = mClipState.GetCurrentInnermostScrollClip();
@@ -1619,11 +1622,17 @@ nsDisplayList::ComputeVisibilityForSublist(nsDisplayListBuilder* aBuilder,
 
   for (int32_t i = elements.Length() - 1; i >= 0; --i) {
     nsDisplayItem* item = elements[i];
-    nsRect bounds = item->GetClippedBounds(aBuilder);
 
-    nsRegion itemVisible;
-    itemVisible.And(*aVisibleRegion, bounds);
-    item->mVisibleRect = itemVisible.GetBounds();
+    if (item->mForceNotVisible) {
+      NS_ASSERTION(item->mVisibleRect.IsEmpty(),
+        "invisible items should have empty vis rect");
+    } else {
+      nsRect bounds = item->GetClippedBounds(aBuilder);
+
+      nsRegion itemVisible;
+      itemVisible.And(*aVisibleRegion, bounds);
+      item->mVisibleRect = itemVisible.GetBounds();
+    }
 
     if (item->ComputeVisibility(aBuilder, aVisibleRegion)) {
       anyVisible = true;
@@ -2232,6 +2241,7 @@ nsDisplayItem::nsDisplayItem(nsDisplayListBuilder* aBuilder, nsIFrame* aFrame,
   , mClip(aBuilder->ClipState().GetCurrentCombinedClip(aBuilder))
   , mScrollClip(aScrollClip)
   , mAnimatedGeometryRoot(nullptr)
+  , mForceNotVisible(aBuilder->IsBuildingInvisibleItems())
 #ifdef MOZ_DUMP_PAINTING
   , mPainted(false)
 #endif
@@ -2294,11 +2304,16 @@ nsDisplayItem::ComputeVisibility(nsDisplayListBuilder* aBuilder,
 bool
 nsDisplayItem::RecomputeVisibility(nsDisplayListBuilder* aBuilder,
                                    nsRegion* aVisibleRegion) {
-  nsRect bounds = GetClippedBounds(aBuilder);
+  if (mForceNotVisible) {
+    NS_ASSERTION(mVisibleRect.IsEmpty(),
+      "invisible items should have empty vis rect");
+  } else {
+    nsRect bounds = GetClippedBounds(aBuilder);
 
-  nsRegion itemVisible;
-  itemVisible.And(*aVisibleRegion, bounds);
-  mVisibleRect = itemVisible.GetBounds();
+    nsRegion itemVisible;
+    itemVisible.And(*aVisibleRegion, bounds);
+    mVisibleRect = itemVisible.GetBounds();
+  }
 
   // When we recompute visibility within layers we don't need to
   // expand the visible region for content behind plugins (the plugin
