@@ -1,27 +1,39 @@
 @namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);
 @-moz-document url(chrome://browser/content/browser.xul) {
 
-	#nav-bar #notification-popup-box + *{
+	#main-window[fx50plus="true"][defaultfxtheme="true"] #forward-button[disabled="true"] + #urlbar #identity-icon {
+	  margin-inline-start: -6px !important;
+	}
+
+	#main-window[fx50plus="true"][defaultfxtheme="true"] #forward-button + #urlbar > * {
+	  transition: none !important;
+	}
+
+	#main-window:not([fx50plus="true"]) #nav-bar #notification-popup-box + *{
 	  -moz-padding-start: 9px !important;
 	  transition: none !important;
 	}
 
-	#main-window[defaultfxtheme="true"] #navigator-toolbox #nav-bar #urlbar-container #notification-popup-box[hidden] + *,
-	#main-window #navigator-toolbox #nav-bar #urlbar-container #notification-popup-box[hidden] + * {
+	#main-window:not([fx50plus="true"])[defaultfxtheme="true"] #navigator-toolbox #nav-bar #urlbar-container #notification-popup-box[hidden] + *,
+	#main-window:not([fx50plus="true"]) #navigator-toolbox #nav-bar #urlbar-container #notification-popup-box[hidden] + * {
 	  -moz-padding-start: 4px !important;
 	  -moz-padding-end: 3px !important;
 	  transition: none !important;
 	}
 
-	#nav-bar #notification-popup-box:not([hidden]) {
+	#main-window:not([fx50plus="true"]) #nav-bar #notification-popup-box:not([hidden]) {
 	  padding-left:2px !important;
 	  padding-right:2px !important;
 	  transition: none !important;
 	}
-	
+
+    #nav-bar #urlbar-container/* > #urlbar-wrapper > #urlbar*/,
+	#nav-bar #urlbar-container[forwarddisabled]/* > #urlbar-wrapper > #urlbar*/ {
+	  -moz-margin-start: 2px !important; /* has to be this for ltr and rtl locales */
+	}
+
     #nav-bar #urlbar-container > #urlbar-wrapper > #urlbar,
 	#nav-bar #urlbar-container[forwarddisabled] > #urlbar-wrapper > #urlbar {
-      margin-left: 4px !important; /* has to be this for ltr and rtl locales */
       transition: none !important;
       transition-property:  none !important;
       transition-delay: 0s !important;
@@ -50,14 +62,14 @@
 		}
 	}
 
-	/* Fx31+*/
 	#main-window #navigator-toolbox #nav-bar:-moz-locale-dir(ltr) #forward-button{
       margin-left: 4px !important;
+	  margin-right: 4px !important;
 	}
 	#main-window #navigator-toolbox #nav-bar:-moz-locale-dir(rtl) #forward-button{
-      margin-left: 6px !important;
+      margin-left: 4px !important;
+	  margin-right: 4px !important;
 	}
-	/**/
 
 	@media all and (-moz-windows-theme:aero) {
 	  #nav-bar .toolbarbutton-1 {

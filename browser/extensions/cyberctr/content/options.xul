@@ -365,7 +365,8 @@
 	<preference id="ctraddon_tabthrobber_usecust"	name="extensions.classicthemerestorer.tabthrobberusecust"	type="bool"		instantApply="true"/>
 	<preference id="ctraddon_tabthrobber_cust"	name="extensions.classicthemerestorer.tabthrobbercusturl" 	type="string"	instantApply="true"/>
 	<preference id="ctraddon_animatelwtheme"	name="extensions.classicthemerestorer.animatedlwtthemes"	type="bool"	instantApply="true"/>
-	<preference id="ctraddon_alwaysshowaddonversion"	name="extensions.classicthemerestorer.alwaysshowaddonversion"	 type="bool"	instantApply="true"/>	
+	<preference id="ctraddon_alwaysshowaddonversion"	name="extensions.classicthemerestorer.alwaysshowaddonversion"	 type="bool"	instantApply="true"/>
+	<preference id="ctraddon_syncctrprefs"	name="extensions.classicthemerestorer.syncprefs"	 type="bool"	instantApply="true"/>	
  <!--- CyberCTR customization settings -->
 
 	</preferences>
@@ -527,7 +528,8 @@
 	    <caption  label="&Ctr_tabstoolbar;" class="ctraddon_topic"/>
 		<checkbox label="&Ctr_tabinsertion;" preference="ctraddon_tabinsertion" id="ctraddon_pw_tab_tabinsertion"/>
 		<description class="ctraddonsuboption">about:config &gt;&gt; browser.tabs.insertRelatedAfterCurrent</description>
-		<checkbox label="&Ctr_dblclnewtab;"	preference="ctraddon_dblclnewtab" class="ctraddon_windowsonly"/>
+		<checkbox label="&Ctr_dblclnewtab;"	preference="ctraddon_dblclnewtab" id="ctraddon_pw_dblclnewtab" class="ctraddon_windowsonly"/>
+		<description id="ctraddon_pw_dblclnewtabdes" class="ctraddonsuboption ctraddon_windowsonly">&Ctr_dblclnewtabdes;</description>
 		<checkbox label="&Ctr_hightabpos;"	preference="ctraddon_hightabpososx" id="ctraddon_pw_hightabpososx"/>
 		<checkbox label="&Ctr_showalltabsb;" preference="ctraddon_showalltabsb" id="ctraddon_pw_showalltabsb"/>
 		<checkbox label="&Ctr_hidetbwot;"	preference="ctraddon_hidetbwot" oncommand="if(this.checked) {classicthemerestorerjso.ctr.ctrpwHidetbwotExtra(true);} else {classicthemerestorerjso.ctr.ctrpwHidetbwotExtra(false);} classicthemerestorerjso.ctr.needsBrowserRestart();"/>
@@ -1734,11 +1736,13 @@
   </deck>
 </hbox>
 
-  <hbox flex="1" id="ctraddon_pw_special_info2">
-	<spacer flex="1" />
+  <vbox id="ctraddon_pw_themes_note" align="center">
 	<description class="ctraddon_topic">&Ctr_special_info2;</description>
-	<spacer flex="1" />
-  </hbox>
+  </vbox>
+  
+  <vbox id="ctraddon_pw_acr_note" align="center">
+	<description class="ctraddon_topic">&Ctr_special_acr;</description>
+  </vbox>
 
   <popupset>
 	<menupopup id="ctr_pw_settingsPopup" position="before_start">
@@ -1753,8 +1757,8 @@
 		<menuitem label="&Ctr_pw_set_export; (JSON)" id="ctr_pw_settings_export_json"	oncommand="classicthemerestorerjso.ctr.ExportPreferences('json');" class="menuitem-iconic"/>
 		<menuitem label="&Ctr_pw_set_import; (JSON)" id="ctr_pw_settings_import_json"	oncommand="classicthemerestorerjso.ctr.ImportPreferences('json');" class="menuitem-iconic"/>
 		<menuseparator/>
-		<menuitem label="&Ctr_pw_set_syncon;"	id="ctr_pw_settings_sync_on"	oncommand="classicthemerestorerjso.ctr.enableSyncCTRprefs();" class="menuitem-iconic"/>
-		<menuitem label="&Ctr_pw_set_syncoff;"	id="ctr_pw_settings_sync_off"	oncommand="classicthemerestorerjso.ctr.disableSyncCTRprefs();" class="menuitem-iconic"/>
+		<menuitem label="&Ctr_pw_set_syncon;"	id="ctr_pw_settings_sync_on"	preference="ctraddon_syncctrprefs" class="menuitem-iconic" value="true"/>
+		<menuitem label="&Ctr_pw_set_syncoff;"	id="ctr_pw_settings_sync_off"	preference="ctraddon_syncctrprefs" class="menuitem-iconic" value="false"/>
 	</menupopup>
   </popupset>
   
