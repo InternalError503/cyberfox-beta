@@ -9,7 +9,8 @@ tab-title-homestyle=Select Home Type:
 tab-title-syncstyle=Sync with firefox sync:
 nav-tab-next=Next
 nav-tab-skip=Skip
+nav-tab-clear=Clear
 nav-tab-done=Apply & close
 
 change-confirm-title=Please confirm your changes!
-change-confirm=message=Would you like to apply your settings?
+change-confirm-message=Would you like to apply your settings?
