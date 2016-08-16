@@ -149,7 +149,6 @@ MediaSourceDemuxer::GetTrackDemuxer(TrackType aType, uint32_t aTrackNumber)
 {
   RefPtr<TrackBuffersManager> manager = GetManager(aType);
   if (!manager) {
-    MOZ_CRASH("TODO: sourcebuffer was deleted from under us");
     return nullptr;
   }
   RefPtr<MediaSourceTrackDemuxer> e =
@@ -177,7 +176,7 @@ void
 MediaSourceDemuxer::AttachSourceBuffer(TrackBuffersManager* aSourceBuffer)
 {
   nsCOMPtr<nsIRunnable> task =
-    NS_NewRunnableMethodWithArg<TrackBuffersManager*>(
+    NewRunnableMethod<TrackBuffersManager*>(
       this, &MediaSourceDemuxer::DoAttachSourceBuffer,
       aSourceBuffer);
   GetTaskQueue()->Dispatch(task.forget());
@@ -195,7 +194,7 @@ void
 MediaSourceDemuxer::DetachSourceBuffer(TrackBuffersManager* aSourceBuffer)
 {
   nsCOMPtr<nsIRunnable> task =
-    NS_NewRunnableMethodWithArg<TrackBuffersManager*>(
+    NewRunnableMethod<TrackBuffersManager*>(
       this, &MediaSourceDemuxer::DoDetachSourceBuffer,
       aSourceBuffer);
   GetTaskQueue()->Dispatch(task.forget());
@@ -468,8 +467,10 @@ MediaSourceTrackDemuxer::DoSkipToNextRandomAccessPoint(media::TimeUnit aTimeThre
   buffered.SetFuzz(MediaSourceDemuxer::EOS_FUZZ);
   if (buffered.Contains(aTimeThreadshold)) {
     bool found;
-    parsed =
-      mManager->SkipToNextRandomAccessPoint(mType, aTimeThreadshold, found);
+    parsed = mManager->SkipToNextRandomAccessPoint(mType,
+                                                   aTimeThreadshold,
+                                                   MediaSourceDemuxer::EOS_FUZZ,
+                                                   found);
     if (found) {
       return SkipAccessPointPromise::CreateAndResolve(parsed, __func__);
     }

@@ -21,9 +21,13 @@
 #include "runnable_utils.h"
 #include "transportflow.h"
 #include "AudioPacketizer.h"
-#include "StreamBuffer.h"
+#include "StreamTracks.h"
 
 #include "webrtc/modules/rtp_rtcp/interface/rtp_header_parser.h"
+
+// Should come from MediaEngine.h, but that's a pain to include here
+// because of the MOZILLA_EXTERNAL_LINKAGE stuff.
+#define WEBRTC_DEFAULT_SAMPLE_RATE 32000
 
 class nsIPrincipal;
 
@@ -278,7 +282,7 @@ class MediaPipeline : public sigslot::has_slots<> {
   bool IsRtp(const unsigned char *data, size_t len);
 };
 
-class ConduitDeleteEvent: public nsRunnable
+class ConduitDeleteEvent: public Runnable
 {
 public:
   explicit ConduitDeleteEvent(already_AddRefed<MediaSessionConduit> aConduit) :
@@ -404,8 +408,7 @@ class MediaPipelineReceiveAudio : public MediaPipelineReceive {
                             RefPtr<AudioSessionConduit> conduit,
                             RefPtr<TransportFlow> rtp_transport,
                             RefPtr<TransportFlow> rtcp_transport,
-                            nsAutoPtr<MediaPipelineFilter> filter,
-                            bool queue_track);
+                            nsAutoPtr<MediaPipelineFilter> filter);
 
   void DetachMedia() override;
 
@@ -443,8 +446,7 @@ class MediaPipelineReceiveVideo : public MediaPipelineReceive {
                             RefPtr<VideoSessionConduit> conduit,
                             RefPtr<TransportFlow> rtp_transport,
                             RefPtr<TransportFlow> rtcp_transport,
-                            nsAutoPtr<MediaPipelineFilter> filter,
-                            bool queue_track);
+                            nsAutoPtr<MediaPipelineFilter> filter);
 
   // Called on the main thread.
   void DetachMedia() override;

@@ -421,6 +421,11 @@ private:
     bool               DispatchContentCommandEvent(mozilla::EventMessage aMsg);
     bool               CheckForRollup(gdouble aMouseX, gdouble aMouseY,
                                       bool aIsWheel, bool aAlwaysRollup);
+    void               CheckForRollupDuringGrab()
+    {
+      CheckForRollup(0, 0, false, true);
+    }
+
     bool               GetDragInfo(mozilla::WidgetMouseEvent* aMouseEvent,
                                    GdkWindow** aWindow, gint* aButton,
                                    gint* aRootX, gint* aRootY);
@@ -462,6 +467,9 @@ private:
     RefPtr<nsShmImage>  mFrontShmImage;
     RefPtr<nsShmImage>  mBackShmImage;
 #endif
+
+    // A fallback image surface when a SHM surface is unavailable.
+    cairo_surface_t* mFallbackSurface;
 
 #ifdef ACCESSIBILITY
     RefPtr<mozilla::a11y::Accessible> mRootAccessible;

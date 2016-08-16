@@ -559,6 +559,13 @@ class MochitestArguments(ArgumentContainer):
           "help": "Timeout while waiting to receive a message from the marionette server.",
           "suppress": True,
           }],
+        [["--cleanup-crashes"],
+         {"action": "store_true",
+          "dest": "cleanupCrashes",
+          "default": False,
+          "help": "Delete pending crash reports before running tests.",
+          "suppress": True,
+          }],
     ]
 
     defaults = {
@@ -660,7 +667,7 @@ class MochitestArguments(ArgumentContainer):
 
         if options.dmd and not options.dmdPath:
             if build_obj:
-                options.dmdPath = build_obj.bin_dir
+                options.dmdPath = build_obj.bindir
             else:
                 parser.error(
                     "could not find dmd libraries, specify them with --dmd-path")
@@ -788,12 +795,6 @@ class MochitestArguments(ArgumentContainer):
 
         if options.nested_oop:
             options.e10s = True
-
-        # a11y and chrome tests don't run with e10s enabled in CI
-        if options.a11y or options.chrome:
-            options.e10s = False
-
-        mozinfo.update({"e10s": options.e10s})  # for test manifest parsing.
 
         options.leakThresholds = {
             "default": options.defaultLeakThreshold,

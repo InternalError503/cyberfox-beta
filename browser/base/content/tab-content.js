@@ -246,6 +246,8 @@ var AboutReaderListener = {
 
   _articlePromise: null,
 
+  _isLeavingReaderMode: false,
+
   init: function() {
     addEventListener("AboutReaderContentLoaded", this, false, true);
     addEventListener("DOMContentLoaded", this, false);
@@ -263,6 +265,7 @@ var AboutReaderListener = {
           this._articlePromise = ReaderMode.parseDocument(content.document).catch(Cu.reportError);
           ReaderMode.enterReaderMode(docShell, content);
         } else {
+          this._isLeavingReaderMode = true;
           ReaderMode.leaveReaderMode(docShell, content);
         }
         break;
@@ -301,7 +304,13 @@ var AboutReaderListener = {
 
       case "pagehide":
         this.cancelPotentialPendingReadabilityCheck();
-        sendAsyncMessage("Reader:UpdateReaderButton", { isArticle: false });
+        // this._isLeavingReaderMode is used here to keep the Reader Mode icon
+        // visible in the location bar when transitioning from reader-mode page
+        // back to the source page.
+        sendAsyncMessage("Reader:UpdateReaderButton", { isArticle: this._isLeavingReaderMode });
+        if (this._isLeavingReaderMode) {
+          this._isLeavingReaderMode = false;
+        }
         break;
 
       case "pageshow":
@@ -872,21 +881,26 @@ RefreshBlocker.init();
 
 var UserContextIdNotifier = {
   init() {
-    addEventListener("DOMContentLoaded", this);
+    addEventListener("DOMWindowCreated", this);
   },
 
   uninit() {
-    removeEventListener("DOMContentLoaded", this);
+    removeEventListener("DOMWindowCreated", this);
   },
 
   handleEvent(aEvent) {
-    // When the first content is loaded, we want to inform the tabbrowser about
+    // When the window is created, we want to inform the tabbrowser about
     // the userContextId in use in order to update the UI correctly.
     // Just because we cannot change the userContextId from an active docShell,
     // we don't need to check DOMContentLoaded again.
     this.uninit();
-    let userContextId = content.document.nodePrincipal.originAttributes.userContextId;
-    sendAsyncMessage("Browser:FirstContentLoaded", { userContextId });
+
+    // We use the docShell because content.document can have been loaded before
+    // setting the originAttributes.
+    let loadContext = docShell.QueryInterface(Ci.nsILoadContext);
+    let userContextId = loadContext.originAttributes.userContextId;
+
+    sendAsyncMessage("Browser:WindowCreated", { userContextId });
   }
 };
 

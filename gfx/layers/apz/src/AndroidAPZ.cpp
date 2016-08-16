@@ -220,11 +220,13 @@ void
 AndroidFlingAnimation::DeferHandleFlingOverscroll(ParentLayerPoint& aVelocity)
 {
   mDeferredTasks.AppendElement(
-        NewRunnableMethod(&mApzc,
-                          &AsyncPanZoomController::HandleFlingOverscroll,
-                          aVelocity,
-                          mOverscrollHandoffChain,
-                          mScrolledApzc));
+      NewRunnableMethod<ParentLayerPoint,
+                        RefPtr<const OverscrollHandoffChain>,
+                        RefPtr<const AsyncPanZoomController>>(&mApzc,
+                                                              &AsyncPanZoomController::HandleFlingOverscroll,
+                                                              aVelocity,
+                                                              mOverscrollHandoffChain,
+                                                              mScrolledApzc));
 
 }
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "WMFVideoMFTManager.h"
 #include "MediaDecoderReader.h"
+#include "MediaPrefs.h"
 #include "WMFUtils.h"
 #include "ImageContainer.h"
 #include "VideoUtils.h"
@@ -16,13 +17,14 @@
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/layers/LayersTypes.h"
 #include "MediaInfo.h"
+#include "MediaPrefs.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Preferences.h"
+#include "nsWindowsHelpers.h"
 #include "gfx2DGlue.h"
 #include "gfxWindowsPlatform.h"
 #include "IMFYCbCrImage.h"
 #include "mozilla/WindowsVersion.h"
-#include "mozilla/Preferences.h"
 #include "mozilla/Telemetry.h"
 #include "nsPrintfCString.h"
 #include "MediaTelemetryConstants.h"
@@ -185,7 +187,6 @@ FindDXVABlacklistedDLL(StaticAutoPtr<D3DDLLBlacklistingCache>& aDLLBlacklistingC
 
   // Detect changes in pref.
   if (aDLLBlacklistingCache->mBlacklistPref.Equals(blacklist)) {
-
     // Same blacklist -> Return same result (i.e., don't check DLLs again).
     return aDLLBlacklistingCache->mBlacklistedDLL;
   }
@@ -289,7 +290,7 @@ FindD3D9BlacklistedDLL() {
                                 "media.wmf.disable-d3d9-for-dlls");
 }
 
-class CreateDXVAManagerEvent : public nsRunnable {
+class CreateDXVAManagerEvent : public Runnable {
 public:
   CreateDXVAManagerEvent(LayersBackend aBackend, nsCString& aFailureReason)
     : mBackend(aBackend)
@@ -301,8 +302,7 @@ public:
     nsACString* failureReason = &mFailureReason;
     nsCString secondFailureReason;
     if (mBackend == LayersBackend::LAYERS_D3D11 &&
-        Preferences::GetBool("media.windows-media-foundation.allow-d3d11-dxva", true) &&
-        IsWin8OrLater()) {
+        MediaPrefs::PDMWMFAllowD3D11() && IsWin8OrLater()) {
       const nsACString& blacklistedDLL = FindD3D11BlacklistedDLL();
       if (!blacklistedDLL.IsEmpty()) {
         failureReason->AppendPrintf("D3D11 blacklisted with DLL %s",
@@ -404,7 +404,7 @@ WMFVideoMFTManager::InitInternal(bool aForceD3D9)
     attr->GetUINT32(MF_SA_D3D_AWARE, &aware);
     attr->SetUINT32(CODECAPI_AVDecNumWorkerThreads,
       WMFDecoderModule::GetNumDecoderThreads());
-    if (WMFDecoderModule::LowLatencyMFTEnabled()) {
+    if (MediaPrefs::PDMWMFLowLatencyEnabled()) {
       hr = attr->SetUINT32(CODECAPI_AVLowLatencyMode, TRUE);
       if (SUCCEEDED(hr)) {
         LOG("Enabling Low Latency Mode");
@@ -828,17 +828,6 @@ WMFVideoMFTManager::IsHardwareAccelerated(nsACString& aFailureReason) const
 {
   aFailureReason = mDXVAFailureReason;
   return mDecoder && mUseHwAccel;
-}
-
-const char*
-WMFVideoMFTManager::GetDescriptionName() const
-{
-  if (mDecoder && mUseHwAccel && mDXVA2Manager) {
-    return (mDXVA2Manager->IsD3D11()) ?
-      "D3D11 Hardware Decoder" : "D3D9 Hardware Decoder";
-  } else {
-    return "wmf software video decoder";
-  }
 }
 
 void

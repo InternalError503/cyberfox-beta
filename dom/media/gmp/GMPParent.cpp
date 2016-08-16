@@ -22,6 +22,7 @@
 #include "mozilla/SandboxInfo.h"
 #endif
 #include "GMPContentParent.h"
+#include "MediaPrefs.h"
 
 #include "mozilla/dom/CrashReporterParent.h"
 using mozilla::dom::CrashReporterParent;
@@ -252,7 +253,7 @@ GMPParent::EnsureAsyncShutdownTimeoutSet()
    return rv;
   }
 
-  int32_t timeout = GMP_DEFAULT_ASYNC_SHUTDONW_TIMEOUT;
+  int32_t timeout = MediaPrefs::GMPAsyncShutdownTimeout();
   RefPtr<GeckoMediaPluginServiceParent> service =
     GeckoMediaPluginServiceParent::GetSingleton();
   if (service) {
@@ -471,7 +472,7 @@ GMPParent::Shutdown()
   MOZ_ASSERT(mState == GMPStateNotLoaded);
 }
 
-class NotifyGMPShutdownTask : public nsRunnable {
+class NotifyGMPShutdownTask : public Runnable {
 public:
   explicit NotifyGMPShutdownTask(const nsAString& aNodeId)
     : mNodeId(aNodeId)
@@ -502,7 +503,7 @@ GMPParent::ChildTerminated()
     // removed so there is no harm in not trying to remove it again.
     LOGD("%s::%s: GMPThread() returned nullptr.", __CLASS__, __FUNCTION__);
   } else {
-    gmpThread->Dispatch(NS_NewRunnableMethodWithArg<RefPtr<GMPParent>>(
+    gmpThread->Dispatch(NewRunnableMethod<RefPtr<GMPParent>>(
                          mService,
                          &GeckoMediaPluginServiceParent::PluginTerminated,
                          self),
@@ -521,7 +522,7 @@ GMPParent::DeleteProcess()
     mState = GMPStateClosing;
     Close();
   }
-  mProcess->Delete(NS_NewRunnableMethod(this, &GMPParent::ChildTerminated));
+  mProcess->Delete(NewRunnableMethod(this, &GMPParent::ChildTerminated));
   LOGD("%s: Shut down process", __FUNCTION__);
   mProcess = nullptr;
   mState = GMPStateNotLoaded;
@@ -1041,7 +1042,7 @@ GMPParent::RecvAsyncShutdownComplete()
   return true;
 }
 
-class RunCreateContentParentCallbacks : public nsRunnable
+class RunCreateContentParentCallbacks : public Runnable
 {
 public:
   explicit RunCreateContentParentCallbacks(GMPContentParent* aGMPContentParent)

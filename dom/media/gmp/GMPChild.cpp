@@ -22,6 +22,7 @@
 #include "mozilla/ipc/ProcessChild.h"
 #include "GMPUtils.h"
 #include "prio.h"
+#include "base/task.h"
 #ifdef MOZ_WIDEVINE_EME
 #include "widevine-adapter/WidevineAdapter.h"
 #endif
@@ -635,8 +636,9 @@ GMPChild::GMPContentChildActorDestroy(GMPContentChild* aGMPContentChild)
     UniquePtr<GMPContentChild>& toDestroy = mGMPContentChildren[i - 1];
     if (toDestroy.get() == aGMPContentChild) {
       SendPGMPContentChildDestroyed();
-      MessageLoop::current()->PostTask(FROM_HERE,
-                                       new DeleteTask<GMPContentChild>(toDestroy.release()));
+      RefPtr<DeleteTask<GMPContentChild>> task =
+        new DeleteTask<GMPContentChild>(toDestroy.release());
+      MessageLoop::current()->PostTask(task.forget());
       mGMPContentChildren.RemoveElementAt(i - 1);
       break;
     }

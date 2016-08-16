@@ -21,7 +21,6 @@ Cu.import("chrome://marionette/content/action.js");
 Cu.import("chrome://marionette/content/atom.js");
 Cu.import("chrome://marionette/content/browser.js");
 Cu.import("chrome://marionette/content/element.js");
-Cu.import("chrome://marionette/content/emulator.js");
 Cu.import("chrome://marionette/content/error.js");
 Cu.import("chrome://marionette/content/evaluate.js");
 Cu.import("chrome://marionette/content/event.js");
@@ -96,16 +95,10 @@ this.Context.fromString = function(s) {
  *     Device this driver should assume.
  * @param {function()} stopSignal
  *     Signal to stop the Marionette server.
- * @param {EmulatorService=} emulator
- *     Interface that allows instructing the emulator connected to the
- *     client to run commands and perform shell invocations.
  */
-this.GeckoDriver = function(appName, device, stopSignal, emulator) {
+this.GeckoDriver = function(appName, device, stopSignal) {
   this.appName = appName;
   this.stopSignal_ = stopSignal;
-  this.emulator = emulator;
-  // TODO(ato): hack
-  this.emulator.sendToListener = this.sendAsync.bind(this);
 
   this.sessionId = null;
   this.wins = new browser.Windows();
@@ -158,6 +151,7 @@ this.GeckoDriver = function(appName, device, stopSignal, emulator) {
     "XULappId" : Services.appinfo.ID,
     "appBuildId" : Services.appinfo.appBuildID,
     "device": device,
+    "processId" : Services.appinfo.processID,
     "version": Services.appinfo.version,
   };
 
@@ -886,7 +880,6 @@ GeckoDriver.prototype.execute_ = function(script, args, timeout, opts = {}) {
       if (opts.sandboxName) {
         sb = sandbox.augment(sb, new logging.Adapter(this.marionetteLog));
         sb = sandbox.augment(sb, {global: sb});
-        sb = sandbox.augment(sb, new emulator.Adapter(this.emulator));
       }
 
       opts.timeout = timeout;
@@ -1818,7 +1811,10 @@ GeckoDriver.prototype.getElementProperty = function*(cmd, resp) {
 
   switch (this.context) {
     case Context.CHROME:
-      throw new UnsupportedOperationError();
+      let win = this.getCurrentWindow();
+      let el = this.curBrowser.seenEls.get(id, {frame: win});
+      resp.body.value = el[name];
+      break;
 
     case Context.CONTENT:
       return this.listener.getElementProperty(id, name);
@@ -2107,7 +2103,8 @@ GeckoDriver.prototype.addCookie = function*(cmd, resp) {
         cookie.secure,
         cookie.httpOnly,
         cookie.session,
-        cookie.expiry);
+        cookie.expiry,
+        {}); // originAttributes
     return true;
   };
   this.mm.addMessageListener("Marionette:addCookie", cb);
@@ -2490,23 +2487,14 @@ GeckoDriver.prototype.getWindowSize = function(cmd, resp) {
  * Not supported on B2G. The supplied width and height values refer to
  * the window outerWidth and outerHeight values, which include scroll
  * bars, title bars, etc.
- *
- * An error will be returned if the requested window size would result
- * in the window being in the maximized state.
  */
 GeckoDriver.prototype.setWindowSize = function(cmd, resp) {
   if (this.appName != "Firefox") {
     throw new UnsupportedOperationError();
   }
 
-  let width = cmd.parameters.width;
-  let height = cmd.parameters.height;
-
+  let {width, height} = cmd.parameters;
   let win = this.getCurrentWindow();
-  if (width >= win.screen.availWidth || height >= win.screen.availHeight) {
-    throw new UnsupportedOperationError("Requested size exceeds screen size")
-  }
-
   win.resizeTo(width, height);
 };
 
@@ -2671,7 +2659,7 @@ GeckoDriver.prototype.receiveMessage = function(message) {
       let isForCurrentPath = path => currentPath.indexOf(path) != -1;
       let results = [];
 
-      let en = cookieManager.getCookiesFromHost(host);
+      let en = cookieManager.getCookiesFromHost(host, {});
       while (en.hasMoreElements()) {
         let cookie = en.getNext().QueryInterface(Ci.nsICookie2);
         // take the hostname and progressively shorten

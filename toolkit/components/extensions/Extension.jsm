@@ -546,6 +546,10 @@ GlobalManager = {
     schemaApi.extensionTypes = {};
 
     let schemaWrapper = {
+      get principal() {
+        return context.principal;
+      },
+
       get cloneScope() {
         return context.cloneScope;
       },
@@ -898,7 +902,10 @@ ExtensionData.prototype = {
       }
 
       try {
-        this.id = this.manifest.applications.gecko.id;
+        // Do not override the add-on id that has been already assigned.
+        if (!this.id && this.manifest.applications.gecko.id) {
+          this.id = this.manifest.applications.gecko.id;
+        }
       } catch (e) {
         // Errors are handled by the type checks above.
       }

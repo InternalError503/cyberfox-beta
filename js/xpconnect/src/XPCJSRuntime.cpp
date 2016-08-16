@@ -146,7 +146,7 @@ XPCJSRuntime::CustomContextCallback(JSContext* cx, unsigned operation)
     return true;
 }
 
-class AsyncFreeSnowWhite : public nsRunnable
+class AsyncFreeSnowWhite : public Runnable
 {
 public:
   NS_IMETHOD Run()
@@ -596,6 +596,22 @@ CompartmentSizeOfIncludingThisCallback(MallocSizeOf mallocSizeOf, JSCompartment*
     return priv ? priv->SizeOfIncludingThis(mallocSizeOf) : 0;
 }
 
+/*
+ * Return true if there exists a non-system inner window which is a current
+ * inner window and whose reflector is gray.  We don't merge system
+ * compartments, so we don't use them to trigger merging CCs.
+ */
+bool XPCJSRuntime::UsefulToMergeZones() const
+{
+    MOZ_ASSERT(NS_IsMainThread());
+
+    // Turns out, actually making this return true often enough makes Windows
+    // mochitest-gl OOM a lot.  Need to figure out what's going on there; see
+    // bug 1277036.
+
+    return false;
+}
+
 void XPCJSRuntime::TraceNativeBlackRoots(JSTracer* trc)
 {
     // Skip this part if XPConnect is shutting down. We get into
@@ -988,6 +1004,7 @@ class Watchdog
       , mHibernating(false)
       , mInitialized(false)
       , mShuttingDown(false)
+      , mSlowScriptSecondHalfCount(0)
       , mMinScriptRunTimeSeconds(1)
     {}
     ~Watchdog() { MOZ_ASSERT(!Initialized()); }
@@ -1097,6 +1114,10 @@ class Watchdog
         return mMinScriptRunTimeSeconds;
     }
 
+    uint32_t GetSlowScriptSecondHalfCount() { return mSlowScriptSecondHalfCount; }
+    void IncrementSlowScriptSecondHalfCount() { mSlowScriptSecondHalfCount++; }
+    void ResetSlowScriptSecondHalfCount() { mSlowScriptSecondHalfCount = 0; }
+
   private:
     WatchdogManager* mManager;
 
@@ -1106,6 +1127,10 @@ class Watchdog
     bool mHibernating;
     bool mInitialized;
     bool mShuttingDown;
+
+    // See the comment in WatchdogMain.
+    uint32_t mSlowScriptSecondHalfCount;
+
     mozilla::Atomic<int32_t> mMinScriptRunTimeSeconds;
 };
 
@@ -1173,6 +1198,8 @@ class WatchdogManager : public nsIObserver
 
         // Write state.
         mTimestamps[TimestampRuntimeStateChange] = PR_Now();
+        if (mWatchdog)
+            mWatchdog->ResetSlowScriptSecondHalfCount();
         mRuntimeState = active ? RUNTIME_ACTIVE : RUNTIME_INACTIVE;
 
         // The watchdog may be hibernating, waiting for the runtime to go
@@ -1302,26 +1329,49 @@ WatchdogMain(void* arg)
         // been running long enough that we might show the slow script dialog.
         // Triggering the callback from off the main thread can be expensive.
 
-        // We want to avoid showing the slow script dialog if the user's laptop
-        // goes to sleep in the middle of running a script. To ensure this, we
-        // invoke the interrupt callback after only half the timeout has
-        // elapsed. The callback simply records the fact that it was called in
-        // the mSlowScriptSecondHalf flag. Then we wait another (timeout/2)
-        // seconds and invoke the callback again. This time around it sees
-        // mSlowScriptSecondHalf is set and so it shows the slow script
-        // dialog. If the computer is put to sleep during one of the (timeout/2)
-        // periods, the script still has the other (timeout/2) seconds to
-        // finish.
-        PRTime usecs = self->MinScriptRunTimeSeconds() * PR_USEC_PER_SEC / 2;
-        if (manager->IsRuntimeActive() &&
-            manager->TimeSinceLastRuntimeStateChange() >= usecs)
-        {
-            bool debuggerAttached = false;
-            nsCOMPtr<nsIDebug2> dbg = do_GetService("@mozilla.org/xpcom/debug;1");
-            if (dbg)
-                dbg->GetIsDebuggerAttached(&debuggerAttached);
-            if (!debuggerAttached)
-                JS_RequestInterruptCallback(manager->Runtime()->Runtime());
+        // If we spend too much time running JS code in an event handler, then
+        // we want to show the slow script UI.  The timeout T is controlled by
+        // prefs.  We want to avoid showing the slow script dialog if the
+        // user's laptop goes to sleep in the middle of running a script.  To
+        // ensure this, we invoke the interrupt callback only after the T/2
+        // elapsed twice.  If the computer is put to sleep during one of the
+        // T/2 periods, the script still has the other T/2 seconds to finish.
+        //
+        //   + <-- TimestampRuntimeStateChange = PR_Now()
+        //   |     mSlowScriptSecondHalfCount = 0
+        //   |
+        //   | T/2
+        //   |
+        //   + <-- mSlowScriptSecondHalfCount = 1
+        //   |
+        //   | T/2
+        //   |
+        //   + <-- mSlowScriptSecondHalfCount = 2
+        //   |     Invoke interrupt callback
+        //   |
+        //   | T/2
+        //   |
+        //   + <-- mSlowScriptSecondHalfCount = 3
+        //   |
+        //   | T/2
+        //   |
+        //   + <-- mSlowScriptSecondHalfCount = 4
+        //         Invoke interrupt callback
+        //
+        PRTime usecs = self->MinScriptRunTimeSeconds() * PR_USEC_PER_SEC;
+        if (manager->IsRuntimeActive()) {
+            uint32_t count = self->GetSlowScriptSecondHalfCount() + 1;
+            if (manager->TimeSinceLastRuntimeStateChange() >= usecs * count / 2) {
+                self->IncrementSlowScriptSecondHalfCount();
+                if (count % 2 == 0) {
+                    bool debuggerAttached = false;
+                    nsCOMPtr<nsIDebug2> dbg = do_GetService("@mozilla.org/xpcom/debug;1");
+                    if (dbg)
+                        dbg->GetIsDebuggerAttached(&debuggerAttached);
+                    if (!debuggerAttached)
+                        JS_RequestInterruptCallback(manager->Runtime()->Runtime());
+                }
+            }
         }
     }
 
@@ -1364,7 +1414,6 @@ XPCJSRuntime::InterruptCallback(JSContext* cx)
     // care of that case.
     if (self->mSlowScriptCheckpoint.IsNull()) {
         self->mSlowScriptCheckpoint = TimeStamp::NowLoRes();
-        self->mSlowScriptSecondHalf = false;
         self->mSlowScriptActualWait = mozilla::TimeDuration();
         self->mTimeoutAccumulated = false;
         return true;
@@ -1385,19 +1434,10 @@ XPCJSRuntime::InterruptCallback(JSContext* cx)
     int32_t limit = Preferences::GetInt(prefName, chrome ? 20 : 10);
 
     // If there's no limit, or we're within the limit, let it go.
-    if (limit == 0 || duration.ToSeconds() < limit / 2.0)
+    if (limit == 0 || duration.ToSeconds() < limit)
         return true;
 
     self->mSlowScriptActualWait += duration;
-
-    // In order to guard against time changes or laptops going to sleep, we
-    // don't trigger the slow script warning until (limit/2) seconds have
-    // elapsed twice.
-    if (!self->mSlowScriptSecondHalf) {
-        self->mSlowScriptCheckpoint = TimeStamp::NowLoRes();
-        self->mSlowScriptSecondHalf = true;
-        return true;
-    }
 
     //
     // This has gone on long enough! Time to take action. ;-)
@@ -1444,8 +1484,11 @@ XPCJSRuntime::InterruptCallback(JSContext* cx)
 
     // Show the prompt to the user, and kill if requested.
     nsGlobalWindow::SlowScriptResponse response = win->ShowSlowScriptDialog();
-    if (response == nsGlobalWindow::KillSlowScript)
+    if (response == nsGlobalWindow::KillSlowScript) {
+        if (Preferences::GetBool("dom.global_stop_script", true))
+            xpc::Scriptability::Get(global).Block();
         return false;
+    }
 
     // The user chose to continue the script. Reset the timer, and disable this
     // machinery with a pref of the user opted out of future slow-script dialogs.
@@ -1579,6 +1622,16 @@ ReloadPrefsCallback(const char* pref, void* data)
 #ifdef DEBUG
     sExtraWarningsForSystemJS = Preferences::GetBool(JS_OPTIONS_DOT_STR "strict.debug");
 #endif
+
+#ifdef JS_GC_ZEAL
+    int32_t zeal = Preferences::GetInt(JS_OPTIONS_DOT_STR "gczeal", -1);
+    int32_t zeal_frequency =
+        Preferences::GetInt(JS_OPTIONS_DOT_STR "gczeal.frequency",
+                            JS_DEFAULT_ZEAL_FREQ);
+    if (zeal >= 0) {
+        JS_SetGCZeal(rt, (uint8_t)zeal, zeal_frequency);
+    }
+#endif // JS_GC_ZEAL
 
     JS::RuntimeOptionsRef(rt).setBaseline(useBaseline)
                              .setIon(useIon)
@@ -2428,18 +2481,6 @@ ReportScriptSourceStats(const ScriptSourceInfo& scriptSourceInfo,
                         nsIHandleReportCallback* cb, nsISupports* closure,
                         size_t& rtTotal)
 {
-    if (scriptSourceInfo.compressed > 0) {
-        RREPORT_BYTES(path + NS_LITERAL_CSTRING("compressed"),
-            KIND_HEAP, scriptSourceInfo.compressed,
-            "Compressed JavaScript source code.");
-    }
-
-    if (scriptSourceInfo.uncompressed > 0) {
-        RREPORT_BYTES(path + NS_LITERAL_CSTRING("uncompressed"),
-            KIND_HEAP, scriptSourceInfo.uncompressed,
-            "Uncompressed JavaScript source code.");
-    }
-
     if (scriptSourceInfo.misc > 0) {
         RREPORT_BYTES(path + NS_LITERAL_CSTRING("misc"),
             KIND_HEAP, scriptSourceInfo.misc,
@@ -2510,13 +2551,13 @@ ReportJSRuntimeExplicitTreeStats(const JS::RuntimeStats& rtStats,
         KIND_HEAP, rtStats.runtime.mathCache,
         "The math cache.");
 
+    RREPORT_BYTES(rtPath + NS_LITERAL_CSTRING("runtime/shared-immutable-strings-cache"),
+        KIND_HEAP, rtStats.runtime.sharedImmutableStringsCache,
+        "Immutable strings (such as JS scripts' source text) shared across all JSRuntimes.");
+
     RREPORT_BYTES(rtPath + NS_LITERAL_CSTRING("runtime/uncompressed-source-cache"),
         KIND_HEAP, rtStats.runtime.uncompressedSourceCache,
         "The uncompressed source code cache.");
-
-    RREPORT_BYTES(rtPath + NS_LITERAL_CSTRING("runtime/compressed-source-sets"),
-        KIND_HEAP, rtStats.runtime.compressedSourceSet,
-        "The table indexing compressed source code in the runtime.");
 
     RREPORT_BYTES(rtPath + NS_LITERAL_CSTRING("runtime/script-data"),
         KIND_HEAP, rtStats.runtime.scriptData,
@@ -3378,7 +3419,6 @@ XPCJSRuntime::XPCJSRuntime()
    mObjectHolderRoots(nullptr),
    mWatchdogManager(new WatchdogManager(this)),
    mAsyncSnowWhiteFreer(new AsyncFreeSnowWhite()),
-   mSlowScriptSecondHalf(false),
    mTimeoutAccumulated(false)
 {
 }
@@ -3544,6 +3584,10 @@ XPCJSRuntime::Initialize()
     js::SetActivityCallback(runtime, ActivityCallback, this);
     JS_SetInterruptCallback(runtime, InterruptCallback);
     js::SetWindowProxyClass(runtime, &OuterWindowProxyClass);
+#ifdef MOZ_CRASHREPORTER
+    js::AutoEnterOOMUnsafeRegion::setAnnotateOOMAllocationSizeCallback(
+            CrashReporter::AnnotateOOMAllocationSize);
+#endif
 
     // The JS engine needs to keep the source code around in order to implement
     // Function.prototype.toSource(). It'd be nice to not have to do this for
@@ -3707,18 +3751,12 @@ XPCJSRuntime::BeforeProcessTask(bool aMightBlock)
             // "while (condition) thread.processNextEvent(true)", in case the
             // condition is triggered here by a Promise "then" callback.
 
-            class DummyRunnable : public nsRunnable {
-            public:
-                NS_IMETHOD Run() { return NS_OK; }
-            };
-
-            NS_DispatchToMainThread(new DummyRunnable());
+            NS_DispatchToMainThread(new Runnable());
         }
     }
 
     // Start the slow script timer.
     mSlowScriptCheckpoint = mozilla::TimeStamp::NowLoRes();
-    mSlowScriptSecondHalf = false;
     mSlowScriptActualWait = mozilla::TimeDuration();
     mTimeoutAccumulated = false;
 
@@ -3738,7 +3776,6 @@ XPCJSRuntime::AfterProcessTask(uint32_t aNewRecursionDepth)
 {
     // Now that we're back to the event loop, reset the slow script checkpoint.
     mSlowScriptCheckpoint = mozilla::TimeStamp();
-    mSlowScriptSecondHalf = false;
 
     // Call cycle collector occasionally.
     MOZ_ASSERT(NS_IsMainThread());

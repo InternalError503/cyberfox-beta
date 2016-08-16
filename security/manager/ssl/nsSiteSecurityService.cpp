@@ -699,7 +699,7 @@ nsSiteSecurityService::ProcessPKPHeader(nsIURI* aSourceURI,
   NS_ENSURE_TRUE(nssCert, NS_ERROR_FAILURE);
 
   mozilla::pkix::Time now(mozilla::pkix::Now());
-  ScopedCERTCertList certList;
+  UniqueCERTCertList certList;
   RefPtr<SharedCertVerifier> certVerifier(GetDefaultCertVerifier());
   NS_ENSURE_TRUE(certVerifier, NS_ERROR_UNEXPECTED);
   // We don't want this verification to cause any network traffic that would
