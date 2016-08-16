@@ -211,6 +211,7 @@
 <!ENTITY Ctr_navthrobber2	"Προσθέστε διεύθυνση url ή αφήστε τη γραμμή κενή">
 <!ENTITY Ctr_anewtaburl		"URL σελίδας νέας καρτέλας">
 <!ENTITY Ctr_anewtaburlcb	"Προσαρμοσμένο url σελίδας νέας καρτέλας (προεπιλογή: «about:newtab»)">
+<!ENTITY Ctr_anewtaburlpcb	"Custom private new tab page url (default: 'about:privatebrowsing')">
 
 <!ENTITY Ctr_tab_tf_info1	"Ονόματα χρωμάτων, δεκαεξαδικοί κωδικοί, τιμές rgb(a) και hsl(a) υποστηρίζονται.">
 <!ENTITY Ctr_tab_tf_info2	"Οι εισηγμένες τιμές δεν θα επικυρωθούν!">
@@ -299,7 +300,7 @@
 <!ENTITY Ctr_hidetbwot		"Απόκρυψη εργαλειοθήκης καρτελών με μόνο μία ορατή καρτέλα">
 <!ENTITY Ctr_hidetbwote		"Μείωση καθυστέρησης απόκρυψης κατά την εκκίνηση">
 <!ENTITY Ctr_hidetbwote_i	"Ενδέχεται να προκαλέσει δυσλειτουργίες στην εργαλειοθήκη καρτελών">
-<!ENTITY Ctr_hidetbwote2	"Διατήρηση γραμμής τίτλου (καρτέλες στο πάνω μέρος)">
+<!ENTITY Ctr_hidetbwote2	"Automatically adjust titlebar space">
 <!ENTITY Ctr_notabfog		"Απομάκρυνση ομίχλης φόντου (Windows AeroGlass/8)">
 <!ENTITY Ctr_notabbg		"Απομάκρυνση χρώματος φόντου (Windows AeroGlass/8)">
 <!ENTITY Ctr_hightabpos		"Μείωση χώρου πάνω από την εργαλειοθήκη (εάν είναι δυνατόν)">
@@ -398,6 +399,7 @@
 <!ENTITY goCmd.label					"Μετάβαση">
 <!ENTITY Ctr_menu_restart.label			"Επανεκκίνηση">
 <!ENTITY Ctr_restartapp					"Στοιχείο «Επανεκκίνηση» στα μενού κουμπιού &brandShortName; και «Αρχείο»">
+<!ENTITY Ctr_ctrnewinv					"Underline new options for current &brandShortName; version">
 
 <!ENTITY Ctr_openInCurrentTab			"Άνοιγμα καταχωρίσεων στην τρέχουσα καρτέλα">
 <!ENTITY Ctr_openInNewTab				"Άνοιγμα καταχωρίσεων σε νέα καρτέλα">

@@ -211,6 +211,7 @@
 <!ENTITY Ctr_navthrobber2	"Укажите url страницы или оставьте пустое место">
 <!ENTITY Ctr_anewtaburl		"Адрес url новой вкладки">
 <!ENTITY Ctr_anewtaburlcb	"Изменение адреса url новой вкладки (по умолчанию - 'about:newtab')">
+<!ENTITY Ctr_anewtaburlpcb	"Custom private new tab page url (default: 'about:privatebrowsing')">
 
 <!ENTITY Ctr_tab_tf_info1	"Текстовые поля поддерживают названия цветов на английском, шестнадцатеричные коды, rgb(a) и значения hsl(a).">
 <!ENTITY Ctr_tab_tf_info2	"Введённое не будет проверяться!">
@@ -299,7 +300,7 @@
 <!ENTITY Ctr_hidetbwot		"Скрывать панель вкладок при одной вкладке">
 <!ENTITY Ctr_hidetbwote		"Уменьшить задержку скрытия при запуске">
 <!ENTITY Ctr_hidetbwote_i	"Может вызвать сбои на вкладке панели инструментов">
-<!ENTITY Ctr_hidetbwote2	"Сохранять панель заголовка (вкладки вверху)">
+<!ENTITY Ctr_hidetbwote2	"Автоматически подбирать размер промежутка в панели заголовка">
 <!ENTITY Ctr_notabfog		"Отключить затуманивание фона панели вкладок (Windows AeroGlass / Win8)">
 <!ENTITY Ctr_notabbg		"Удалить цвет фона (Windows AeroGlass / Win8)">
 <!ENTITY Ctr_hightabpos		"Уменьшить пространство над панелями инструментов (если возможно)">
@@ -398,6 +399,7 @@
 <!ENTITY goCmd.label					"Перейти">
 <!ENTITY Ctr_menu_restart.label			"Перезапуск">
 <!ENTITY Ctr_restartapp					"'Перезапуск' в меню приложения/файл">
+<!ENTITY Ctr_ctrnewinv					"Underline new options for current &brandShortName; version">
 
 <!ENTITY Ctr_openInCurrentTab			"Открыть введенное в текущей вкладке">
 <!ENTITY Ctr_openInNewTab				"Открыть введенное в новой вкладке">

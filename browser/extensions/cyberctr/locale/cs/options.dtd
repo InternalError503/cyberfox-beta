@@ -211,6 +211,7 @@
 <!ENTITY Ctr_navthrobber2	"Zadejte url nebo ponechte prázdné">
 <!ENTITY Ctr_anewtaburl		"Adresa stránky v novém panelu">
 <!ENTITY Ctr_anewtaburlcb	"Volitelná adresa nového panelu (defaultně: 'about:newtab')">
+<!ENTITY Ctr_anewtaburlpcb	"Custom private new tab page url (default: 'about:privatebrowsing')">
 
 <!ENTITY Ctr_tab_tf_info1	"Podporovány jsou názvy barev, hex, rgb(a) a hsl(a) hodnoty.">
 <!ENTITY Ctr_tab_tf_info2	"Vstupy nejsou validovány!">
@@ -299,7 +300,7 @@
 <!ENTITY Ctr_hidetbwot		"Skrývat lištu s pouze jedním panelem">
 <!ENTITY Ctr_hidetbwote		"Snížení prodlevy skrytí při spouštění">
 <!ENTITY Ctr_hidetbwote_i	"Může způsobit chyby na liště panelů">
-<!ENTITY Ctr_hidetbwote2	"Zachovat lištu záhlaví (panely nahoře)">
+<!ENTITY Ctr_hidetbwote2	"Automatically adjust titlebar space">
 <!ENTITY Ctr_notabfog		"Odstranit zamlžené pozadí (Windows AeroGlass/8)">
 <!ENTITY Ctr_notabbg		"Odstranit barvu pozadí (Windows AeroGlass/8)">
 <!ENTITY Ctr_hightabpos		"Zmenšit prostor nad lištou nástrojů (pokud lze)">
@@ -398,6 +399,7 @@
 <!ENTITY goCmd.label					"Přejít">
 <!ENTITY Ctr_menu_restart.label			"Restart">
 <!ENTITY Ctr_restartapp					"'Restart' in &brandShortName;-menu and file menu">
+<!ENTITY Ctr_ctrnewinv					"Underline new options for current &brandShortName; version">
 
 <!ENTITY Ctr_openInCurrentTab			"Open inputs in current tab">
 <!ENTITY Ctr_openInNewTab				"Open inputs in a new tab">

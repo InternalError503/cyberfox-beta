@@ -20,30 +20,7 @@ classicthemerestorerjso.ctr = {
   needsRestart: 	false,
   tmp_tu_active:	false,
   contexts: Services.prefs.getBranch("browser.context."),
-  // Exclude all preferences we don't want to sync, export or import.
-	// When adding/removing update the list in overlay.js
-  blacklist: [
-	"extensions.classicthemerestorer.pref_actindx",
-	"extensions.classicthemerestorer.pref_actindx2",
-	"extensions.classicthemerestorer.ctrreset",
-	"extensions.classicthemerestorer.compatibility.treestyle",
-	"extensions.classicthemerestorer.compatibility.treestyle.disable",
-	"extensions.classicthemerestorer.compatibility.tabmix",
-	"extensions.classicthemerestorer.ctrpref.firstrun",
-	"extensions.classicthemerestorer.features.firstrun",
-	"extensions.classicthemerestorer.features.lastcheck",
-	"extensions.classicthemerestorer.features.updatecheck",
-	"extensions.classicthemerestorer.ctrpref.lastmod",
-	"extensions.classicthemerestorer.ctrpref.lastmodapply",
-	"extensions.classicthemerestorer.ctrpref.updatekey",
-	"extensions.classicthemerestorer.version",
-	"extensions.classicthemerestorer.ctrpref.lastmod.backup",
-	"extensions.classicthemerestorer.ctrpref.importjson",
-	"extensions.classicthemerestorer.ctrpref.active",
-	"extensions.classicthemerestorer.compatibility.personalmenu",
-	"extensions.classicthemerestorer.syncprefs"
-	],
-
+ 
   initprefwindow: function() {
   
 	// adds a new global attribute 'defaultfxtheme' -> better parting css for default and non-default themes
@@ -434,7 +411,7 @@ classicthemerestorerjso.ctr = {
 	  document.getElementById('ctraddon_pw_dblclnewtabdes').style.visibility = 'collapse';
 	}
 	
-	if (this.appversion >= 47 && Services.appinfo.OS=="Darwin") {
+	if (this.appversion >= 47/* && Services.appinfo.OS=="Darwin"*/) {
 	  document.getElementById('ctraddon_pw_hidetbwote').style.visibility = 'collapse';
 	}
 	
@@ -442,11 +419,17 @@ classicthemerestorerjso.ctr = {
 	  document.getElementById('ctraddon_pw_altautocompl').style.visibility = 'collapse';
 	  document.getElementById('ctraddon_pw_autocompl_it').style.visibility = 'collapse';
 	  document.getElementById('ctraddon_pw_autocompl_rhl').style.visibility = 'collapse';
+	  document.getElementById('ctraddon_pw_anewtaburlpcb').style.visibility = 'collapse';
+	  document.getElementById('ctraddon_pw_anewtaburlpurlbox').style.visibility = 'collapse';
 	}
 
 	if (this.appversion >= 48) {
 	  document.getElementById('ctraddon_pw_urlbar_uc').style.visibility = 'collapse';
 	  document.getElementById('ctraddon_pw_urlbar_uc_desc').style.visibility = 'collapse';
+	}
+	
+	if (this.appversion >= 49) {
+	  document.getElementById('ctraddon_pw_loopcallgb').style.visibility = 'collapse';
 	}
 	
 	if (this.appversion < 50) {
@@ -735,6 +718,7 @@ classicthemerestorerjso.ctr = {
 	this.ctrpwSearchPopupSize(this.prefs.getBoolPref("osearch_cwidth"));
 	this.ctrpwAeroColors(this.prefs.getBoolPref("aerocolors"));
 	this.ctrpwAutoCompleteHeight(this.prefs.getBoolPref("urlresults"));
+	this.ctrpwOldTopLevelImg(this.prefs.getBoolPref("oldtoplevimg"));
 	
 	var closetab_value = this.prefs.getCharPref("closetab");
   
@@ -980,7 +964,7 @@ classicthemerestorerjso.ctr = {
 	  which=true; itemvis = 'collapse';
 	}
 	
-    if (this.appversion >= 47 && Services.appinfo.OS=="Darwin") {}
+    if (this.appversion >= 47 /*&& Services.appinfo.OS=="Darwin"*/) {}
 	else {
 	  document.getElementById('ctraddon_pw_hidetbwote').disabled = which;
 	  document.getElementById('ctraddon_pw_hidetbwote').style.visibility = itemvis;
@@ -1131,6 +1115,19 @@ classicthemerestorerjso.ctr = {
 	
     document.getElementById('ctraddon_pw_aerocolorsg').disabled = which;
 	document.getElementById('ctraddon_pw_aerocolorsg').style.visibility = itemvis;
+  },
+  
+  ctrpwOldTopLevelImg:function(which) {
+	var itemvis = 'collapse';
+	
+    if(which==true) {
+	  which=false; itemvis = 'visible';
+	} else {
+	  which=true; itemvis = 'collapse';
+	}
+	
+    document.getElementById('ctraddon_pw_oldtoplevimg2').disabled = which;
+	document.getElementById('ctraddon_pw_oldtoplevimg2').style.visibility = itemvis;
   },
   
   ctrpwAutoCompleteHeight: function(which) {
@@ -1580,8 +1577,11 @@ classicthemerestorerjso.ctr = {
 
         for (var i = 0; i < preferenceList.length; i++) {
             try {
-                // Run Blacklist filter. Exclude all preferences we don't want to export/import.
-                var index = preferenceList.indexOf(this.blacklist[i]);
+                /* 
+									Run Blacklist filter. Exclude all preferences we don't want to export/import.
+									Blacklist is handled in blacklist.js, blacklist.js must be loaded first before overlay.js
+								*/
+                var index = preferenceList.indexOf(ctrblacklist[i]);
 
                 if (index > -1) {
                     preferenceList.splice(index, 1);
@@ -1598,7 +1598,7 @@ classicthemerestorerjso.ctr = {
                 }
 
                 if (aPattern == "json") {
-					// Populate array
+										// Populate array
                     preferenceArray.preference.push({
                         "preference": preferenceList[i].replace("extensions.classicthemerestorer.", ""),
                         "value": _prefValue(preferenceList[i])

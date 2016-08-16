@@ -211,6 +211,7 @@
 <!ENTITY Ctr_navthrobber2	"填入網址或留空">
 <!ENTITY Ctr_anewtaburl		"新分頁網址">
 <!ENTITY Ctr_anewtaburlcb	"自訂新分頁網址 (預設值: 「about:newtab」)">
+<!ENTITY Ctr_anewtaburlpcb	"Custom private new tab page url (default: 'about:privatebrowsing')">
 
 <!ENTITY Ctr_tab_tf_info1	"可使用色彩名稱, hexcodes, rgb(a) 和 hsl(a) 值.">
 <!ENTITY Ctr_tab_tf_info2	"沒有防呆機制（輸入無效值，不會有警告）!">
@@ -299,7 +300,7 @@
 <!ENTITY Ctr_hidetbwot		"當只有一個分頁時，隱藏分頁工具列">
 <!ENTITY Ctr_hidetbwote		"減少啟動時的隱藏延遲時間">
 <!ENTITY Ctr_hidetbwote_i	"可能導致分頁工具列故障">
-<!ENTITY Ctr_hidetbwote2	"保留標題列 (分頁列置頂)">
+<!ENTITY Ctr_hidetbwote2	"Automatically adjust titlebar space">
 <!ENTITY Ctr_notabfog		"移除背景模糊 (Windows AeroGlass / Win8)">
 <!ENTITY Ctr_notabbg		"移除背景色彩 (Windows AeroGlass / Win8)">
 <!ENTITY Ctr_hightabpos		"縮小分頁列上方空間 (如有可能)">
@@ -398,6 +399,7 @@
 <!ENTITY goCmd.label					"Go">
 <!ENTITY Ctr_menu_restart.label			"Restart">
 <!ENTITY Ctr_restartapp					"'Restart' in &brandShortName;-menu and file menu">
+<!ENTITY Ctr_ctrnewinv					"Underline new options for current &brandShortName; version">
 
 <!ENTITY Ctr_openInCurrentTab			"Open inputs in current tab">
 <!ENTITY Ctr_openInNewTab				"Open inputs in a new tab">

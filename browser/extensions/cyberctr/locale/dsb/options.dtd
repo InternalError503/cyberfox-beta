@@ -211,6 +211,7 @@
 <!ENTITY Ctr_navthrobber2	"URL pśidaś abo prozne wóstajiś">
 <!ENTITY Ctr_anewtaburl		"Bokowy URL nowego rejtarka">
 <!ENTITY Ctr_anewtaburlcb	"URL swójskego boka nowego rejtarka (standard: 'about:newtab')">
+<!ENTITY Ctr_anewtaburlpcb	"Custom private new tab page url (default: 'about:privatebrowsing')">
 
 <!ENTITY Ctr_tab_tf_info1	"Barwowe mjenja, heksadecimalne kody, rgb(a)- a hsl(a)-gódnoty se pódpěraju.">
 <!ENTITY Ctr_tab_tf_info2	"Zapódaśa se njepśespytuju!">
@@ -295,11 +296,11 @@
 
 <!ENTITY Ctr_toolbars		"Nastajenja symboloweje rědki">
 <!ENTITY Ctr_dblclnewtab	"Dwójne kliknjenje na symbolowu rědku wócynja nowy rejtark">
-<!ENTITY Ctr_dblclnewtabdes	"Not suitable for all complete themes while Windows titlebar is active.">
+<!ENTITY Ctr_dblclnewtabdes	"Njepśigódny za wšykne dopołne drastwy, mjaztym až titelna rědka Windows jo aktiwna.">
 <!ENTITY Ctr_hidetbwot		"Rejtarkowu rědku z jano jadnym rejtarkom schowaś">
 <!ENTITY Ctr_hidetbwote		"Wokomuźenje pśi startowanju reducěrowaś">
 <!ENTITY Ctr_hidetbwote_i	"To by mógło brachi na rejtarkowej rědce zawinowaś">
-<!ENTITY Ctr_hidetbwote2	"Titelowu rědku wobchowaś (rejtarki górjejce)">
+<!ENTITY Ctr_hidetbwote2	"Automatically adjust titlebar space">
 <!ENTITY Ctr_notabfog		"Slězynowu młu wótpóraś (Windows AeroGlass / Win8)">
 <!ENTITY Ctr_notabbg		"Slězynowu barwu wótpóraś (Windows AeroGlass / Win8)">
 <!ENTITY Ctr_hightabpos		"Mjazyrum wušej symboloweje rědki reducěrowaś (jolic móžno)">
@@ -386,18 +387,19 @@
 <!ENTITY Ctr_special_font	"Nastajenja za slězynowu barwu su jano za standardnu drastwu!">
 <!ENTITY Ctr_special_info	"Někotare nastajenja njepóbituju wizuelne změny we wšych padach!">
 <!ENTITY Ctr_special_info2	"Drastwa tśeśego póbitowarja jo se namakała! Někotare nastajenja njefunkcioněruju z drastwami tśeśich póbitowarjow!">
-<!ENTITY Ctr_special_acr	"Only report issues through official support channels and not by using 'Add-on Compatibility Reporter'!">
-<!ENTITY Ctr_support		"Support">
-<!ENTITY Ctr_support_forum1	"MozillaZine (English forum)">
-<!ENTITY Ctr_support_forum2	"Camp Firefox (German forum)">
-<!ENTITY Ctr_github_issues	"Report issue on Github">
-<!ENTITY Ctr_newversion		"Check for new version">
+<!ENTITY Ctr_special_acr	"Dajśo problemy jano pśez oficielne pódpěrowańske kanale a nic pśez 'Add-on Compatibility Reporter' k wěsći!">
+<!ENTITY Ctr_support		"Pomoc">
+<!ENTITY Ctr_support_forum1	"MozillaZine (engelski forum)">
+<!ENTITY Ctr_support_forum2	"Camp Firefox (nimski forum)">
+<!ENTITY Ctr_github_issues	"Problem na Github k wěsći daś">
+<!ENTITY Ctr_newversion		"Za noweju wersiju pytaś">
 
 <!ENTITY Ctr_addon-bar.accesskey		"R">
 <!ENTITY appMenuGettingStarted.label	"Prědne kšace">
 <!ENTITY goCmd.label					"Start">
 <!ENTITY Ctr_menu_restart.label			"Znowego startowaś">
 <!ENTITY Ctr_restartapp					"Znowego startowaś w meniju '&brandShortName;' a w meniju Dataja pokazaś">
+<!ENTITY Ctr_ctrnewinv					"Underline new options for current &brandShortName; version">
 
 <!ENTITY Ctr_openInCurrentTab			"Zapódaśa w aktualnem rejtarku wócyniś">
 <!ENTITY Ctr_openInNewTab				"Zapódaśa w nowem rejtarku wócyniś">

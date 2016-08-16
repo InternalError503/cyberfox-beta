@@ -211,6 +211,7 @@
 <!ENTITY Ctr_navthrobber2	"Tilføj URL eller lad den være tom">
 <!ENTITY Ctr_anewtaburl		"Nyt faneblad-URL-side">
 <!ENTITY Ctr_anewtaburlcb	"Tilpasset nyt faneblad-URL-side (standard: 'about:newtab')">
+<!ENTITY Ctr_anewtaburlpcb	"Custom private new tab page url (default: 'about:privatebrowsing')">
 
 <!ENTITY Ctr_tab_tf_info1	"Farvenavne, hex-koder, rgb(a), og hsl(a) værdier er understøttet.">
 <!ENTITY Ctr_tab_tf_info2	"Indtastede værdier valideres ikke!">
@@ -299,7 +300,7 @@
 <!ENTITY Ctr_hidetbwot		"Skjul fanebladslinjen når der kun er ét faneblad">
 <!ENTITY Ctr_hidetbwote		"Reducér forsinkelse ved skjulning under opstart">
 <!ENTITY Ctr_hidetbwote_i	"Kan give fejl på fanebladenes værktøjslinje">
-<!ENTITY Ctr_hidetbwote2	"Bevar titellinje (faneblade øverst)">
+<!ENTITY Ctr_hidetbwote2	"Automatically adjust titlebar space">
 <!ENTITY Ctr_notabfog		"Fjern baggrundståge (Windows AeroGlass/8)">
 <!ENTITY Ctr_notabbg		"Fjern baggrundsfarve (Windows AeroGlass/8)">
 <!ENTITY Ctr_hightabpos		"Reducér mellemrum over værktøjslinje (hvis det er muligt)">
@@ -398,6 +399,7 @@
 <!ENTITY goCmd.label					"Gå">
 <!ENTITY Ctr_menu_restart.label			"Genstart">
 <!ENTITY Ctr_restartapp					"Vis 'Genstart' i &brandShortName;-menu og Filer-menu">
+<!ENTITY Ctr_ctrnewinv					"Underline new options for current &brandShortName; version">
 
 <!ENTITY Ctr_openInCurrentTab			"Åbn inputs i nuværende faneblad">
 <!ENTITY Ctr_openInNewTab				"Åbn inputs i et nyt faneblad">

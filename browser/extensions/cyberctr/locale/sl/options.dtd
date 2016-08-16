@@ -211,6 +211,7 @@
 <!ENTITY Ctr_navthrobber2	"Dodajte URL ali pustite prazno">
 <!ENTITY Ctr_anewtaburl		"URL strani novega zavihka">
 <!ENTITY Ctr_anewtaburlcb	"URL strani novega zavihka po meri (privzeto: 'about:newtab')">
+<!ENTITY Ctr_anewtaburlpcb	"Custom private new tab page url (default: 'about:privatebrowsing')">
 
 <!ENTITY Ctr_tab_tf_info1	"Podprta so imena barv, šestnajstiške kode, rga(a) in hsl(a).">
 <!ENTITY Ctr_tab_tf_info2	"Vnosi ne bodo preverjeni!">
@@ -295,11 +296,11 @@
 
 <!ENTITY Ctr_toolbars		"Orodne vrstice">
 <!ENTITY Ctr_dblclnewtab	"Dvojni klik odpre 'nov' zavihek">
-<!ENTITY Ctr_dblclnewtabdes	"Not suitable for all complete themes while Windows titlebar is active.">
+<!ENTITY Ctr_dblclnewtabdes	"Ni primerno za vse celotne teme, ko je dejavna nazivna vrstica Windows.">
 <!ENTITY Ctr_hidetbwot		"Skrij orodno vrstico zavihkov okna s samo enim zavihkom">
 <!ENTITY Ctr_hidetbwote		"Zmanjšaj zakasnitev skritja ob zagonu">
 <!ENTITY Ctr_hidetbwote_i	"Lahko povzroči napake na vrstici zavihkov">
-<!ENTITY Ctr_hidetbwote2	"Ohrani nazivno vrstico (zavihki na vrhu)">
+<!ENTITY Ctr_hidetbwote2	"Samodejno prilagodi prostor nazivne vrstice">
 <!ENTITY Ctr_notabfog		"Odstrani meglo ozadja (Windows AeroGlass/8)">
 <!ENTITY Ctr_notabbg		"Odstrani barvo ozadja (Windows AeroGlass/8)">
 <!ENTITY Ctr_hightabpos		"Zmanjšaj prostor nad orodno vrstico (če je možno)">
@@ -398,6 +399,7 @@
 <!ENTITY goCmd.label					"Pojdi">
 <!ENTITY Ctr_menu_restart.label			"Ponovno zaženi">
 <!ENTITY Ctr_restartapp					"'Ponovno zaženi' v programskem meniju in meniju Datoteka">
+<!ENTITY Ctr_ctrnewinv					"Underline new options for current &brandShortName; version">
 
 <!ENTITY Ctr_openInCurrentTab			"Odpri vnose v trenutnem zavihku">
 <!ENTITY Ctr_openInNewTab				"Odpri vnose v novem zavihku">

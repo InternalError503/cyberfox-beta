@@ -187,11 +187,11 @@
 <!ENTITY Ctr_hiderecentbm	"Bookmarks popup: hide recently added bookmarks">
 <!ENTITY Ctr_hideeditbm		"Bookmarks star: hide popup (if page is not bookmarked)">
 <!ENTITY Ctr_bmbutpanelm	"Popup: panel menu appearance">
-<!ENTITY Ctr_bmbunsortbm	"Popup: 'Unsorted Bookmarks' menu">
+<!ENTITY Ctr_bmbunsortbm	"Popup: 'Other Bookmarks' menu">
 <!ENTITY Ctr_bmbunsortbm2	"Menu above bookmarks">
 <!ENTITY Ctr_bmbviewbmsb	"Popup: show 'View Bookmarks Sidebar'">
 <!ENTITY Ctr_bmbviewbmtb	"Popup: show 'View Bookmarks Toolbar'">
-<!ENTITY Ctr_bmbnounsort	"Popup: hide 'Unsorted Bookmarks'">
+<!ENTITY Ctr_bmbnounsort	"Popup: hide 'Other Bookmarks'">
 <!ENTITY Ctr_bmbutnotext	"Hide label on bookmarks bar">
 <!ENTITY Ctr_skipprintpr	"Print button: skip print preview">
 <!ENTITY Ctr_tbconmenu		"Toolbar context menu: hide 'move to menu', 'remove from toolbar', 'reload/bookmark all tabs' and 'undo close tab'">
@@ -211,6 +211,7 @@
 <!ENTITY Ctr_navthrobber2	"Add url or leave empty">
 <!ENTITY Ctr_anewtaburl		"New tab page url">
 <!ENTITY Ctr_anewtaburlcb	"Custom new tab page url (default: 'about:newtab')">
+<!ENTITY Ctr_anewtaburlpcb	"Custom private new tab page url (default: 'about:privatebrowsing')">
 
 <!ENTITY Ctr_tab_tf_info1	"Color names, hexcodes, rgb(a) and hsl(a) values are supported.">
 <!ENTITY Ctr_tab_tf_info2	"Inputs won't be validated!">
@@ -299,7 +300,7 @@
 <!ENTITY Ctr_hidetbwot		"Hide tabs toolbar with only one visible tab">
 <!ENTITY Ctr_hidetbwote		"Reduce hiding delay on startup">
 <!ENTITY Ctr_hidetbwote_i	"Could cause glitches on tabs toolbar">
-<!ENTITY Ctr_hidetbwote2	"Keep titlebar (tabs on top)">
+<!ENTITY Ctr_hidetbwote2	"Automatically adjust titlebar space">
 <!ENTITY Ctr_notabfog		"Remove background fog (Windows AeroGlass/8)">
 <!ENTITY Ctr_notabbg		"Remove background color (Windows AeroGlass/8)">
 <!ENTITY Ctr_hightabpos		"Reduce space above toolbar (if possible)">
@@ -398,6 +399,7 @@
 <!ENTITY goCmd.label					"Go">
 <!ENTITY Ctr_menu_restart.label			"Restart">
 <!ENTITY Ctr_restartapp					"Show 'Restart' in &brandShortName; menu and File menu">
+<!ENTITY Ctr_ctrnewinv					"Underline new options for current &brandShortName; version">
 
 <!ENTITY Ctr_openInCurrentTab			"Open inputs in current tab">
 <!ENTITY Ctr_openInNewTab				"Open inputs in a new tab">
