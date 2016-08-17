@@ -1019,6 +1019,11 @@ classicthemerestorerjs.ctr = {
 			}
 
 		  break;
+		  
+		  case "aboutpages":
+			if (branch.getBoolPref("aboutpages") && classicthemerestorerjs.ctr.appversion >= 48) classicthemerestorerjs.ctr.loadUnloadCSS("aboutpages",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("aboutpages",false);
+		  break;
 
 		  case "svgfilters":
 			if (branch.getBoolPref("svgfilters")) classicthemerestorerjs.ctr.loadUnloadCSS("svgfilters",true);
@@ -1309,10 +1314,24 @@ classicthemerestorerjs.ctr = {
 			if (branch.getBoolPref("urlresults")) classicthemerestorerjs.ctr.loadUnloadCSS("urlresults",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("urlresults",false);
 		  
-			if (branch.getBoolPref("autocompl_it") && branch.getBoolPref("urlresults") && classicthemerestorerjs.ctr.appversion >= 48) classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_it",true);
+			if (branch.getBoolPref("autocompl_it") && branch.getBoolPref("urlresults")
+				&& classicthemerestorerjs.ctr.appversion >= 48
+					&& classicthemerestorerjs.ctr.appversion < 50)
+						classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_it",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_it",false);
 		  break;
 		  
+		  case "cresultshcb":  
+			if (branch.getBoolPref("cresultshcb") && branch.getBoolPref("altautocompl") && classicthemerestorerjs.ctr.appversion >= 48)
+			  classicthemerestorerjs.ctr.loadUnloadCSS("cresultshcb",true);
+			else classicthemerestorerjs.ctr.loadUnloadCSS("cresultshcb",false);
+		  break;
+		  
+		  case "autocompl_it2":
+			if (branch.getBoolPref("autocompl_it2") && classicthemerestorerjs.ctr.appversion >= 50) classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_it2",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_it2",false);
+		  break;
+	  
 		  case "autocompl_hlb":
 			if (branch.getBoolPref("autocompl_hlb")) classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_hlb",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_hlb",false);
@@ -1337,7 +1356,7 @@ classicthemerestorerjs.ctr = {
 			if (branch.getBoolPref("autocompl_rhl") && classicthemerestorerjs.ctr.appversion >= 48) classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_rhl",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("autocompl_rhl",false);
 		  break;
-
+	  
 		  case "locsearchbw10":
 			if (branch.getBoolPref("locsearchbw10") && classicthemerestorerjs.ctr.fxdefaulttheme==true) classicthemerestorerjs.ctr.loadUnloadCSS("locsearchbw10",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("locsearchbw10",false);
@@ -2112,96 +2131,6 @@ classicthemerestorerjs.ctr = {
 		  break;
 */
 		  
-		  case "hiderecentbm":
-		    if(classicthemerestorerjs.ctr.appversion >= 47) {
-				if (branch.getBoolPref("hiderecentbm")) {
-				  classicthemerestorerjs.ctr.loadUnloadCSS("hiderecentbm",true);
-				  
-				  if (classicthemerestorerjs.ctr.osstring=="Darwin"){
-
-					setTimeout(function(){
-
-					  var recentlyBookmarked0 = document.getElementById("menu_recentBookmarks");
-					  var recentlyBookmarked1 = recentlyBookmarked0.nextSibling; // 1st recent bookmark
-					  var recentlyBookmarked2 = recentlyBookmarked1.nextSibling; // 2nd...
-					  var recentlyBookmarked3 = recentlyBookmarked2.nextSibling;
-					  var recentlyBookmarked4 = recentlyBookmarked3.nextSibling;
-					  var recentlyBookmarked5 = recentlyBookmarked4.nextSibling;
-					  
-					  var rec_stop=false;
-					  
-					  if(recentlyBookmarked0.previousSibling!=null && recentlyBookmarked0.previousSibling.nodeName=="menuseparator")
-					    recentlyBookmarked0.previousSibling.collapsed=true;
-					  
-					  recentlyBookmarked0.collapsed=true;
-					  
-					  if(recentlyBookmarked1!=null && recentlyBookmarked1.nodeName=="menuitem" && rec_stop==false)
-						recentlyBookmarked1.collapsed=true;
-					  else rec_stop=true;
-					  if(recentlyBookmarked2!=null && recentlyBookmarked2.nodeName=="menuitem" && rec_stop==false)
-						recentlyBookmarked2.collapsed=true;
-					  else rec_stop=true;
-					  if(recentlyBookmarked3!=null && recentlyBookmarked3.nodeName=="menuitem" && rec_stop==false)
-						recentlyBookmarked3.collapsed=true;
-					  else rec_stop=true;
-					  if(recentlyBookmarked4!=null && recentlyBookmarked4.nodeName=="menuitem" && rec_stop==false)
-						recentlyBookmarked4.collapsed=true;
-					  else rec_stop=true;
-					  if(recentlyBookmarked5!=null && recentlyBookmarked5.nodeName=="menuitem" && rec_stop==false)
-						recentlyBookmarked5.collapsed=true;
-					},1000);
-				  
-				    classicthemerestorerjs.ctr.removeRecentBmOn = true;
-				  }
-				}
-				else {
-				  classicthemerestorerjs.ctr.loadUnloadCSS("hiderecentbm",false);
-				  
-				  if (classicthemerestorerjs.ctr.osstring=="Darwin"){
-				   if(classicthemerestorerjs.ctr.removeRecentBmOn) {
-
-					setTimeout(function(){
-
-					  var recentlyBookmarked0 = document.getElementById("menu_recentBookmarks");
-					  var recentlyBookmarked1 = recentlyBookmarked0.nextSibling; // 1st recent bookmark
-					  var recentlyBookmarked2 = recentlyBookmarked1.nextSibling; // 2nd...
-					  var recentlyBookmarked3 = recentlyBookmarked2.nextSibling;
-					  var recentlyBookmarked4 = recentlyBookmarked3.nextSibling;
-					  var recentlyBookmarked5 = recentlyBookmarked4.nextSibling;
-					  
-					  var rec_stop=false;
-					  
-					  if(recentlyBookmarked0.previousSibling!=null && recentlyBookmarked0.previousSibling.nodeName=="menuseparator")
-					    recentlyBookmarked0.previousSibling.collapsed=false;
-
-					  recentlyBookmarked0.collapsed=false;
-					  
-					  if(recentlyBookmarked1!=null && recentlyBookmarked1.nodeName=="menuitem" && rec_stop==false)
-						recentlyBookmarked1.collapsed=false;
-					  else rec_stop=true;
-					  if(recentlyBookmarked2!=null && recentlyBookmarked2.nodeName=="menuitem" && rec_stop==false)
-						recentlyBookmarked2.collapsed=false;
-					  else rec_stop=true;
-					  if(recentlyBookmarked3!=null && recentlyBookmarked3.nodeName=="menuitem" && rec_stop==false)
-						recentlyBookmarked3.collapsed=false;
-					  else rec_stop=true;
-					  if(recentlyBookmarked4!=null && recentlyBookmarked4.nodeName=="menuitem" && rec_stop==false)
-						recentlyBookmarked4.collapsed=false;
-					  else rec_stop=true;
-					  if(recentlyBookmarked5!=null && recentlyBookmarked5.nodeName=="menuitem" && rec_stop==false)
-						recentlyBookmarked5.collapsed=false;
-
-					},1000);
-					
-					classicthemerestorerjs.ctr.removeRecentBmOn = false;
-				  
-				   }
-				  }
-				  
-				}
-			}
-		  break;
-		  
 		  case "hideeditbm":
 		    if(classicthemerestorerjs.ctr.appversion >= 47) {
 				if (branch.getBoolPref("hideeditbm")) {
@@ -2228,6 +2157,11 @@ classicthemerestorerjs.ctr = {
 					}, false);
 				}
 			}
+		  break;
+		  
+		  case "oldplacesbut":
+			if (branch.getBoolPref("oldplacesbut") && classicthemerestorerjs.ctr.appversion >= 50) classicthemerestorerjs.ctr.loadUnloadCSS("oldplacesbut",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("oldplacesbut",false);
 		  break;
 
 		  case "bmbutpanelm":
@@ -2490,7 +2424,12 @@ classicthemerestorerjs.ctr = {
 		  break;
 
 		  case "faviconurl": case "padlockex":
-			if (branch.getBoolPref("faviconurl")) classicthemerestorerjs.ctr.favIconinUrlbarCTR();
+			if (branch.getBoolPref("faviconurl")) {
+				classicthemerestorerjs.ctr.favIconinUrlbarCTR();
+				classicthemerestorerjs.ctr.loadUnloadCSS("faviconurl",true);
+			} else {
+				classicthemerestorerjs.ctr.loadUnloadCSS("faviconurl",false);
+			}
 		  break;
 		  
 		  case "padlock":
@@ -2686,11 +2625,14 @@ classicthemerestorerjs.ctr = {
 				classicthemerestorerjs.ctr.loadUnloadCSS("ctrnewinv48",true);
 			  else if (classicthemerestorerjs.ctr.appversion == 50)
 				classicthemerestorerjs.ctr.loadUnloadCSS("ctrnewinv50",true);
+			  else if (classicthemerestorerjs.ctr.appversion == 51)
+				classicthemerestorerjs.ctr.loadUnloadCSS("ctrnewinv51",true);
 			}
 			else { 
 			  classicthemerestorerjs.ctr.loadUnloadCSS("ctrnewinv47",false);
 			  classicthemerestorerjs.ctr.loadUnloadCSS("ctrnewinv48",false);
 			  classicthemerestorerjs.ctr.loadUnloadCSS("ctrnewinv50",false);
+			  classicthemerestorerjs.ctr.loadUnloadCSS("ctrnewinv51",false);
 			}
 		  break;
 		  
@@ -4405,6 +4347,7 @@ classicthemerestorerjs.ctr = {
 		case "options_win_alt": 	manageCSS("alt_optionswindow2.css");	break;
 		case "options_win_ct": 		manageCSS("alt_optionswindow_ct.css");	break;
 		case "altoptionsmitem": 	manageCSS("alt_options_mitem.css");		break;
+		case "aboutpages": 			manageCSS("aboutpages.css");			break;
 		case "svgfilters": 			manageCSS("svgfilters.css");			break;
 		case "iat_notf_vt": 		manageCSS("mode_iat_no_vt.css");		break;
 		case "to_notf_vt": 			manageCSS("mode_to_no_vt.css");			break;
@@ -4430,6 +4373,7 @@ classicthemerestorerjs.ctr = {
 		case "altreaderico": 		manageCSS("alt_reader_icons.css");		break;
 		case "altautocompl": 		manageCSS("alt_autocomplete.css");		break;
 		case "autocompl_it": 		manageCSS("alt_autocompl_items.css");	break;
+		case "autocompl_it2": 		manageCSS("alt_autocompl_items2.css");	break;
 		case "autocompl_hlb": 		manageCSS("alt_autocompl_hl_b.css");	break;
 		case "autocompl_hlu": 		manageCSS("alt_autocompl_hl_u.css");	break;
 		case "autocompl_hli": 		manageCSS("alt_autocompl_hl_i.css");	break;
@@ -4501,7 +4445,7 @@ classicthemerestorerjs.ctr = {
 		break;
 */
 		
-		case "hiderecentbm": 		manageCSS("hide_recently_bm.css");		break;
+		case "oldplacesbut": 		manageCSS("oldplacesbut.css");			break;
 		case "bmbutpanelm": 		manageCSS("bmbut_pmenu.css");			break;
 		case "bmbunsortbm": 		manageCSS("bmbut_unsortedbookm.css");	break;
 		case "bmbunsortbm2": 		manageCSS("bmbut_unsortedbookm2.css");	break;
@@ -4516,6 +4460,7 @@ classicthemerestorerjs.ctr = {
 		case "ib_nohovcolor": 		manageCSS("ib_nohovcolor.css");			break;
 		case "ib_graycolor": 		manageCSS("ib_graycolor.css");			break;
 		case "verifiedcolors": 		manageCSS("verifiedcolors.css");		break;
+		case "faviconurl": 			manageCSS("faviconurl_extra.css");		break;
 		case "ibinfoico": 			manageCSS("hide_ibinfoico.css");		break;
 		case "ibinfoico2": 			manageCSS("hide_ibinfoico2.css");		break;
 		case "iblabels": 			manageCSS("hide_iblabels.css");			break;
@@ -4574,6 +4519,7 @@ classicthemerestorerjs.ctr = {
 		case "ctrnewinv47":			manageCSS("ctraddon_new_in_v47.css");	break;
 		case "ctrnewinv48":			manageCSS("ctraddon_new_in_v48.css");	break;
 		case "ctrnewinv50":			manageCSS("ctraddon_new_in_v50.css");	break;
+		case "ctrnewinv51":			manageCSS("ctraddon_new_in_v51.css");	break;
 		
 		case "cuibuttons":			manageCSS("cuibuttons.css");			break;
 		
@@ -4636,6 +4582,7 @@ classicthemerestorerjs.ctr = {
 		
 		case "hidetabaudioico": 	manageCSS("hidetabaudioico.css");		break;
 		case "urlresults":			manageCSS("urlbar_results.css");		break;
+		case "cresultshcb":			manageCSS("urlbar_results2.css");		break;
 		
 		case "aerocolors":
 			
@@ -5307,7 +5254,7 @@ classicthemerestorerjs.ctr = {
 			}
 		
 		break;
-		
+	
 		case "ctabheight":
 			removeOldSheet(this.tabheight);
 			
