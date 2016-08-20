@@ -53,13 +53,13 @@ def compile_environment(compile_env):
 set_config('COMPILE_ENVIRONMENT', compile_environment)
 add_old_configure_assignment('COMPILE_ENVIRONMENT', compile_environment)
 
-js_option('--disable-tests',
+js_option('--enable-tests',
           help='Do not build test libraries & programs')
 
-@depends('--disable-tests')
+@depends('--enable-tests')
 def enable_tests(value):
     if value:
-        return True
+        return False
 
 set_config('ENABLE_TESTS', enable_tests)
 set_define('ENABLE_TESTS', enable_tests)

@@ -362,8 +362,6 @@ pref("browser.search.redirectWindowsSearch", true);
 pref("browser.search.redirectWindowsSearch", false);
 #endif
 
-pref("browser.search.reset.enabled", true);
-
 pref("browser.usedOnWindows10", false);
 pref("browser.usedOnWindows10.introURL", "");
 

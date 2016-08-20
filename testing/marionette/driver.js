@@ -344,7 +344,10 @@ GeckoDriver.prototype.whenBrowserStarted = function(win, isNewSession) {
     }
 
     if (!Preferences.get(CONTENT_LISTENER_PREF) || !isNewSession) {
-      mm.loadFrameScript(FRAME_SCRIPT, true, true);
+      // load listener into the remote frame
+      // and any applicable new frames
+      // opened after this call
+      mm.loadFrameScript(FRAME_SCRIPT, true);
       Preferences.set(CONTENT_LISTENER_PREF, true);
     }
   } else {
@@ -1817,7 +1820,8 @@ GeckoDriver.prototype.getElementProperty = function*(cmd, resp) {
       break;
 
     case Context.CONTENT:
-      return this.listener.getElementProperty(id, name);
+      resp.body.value = yield this.listener.getElementProperty(id, name);
+      break;
   }
 };
 
