@@ -3544,4 +3544,12 @@ menulist.translate-infobar-element > .menulist-dropmarker {
   overflow: hidden;
 }
 
+.cui-widget-panelview[id^=PanelUI-webext-] {
+  border-radius: 3.5px;
+}
+
+.webextension-popup-browser {
+  border-radius: inherit;
+}
+
 %include ../shared/browser-cyberfox.inc
