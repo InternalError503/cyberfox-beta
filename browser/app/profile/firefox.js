@@ -635,7 +635,11 @@ pref("plugin.allowed_whitelist.enabled", false);
 pref("plugin.java_allowed", false);
 #endif
 
+#ifdef XP_WIN
 pref("browser.preferences.animateFadeIn", true);
+#else
+pref("browser.preferences.animateFadeIn", false);
+#endif
 
 #ifdef XP_WIN
 pref("browser.preferences.instantApply", false);
