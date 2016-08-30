@@ -6,6 +6,7 @@
 #include <stdint.h>                     // for uint32_t
 #include <stdlib.h>                     // for rand, RAND_MAX
 #include <sys/types.h>                  // for int32_t
+#include <stack>                        // for stack
 #include "BasicContainerLayer.h"        // for BasicContainerLayer
 #include "BasicLayersImpl.h"            // for ToData, BasicReadbackLayer, etc
 #include "GeckoProfiler.h"              // for PROFILER_LABEL
@@ -44,6 +45,8 @@
 #include "nsRect.h"                     // for mozilla::gfx::IntRect
 #include "nsRegion.h"                   // for nsIntRegion, etc
 #include "nsTArray.h"                   // for AutoTArray
+#include "TreeTraversal.h"              // for ForEachNode
+
 class nsIWidget;
 
 namespace mozilla {
@@ -74,26 +77,24 @@ ClipToContain(gfxContext* aContext, const IntRect& aRect)
   return aContext->DeviceToUser(deviceRect).IsEqualInterior(userRect);
 }
 
-BasicLayerManager::PushedGroup
-BasicLayerManager::PushGroupForLayer(gfxContext* aContext, Layer* aLayer, const nsIntRegion& aRegion)
+bool
+BasicLayerManager::PushGroupForLayer(gfxContext* aContext, Layer* aLayer, const nsIntRegion& aRegion,  PushedGroup& aGroupResult)
 {
-  PushedGroup group;
-
-  group.mVisibleRegion = aRegion;
-  group.mFinalTarget = aContext;
-  group.mOperator = GetEffectiveOperator(aLayer);
-  group.mOpacity = aLayer->GetEffectiveOpacity();
+  aGroupResult.mVisibleRegion = aRegion;
+  aGroupResult.mFinalTarget = aContext;
+  aGroupResult.mOperator = GetEffectiveOperator(aLayer);
+  aGroupResult.mOpacity = aLayer->GetEffectiveOpacity();
 
   // If we need to call PushGroup, we should clip to the smallest possible
   // area first to minimize the size of the temporary surface.
   bool didCompleteClip = ClipToContain(aContext, aRegion.GetBounds());
 
-  bool canPushGroup = group.mOperator == CompositionOp::OP_OVER ||
-    (group.mOperator == CompositionOp::OP_SOURCE && (aLayer->CanUseOpaqueSurface() || aLayer->GetContentFlags() & Layer::CONTENT_COMPONENT_ALPHA));
+  bool canPushGroup = aGroupResult.mOperator == CompositionOp::OP_OVER ||
+    (aGroupResult.mOperator == CompositionOp::OP_SOURCE && (aLayer->CanUseOpaqueSurface() || aLayer->GetContentFlags() & Layer::CONTENT_COMPONENT_ALPHA));
 
   if (!canPushGroup) {
     aContext->Save();
-    gfxUtils::ClipToRegion(group.mFinalTarget, group.mVisibleRegion);
+    gfxUtils::ClipToRegion(aGroupResult.mFinalTarget, aGroupResult.mVisibleRegion);
 
     // PushGroup/PopGroup do not support non operator over.
     gfxMatrix oldMat = aContext->CurrentMatrix();
@@ -109,16 +110,16 @@ BasicLayerManager::PushGroupForLayer(gfxContext* aContext, Layer* aLayer, const 
 
       RefPtr<gfxContext> ctx = gfxContext::ForDrawTarget(dt, ToRect(rect).TopLeft());
       if (!ctx) {
-        gfxDevCrash(LogReason::InvalidContext) << "BasicLayerManager context problem " << gfx::hexa(dt);
-        return group;
+        gfxCriticalNote << "BasicLayerManager context problem in PushGroupForLayer " << gfx::hexa(dt);
+        return false;
       }
       ctx->SetMatrix(oldMat);
 
-      group.mGroupOffset = surfRect.TopLeft();
-      group.mGroupTarget = ctx;
+      aGroupResult.mGroupOffset = surfRect.TopLeft();
+      aGroupResult.mGroupTarget = ctx;
 
-      group.mMaskSurface = GetMaskForLayer(aLayer, &group.mMaskTransform);
-      return group;
+      aGroupResult.mMaskSurface = GetMaskForLayer(aLayer, &aGroupResult.mMaskTransform);
+      return true;
     }
     aContext->Restore();
   }
@@ -131,7 +132,7 @@ BasicLayerManager::PushGroupForLayer(gfxContext* aContext, Layer* aLayer, const 
     // destination. Since the User->Device space transform will be applied
     // to the mask by PopGroupAndBlend we need to adjust the transform to
     // transform the mask to user space.
-    Matrix currentTransform = ToMatrix(group.mFinalTarget->CurrentMatrix());
+    Matrix currentTransform = ToMatrix(aGroupResult.mFinalTarget->CurrentMatrix());
     currentTransform.Invert();
     maskTransform = maskTransform * currentTransform;
   }
@@ -143,23 +144,24 @@ BasicLayerManager::PushGroupForLayer(gfxContext* aContext, Layer* aLayer, const 
     // group. We need to make sure that only pixels inside the layer's visible
     // region are copied back to the destination. Remember if we've already
     // clipped precisely to the visible region.
-    group.mNeedsClipToVisibleRegion = !didCompleteClip || aRegion.GetNumRects() > 1;
-    if (group.mNeedsClipToVisibleRegion) {
-      group.mFinalTarget->Save();
-      gfxUtils::ClipToRegion(group.mFinalTarget, group.mVisibleRegion);
+    aGroupResult.mNeedsClipToVisibleRegion = !didCompleteClip || aRegion.GetNumRects() > 1;
+    if (aGroupResult.mNeedsClipToVisibleRegion) {
+      aGroupResult.mFinalTarget->Save();
+      gfxUtils::ClipToRegion(aGroupResult.mFinalTarget, aGroupResult.mVisibleRegion);
     }
 
-    aContext->PushGroupForBlendBack(gfxContentType::COLOR, group.mOpacity, maskSurf, maskTransform);
+    aContext->PushGroupForBlendBack(gfxContentType::COLOR, aGroupResult.mOpacity, maskSurf, maskTransform);
   } else {
     if (aLayer->GetContentFlags() & Layer::CONTENT_COMPONENT_ALPHA) {
-      aContext->PushGroupAndCopyBackground(gfxContentType::COLOR_ALPHA, group.mOpacity, maskSurf, maskTransform);
+      aContext->PushGroupAndCopyBackground(gfxContentType::COLOR_ALPHA, aGroupResult.mOpacity, maskSurf, maskTransform);
     } else {
-      aContext->PushGroupForBlendBack(gfxContentType::COLOR_ALPHA, group.mOpacity, maskSurf, maskTransform);
+      aContext->PushGroupForBlendBack(gfxContentType::COLOR_ALPHA, aGroupResult.mOpacity, maskSurf, maskTransform);
     }
   }
 
-  group.mGroupTarget = group.mFinalTarget;
-  return group;
+  aGroupResult.mGroupTarget = aGroupResult.mFinalTarget;
+
+  return true;
 }
 
 void
@@ -194,7 +196,7 @@ BasicLayerManager::PopGroupForLayer(PushedGroup &group)
     // always become null.
     dt->SetTransform(Matrix::Translation(-group.mFinalTarget->GetDeviceOffset()));
     dt->DrawSurface(src, Rect(group.mGroupOffset.x, group.mGroupOffset.y, src->GetSize().width, src->GetSize().height),
-                    Rect(0, 0, src->GetSize().width, src->GetSize().height), DrawSurfaceOptions(Filter::POINT), DrawOptions(group.mOpacity, group.mOperator));
+                    Rect(0, 0, src->GetSize().width, src->GetSize().height), DrawSurfaceOptions(SamplingFilter::POINT), DrawOptions(group.mOpacity, group.mOperator));
   }
 
   if (group.mNeedsClipToVisibleRegion) {
@@ -413,7 +415,7 @@ MarkLayersHidden(Layer* aLayer, const IntRect& aClipRect,
   }
 
   {
-    const Maybe<ParentLayerIntRect>& clipRect = aLayer->GetEffectiveClipRect();
+    const Maybe<ParentLayerIntRect>& clipRect = aLayer->GetLocalClipRect();
     if (clipRect) {
       IntRect cr = clipRect->ToUnknownRect();
       // clipRect is in the container's coordinate system. Get it into the
@@ -485,56 +487,71 @@ MarkLayersHidden(Layer* aLayer, const IntRect& aClipRect,
 static void
 ApplyDoubleBuffering(Layer* aLayer, const IntRect& aVisibleRect)
 {
-  BasicImplData* data = ToData(aLayer);
-  if (data->IsHidden())
-    return;
+  std::stack<IntRect> visibleRectStack;
+  visibleRectStack.push(aVisibleRect);
 
-  IntRect newVisibleRect(aVisibleRect);
-
-  {
-    const Maybe<ParentLayerIntRect>& clipRect = aLayer->GetEffectiveClipRect();
-    if (clipRect) {
-      IntRect cr = clipRect->ToUnknownRect();
-      // clipRect is in the container's coordinate system. Get it into the
-      // global coordinate system.
-      if (aLayer->GetParent()) {
-        Matrix tr;
-        if (aLayer->GetParent()->GetEffectiveTransform().CanDraw2D(&tr)) {
-          NS_ASSERTION(!ThebesMatrix(tr).HasNonIntegerTranslation(),
-                       "Parent can only have an integer translation");
-          cr += nsIntPoint(int32_t(tr._31), int32_t(tr._32));
-        } else {
-          NS_ERROR("Parent can only have an integer translation");
+  ForEachNode<ForwardIterator>(
+      aLayer,
+      [&aLayer, &visibleRectStack](Layer* layer) {
+        BasicImplData* data = ToData(layer);
+        if (layer != aLayer) {
+          data->SetClipToVisibleRegion(true);
         }
-      }
-      newVisibleRect.IntersectRect(newVisibleRect, cr);
-    }
-  }
+        if (data->IsHidden()) {
+          return TraversalFlag::Skip;
+        }
 
-  BasicContainerLayer* container =
-    static_cast<BasicContainerLayer*>(aLayer->AsContainerLayer());
-  // Layers that act as their own backbuffers should be drawn to the destination
-  // using OP_SOURCE to ensure that alpha values in a transparent window are
-  // cleared. This can also be faster than OP_OVER.
-  if (!container) {
-    data->SetOperator(CompositionOp::OP_SOURCE);
-    data->SetDrawAtomically(true);
-  } else {
-    if (container->UseIntermediateSurface() ||
-        !container->ChildrenPartitionVisibleRegion(newVisibleRect)) {
-      // We need to double-buffer this container.
-      data->SetOperator(CompositionOp::OP_SOURCE);
-      container->ForceIntermediateSurface();
-    } else {
-      // Tell the children to clip to their visible regions so our assumption
-      // that they don't paint outside their visible regions is valid!
-      for (Layer* child = aLayer->GetFirstChild(); child;
-           child = child->GetNextSibling()) {
-        ToData(child)->SetClipToVisibleRegion(true);
-        ApplyDoubleBuffering(child, newVisibleRect);
+        IntRect newVisibleRect(visibleRectStack.top());
+
+        {
+          const Maybe<ParentLayerIntRect>& clipRect = layer->GetLocalClipRect();
+          if (clipRect) {
+            IntRect cr = clipRect->ToUnknownRect();
+            // clipRect is in the container's coordinate system. Get it into the
+            // global coordinate system.
+            if (layer->GetParent()) {
+              Matrix tr;
+              if (layer->GetParent()->GetEffectiveTransform().CanDraw2D(&tr)) {
+                NS_ASSERTION(!ThebesMatrix(tr).HasNonIntegerTranslation(),
+                             "Parent can only have an integer translation");
+                cr += nsIntPoint(int32_t(tr._31), int32_t(tr._32));
+              } else {
+                NS_ERROR("Parent can only have an integer translation");
+              }
+            }
+            newVisibleRect.IntersectRect(newVisibleRect, cr);
+          }
+        }
+
+        BasicContainerLayer* container =
+          static_cast<BasicContainerLayer*>(layer->AsContainerLayer());
+        // Layers that act as their own backbuffers should be drawn to the destination
+        // using OP_SOURCE to ensure that alpha values in a transparent window are
+        // cleared. This can also be faster than OP_OVER.
+        if (!container) {
+          data->SetOperator(CompositionOp::OP_SOURCE);
+          data->SetDrawAtomically(true);
+          return TraversalFlag::Skip;
+        } else {
+          if (container->UseIntermediateSurface() ||
+              !container->ChildrenPartitionVisibleRegion(newVisibleRect)) {
+            // We need to double-buffer this container.
+            data->SetOperator(CompositionOp::OP_SOURCE);
+            container->ForceIntermediateSurface();
+            return TraversalFlag::Skip;
+          } else {
+            visibleRectStack.push(newVisibleRect);
+            return TraversalFlag::Continue;
+          }
+        }
+
+      },
+      [&visibleRectStack](Layer* layer)
+      {
+        visibleRectStack.pop();
+        return TraversalFlag::Continue;
       }
-    }
-  }
+  );
 }
 
 void
@@ -771,7 +788,7 @@ BasicLayerManager::FlushGroup(PaintLayerContext& aPaintContext, bool aNeedsClipT
 static void
 InstallLayerClipPreserves3D(gfxContext* aTarget, Layer* aLayer)
 {
-  const Maybe<ParentLayerIntRect> &clipRect = aLayer->GetEffectiveClipRect();
+  const Maybe<ParentLayerIntRect> &clipRect = aLayer->GetLocalClipRect();
 
   if (!clipRect) {
     return;
@@ -823,7 +840,7 @@ BasicLayerManager::PaintLayer(gfxContext* aTarget,
 
   RenderTraceScope trace("BasicLayerManager::PaintLayer", "707070");
 
-  const Maybe<ParentLayerIntRect>& clipRect = aLayer->GetEffectiveClipRect();
+  const Maybe<ParentLayerIntRect>& clipRect = aLayer->GetLocalClipRect();
   BasicContainerLayer* container =
     static_cast<BasicContainerLayer*>(aLayer->AsContainerLayer());
   bool needsGroup = container && container->UseIntermediateSurface();
@@ -871,7 +888,7 @@ BasicLayerManager::PaintLayer(gfxContext* aTarget,
     // Don't need to clip to visible region again
     needsClipToVisibleRegion = false;
   }
-  
+
   if (is2D) {
     paintLayerContext.AnnotateOpaqueRect();
   }
@@ -884,10 +901,11 @@ BasicLayerManager::PaintLayer(gfxContext* aTarget,
 
   if (is2D) {
     if (needsGroup) {
-      PushedGroup pushedGroup =
-        PushGroupForLayer(aTarget, aLayer, aLayer->GetLocalVisibleRegion().ToUnknownRegion());
-      PaintSelfOrChildren(paintLayerContext, pushedGroup.mGroupTarget);
-      PopGroupForLayer(pushedGroup);
+      PushedGroup pushedGroup;
+      if (PushGroupForLayer(aTarget, aLayer, aLayer->GetLocalVisibleRegion().ToUnknownRegion(), pushedGroup)) {
+        PaintSelfOrChildren(paintLayerContext, pushedGroup.mGroupTarget);
+        PopGroupForLayer(pushedGroup);
+      }
     } else {
       PaintSelfOrChildren(paintLayerContext, aTarget);
     }

@@ -19,7 +19,7 @@
 #include "nsHttp.h"
 #include "nsHttpHandler.h"
 #include "nsHttpConnection.h"
-#include "nsISchedulingContext.h"
+#include "nsIRequestContext.h"
 #include "nsISupportsPriority.h"
 #include "prnetdb.h"
 #include "SpdyPush31.h"
@@ -336,6 +336,17 @@ SpdySession31::AddStream(nsAHttpTransaction *aHttpTransaction,
 
   if (!mConnection) {
     mConnection = aHttpTransaction->Connection();
+  }
+
+  if (mClosed || mShouldGoAway) {
+    nsHttpTransaction *trans = aHttpTransaction->QueryHttpTransaction();
+    if (trans && !trans->GetPushedStream()) {
+      LOG3(("SpdySession31::AddStream %p atrans=%p trans=%p session unusable - resched.\n",
+            this, aHttpTransaction, trans));
+      aHttpTransaction->SetConnection(nullptr);
+      gHttpHandler->InitiateTransaction(trans, trans->Priority());
+      return true;
+    }
   }
 
   aHttpTransaction->SetConnection(this);
@@ -1044,12 +1055,12 @@ SpdySession31::HandleSynStream(SpdySession31 *self)
     self->GenerateRstStream(RST_INVALID_STREAM, streamID);
 
   } else {
-    nsISchedulingContext *schedulingContext = associatedStream->SchedulingContext();
-    if (schedulingContext) {
-      schedulingContext->GetSpdyPushCache(&cache);
+    nsIRequestContext *requestContext = associatedStream->RequestContext();
+    if (requestContext) {
+      requestContext->GetSpdyPushCache(&cache);
       if (!cache) {
         cache = new SpdyPushCache();
-        if (!cache || NS_FAILED(schedulingContext->SetSpdyPushCache(cache))) {
+        if (!cache || NS_FAILED(requestContext->SetSpdyPushCache(cache))) {
           delete cache;
           cache = nullptr;
         }
@@ -2174,15 +2185,16 @@ SpdySession31::WriteSegmentsAgain(nsAHttpSegmentWriter *writer,
 
   if (mDownstreamState == DISCARDING_DATA_FRAME) {
     char trash[4096];
-    uint32_t count = std::min(4096U, mInputFrameDataSize - mInputFrameDataRead);
+    uint32_t discardCount = std::min(mInputFrameDataSize - mInputFrameDataRead,
+                                     4096U);
 
-    if (!count) {
+    if (!discardCount) {
       ResetDownstreamState();
       ResumeRecv();
       return NS_BASE_STREAM_WOULD_BLOCK;
     }
 
-    rv = NetworkRead(writer, trash, count, countWritten);
+    rv = NetworkRead(writer, trash, discardCount, countWritten);
 
     if (NS_FAILED(rv)) {
       LOG3(("SpdySession31 %p discard frame read failure %x\n", this, rv));
@@ -2635,6 +2647,7 @@ SpdySession31::SetNeedsCleanup()
 
   // This will result in Close() being called
   MOZ_ASSERT(!mNeedsCleanup, "mNeedsCleanup unexpectedly set");
+  mInputFrameDataStream->SetResponseIsComplete();
   mNeedsCleanup = mInputFrameDataStream;
   ResetDownstreamState();
 }
@@ -2800,8 +2813,13 @@ SpdySession31::TransactionHasDataToWrite(nsAHttpTransaction *caller)
   LOG3(("SpdySession31::TransactionHasDataToWrite %p ID is 0x%X\n",
         this, stream->StreamID()));
 
-  mReadyForWrite.Push(stream);
-  SetWriteCallbacks();
+  if (!mClosed) {
+    mReadyForWrite.Push(stream);
+    SetWriteCallbacks();
+  } else {
+    LOG3(("SpdySession31::TransactionHasDataToWrite %p closed so not setting Ready4Write\n",
+          this));
+  }
 
   // NSPR poll will not poll the network if there are non system PR_FileDesc's
   // that are ready - so we can get into a deadlock waiting for the system IO

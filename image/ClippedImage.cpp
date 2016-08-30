@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <algorithm>
 #include <new>      // Workaround for bug in VS10; see bug 981264.
 #include <cmath>
 #include <utility>
@@ -28,6 +29,7 @@ using namespace gfx;
 using layers::LayerManager;
 using layers::ImageContainer;
 using std::make_pair;
+using std::max;
 using std::modf;
 using std::pair;
 
@@ -109,7 +111,7 @@ public:
 
   virtual bool operator()(gfxContext* aContext,
                           const gfxRect& aFillRect,
-                          const Filter& aFilter,
+                          const SamplingFilter aSamplingFilter,
                           const gfxMatrix& aTransform)
   {
     MOZ_ASSERT(aTransform.IsIdentity(),
@@ -120,7 +122,7 @@ public:
     // arguments that guarantee we never tile.
     mDrawResult =
       mImage->DrawSingleTile(aContext, mSize, ImageRegion::Create(aFillRect),
-                             mWhichFrame, aFilter, mSVGContext, mFlags);
+                             mWhichFrame, aSamplingFilter, mSVGContext, mFlags);
 
     return true;
   }
@@ -308,7 +310,7 @@ ClippedImage::GetFrameInternal(const nsIntSize& aSize,
     gfxUtils::DrawPixelSnapped(ctx, drawable, aSize,
                                ImageRegion::Create(aSize),
                                SurfaceFormat::B8G8R8A8,
-                               Filter::LINEAR,
+                               SamplingFilter::LINEAR,
                                imgIContainer::FLAG_CLAMP);
 
     // Cache the resulting surface.
@@ -367,13 +369,13 @@ ClippedImage::Draw(gfxContext* aContext,
                    const nsIntSize& aSize,
                    const ImageRegion& aRegion,
                    uint32_t aWhichFrame,
-                   Filter aFilter,
+                   SamplingFilter aSamplingFilter,
                    const Maybe<SVGImageContext>& aSVGContext,
                    uint32_t aFlags)
 {
   if (!ShouldClip()) {
     return InnerImage()->Draw(aContext, aSize, aRegion, aWhichFrame,
-                              aFilter, aSVGContext, aFlags);
+                              aSamplingFilter, aSVGContext, aFlags);
   }
 
   // Check for tiling. If we need to tile then we need to create a
@@ -396,13 +398,13 @@ ClippedImage::Draw(gfxContext* aContext,
 
     // Draw.
     gfxUtils::DrawPixelSnapped(aContext, drawable, aSize, aRegion,
-                               SurfaceFormat::B8G8R8A8, aFilter);
+                               SurfaceFormat::B8G8R8A8, aSamplingFilter);
 
     return result;
   }
 
   return DrawSingleTile(aContext, aSize, aRegion, aWhichFrame,
-                        aFilter, aSVGContext, aFlags);
+                        aSamplingFilter, aSVGContext, aFlags);
 }
 
 static SVGImageContext
@@ -428,7 +430,7 @@ ClippedImage::DrawSingleTile(gfxContext* aContext,
                              const nsIntSize& aSize,
                              const ImageRegion& aRegion,
                              uint32_t aWhichFrame,
-                             Filter aFilter,
+                             SamplingFilter aSamplingFilter,
                              const Maybe<SVGImageContext>& aSVGContext,
                              uint32_t aFlags)
 {
@@ -469,7 +471,7 @@ ClippedImage::DrawSingleTile(gfxContext* aContext,
   aContext->Multiply(gfxMatrix::Translation(-clip.x, -clip.y));
 
   return InnerImage()->Draw(aContext, size, region,
-                            aWhichFrame, aFilter,
+                            aWhichFrame, aSamplingFilter,
                             aSVGContext.map(UnclipViewport,
                                             make_pair(innerSize, mClip.Size())),
                             aFlags);
@@ -495,19 +497,22 @@ ClippedImage::GetOrientation()
 nsIntSize
 ClippedImage::OptimalImageSizeForDest(const gfxSize& aDest,
                                       uint32_t aWhichFrame,
-                                      Filter aFilter, uint32_t aFlags)
+                                      SamplingFilter aSamplingFilter,
+                                      uint32_t aFlags)
 {
   if (!ShouldClip()) {
-    return InnerImage()->OptimalImageSizeForDest(aDest, aWhichFrame, aFilter,
-                                                 aFlags);
+    return InnerImage()->OptimalImageSizeForDest(aDest, aWhichFrame,
+                                                 aSamplingFilter, aFlags);
   }
 
   int32_t imgWidth, imgHeight;
   bool needScale = false;
+  bool forceUniformScaling = false;
   if (mSVGViewportSize && !mSVGViewportSize->IsEmpty()) {
     imgWidth = mSVGViewportSize->width;
     imgHeight = mSVGViewportSize->height;
     needScale = true;
+    forceUniformScaling = (aFlags & imgIContainer::FLAG_FORCE_UNIFORM_SCALING);
   } else if (NS_SUCCEEDED(InnerImage()->GetWidth(&imgWidth)) &&
              NS_SUCCEEDED(InnerImage()->GetHeight(&imgHeight))) {
     needScale = true;
@@ -522,12 +527,16 @@ ClippedImage::OptimalImageSizeForDest(const gfxSize& aDest,
     nsIntSize scale(ceil(aDest.width / mClip.width),
                     ceil(aDest.height / mClip.height));
 
+    if (forceUniformScaling) {
+      scale.width = scale.height = max(scale.height, scale.width);
+    }
+
     // Determine the size we'd prefer to render the inner image at, and ask the
     // inner image what size we should actually use.
     gfxSize desiredSize(imgWidth * scale.width, imgHeight * scale.height);
     nsIntSize innerDesiredSize =
       InnerImage()->OptimalImageSizeForDest(desiredSize, aWhichFrame,
-                                            aFilter, aFlags);
+                                            aSamplingFilter, aFlags);
 
     // To get our final result, we take the inner image's desired size and
     // determine how large the clipped region would be at that scale. (Again, we
@@ -539,8 +548,8 @@ ClippedImage::OptimalImageSizeForDest(const gfxSize& aDest,
 
   MOZ_ASSERT(false,
              "If ShouldClip() led us to draw then we should never get here");
-  return InnerImage()->OptimalImageSizeForDest(aDest, aWhichFrame, aFilter,
-                                               aFlags);
+  return InnerImage()->OptimalImageSizeForDest(aDest, aWhichFrame,
+                                               aSamplingFilter, aFlags);
 }
 
 NS_IMETHODIMP_(nsIntRect)

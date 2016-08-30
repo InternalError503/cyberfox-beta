@@ -8,8 +8,11 @@
 include LayersSurfaces;
 include LayersMessages;
 include protocol PBrowser;
+include protocol PCompositable;
+include protocol PImageContainer;
 include protocol PLayer;
 include protocol PLayerTransaction;
+include protocol PTexture;
 include "mozilla/GfxMessageUtils.h";
 
 using struct mozilla::null_t from "ipc/IPCMessageUtils.h";
@@ -25,9 +28,9 @@ using mozilla::ipc::SharedMemoryBasic::Handle from "mozilla/ipc/SharedMemoryBasi
 using mozilla::CSSIntRegion from "Units.h";
 using mozilla::LayoutDeviceIntPoint from "Units.h";
 using mozilla::LayoutDeviceIntRegion from "Units.h";
-using mozilla::VisibilityCounter from "VisibilityIPC.h";
 using class mozilla::TimeStamp from "mozilla/TimeStamp.h";
 using class mozilla::layers::FrameUniformityData from "mozilla/layers/FrameUniformityData.h";
+using mozilla::layers::TextureFlags from "mozilla/layers/CompositorTypes.h";
 
 namespace mozilla {
 namespace layers {
@@ -42,6 +45,7 @@ sync protocol PCompositorBridge
 {
   // A Compositor manages a single Layer Manager (PLayerTransaction)
   manages PLayerTransaction;
+  manages PTexture;
 
 child:
   // The child should invalidate retained layers. This is used for local
@@ -174,18 +178,17 @@ parent:
    */
   async RequestNotifyAfterRemotePaint();
 
-  // The child sends a request to clear the visible regions (approximate,
-  // in-displayport, etc.) associated with the provided layers ID and pres shell
-  // ID (i.e., the regions for all view IDs associated with those IDs).
-  async ClearVisibleRegions(uint64_t layersId, uint32_t presShellId);
+  // The child clears the 'approximately visible' regions associated with the
+  // provided layers ID and pres shell ID (i.e., the regions for all view IDs
+  // associated with those IDs).
+  async ClearApproximatelyVisibleRegions(uint64_t layersId, uint32_t presShellId);
 
   // The child sends a region containing rects associated with the provided
-  // scrollable layer GUID that the child considers visible in the sense
-  // specified by |counter|.
+  // scrollable layer GUID that the child considers 'approximately visible'.
   // We visualize this information in the APZ minimap.
-  async UpdateVisibleRegion(VisibilityCounter counter,
-                            ScrollableLayerGuid guid,
-                            CSSIntRegion region);
+  async NotifyApproximatelyVisibleRegion(ScrollableLayerGuid guid, CSSIntRegion region);
+
+  async PTexture(SurfaceDescriptor aSharedData, LayersBackend aBackend, TextureFlags aTextureFlags, uint64_t id);
 
 child:
   // Send back Compositor Frame Metrics from APZCs so tiled layers can

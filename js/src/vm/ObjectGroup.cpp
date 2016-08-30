@@ -260,7 +260,7 @@ JSObject::shouldSplicePrototype(JSContext* cx)
      * object if their __proto__ had previously been set to null, as this
      * will change the prototype for all other objects with the same type.
      */
-    if (getProto() != nullptr)
+    if (staticPrototype() != nullptr)
         return false;
     return isSingleton();
 }
@@ -327,7 +327,7 @@ JSObject::makeLazyGroup(JSContext* cx, HandleObject obj)
     if (obj->is<ArrayObject>() && obj->as<ArrayObject>().length() > INT32_MAX)
         initialFlags |= OBJECT_FLAG_LENGTH_OVERFLOW;
 
-    Rooted<TaggedProto> proto(cx, obj->getTaggedProto());
+    Rooted<TaggedProto> proto(cx, obj->taggedProto());
     ObjectGroup* group = ObjectGroupCompartment::makeGroup(cx, obj->getClass(), proto,
                                                            initialFlags);
     if (!group)
@@ -378,30 +378,58 @@ struct ObjectGroupCompartment::NewEntry
 
     struct Lookup {
         const Class* clasp;
-        uint64_t protoUID;
-        uint64_t assocUID;
+        TaggedProto proto;
+        JSObject* associated;
 
         Lookup(const Class* clasp, TaggedProto proto, JSObject* associated)
-          : clasp(clasp),
-            protoUID(proto.uniqueId()),
-            assocUID(associated ? associated->zone()->getUniqueIdInfallible(associated) : 0)
+          : clasp(clasp), proto(proto), associated(associated)
         {}
+
+        bool hasAssocId() const {
+            return !associated || associated->zone()->hasUniqueId(associated);
+        }
+
+        bool ensureAssocId() const {
+            uint64_t unusedId;
+            return !associated ||
+                   associated->zoneFromAnyThread()->getUniqueId(associated, &unusedId);
+        }
+
+        uint64_t getAssocId() const {
+            return associated ? associated->zone()->getUniqueIdInfallible(associated) : 0;
+        }
     };
 
+    static bool hasHash(const Lookup& l) {
+        return l.proto.hasUniqueId() && l.hasAssocId();
+    }
+
+    static bool ensureHash(const Lookup& l) {
+        return l.proto.ensureUniqueId() && l.ensureAssocId();
+    }
+
     static inline HashNumber hash(const Lookup& lookup) {
+        MOZ_ASSERT(lookup.proto.hasUniqueId());
+        MOZ_ASSERT(lookup.hasAssocId());
         HashNumber hash = uintptr_t(lookup.clasp);
-        hash = mozilla::RotateLeft(hash, 4) ^ Zone::UniqueIdToHash(lookup.protoUID);
-        hash = mozilla::RotateLeft(hash, 4) ^ Zone::UniqueIdToHash(lookup.assocUID);
+        hash = mozilla::RotateLeft(hash, 4) ^ Zone::UniqueIdToHash(lookup.proto.uniqueId());
+        hash = mozilla::RotateLeft(hash, 4) ^ Zone::UniqueIdToHash(lookup.getAssocId());
         return hash;
     }
 
-    static inline bool match(const NewEntry& key, const Lookup& lookup) {
+    static inline bool match(const ObjectGroupCompartment::NewEntry& key, const Lookup& lookup) {
+        TaggedProto proto = key.group.unbarrieredGet()->proto().unbarrieredGet();
+        JSObject* assoc = key.associated;
+        MOZ_ASSERT(proto.hasUniqueId());
+        MOZ_ASSERT_IF(assoc, assoc->zone()->hasUniqueId(assoc));
+        MOZ_ASSERT(lookup.proto.hasUniqueId());
+        MOZ_ASSERT(lookup.hasAssocId());
+
         if (lookup.clasp && key.group.unbarrieredGet()->clasp() != lookup.clasp)
             return false;
-        if (key.group.unbarrieredGet()->proto().unbarrieredGet().uniqueId() != lookup.protoUID)
+        if (proto.uniqueId() != lookup.proto.uniqueId())
             return false;
-        return !key.associated ||
-               key.associated->zone()->getUniqueIdInfallible(key.associated) == lookup.assocUID;
+        return !assoc || assoc->zone()->getUniqueIdInfallible(assoc) == lookup.getAssocId();
     }
 
     static void rekey(NewEntry& k, const NewEntry& newKey) { k = newKey; }
@@ -411,6 +439,19 @@ struct ObjectGroupCompartment::NewEntry
                 (associated && IsAboutToBeFinalizedUnbarriered(&associated)));
     }
 };
+
+namespace js {
+template <>
+struct FallibleHashMethods<ObjectGroupCompartment::NewEntry>
+{
+    template <typename Lookup> static bool hasHash(Lookup&& l) {
+        return ObjectGroupCompartment::NewEntry::hasHash(mozilla::Forward<Lookup>(l));
+    }
+    template <typename Lookup> static bool ensureHash(Lookup&& l) {
+        return ObjectGroupCompartment::NewEntry::ensureHash(mozilla::Forward<Lookup>(l));
+    }
+};
+} // namespace js
 
 class ObjectGroupCompartment::NewTable : public JS::WeakCache<js::GCHashSet<NewEntry, NewEntry,
                                                                             SystemAllocPolicy>>
@@ -501,7 +542,7 @@ ObjectGroup::defaultNewGroup(ExclusiveContext* cx, const Class* clasp,
     }
 
     ObjectGroupFlags initialFlags = 0;
-    if (proto.isLazy() || (proto.isObject() && proto.toObject()->isNewGroupUnknown()))
+    if (proto.isDynamic() || (proto.isObject() && proto.toObject()->isNewGroupUnknown()))
         initialFlags = OBJECT_FLAG_DYNAMIC_MASK;
 
     Rooted<TaggedProto> protoRoot(cx, proto);
@@ -1220,7 +1261,7 @@ ObjectGroup::newPlainObject(ExclusiveContext* cx, IdValuePair* properties, size_
         // default (which will have unknown properties) so that the group we
         // just created will be collected by the GC.
         if (obj->slotSpan() != nproperties) {
-            ObjectGroup* group = defaultNewGroup(cx, obj->getClass(), obj->getTaggedProto());
+            ObjectGroup* group = defaultNewGroup(cx, obj->getClass(), obj->taggedProto());
             if (!group)
                 return nullptr;
             obj->setGroup(group);
@@ -1354,6 +1395,13 @@ struct ObjectGroupCompartment::AllocationSiteKey : public DefaultHasher<Allocati
         MOZ_ASSERT(offset_ < OFFSET_LIMIT);
     }
 
+    AllocationSiteKey(const AllocationSiteKey& key)
+      : script(key.script),
+        offset(key.offset),
+        kind(key.kind),
+        proto(key.proto)
+    { }
+
     AllocationSiteKey(AllocationSiteKey&& key)
       : script(mozilla::Move(key.script)),
         offset(key.offset),
@@ -1361,12 +1409,12 @@ struct ObjectGroupCompartment::AllocationSiteKey : public DefaultHasher<Allocati
         proto(mozilla::Move(key.proto))
     { }
 
-    AllocationSiteKey(const AllocationSiteKey& key)
-      : script(key.script),
-        offset(key.offset),
-        kind(key.kind),
-        proto(key.proto)
-    { }
+    void operator=(AllocationSiteKey&& key) {
+        script = mozilla::Move(key.script);
+        offset = key.offset;
+        kind = key.kind;
+        proto = mozilla::Move(key.proto);
+    }
 
     static inline uint32_t hash(AllocationSiteKey key) {
         return uint32_t(size_t(key.script->offsetToPC(key.offset)) ^ key.kind ^
@@ -1391,6 +1439,18 @@ struct ObjectGroupCompartment::AllocationSiteKey : public DefaultHasher<Allocati
     }
 };
 
+class ObjectGroupCompartment::AllocationSiteTable
+  : public JS::WeakCache<js::GCHashMap<AllocationSiteKey, ReadBarrieredObjectGroup,
+                                       AllocationSiteKey, SystemAllocPolicy>>
+{
+    using Table = js::GCHashMap<AllocationSiteKey, ReadBarrieredObjectGroup,
+                                AllocationSiteKey, SystemAllocPolicy>;
+    using Base = JS::WeakCache<Table>;
+
+  public:
+    explicit AllocationSiteTable(Zone* zone) : Base(zone, Table()) {}
+};
+
 /* static */ ObjectGroup*
 ObjectGroup::allocationSiteGroup(JSContext* cx, JSScript* scriptArg, jsbytecode* pc,
                                  JSProtoKey kind, HandleObject protoArg /* = nullptr */)
@@ -1410,7 +1470,7 @@ ObjectGroup::allocationSiteGroup(JSContext* cx, JSScript* scriptArg, jsbytecode*
         cx->compartment()->objectGroups.allocationSiteTable;
 
     if (!table) {
-        table = cx->new_<ObjectGroupCompartment::AllocationSiteTable>();
+        table = cx->new_<ObjectGroupCompartment::AllocationSiteTable>(cx->zone());
         if (!table || !table->init()) {
             ReportOutOfMemory(cx);
             js_delete(table);
@@ -1481,7 +1541,7 @@ ObjectGroupCompartment::replaceAllocationSiteGroup(JSScript* script, jsbytecode*
 
     AllocationSiteTable::Ptr p = allocationSiteTable->lookup(key);
     MOZ_RELEASE_ASSERT(p);
-    allocationSiteTable->remove(p);
+    allocationSiteTable->get().remove(p);
     {
         AutoEnterOOMUnsafeRegion oomUnsafe;
         if (!allocationSiteTable->putNew(key, group))
@@ -1723,7 +1783,7 @@ ObjectGroupCompartment::clearTables()
 ObjectGroupCompartment::PlainObjectTableSweepPolicy::needsSweep(PlainObjectKey* key,
                                                                 PlainObjectEntry* entry)
 {
-    if (!(GCPolicy<PlainObjectKey>::needsSweep(key) || entry->needsSweep(key->nproperties)))
+    if (!(JS::GCPolicy<PlainObjectKey>::needsSweep(key) || entry->needsSweep(key->nproperties)))
         return false;
     js_free(key->properties);
     js_free(entry->types);
@@ -1742,8 +1802,6 @@ ObjectGroupCompartment::sweep(FreeOp* fop)
         arrayObjectTable->sweep();
     if (plainObjectTable)
         plainObjectTable->sweep();
-    if (allocationSiteTable)
-        allocationSiteTable->sweep();
 }
 
 void

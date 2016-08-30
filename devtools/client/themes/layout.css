@@ -7,6 +7,12 @@
   overflow: auto;
 }
 
+#layout-wrapper {
+  /* The sidebar-panel is not focusable, this wrapper will catch click events in
+     all the empty area around the layout-container */
+  height: 100%;
+}
+
 #layout-container {
   /* The view will grow bigger as the window gets resized, until 400px */
   max-width: 400px;
@@ -26,7 +32,7 @@
   vertical-align: top;
 }
 
-#layout-header:-moz-dir(rtl) {
+#layout-header:dir(rtl) {
   -moz-box-direction: reverse;
 }
 
@@ -38,7 +44,7 @@
   -moz-box-flex: 1;
 }
 
-#layout-element-size:-moz-dir(rtl) {
+#layout-element-size:dir(rtl) {
   -moz-box-pack: end;
 }
 

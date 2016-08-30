@@ -125,6 +125,7 @@
 <!ENTITY Ctr_altoptionswh	"Ύψος:">
 <!ENTITY Ctr_altoptionsi	"Το προσομοιωμένο παράθυρο επιλογών δεν είναι πια παράθυρο διαλόγου, αλλά ένα «παράθυρο περιηγητή» με όλες τις εργαλειοθήκες σε απόκρυψη. Το χαρακτηριστικό «Χρήση τρέχουσας σελίδας» προσθέτει μόνο τις διευθύνσεις URL των ανοιγμένων στο τρέχον παράθυρο σελίδων, που είναι μόνο «about:preferences» σε αυτή την περίπτωση. Το κουμπί εργαλειοθήκης «Επιλογές» αντικαθίσταται από ένα νέο, για να είναι δυνατόν το άνοιγμα επιλογών σε παράθυρο.">
 <!ENTITY Ctr_options_rem	"Απομνημόνευση τελευταία επιλεχθείσας κατηγορίας">
+<!ENTITY Ctr_aboutpages		"General 'about:' pages: alternative appearance">
 <!ENTITY Ctr_svgfilters		"Χρώματα SVG για προεπιλεγμένα εικονίδια κουμπιών εργαλειοθήκης">
 <!ENTITY Ctr_wincontrols	"Μετακινήσιμα στοιχεία ελέγχου παραθύρου σε προβολή πλήρους οθόνης">
 <!ENTITY Ctr_puibuttonsep	"Διαχωριστικό κουμπιού μενού">
@@ -186,6 +187,7 @@
 <!ENTITY Ctr_bmbutton		"Κουμπί-μενού σελιδοδεικτών">
 <!ENTITY Ctr_hiderecentbm	"Αναδυόμενο σελιδοδεικτών: απόκρυψη πρόσφατα προστεθέντων σελιδοδεικτών">
 <!ENTITY Ctr_hideeditbm		"Αστέρι σελιδοδεικτών: απόκρυψη αναδυόμενου (αν η σελίδα δεν είναι στους σελιδοδείκτες)">
+<!ENTITY Ctr_oldplacesbut	"Bookmarks on toolbar: old appearance">
 <!ENTITY Ctr_bmbutpanelm	"Αναδυόμενο: εμφάνιση ως μενού πίνακα">
 <!ENTITY Ctr_bmbunsortbm	"Αναδυόμενο: υπομενού «Αταξινόμητοι σελιδοδείκτες»">
 <!ENTITY Ctr_bmbunsortbm2	"Πάνω από τους σελιδοδείκτες">
@@ -211,6 +213,7 @@
 <!ENTITY Ctr_navthrobber2	"Προσθέστε διεύθυνση url ή αφήστε τη γραμμή κενή">
 <!ENTITY Ctr_anewtaburl		"URL σελίδας νέας καρτέλας">
 <!ENTITY Ctr_anewtaburlcb	"Προσαρμοσμένο url σελίδας νέας καρτέλας (προεπιλογή: «about:newtab»)">
+<!ENTITY Ctr_anewtaburlpcb	"Custom private new tab page url (default: 'about:privatebrowsing')">
 
 <!ENTITY Ctr_tab_tf_info1	"Ονόματα χρωμάτων, δεκαεξαδικοί κωδικοί, τιμές rgb(a) και hsl(a) υποστηρίζονται.">
 <!ENTITY Ctr_tab_tf_info2	"Οι εισηγμένες τιμές δεν θα επικυρωθούν!">
@@ -232,7 +235,7 @@
 <!ENTITY Ctr_ntabhov		"Κατάδειξη νέας καρτέλας">
 <!ENTITY Ctr_bold		    "Έντονη γραφή">
 <!ENTITY Ctr_italic			"Πλάγια γραφή">
-<!ENTITY Ctr_underlined		"Underlined">
+<!ENTITY Ctr_underlined		"Υπογράμμιση">
 <!ENTITY Ctr_notabhov		"Παράκαμψη ρυθμίσεων κατάδειξης από τις ενεργοποιημένες ρυθμίσεις εδώ">
 <!ENTITY Ctr_tabc_act_tb	"Χρώμα φόντου σε εργαλειοθήκες">
 
@@ -268,12 +271,13 @@
 <!ENTITY Ctr_searchbar		"Γραμμή αναζήτησης">
 <!ENTITY Ctr_autocomplete	"Αναδυόμενο αυτόματης συμπλήρωσης">
 <!ENTITY Ctr_altautocompl	"Εναλλακτική εμφάνιση">
-<!ENTITY Ctr_autocompl_it	"Remove 'Search with...' and 'Visit' items (if present)">
-<!ENTITY Ctr_autocompl_hl	"Highlighting of text hits">
-<!ENTITY Ctr_autocompl_rhl	"Aero colors for highlighted results">
-<!ENTITY Ctr_autocompl_sep	"Show separator between results">
+<!ENTITY Ctr_autocompl_it	"Απομάκρυνση στοιχείων «Αναζήτηση με ...» και «Επίσκεψη» (εάν υπάρχουν)">
+<!ENTITY Ctr_autocompl_hl	"Επισήμανση ευρημάτων κειμένου">
+<!ENTITY Ctr_autocompl_rhl	"Χρώματα «Aero» για επισημασμένα αποτελέσματα">
+<!ENTITY Ctr_autocompl_sep	"Εμφάνιση διαχωριστικού μεταξύ αποτελεσμάτων">
 <!ENTITY Ctr_urlbar_uc		"Απενεργοποίηση χαρακτηριστικού ενιαίας αυτόματης συμπλήρωσης">
 <!ENTITY Ctr_lbsugresi		"Απενεργοποίηση ορίου ύψους">
+<!ENTITY Ctr_cresultshcb	"Custom height limit: ">
 <!ENTITY Ctr_lbsugres		"Αριθμός αποτελεσμάτων">
 <!ENTITY Ctr_lbsbradius		"Προσαρμοσμένη ακτίνα περιγράμματος γραμμών τοποθεσιών και αναζήτησης">
 
@@ -295,14 +299,15 @@
 
 <!ENTITY Ctr_toolbars		"Εργαλειοθήκες">
 <!ENTITY Ctr_dblclnewtab	"Άνοιγμα νέας καρτέλας με διπλό κλικ">
+<!ENTITY Ctr_dblclnewtabdes	"Δεν είναι κατάλληλο για όλα τα πλήρη θέματα, ενώ η γραμμή τίτλου των Windows είναι ενεργή.">
 <!ENTITY Ctr_hidetbwot		"Απόκρυψη εργαλειοθήκης καρτελών με μόνο μία ορατή καρτέλα">
 <!ENTITY Ctr_hidetbwote		"Μείωση καθυστέρησης απόκρυψης κατά την εκκίνηση">
 <!ENTITY Ctr_hidetbwote_i	"Ενδέχεται να προκαλέσει δυσλειτουργίες στην εργαλειοθήκη καρτελών">
-<!ENTITY Ctr_hidetbwote2	"Διατήρηση γραμμής τίτλου (καρτέλες στο πάνω μέρος)">
+<!ENTITY Ctr_hidetbwote2	"Automatically adjust titlebar space">
 <!ENTITY Ctr_notabfog		"Απομάκρυνση ομίχλης φόντου (Windows AeroGlass/8)">
 <!ENTITY Ctr_notabbg		"Απομάκρυνση χρώματος φόντου (Windows AeroGlass/8)">
 <!ENTITY Ctr_hightabpos		"Μείωση χώρου πάνω από την εργαλειοθήκη (εάν είναι δυνατόν)">
-<!ENTITY Ctr_showalltabsb	"Always show 'all tabs' button">
+<!ENTITY Ctr_showalltabsb	"Πάντα εμφάνιση του κουμπιού «Όλες οι καρτέλες σε λίστα»">
 <!ENTITY Ctr_alttabstb		"Εναλλακτικό χρώμα φόντου">
 <!ENTITY Ctr_alttabstb2		"Σε λειτουργία μεγιστοποίησης (καρτέλες στο πάνω μέρος)">
 
@@ -366,11 +371,13 @@
 <!ENTITY Ctr_e_tabsaudioico	"Εικονίδιο αναπαραγωγής ήχου σε καρτέλες">
 <!ENTITY Ctr_fx42tabsaudico	"Αποεπιλέγοντας αυτή την προτίμηση απομακρύνεται το εικονίδιο αναπαραγωγής ήχου από τις καρτέλες.">
 <!ENTITY Ctr_e_containertab	"Container Tabs">
-<!ENTITY Ctr_fx50containert	"Unchecking this preference removes 'container tabs'.">
-<!ENTITY Ctr_e_findbarhl	"Findbar highlighting">
-<!ENTITY Ctr_fx50findbarhl	"Unchecking these preferences removes findbars 'highlight' features.">
+<!ENTITY Ctr_fx50containert	"Αποεπιλέγοντας αυτή την προτίμηση απομακρύνεται η δυνατότητα «Container Tabs».">
+<!ENTITY Ctr_e_findbarhl	"Επισημάνσεις γραμμής εύρεσης">
+<!ENTITY Ctr_fx50findbarhl	"Αποεπιλέγοντας αυτή την προτίμηση απομακρύνονται οι δυνατότητες επισήμανσης της γραμμής εύρεσης.">
 <!ENTITY Ctr_e_flyweb		"Flyweb">
-<!ENTITY Ctr_fx50flyweb		"Unchecking this preference disables 'flyweb'.">
+<!ENTITY Ctr_fx50flyweb		"Αποεπιλέγοντας αυτή την προτίμηση απενεργοποιείται το «Flyweb».">
+<!ENTITY Ctr_e_oneoffsearch	"Autocomplete popups search selection">
+<!ENTITY Ctr_fx51OOSeach	"Unchecking this preference removes location bar popups search selection.">
 
 
 <!ENTITY Ctr_pw_settings	"Ρυθμίσεις">
@@ -385,14 +392,19 @@
 <!ENTITY Ctr_special_font	"Οι ρυθμίσεις χρώματος φόντου είναι για το προεπιλεγμένο θέμα μόνο!">
 <!ENTITY Ctr_special_info	"Ορισμένες επιλογές ενδέχεται να μην προσφέρουν ορατές αλλαγές σε όλες τις περιπτώσεις">
 <!ENTITY Ctr_special_info2	"Aνιχνεύθηκε θέμα τρίτων! Ορισμένες επιλογές δε λειτουργούν με θέματα τρίτων!">
-<!ENTITY Ctr_support		"Φόρουμ υποστήριξης">
-<!ENTITY Ctr_newversion		"Νέα έκδοση;">
+<!ENTITY Ctr_special_acr	"Αναφορά θεμάτων μόνο μέσω των επίσημων καναλιών υποστήριξης και όχι με τη χρήση του «Add-on Compatibility Reporter»!">
+<!ENTITY Ctr_support		"Υποστήριξη">
+<!ENTITY Ctr_support_forum1	"MozillaZine (Αγγλικό φόρουμ)">
+<!ENTITY Ctr_support_forum2	"Camp Firefox (Γερμανικό φόρουμ)">
+<!ENTITY Ctr_github_issues	"Αναφορά θέματος στο Github">
+<!ENTITY Ctr_newversion		"Έλεγχος για νέα έκδοση">
 
 <!ENTITY Ctr_addon-bar.accesskey		"λ">
 <!ENTITY appMenuGettingStarted.label	"Ξεκινώντας">
 <!ENTITY goCmd.label					"Μετάβαση">
 <!ENTITY Ctr_menu_restart.label			"Επανεκκίνηση">
 <!ENTITY Ctr_restartapp					"Στοιχείο «Επανεκκίνηση» στα μενού κουμπιού &brandShortName; και «Αρχείο»">
+<!ENTITY Ctr_ctrnewinv					"Underline new options for current &brandShortName; version">
 
 <!ENTITY Ctr_openInCurrentTab			"Άνοιγμα καταχωρίσεων στην τρέχουσα καρτέλα">
 <!ENTITY Ctr_openInNewTab				"Άνοιγμα καταχωρίσεων σε νέα καρτέλα">

@@ -156,6 +156,7 @@ static const char* const sExtensionNames[] = {
     "GL_NV_geometry_program4",
     "GL_NV_half_float",
     "GL_NV_instanced_arrays",
+    "GL_NV_texture_barrier",
     "GL_NV_transform_feedback",
     "GL_NV_transform_feedback2",
     "GL_OES_EGL_image",
@@ -780,6 +781,7 @@ GLContext::InitWithPrefixImpl(const char* prefix, bool trygl)
         "Adreno (TM) 205",
         "Adreno (TM) 320",
         "Adreno (TM) 420",
+        "Mali-400 MP",
         "PowerVR SGX 530",
         "PowerVR SGX 540",
         "NVIDIA Tegra",
@@ -1044,8 +1046,6 @@ GLContext::InitWithPrefixImpl(const char* prefix, bool trygl)
         mCaps.color = true;
         mCaps.alpha = false;
     }
-
-    UpdateGLFormats(mCaps);
 
     mTexGarbageBin = new TextureGarbageBin(this);
 
@@ -1562,6 +1562,14 @@ GLContext::LoadMoreSymbols(const char* prefix, bool trygl)
         fnLoadForExt(symbols, NV_fence);
     }
 
+    if (IsExtensionSupported(NV_texture_barrier)) {
+        const SymLoadStruct symbols[] = {
+            { (PRFuncPtr*) &mSymbols.fTextureBarrier, { "TextureBarrierNV", nullptr } },
+            END_SYMBOLS
+        };
+        fnLoadForExt(symbols, NV_texture_barrier);
+    }
+
     if (IsSupported(GLFeature::read_buffer)) {
         const SymLoadStruct symbols[] = {
             { (PRFuncPtr*) &mSymbols.fReadBuffer, { "ReadBuffer", nullptr } },
@@ -1733,6 +1741,13 @@ GLContext::InitExtensions()
         {
             // Bug 980048
             MarkExtensionUnsupported(OES_EGL_sync);
+        }
+
+        if (Vendor() == GLVendor::ARM &&
+            Renderer() == GLRenderer::Mali400MP)
+        {
+            // Bug 1264505
+            MarkExtensionUnsupported(OES_EGL_image_external);
         }
 
         if (Renderer() == GLRenderer::AndroidEmulator) {
@@ -2867,8 +2882,6 @@ GLContext::InitOffscreen(const gfx::IntSize& size, const SurfaceCaps& caps)
 
     mCaps = mScreen->mCaps;
     MOZ_ASSERT(!mCaps.any);
-
-    UpdateGLFormats(mCaps);
 
     return true;
 }

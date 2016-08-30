@@ -4,10 +4,11 @@ config = {
     # TODO: use real repo
     "repo": {
         "repo": "https://hg.mozilla.org/users/raliiev_mozilla.com/tools",
-        "revision": "default",
+        "branch": "default",
         "dest": "tools",
         "vcs": "hg",
     },
+    "vcs_share_base": "/builds/hg-shared",
     # TODO: use real repo
     "push_dest": "ssh://hg.mozilla.org/users/raliiev_mozilla.com/tools",
     # date repo used for staging beta
@@ -31,6 +32,7 @@ config = {
             "mar_channel_ids": [],
             "channel_names": ["beta-dev", "beta-dev-localtest", "beta-dev-cdntest"],
             "rules_to_update": ["firefox-beta-dev-cdntest", "firefox-beta-dev-localtest"],
+            "publish_rules": ["firefox-beta"],
         }
     },
     "balrog_use_dummy_suffix": False,

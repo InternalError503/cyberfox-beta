@@ -65,10 +65,10 @@ CurrentThreadIsGCSweeping()
 }
 
 bool
-CurrentThreadIsHandlingInitFailure()
+CurrentThreadCanSkipPostBarrier(bool inNursery)
 {
-    JSRuntime* rt = TlsPerThreadData.get()->runtimeIfOnOwnerThread();
-    return rt && rt->handlingInitFailure;
+    bool onMainThread = TlsPerThreadData.get()->runtimeIfOnOwnerThread() != nullptr;
+    return !onMainThread && !inNursery;
 }
 
 #endif // DEBUG
@@ -80,9 +80,13 @@ ReadBarrierFunctor<S>::operator()(T* t)
 {
     InternalBarrierMethods<T*>::readBarrier(t);
 }
-template void ReadBarrierFunctor<JS::Value>::operator()<JS::Symbol>(JS::Symbol*);
-template void ReadBarrierFunctor<JS::Value>::operator()<JSObject>(JSObject*);
-template void ReadBarrierFunctor<JS::Value>::operator()<JSString>(JSString*);
+
+// All GC things may be held in a Value, either publicly or as a private GC
+// thing.
+#define JS_EXPAND_DEF(name, type, _) \
+template void ReadBarrierFunctor<JS::Value>::operator()<type>(type*);
+JS_FOR_EACH_TRACEKIND(JS_EXPAND_DEF);
+#undef JS_EXPAND_DEF
 
 template <typename S>
 template <typename T>
@@ -91,11 +95,37 @@ PreBarrierFunctor<S>::operator()(T* t)
 {
     InternalBarrierMethods<T*>::preBarrier(t);
 }
-template void PreBarrierFunctor<JS::Value>::operator()<JS::Symbol>(JS::Symbol*);
-template void PreBarrierFunctor<JS::Value>::operator()<JSObject>(JSObject*);
-template void PreBarrierFunctor<JS::Value>::operator()<JSString>(JSString*);
+
+// All GC things may be held in a Value, either publicly or as a private GC
+// thing.
+#define JS_EXPAND_DEF(name, type, _) \
+template void PreBarrierFunctor<JS::Value>::operator()<type>(type*);
+JS_FOR_EACH_TRACEKIND(JS_EXPAND_DEF);
+#undef JS_EXPAND_DEF
+
 template void PreBarrierFunctor<jsid>::operator()<JS::Symbol>(JS::Symbol*);
 template void PreBarrierFunctor<jsid>::operator()<JSString>(JSString*);
+
+template <typename T>
+/* static */ bool
+MovableCellHasher<T>::hasHash(const Lookup& l)
+{
+    if (!l)
+        return true;
+
+    return l->zoneFromAnyThread()->hasUniqueId(l);
+}
+
+template <typename T>
+/* static */ bool
+MovableCellHasher<T>::ensureHash(const Lookup& l)
+{
+    if (!l)
+        return true;
+
+    uint64_t unusedId;
+    return l->zoneFromAnyThread()->getUniqueId(l, &unusedId);
+}
 
 template <typename T>
 /* static */ HashNumber

@@ -158,20 +158,13 @@ class UpdateTestCase(FirefoxTestCase):
         return about_window.deck.selected_panel != about_window.deck.no_updates_found
 
     def check_update_applied(self):
-        self.updates[self.current_update_index]['build_post'] = self.software_update.build_info
+        """Check that the update has been applied correctly"""
+        update = self.updates[self.current_update_index]
+        update['build_post'] = self.software_update.build_info
 
         about_window = self.browser.open_about_window()
         try:
             update_available = self.check_for_updates(about_window)
-
-            # No further updates should be offered now with the same update type
-            if update_available:
-                self.download_update(about_window, wait_for_finish=False)
-                self.assertNotEqual(self.software_update.active_update.type,
-                                    self.updates[self.current_update_index].type)
-
-            # Check that the update has been applied correctly
-            update = self.updates[self.current_update_index]
 
             # The upgraded version should be identical with the version given by
             # the update and we shouldn't have run a downgrade
@@ -201,6 +194,17 @@ class UpdateTestCase(FirefoxTestCase):
             # Check that no application-wide add-ons have been disabled
             self.assertEqual(update['build_post']['disabled_addons'],
                              update['build_pre']['disabled_addons'])
+
+            # Bug 604364 - We do not support watershed releases yet.
+            if update_available:
+                self.download_update(about_window, wait_for_finish=False)
+                self.assertNotEqual(self.software_update.active_update.type,
+                                    update['patch']['type'],
+                                    'No further update of the same type gets offered: '
+                                    '{0} != {1}'.format(
+                                        self.software_update.active_update.type,
+                                        update['patch']['type']
+                                    ))
 
             update['success'] = True
 
@@ -233,8 +237,10 @@ class UpdateTestCase(FirefoxTestCase):
                     dialog.select_next_page()
 
                 # If incompatible add-on are installed, skip over the wizard page
-                if dialog.wizard.selected_panel == dialog.wizard.incompatible_list:
-                    dialog.select_next_page()
+                # TODO: Remove once we no longer support version Firefox 45.0ESR
+                if self.utils.compare_version(self.appinfo.version, '49.0a1') == -1:
+                    if dialog.wizard.selected_panel == dialog.wizard.incompatible_list:
+                        dialog.select_next_page()
 
                 # Updates were stored in the cache, so no download is necessary
                 if dialog.wizard.selected_panel in [dialog.wizard.finished,
@@ -276,9 +282,9 @@ class UpdateTestCase(FirefoxTestCase):
                 window.deck.selected_panel != window.deck.download_and_install),
                 message='Download of the update has been started.')
 
-        # If there are incompatible addons, handle the update via the old software update dialog
+        # In case of update failures, clicking the update button will open the
+        # old update wizard dialog.
         if window.deck.selected_panel == window.deck.apply_billboard:
-            # Clicking the update button will open the old update wizard dialog
             dialog = self.browser.open_window(
                 callback=lambda _: window.deck.update_button.click(),
                 expected_window_class=UpdateWizardDialog

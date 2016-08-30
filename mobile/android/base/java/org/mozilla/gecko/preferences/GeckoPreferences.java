@@ -114,6 +114,7 @@ OnSharedPreferenceChangeListener
     // some devices look bad. Don't use transitions on those
     // devices.
     private static final boolean NO_TRANSITIONS = HardwareUtils.IS_KINDLE_DEVICE;
+    private static final int NO_SUCH_ID = 0;
 
     public static final String NON_PREF_PREFIX = "android.not_a_preference.";
     public static final String INTENT_EXTRA_RESOURCES = "resource";
@@ -152,12 +153,15 @@ OnSharedPreferenceChangeListener
     private static final String PREFS_CLEAR_PRIVATE_DATA_EXIT = NON_PREF_PREFIX + "history.clear_on_exit";
     private static final String PREFS_SCREEN_ADVANCED = NON_PREF_PREFIX + "advanced_screen";
     public static final String PREFS_HOMEPAGE = NON_PREF_PREFIX + "homepage";
+    public static final String PREFS_HOMEPAGE_PARTNER_COPY = GeckoPreferences.PREFS_HOMEPAGE + ".partner";
     public static final String PREFS_HISTORY_SAVED_SEARCH = NON_PREF_PREFIX + "search.search_history.enabled";
     private static final String PREFS_FAQ_LINK = NON_PREF_PREFIX + "faq.link";
     private static final String PREFS_FEEDBACK_LINK = NON_PREF_PREFIX + "feedback.link";
     public static final String PREFS_NOTIFICATIONS_CONTENT = NON_PREF_PREFIX + "notifications.content";
     public static final String PREFS_NOTIFICATIONS_CONTENT_LEARN_MORE = NON_PREF_PREFIX + "notifications.content.learn_more";
     public static final String PREFS_NOTIFICATIONS_WHATS_NEW = NON_PREF_PREFIX + "notifications.whats_new";
+    public static final String PREFS_READ_PARTNER_CUSTOMIZATIONS_PROVIDER = NON_PREF_PREFIX + "distribution.read_partner_customizations_provider";
+    public static final String PREFS_READ_PARTNER_BOOKMARKS_PROVIDER = NON_PREF_PREFIX + "distribution.read_partner_bookmarks_provider";
 
     private static final String ACTION_STUMBLER_UPLOAD_PREF = AppConstants.ANDROID_PACKAGE_NAME + ".STUMBLER_PREF";
 
@@ -166,6 +170,8 @@ OnSharedPreferenceChangeListener
     private static final String PREFS_BROWSER_LOCALE = "locale";
 
     public static final String PREFS_RESTORE_SESSION = NON_PREF_PREFIX + "restoreSession3";
+    public static final String PREFS_RESTORE_SESSION_FROM_CRASH = "browser.sessionstore.resume_from_crash";
+    public static final String PREFS_RESTORE_SESSION_MAX_CRASH_RESUMES = "browser.sessionstore.max_resumed_crashes";
     public static final String PREFS_TAB_QUEUE = NON_PREF_PREFIX + "tab_queue";
     public static final String PREFS_TAB_QUEUE_LAST_SITE = NON_PREF_PREFIX + "last_site";
     public static final String PREFS_TAB_QUEUE_LAST_TIME = NON_PREF_PREFIX + "last_time";
@@ -279,7 +285,12 @@ OnSharedPreferenceChangeListener
             }
 
             // Update the title to for the preference pane that we're currently showing.
-            setTitle(R.string.pref_category_language);
+            final int titleId = getIntent().getExtras().getInt(PreferenceActivity.EXTRA_SHOW_FRAGMENT_TITLE);
+            if (titleId != NO_SUCH_ID) {
+                setTitle(titleId);
+            } else {
+                throw new IllegalStateException("Title id not found in intent bundle extras");
+            }
 
             // Don't finish the activity -- we just reloaded all of the
             // individual parts! -- but when it returns, make sure that the
@@ -426,6 +437,8 @@ OnSharedPreferenceChangeListener
         // Build fragment intent.
         intent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, GeckoPreferenceFragment.class.getName());
         intent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+        // Used to get fragment title when locale changes (see onLocaleChanged method above)
+        intent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT_TITLE, R.string.settings_title);
     }
 
     @Override
@@ -1419,34 +1432,15 @@ OnSharedPreferenceChangeListener
             return screen.findPreference(prefName);
         }
 
-        // Handle v14 TwoStatePreference with backwards compatibility.
-        private static class CheckBoxPrefSetter {
-            public void setBooleanPref(Preference preference, boolean value) {
-                if ((preference instanceof CheckBoxPreference) &&
-                   ((CheckBoxPreference) preference).isChecked() != value) {
-                    ((CheckBoxPreference) preference).setChecked(value);
-                }
-            }
-        }
-
-        private static class TwoStatePrefSetter extends CheckBoxPrefSetter {
-            @Override
-            public void setBooleanPref(Preference preference, boolean value) {
-                if ((preference instanceof TwoStatePreference) &&
-                   ((TwoStatePreference) preference).isChecked() != value) {
-                    ((TwoStatePreference) preference).setChecked(value);
-                }
-            }
-        }
-
         @Override
         public void prefValue(String prefName, final boolean value) {
-            final Preference pref = getField(prefName);
-            final CheckBoxPrefSetter prefSetter = new TwoStatePrefSetter();
+            final TwoStatePreference pref = (TwoStatePreference) getField(prefName);
             ThreadUtils.postToUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    prefSetter.setBooleanPref(pref, value);
+                    if (pref.isChecked() != value) {
+                        pref.setChecked(value);
+                    }
                 }
             });
         }

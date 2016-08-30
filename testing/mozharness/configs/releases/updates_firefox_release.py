@@ -3,10 +3,11 @@ config = {
     "log_name": "updates_release",
     "repo": {
         "repo": "https://hg.mozilla.org/build/tools",
-        "revision": "default",
+        "branch": "default",
         "dest": "tools",
         "vcs": "hg",
     },
+    "vcs_share_base": "/builds/hg-shared",
     "push_dest": "ssh://hg.mozilla.org/build/tools",
     "shipped-locales-url": "https://hg.mozilla.org/releases/mozilla-release/raw-file/{revision}/browser/locales/shipped-locales",
     "ignore_no_changes": True,
@@ -29,6 +30,7 @@ config = {
             ],
             "channel_names": ["beta", "beta-localtest", "beta-cdntest"],
             "rules_to_update": ["firefox-beta-cdntest", "firefox-beta-localtest"],
+            "publish_rules": ["firefox-beta"],
         },
         "release": {
             "version_regex": r"^\d+\.\d+(\.\d+)?$",
@@ -38,6 +40,7 @@ config = {
             "mar_channel_ids": [],
             "channel_names": ["release", "release-localtest", "release-cdntest"],
             "rules_to_update": ["firefox-release-cdntest", "firefox-release-localtest"],
+            "publish_rules": ["firefox-release"],
         },
     },
     "balrog_use_dummy_suffix": False,

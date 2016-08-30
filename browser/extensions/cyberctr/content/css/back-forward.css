@@ -13,7 +13,10 @@
 	  display:none !important;
 	}
 	
-	#urlbar-container *{
+    window:not([chromehidden~="toolbar"]) toolbar #urlbar-wrapper,
+	#urlbar-container, #urlbar-container *,
+	#urlbar-wrapper, #urlbar-wrapper *,
+	#urlbar, #urlbar *{
 	  clip-path: none !important;
 	}
 	

@@ -59,7 +59,7 @@ AppendStateToStr(SourceBufferAttributes::AppendState aState)
 static Atomic<uint32_t> sStreamSourceID(0u);
 
 #ifdef MOZ_EME
-class DispatchKeyNeededEvent : public nsRunnable {
+class DispatchKeyNeededEvent : public Runnable {
 public:
   DispatchKeyNeededEvent(AbstractMediaDecoder* aDecoder,
                          nsTArray<uint8_t>& aInitData,
@@ -145,10 +145,8 @@ void
 TrackBuffersManager::QueueTask(SourceBufferTask* aTask)
 {
   if (!OnTaskQueue()) {
-    nsCOMPtr<nsIRunnable> task =
-      NS_NewRunnableMethodWithArg<RefPtr<SourceBufferTask>>(
-        this, &TrackBuffersManager::QueueTask, aTask);
-    GetTaskQueue()->Dispatch(task.forget());
+    GetTaskQueue()->Dispatch(NewRunnableMethod<RefPtr<SourceBufferTask>>(
+      this, &TrackBuffersManager::QueueTask, aTask));
     return;
   }
   MOZ_ASSERT(OnTaskQueue());
@@ -212,9 +210,7 @@ TrackBuffersManager::ProcessTasks()
     default:
       NS_WARNING("Invalid Task");
   }
-  nsCOMPtr<nsIRunnable> run =
-    NS_NewRunnableMethod(this, &TrackBuffersManager::ProcessTasks);
-  GetTaskQueue()->Dispatch(run.forget());
+  GetTaskQueue()->Dispatch(NewRunnableMethod(this, &TrackBuffersManager::ProcessTasks));
 }
 
 // The MSE spec requires that we abort the current SegmentParserLoop
@@ -749,9 +745,7 @@ TrackBuffersManager::RejectAppend(nsresult aRejectValue, const char* aName)
 void
 TrackBuffersManager::ScheduleSegmentParserLoop()
 {
-  nsCOMPtr<nsIRunnable> task =
-    NS_NewRunnableMethod(this, &TrackBuffersManager::SegmentParserLoop);
-  GetTaskQueue()->Dispatch(task.forget());
+  GetTaskQueue()->Dispatch(NewRunnableMethod(this, &TrackBuffersManager::SegmentParserLoop));
 }
 
 void
@@ -927,11 +921,10 @@ TrackBuffersManager::OnDemuxerInitDone(nsresult)
   int64_t duration = std::max(videoDuration, audioDuration);
   // 1. Update the duration attribute if it currently equals NaN.
   // Those steps are performed by the MediaSourceDecoder::SetInitialDuration
-  nsCOMPtr<nsIRunnable> task =
-    NS_NewRunnableMethodWithArg<int64_t>(mParentDecoder,
-                                         &MediaSourceDecoder::SetInitialDuration,
-                                         duration ? duration : -1);
-  AbstractThread::MainThread()->Dispatch(task.forget());
+  AbstractThread::MainThread()->Dispatch(NewRunnableMethod<int64_t>
+                                         (mParentDecoder,
+                                          &MediaSourceDecoder::SetInitialDuration,
+                                          duration ? duration : -1));
 
   // 2. If the initialization segment has no audio, video, or text tracks, then
   // run the append error algorithm with the decode error parameter set to true
@@ -1047,14 +1040,6 @@ TrackBuffersManager::OnDemuxerInitDone(nsresult)
     // 6. Set first initialization segment received flag to true.
     mFirstInitializationSegmentReceived = true;
   } else {
-    // Check that audio configuration hasn't changed as this is something
-    // we do not support yet (bug 1185827).
-    if (mAudioTracks.mNumTracks &&
-        (info.mAudio.mChannels != mAudioTracks.mInfo->GetAsAudioInfo()->mChannels ||
-         info.mAudio.mRate != mAudioTracks.mInfo->GetAsAudioInfo()->mRate)) {
-      RejectAppend(NS_ERROR_FAILURE, __func__);
-      return;
-    }
     mAudioTracks.mLastInfo = new SharedTrackInfo(info.mAudio, streamID);
     mVideoTracks.mLastInfo = new SharedTrackInfo(info.mVideo, streamID);
   }
@@ -1284,9 +1269,21 @@ TrackBuffersManager::CompleteCodedFrameProcessing()
 
   // 6. Remove the media segment bytes from the beginning of the input buffer.
   // Clear our demuxer from any already processed data.
-  // As we have handled a complete media segment, it is safe to evict all data
-  // from the resource.
-  mCurrentInputBuffer->EvictAll();
+  int64_t safeToEvict = std::min(
+    HasVideo()
+      ? mVideoTracks.mDemuxer->GetEvictionOffset(mVideoTracks.mLastParsedEndTime)
+      : INT64_MAX,
+    HasAudio()
+      ? mAudioTracks.mDemuxer->GetEvictionOffset(mAudioTracks.mLastParsedEndTime)
+      : INT64_MAX);
+  ErrorResult rv;
+  mCurrentInputBuffer->EvictBefore(safeToEvict, rv);
+  if (rv.Failed()) {
+    rv.SuppressException();
+    RejectProcessing(NS_ERROR_OUT_OF_MEMORY, __func__);
+    return;
+  }
+
   mInputDemuxer->NotifyDataRemoved();
   RecreateParser(true);
 
@@ -1627,7 +1624,24 @@ TrackBuffersManager::InsertFrames(TrackBuffer& aSamples,
   intersection.Intersection(aIntervals);
 
   if (intersection.Length()) {
-    RemoveFrames(aIntervals, trackBuffer, trackBuffer.mNextInsertionIndex.refOr(0));
+    if (aSamples[0]->mKeyframe &&
+        (mType.LowerCaseEqualsLiteral("video/webm") ||
+         mType.LowerCaseEqualsLiteral("audio/webm"))) {
+      // We are starting a new GOP, we do not have to worry about breaking an
+      // existing current coded frame group. Reset the next insertion index
+      // so the search for when to start our frames removal can be exhaustive.
+      // This is a workaround for bug 1276184 and only until either bug 1277733
+      // or bug 1209386 is fixed.
+      // With the webm container, we can't always properly determine the
+      // duration of the last frame, which may cause the last frame of a cluster
+      // to overlap the following frame.
+      trackBuffer.mNextInsertionIndex.reset();
+    }
+    size_t index =
+      RemoveFrames(aIntervals, trackBuffer, trackBuffer.mNextInsertionIndex.refOr(0));
+    if (index) {
+      trackBuffer.mNextInsertionIndex = Some(index);
+    }
   }
 
   // 16. Add the coded frame with the presentation timestamp, decode timestamp, and frame duration to the track buffer.
@@ -1657,12 +1671,14 @@ TrackBuffersManager::InsertFrames(TrackBuffer& aSamples,
   // We allow a fuzz factor in our interval of half a frame length,
   // as fuzz is +/- value, giving an effective leeway of a full frame
   // length.
-  TimeIntervals range(aIntervals);
-  range.SetFuzz(trackBuffer.mLongestFrameDuration / 2);
-  trackBuffer.mSanitizedBufferedRanges += range;
+  if (aIntervals.Length()) {
+    TimeIntervals range(aIntervals);
+    range.SetFuzz(trackBuffer.mLongestFrameDuration / 2);
+    trackBuffer.mSanitizedBufferedRanges += range;
+  }
 }
 
-void
+size_t
 TrackBuffersManager::RemoveFrames(const TimeIntervals& aIntervals,
                                   TrackData& aTrackData,
                                   uint32_t aStartIndex)
@@ -1681,7 +1697,7 @@ TrackBuffersManager::RemoveFrames(const TimeIntervals& aIntervals,
   //  If highest end timestamp for track buffer is set and less than or equal to presentation timestamp:
   //   Remove all coded frames from track buffer that have a presentation timestamp greater than or equal to highest end timestamp and less than frame end timestamp"
   for (uint32_t i = aStartIndex; i < data.Length(); i++) {
-    MediaRawData* sample = data[i].get();
+    const RefPtr<MediaRawData> sample = data[i];
     TimeInterval sampleInterval =
       TimeInterval(TimeUnit::FromMicroseconds(sample->mTime),
                    TimeUnit::FromMicroseconds(sample->GetEndTime()));
@@ -1694,13 +1710,13 @@ TrackBuffersManager::RemoveFrames(const TimeIntervals& aIntervals,
   }
 
   if (firstRemovedIndex.isNothing()) {
-    return;
+    return 0;
   }
 
   // Remove decoding dependencies of the coded frames removed in the previous step:
   // Remove all coded frames between the coded frames removed in the previous step and the next random access point after those removed frames.
   for (uint32_t i = lastRemovedIndex + 1; i < data.Length(); i++) {
-    MediaRawData* sample = data[i].get();
+    const RefPtr<MediaRawData>& sample = data[i];
     if (sample->mKeyframe) {
       break;
     }
@@ -1710,7 +1726,7 @@ TrackBuffersManager::RemoveFrames(const TimeIntervals& aIntervals,
   int64_t maxSampleDuration = 0;
   TimeIntervals removedIntervals;
   for (uint32_t i = firstRemovedIndex.ref(); i <= lastRemovedIndex; i++) {
-    MediaRawData* sample = data[i].get();
+    const RefPtr<MediaRawData> sample = data[i];
     TimeInterval sampleInterval =
       TimeInterval(TimeUnit::FromMicroseconds(sample->mTime),
                    TimeUnit::FromMicroseconds(sample->GetEndTime()));
@@ -1758,6 +1774,8 @@ TrackBuffersManager::RemoveFrames(const TimeIntervals& aIntervals,
 
   data.RemoveElementsAt(firstRemovedIndex.ref(),
                         lastRemovedIndex - firstRemovedIndex.ref() + 1);
+
+  return firstRemovedIndex.ref();
 }
 
 void
@@ -1911,6 +1929,7 @@ TrackBuffersManager::Seek(TrackInfo::TrackType aTrack,
 uint32_t
 TrackBuffersManager::SkipToNextRandomAccessPoint(TrackInfo::TrackType aTrack,
                                                  const TimeUnit& aTimeThreadshold,
+                                                 const media::TimeUnit& aFuzz,
                                                  bool& aFound)
 {
   MOZ_ASSERT(OnTaskQueue());
@@ -1919,22 +1938,75 @@ TrackBuffersManager::SkipToNextRandomAccessPoint(TrackInfo::TrackType aTrack,
   const TrackBuffer& track = GetTrackBuffer(aTrack);
   aFound = false;
 
-  uint32_t nextSampleIndex = trackData.mNextGetSampleIndex.valueOr(0);
-  for (uint32_t i = nextSampleIndex; i < track.Length(); i++) {
-    const RefPtr<MediaRawData>& sample = track[i];
+  // SkipToNextRandomAccessPoint can only be called if aTimeThreadshold is known
+  // to be buffered.
+
+  // So first determine the current position in the track buffer if necessary.
+  if (trackData.mNextGetSampleIndex.isNothing()) {
+    if (trackData.mNextSampleTimecode == TimeUnit()) {
+      // First demux, get first sample.
+      trackData.mNextGetSampleIndex = Some(0u);
+    } else {
+      int32_t pos = FindCurrentPosition(aTrack, aFuzz);
+      if (pos < 0) {
+        return 0;
+      }
+      trackData.mNextGetSampleIndex = Some(uint32_t(pos));
+    }
+  }
+
+  TimeUnit nextSampleTimecode = trackData.mNextSampleTimecode;
+  TimeUnit nextSampleTime = trackData.mNextSampleTime;
+  uint32_t i = trackData.mNextGetSampleIndex.ref();
+  int32_t originalPos = i;
+
+  for (; i < track.Length(); i++) {
+    const MediaRawData* sample =
+      GetSample(aTrack,
+                i,
+                nextSampleTimecode,
+                nextSampleTime,
+                aFuzz);
+    if (!sample) {
+      break;
+    }
     if (sample->mKeyframe &&
         sample->mTime >= aTimeThreadshold.ToMicroseconds()) {
-      trackData.mNextSampleTimecode =
-        TimeUnit::FromMicroseconds(sample->mTimecode);
-      trackData.mNextSampleTime =
-        TimeUnit::FromMicroseconds(sample->mTime);
-      trackData.mNextGetSampleIndex = Some(i);
       aFound = true;
       break;
     }
+    nextSampleTimecode =
+      TimeUnit::FromMicroseconds(sample->mTimecode + sample->mDuration);
+    nextSampleTime = TimeUnit::FromMicroseconds(sample->GetEndTime());
     parsed++;
   }
 
+  // Adjust the next demux time and index so that the next call to
+  // SkipToNextRandomAccessPoint will not count again the parsed sample as
+  // skipped.
+  if (aFound) {
+    trackData.mNextSampleTimecode = nextSampleTimecode;
+    trackData.mNextSampleTime = nextSampleTime;
+    trackData.mNextGetSampleIndex = Some(i);
+  } else if (i > 0) {
+    // Go back to the previous keyframe or the original position so the next
+    // demux can succeed and be decoded.
+    for (int j = i - 1; j >= originalPos; j--) {
+      const RefPtr<MediaRawData>& sample = track[j];
+      if (sample->mKeyframe) {
+        trackData.mNextSampleTimecode =
+          TimeUnit::FromMicroseconds(sample->mTimecode);
+        trackData.mNextSampleTime = TimeUnit::FromMicroseconds(sample->mTime);
+        trackData.mNextGetSampleIndex = Some(uint32_t(j));
+        // We are unable to skip to a keyframe past aTimeThreshold, however
+        // we are speeding up decoding by dropping the unplayable frames.
+        // So we can mark aFound as true.
+        aFound = true;
+        break;
+      }
+      parsed--;
+    }
+  }
   return parsed;
 }
 
@@ -1945,6 +2017,7 @@ TrackBuffersManager::GetSample(TrackInfo::TrackType aTrack,
                                const TimeUnit& aExpectedPts,
                                const TimeUnit& aFuzz)
 {
+  MOZ_ASSERT(OnTaskQueue());
   const TrackBuffer& track = GetTrackBuffer(aTrack);
 
   if (aIndex >= track.Length()) {
@@ -2010,6 +2083,37 @@ TrackBuffersManager::GetSample(TrackInfo::TrackType aTrack,
   }
 
   // Our previous index has been overwritten, attempt to find the new one.
+  int32_t pos = FindCurrentPosition(aTrack, aFuzz);
+  if (pos < 0) {
+    MSE_DEBUG("Couldn't find sample (pts:%lld dts:%lld)",
+              trackData.mNextSampleTime.ToMicroseconds(),
+              trackData.mNextSampleTimecode.ToMicroseconds());
+    return nullptr;
+  }
+
+  const RefPtr<MediaRawData>& sample = track[pos];
+  RefPtr<MediaRawData> p = sample->Clone();
+  if (!p) {
+    // OOM
+    aError = true;
+    return nullptr;
+  }
+  trackData.mNextGetSampleIndex = Some(uint32_t(pos)+1);
+  trackData.mNextSampleTimecode =
+    TimeUnit::FromMicroseconds(sample->mTimecode + sample->mDuration);
+  trackData.mNextSampleTime =
+    TimeUnit::FromMicroseconds(sample->GetEndTime());
+  return p.forget();
+}
+
+int32_t
+TrackBuffersManager::FindCurrentPosition(TrackInfo::TrackType aTrack,
+                                         const TimeUnit& aFuzz)
+{
+  MOZ_ASSERT(OnTaskQueue());
+  auto& trackData = GetTracksData(aTrack);
+  const TrackBuffer& track = GetTrackBuffer(aTrack);
+
   for (uint32_t i = 0; i < track.Length(); i++) {
     const RefPtr<MediaRawData>& sample = track[i];
     TimeInterval sampleInterval{
@@ -2018,23 +2122,13 @@ TrackBuffersManager::GetSample(TrackInfo::TrackType aTrack,
       aFuzz};
 
     if (sampleInterval.ContainsWithStrictEnd(trackData.mNextSampleTimecode)) {
-      RefPtr<MediaRawData> p = sample->Clone();
-      if (!p) {
-        // OOM
-        aError = true;
-        return nullptr;
-      }
-      trackData.mNextGetSampleIndex = Some(i+1);
-      trackData.mNextSampleTimecode = sampleInterval.mEnd;
-      trackData.mNextSampleTime =
-        TimeUnit::FromMicroseconds(sample->GetEndTime());
-      return p.forget();
+      return i;
     }
   }
 
   // We couldn't find our sample by decode timestamp. Attempt to find it using
   // presentation timestamp. There will likely be small jerkiness.
-    for (uint32_t i = 0; i < track.Length(); i++) {
+  for (uint32_t i = 0; i < track.Length(); i++) {
     const RefPtr<MediaRawData>& sample = track[i];
     TimeInterval sampleInterval{
       TimeUnit::FromMicroseconds(sample->mTime),
@@ -2042,31 +2136,19 @@ TrackBuffersManager::GetSample(TrackInfo::TrackType aTrack,
       aFuzz};
 
     if (sampleInterval.ContainsWithStrictEnd(trackData.mNextSampleTimecode)) {
-      RefPtr<MediaRawData> p = sample->Clone();
-      if (!p) {
-        // OOM
-        aError = true;
-        return nullptr;
-      }
-      trackData.mNextGetSampleIndex = Some(i+1);
-      // Estimate decode timestamp of the next sample.
-      trackData.mNextSampleTimecode = sampleInterval.mEnd;
-      trackData.mNextSampleTime =
-        TimeUnit::FromMicroseconds(sample->GetEndTime());
-      return p.forget();
+      return i;
     }
   }
 
-  MSE_DEBUG("Couldn't find sample (pts:%lld dts:%lld)",
-             trackData.mNextSampleTime.ToMicroseconds(),
-            trackData.mNextSampleTimecode.ToMicroseconds());
-  return nullptr;
+  // Still not found.
+  return -1;
 }
 
 TimeUnit
 TrackBuffersManager::GetNextRandomAccessPoint(TrackInfo::TrackType aTrack,
                                               const TimeUnit& aFuzz)
 {
+  MOZ_ASSERT(OnTaskQueue());
   auto& trackData = GetTracksData(aTrack);
   MOZ_ASSERT(trackData.mNextGetSampleIndex.isSome());
   const TrackBuffersManager::TrackBuffer& track = GetTrackBuffer(aTrack);

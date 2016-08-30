@@ -24,7 +24,7 @@ class TaggedProto
 
     uintptr_t toWord() const { return uintptr_t(proto); }
 
-    bool isLazy() const {
+    bool isDynamic() const {
         return proto == LazyProto;
     }
     bool isObject() const {
@@ -45,6 +45,9 @@ class TaggedProto
     bool operator !=(const TaggedProto& other) const { return proto != other.proto; }
 
     HashNumber hashCode() const;
+
+    bool hasUniqueId() const;
+    bool ensureUniqueId() const;
     uint64_t uniqueId() const;
 
     void trace(JSTracer* trc) {
@@ -72,6 +75,11 @@ struct InternalBarrierMethods<TaggedProto>
     static bool isMarkable(TaggedProto proto) {
         return proto.isObject();
     }
+
+    static bool isInsideNursery(TaggedProto proto) {
+        return proto.isObject() &&
+            gc::IsInsideNursery(reinterpret_cast<gc::Cell*>(proto.toObject()));
+    }
 };
 
 template<class Outer>
@@ -83,7 +91,7 @@ class TaggedProtoOperations
 
   public:
     uintptr_t toWord() const { return value().toWord(); }
-    inline bool isLazy() const { return value().isLazy(); }
+    inline bool isDynamic() const { return value().isDynamic(); }
     inline bool isObject() const { return value().isObject(); }
     inline JSObject* toObject() const { return value().toObject(); }
     inline JSObject* toObjectOrNull() const { return value().toObjectOrNull(); }
@@ -101,7 +109,7 @@ class RootedBase<TaggedProto> : public TaggedProtoOperations<Rooted<TaggedProto>
 {};
 
 template <>
-class BarrieredBaseMixins<TaggedProto> : public TaggedProtoOperations<HeapPtr<TaggedProto>>
+class BarrieredBaseMixins<TaggedProto> : public TaggedProtoOperations<GCPtr<TaggedProto>>
 {};
 
 // If the TaggedProto is a JSObject pointer, convert to that type and call |f|

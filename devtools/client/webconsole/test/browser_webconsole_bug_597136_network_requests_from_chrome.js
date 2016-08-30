@@ -13,10 +13,10 @@ const TEST_URI = "http://example.com/";
 var good = true;
 var listener = {
   QueryInterface: XPCOMUtils.generateQI([ Ci.nsIObserver ]),
-  observe: function(subject) {
+  observe: function (subject) {
     if (subject instanceof Ci.nsIScriptError &&
         subject.category === "XPConnect JavaScript" &&
-        subject.sourceName.contains("webconsole")) {
+        subject.sourceName.includes("webconsole")) {
       good = false;
     }
   }

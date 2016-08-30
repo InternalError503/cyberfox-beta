@@ -14,6 +14,7 @@ config = {
 #        'update',
     ],
     'stage_platform': 'win32-add-on-devel',
+    'build_type': 'add-on-devel',
     'enable_talos_sendchange': False,
     #### 32 bit build specific #####
     'env': {
@@ -22,7 +23,7 @@ config = {
         'MOZBUILD_STATE_PATH': os.path.join(os.getcwd(), '.mozbuild'),
         'MOZ_AUTOMATION': '1',
         'MOZ_CRASHREPORTER_NO_REPORT': '1',
-        'MOZ_OBJDIR': 'obj-add-on-devel',
+        'MOZ_OBJDIR': 'obj-firefox',
         'PATH': 'C:/mozilla-build/nsis-3.0b1;C:/mozilla-build/python27;'
                 'C:/mozilla-build/buildbotve/scripts;'
                 '%s' % (os.environ.get('path')),

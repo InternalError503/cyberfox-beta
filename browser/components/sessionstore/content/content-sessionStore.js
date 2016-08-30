@@ -86,6 +86,18 @@ var EventListener = {
       return;
     }
 
+    if (content.document.documentURI.startsWith("about:reader")) {
+      if (event.type == "load" &&
+          !content.document.body.classList.contains("loaded")) {
+        // Don't restore the scroll position of an about:reader page at this
+        // point; listen for the custom event dispatched from AboutReader.jsm.
+        content.addEventListener("AboutReaderContentReady", this);
+        return;
+      }
+
+      content.removeEventListener("AboutReaderContentReady", this);
+    }
+
     // Restore the form data and scroll position. If we're not currently
     // restoring a tab state then this call will simply be a noop.
     gContentRestore.restoreDocument();
@@ -142,7 +154,7 @@ var MessageListener = {
     }
   },
 
-  restoreHistory({epoch, tabData, loadArguments}) {
+  restoreHistory({epoch, tabData, loadArguments, isRemotenessUpdate}) {
     gContentRestore.restoreHistory(tabData, loadArguments, {
       // Note: The callbacks passed here will only be used when a load starts
       // that was not initiated by sessionstore itself. This can happen when
@@ -167,7 +179,7 @@ var MessageListener = {
     // sync about the state of the restore (particularly regarding
     // docShell.currentURI). Using a synchronous message is the easiest way
     // to temporarily synchronize them.
-    sendSyncMessage("SessionStore:restoreHistoryComplete", {epoch});
+    sendSyncMessage("SessionStore:restoreHistoryComplete", {epoch, isRemotenessUpdate});
   },
 
   restoreTabContent({loadArguments, isRemotenessUpdate}) {
