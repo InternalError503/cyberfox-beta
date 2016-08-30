@@ -27,15 +27,16 @@ else
     exit 1    
 fi
 
-# Generate cyberfox folder if not already created
-if [ ! -d "$Dir/deb/usr/lib/Cyberfox" ]; then
+# Generate lib & cyberfox folder if not already created
+if [ ! -d "$Dir/deb/usr/lib" ]; then
+    mkdir $Dir/deb/usr/lib
     mkdir $Dir/deb/usr/lib/Cyberfox
 fi
 
 # Copy latest build
 if [ -d "../../../obj64/dist/Cyberfox" ]; then
     cp -R ../../../obj64/dist/Cyberfox/* $Dir/deb/usr/lib/Cyberfox
-    cp _Templates/cyberfox.sh $Dir/deb/usr/lib/Cyberfox
+    cp $Dir/_Templates/cyberfox.sh $Dir/deb/usr/lib/Cyberfox
 else
     echo "Unable to Cyberfox package files, Please check the build was created and packaged successfully!"
     exit 1     
@@ -57,6 +58,9 @@ find . -type f ! -regex '.*.hg.*' ! -regex '.*?debian-binary.*' ! -regex '.*DEBI
 cp -r DEBIAN/md5sums ../../../../obj64/dist
 cd $Dir
 
+# make sure correct permissions are set
+chmod -R 755 $Dir/deb
+
 # Build debian package
 dpkg -b $Dir/deb ../../../obj64/dist/Cyberfox-$VERSION.en-US.linux-x86_64.deb
 
@@ -66,9 +70,9 @@ if [ -f "../../../obj64/dist/Cyberfox-$VERSION.en-US.linux-x86_64.deb" ]; then
 fi
 
 # Clean up
-if [ -d "$Dir/deb/usr/lib/Cyberfox" ]; then
-    echo "Clean: $Dir/deb/usr/lib/Cyberfox"
-    rm -rf $Dir/deb/usr/lib/Cyberfox
+if [ -d "$Dir/deb/usr/lib" ]; then
+    echo "Clean: $Dir/deb/usr/lib"
+    rm -rf $Dir/deb/usr/lib
 fi
 if [ -f "$Dir/deb/DEBIAN/md5sums" ]; then
     echo "Clean: $Dir/deb/DEBIAN/md5sums"
