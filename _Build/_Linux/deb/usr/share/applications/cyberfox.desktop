@@ -1,5 +1,6 @@
 [Desktop Entry]
 Version=1.0
+Encoding=UTF-8
 Name=Cyberfox
 Comment=Browse the World Wide Web
 Comment[ar]=تصفح الشبكة العنكبوتية العالمية
@@ -115,7 +116,7 @@ Exec=cyberfox %u
 Terminal=false
 X-MuiltpleArgs=false
 Type=Application
-Icon=Cyberfox
+Icon=cyberfox
 Categories=Network;WebBrowser;
 MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;x-scheme-handler/chrome;video/webm;application/x-xpinstall;
 StartupWMClass=Cyberfox
