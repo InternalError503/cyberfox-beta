@@ -1,7 +1,7 @@
 #!/bin/bash
 # Built from template by hawkeye116477
 # Full repo https://github.com/hawkeye116477/cyberfox-deb
-# Script Version: 1.0.2
+# Script Version: 1.0.3
 # Set current directory to script directory.
 Dir=$(cd "$(dirname "$0")" && pwd)
 cd $Dir
@@ -9,6 +9,13 @@ cd $Dir
 # Init vars
 VERSION=""
 CONTROLTEMPLATE=""
+SOURCE=$1
+
+# Check if source code url was passed to script
+if [ -z "$SOURCE" ] || [ ! -n "$SOURCE" ]; then
+    echo "Source url must be passed to the script build_deb_package.sh 'URL'"
+    exit 1
+fi
 
 # Get package version including beta version if beta.
 if [ -f "../../browser/config/version_display.txt" ]; then
@@ -21,10 +28,18 @@ fi
 # Generate template
 if [ -f "$Dir/deb/DEBIAN/control" ]; then
     CONTROLTEMPLATE=$Dir/deb/DEBIAN/control
-    cp _Templates/control deb/DEBIAN
+    cp $Dir/_Templates/control $Dir/deb/DEBIAN
 else
-    echo "Unable to location control template!"
+    echo "Unable to locate control template!"
     exit 1    
+fi
+
+# Copy template for copyright
+if [ -f "$Dir/_Templates/copyright" ]; then
+    cp $Dir/_Templates/copyright $Dir/deb/DEBIAN
+else
+    echo "Unable to locate copyright template!"
+    exit 1 
 fi
 
 # Generate lib & cyberfox folder if not already created
@@ -44,10 +59,19 @@ fi
 
 # Apply information to template
 cd $Dir/deb
-if grep -q -E "__VERSION__|__SIZE__" "$CONTROLTEMPLATE" ; then
+if grep -q -E "__VERSION__|__SIZE__|__SOURCE__" "$CONTROLTEMPLATE" ; then
     sed -i "s|__VERSION__|$VERSION|" $CONTROLTEMPLATE   
     SIZE=$(du -s)
     sed -i "s|__SIZE__|${SIZE::-1}|" $CONTROLTEMPLATE
+    sed -i "s|__SOURCE__|$SOURCE|" $CONTROLTEMPLATE
+
+    if [ -f "$Dir/deb/DEBIAN/copyright" ]; then
+        sed -i "s|__SOURCE__|$SOURCE|" $Dir/deb/DEBIAN/copyright
+    else
+        echo "An error occured when trying to generate $Dir/deb/DEBIAN/copyright information!"
+        exit 1 
+    fi
+
 else
     echo "An error occured when trying to generate $CONTROLTEMPLATE information!"
     exit 1  
@@ -58,8 +82,11 @@ find . -type f ! -regex '.*.hg.*' ! -regex '.*?debian-binary.*' ! -regex '.*DEBI
 cp -r DEBIAN/md5sums ../../../../obj64/dist
 cd $Dir
 
-# make sure correct permissions are set
-chmod -R 755 $Dir/deb
+# Make sure correct permissions are set
+chmod  755 $Dir/deb/DEBIAN/control
+chmod  755 $Dir/deb/DEBIAN/prerm
+chmod  755 $Dir/deb/DEBIAN/copyright
+chmod  644 $Dir/deb/DEBIAN/md5sums
 
 # Build debian package
 dpkg -b $Dir/deb ../../../obj64/dist/Cyberfox-$VERSION.en-US.linux-x86_64.deb
@@ -77,6 +104,10 @@ fi
 if [ -f "$Dir/deb/DEBIAN/md5sums" ]; then
     echo "Clean: $Dir/deb/DEBIAN/md5sums"
     rm -f $Dir/deb/DEBIAN/md5sums
+fi
+if [ -f "$Dir/deb/DEBIAN//copyright" ]; then
+    echo "Clean: $Dir/deb/DEBIAN//copyright"
+    rm -f $Dir/deb/DEBIAN//copyright
 fi
 
 # Add fresh template
