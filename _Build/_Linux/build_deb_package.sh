@@ -1,7 +1,7 @@
 #!/bin/bash
 # Built from template by hawkeye116477
 # Full repo https://github.com/hawkeye116477/cyberfox-deb
-# Script Version: 1.0.3
+# Script Version: 1.0.4
 # Set current directory to script directory.
 Dir=$(cd "$(dirname "$0")" && pwd)
 cd $Dir
@@ -51,7 +51,7 @@ fi
 # Copy latest build
 if [ -d "../../../obj64/dist/Cyberfox" ]; then
     cp -R ../../../obj64/dist/Cyberfox/* $Dir/deb/usr/lib/Cyberfox
-    cp $Dir/_Templates/cyberfox.sh $Dir/deb/usr/lib/Cyberfox
+    cp $Dir/_Templates/Cyberfox.sh $Dir/deb/usr/lib/Cyberfox
 else
     echo "Unable to Cyberfox package files, Please check the build was created and packaged successfully!"
     exit 1     
@@ -105,8 +105,8 @@ if [ -f "$Dir/deb/DEBIAN/md5sums" ]; then
     echo "Clean: $Dir/deb/DEBIAN/md5sums"
     rm -f $Dir/deb/DEBIAN/md5sums
 fi
-if [ -f "$Dir/deb/DEBIAN//copyright" ]; then
-    echo "Clean: $Dir/deb/DEBIAN//copyright"
+if [ -f "$Dir/deb/DEBIAN/copyright" ]; then
+    echo "Clean: $Dir/deb/DEBIAN/copyright"
     rm -f $Dir/deb/DEBIAN//copyright
 fi
 
