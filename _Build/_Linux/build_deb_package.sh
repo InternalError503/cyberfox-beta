@@ -91,13 +91,12 @@ chmod  644 $Dir/deb/DEBIAN/md5sums
 # Make symlinks
 if [ ! -d "$Dir/deb/usr/bin" ]; then
     mkdir $Dir/deb/usr/bin
-    mkdir $Dir/deb/usr/bin/cyberfox
 fi
 if [ ! -d "$Dir/deb/usr/share/pixmaps" ]; then
     mkdir $Dir/deb/usr/share/pixmaps
 fi
 
-ln -s /usr/lib/Cyberfox/Cyberfox.sh $Dir/deb/usr/bin/cyberfox/cyberfox
+ln -s /usr/lib/Cyberfox/Cyberfox.sh $Dir/deb/usr/bin/cyberfox
 ln -s /usr/lib/Cyberfox/browser/icons/mozicon128.png $Dir/deb/usr/share/pixmaps/Cyberfox.png
 
 # Build debian package
