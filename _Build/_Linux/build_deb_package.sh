@@ -1,7 +1,7 @@
 #!/bin/bash
 # Built from template by hawkeye116477
 # Full repo https://github.com/hawkeye116477/cyberfox-deb
-# Script Version: 1.0.3
+# Script Version: 1.0.5
 # Set current directory to script directory.
 Dir=$(cd "$(dirname "$0")" && pwd)
 cd $Dir
@@ -51,7 +51,7 @@ fi
 # Copy latest build
 if [ -d "../../../obj64/dist/Cyberfox" ]; then
     cp -R ../../../obj64/dist/Cyberfox/* $Dir/deb/usr/lib/Cyberfox
-    cp $Dir/_Templates/cyberfox.sh $Dir/deb/usr/lib/Cyberfox
+    cp $Dir/_Templates/Cyberfox.sh $Dir/deb/usr/lib/Cyberfox
 else
     echo "Unable to Cyberfox package files, Please check the build was created and packaged successfully!"
     exit 1     
@@ -88,6 +88,18 @@ chmod  755 $Dir/deb/DEBIAN/prerm
 chmod  755 $Dir/deb/DEBIAN/copyright
 chmod  644 $Dir/deb/DEBIAN/md5sums
 
+# Make symlinks
+if [ ! -d "$Dir/deb/usr/bin" ]; then
+    mkdir $Dir/deb/usr/bin
+    mkdir $Dir/deb/usr/bin/cyberfox
+fi
+if [ ! -d "$Dir/deb/usr/share/pixmaps" ]; then
+    mkdir $Dir/deb/usr/share/pixmaps
+fi
+
+ln -s /usr/lib/Cyberfox/Cyberfox.sh $Dir/deb/usr/bin/cyberfox/cyberfox
+ln -s /usr/lib/Cyberfox/browser/icons/mozicon128.png $Dir/deb/usr/share/pixmaps/Cyberfox.png
+
 # Build debian package
 dpkg -b $Dir/deb ../../../obj64/dist/Cyberfox-$VERSION.en-US.linux-x86_64.deb
 
@@ -105,9 +117,17 @@ if [ -f "$Dir/deb/DEBIAN/md5sums" ]; then
     echo "Clean: $Dir/deb/DEBIAN/md5sums"
     rm -f $Dir/deb/DEBIAN/md5sums
 fi
-if [ -f "$Dir/deb/DEBIAN//copyright" ]; then
-    echo "Clean: $Dir/deb/DEBIAN//copyright"
-    rm -f $Dir/deb/DEBIAN//copyright
+if [ -f "$Dir/deb/DEBIAN/copyright" ]; then
+    echo "Clean: $Dir/deb/DEBIAN/copyright"
+    rm -f $Dir/deb/DEBIAN/copyright
+fi
+if [ -d "$Dir/deb/usr/bin" ]; then
+    echo "Clean: $Dir/deb/usr/bin"
+    rm -rf $Dir/deb/usr/bin
+fi
+if [ -d "$Dir/deb/usr/share/pixmaps" ]; then
+    echo "Clean: $Dir/deb/usr/share/pixmaps"
+    rm -rf $Dir/deb/usr/share/pixmaps
 fi
 
 # Add fresh template
