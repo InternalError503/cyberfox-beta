@@ -107,7 +107,7 @@ if [ -f "$Dir/deb/DEBIAN/md5sums" ]; then
 fi
 if [ -f "$Dir/deb/DEBIAN/copyright" ]; then
     echo "Clean: $Dir/deb/DEBIAN/copyright"
-    rm -f $Dir/deb/DEBIAN//copyright
+    rm -f $Dir/deb/DEBIAN/copyright
 fi
 
 # Add fresh template
