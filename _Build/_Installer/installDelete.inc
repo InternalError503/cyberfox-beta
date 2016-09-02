@@ -8,4 +8,5 @@ Type: files; Name: "{app}\icu*.dll"
 Type: files; Name: "{app}\msvcr120.dll"
 Type: files; Name: "{app}\msvcp120.dll"
 Type: files; Name: "{app}\sandboxbroker.dll"
+Type: files; Name: "{app}\vcomp120.dll"
 #endif
