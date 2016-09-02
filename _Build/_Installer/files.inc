@@ -62,7 +62,7 @@ Source: "{content}\browser\{#PackageType}\softokn3.dll"; DestDir: "{app}"; Flags
 Source: "{content}\browser\{#PackageType}\ucrtbase.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{content}\browser\{#PackageType}\vcruntime*.dll"; DestDir: "{app}"; Flags: ignoreversion
 #endif
-#if PackageType == "amd86" || PackageType == "amd64" && False == VS2015
+#if PackageType == "amd86" || PackageType == "amd64"
 Source: "{content}\browser\{#PackageType}\vcomp*.dll"; DestDir: "{app}"; Flags: ignoreversion
 #endif
 Source: "{content}\browser\{#PackageType}\xul.dll"; DestDir: "{app}"; Flags: ignoreversion
