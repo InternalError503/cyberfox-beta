@@ -1,14 +1,14 @@
 #!/bin/bash
 # Built from template by hawkeye116477
 # Full repo https://github.com/hawkeye116477/cyberfox-deb
-# Script Version: 1.0
+# Script Version: 1.1
 
 # Init vars
 VERSION=""
 
 # Get package version.
-if [ -f "../../../browser/config/version_display.txt" ]; then
-    VERSION=$(<../../../browser/config/version_display.txt)
+if [ -f "../../../../browser/config/version_display.txt" ]; then
+    VERSION=$(<../../../../browser/config/version_display.txt)
 else
     echo "Unable to get current build version!"
     exit 1    
@@ -19,27 +19,27 @@ Dir=$(cd "$(dirname "$0")" && pwd)
 cd $Dir/
 mkdir debs # Create folder where move created .deb packages
 mkdir deb_and_ppa_stable
-cd $Dir/deb_and_ppa_stable/
+cd $Dir/deb_and_ppa_stable
 mkdir cyberfox-unity-edition-$VERSION
-cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/
+cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION
 mkdir debian
 mkdir usr
-cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr/
+cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr
 mkdir share
-cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr/share/
+cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr/share
 mkdir applications
 mkdir lintian
-cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr/
+cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr
 mkdir lib
-cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr/lib/
+cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr/lib
 mkdir Cyberfox
 
 # Set current directory to directory of package.
 cd $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION
 
 # Copy PPA templates
-if [ -f "$Dir/deb_and_ppa_templates/stable_unity-edition/" ]; then
-	cp -avr $Dir/deb_and_ppa_templates/stable_unity-edition/ $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/debian/
+if [ -f "$Dir/deb_and_ppa_templates/stable_unity-edition" ]; then
+	cp -avr $Dir/deb_and_ppa_templates/stable_unity-edition $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/debian
 else
     echo "Unable to locate deb & ppa templates!"
     exit 1 
@@ -54,8 +54,8 @@ else
 fi
 
 # Copy latest build
-if [ -d "../../../../obj64/dist/Cyberfox" ]; then
-    cp -R ../../../../obj64/dist/Cyberfox/* $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr/lib/Cyberfox
+if [ -d "../../../../../obj64/dist/Cyberfox" ]; then
+    cp -R ../../../../../obj64/dist/Cyberfox/* $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr/lib/Cyberfox
 	cp $Dir/deb_and_ppa_templates/cyberfox.desktop $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr/share/applications
 	cp $Dir/deb_and_ppa_templates/Cyberfox $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/usr/share/lintian/overrides
     cp $Dir/deb_and_ppa_templates/Cyberfox.sh $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION
@@ -74,9 +74,13 @@ chmod  755 $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/debian/copyri
 ln -s /usr/lib/Cyberfox/Cyberfox.sh $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/cyberfox
 ln -s /usr/lib/Cyberfox/browser/icons/mozicon128.png $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION/Cyberfox.png
 
+# Linux has hunspell dictionaries, so we can remove Cyberfox dictionaries and make symlink to Linux dictionaries. Thanks to this, we don't have to download dictionary from AMO for our language.
+rm -rf $Dir/deb_and_ppa_stable/cyberfox-$VERSION/usr/lib/Cyberfox/dictionaries
+ln -s /usr/share/hunspell $Dir/deb_and_ppa_stable/cyberfox-$VERSION/usr/lib/Cyberfox/dictionaries
+
 # Build .deb package
-debuild -us
-mv $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION-0~ppa1_amd64.deb $Dir/debs/cyberfox-unity-edition-$VERSION.en-US.linux-x86_64.deb
+debuild -us -uc
+mv $Dir/deb_and_ppa_stable/cyberfox-unity-edition-$VERSION_amd64.deb $Dir/debs/cyberfox-unity-edition-$VERSION.en-US.linux-x86_64.deb
 
 # Build package for upload to PPA
 debuild -S -sa
