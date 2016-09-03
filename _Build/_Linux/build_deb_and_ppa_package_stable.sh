@@ -104,7 +104,7 @@ fi
 if [ -d "../../../../../obj64/dist/Cyberfox" ]; then
     cp -r ../../../../../obj64/dist/Cyberfox/* $Dir/deb_ppa/cyberfox-$VERSION/usr/lib/Cyberfox
 	cp $Dir/deb_and_ppa_templates/cyberfox.desktop $Dir/deb_ppa/cyberfox-$VERSION/usr/share/applications
-	#cp $Dir/deb_and_ppa_templates/Cyberfox $Dir/deb_ppa/cyberfox-$VERSION/usr/share/lintian/overrides #throws error file missing ?
+	cp $Dir/deb_and_ppa_templates/Cyberfox $Dir/deb_ppa/cyberfox-$VERSION/usr/share/lintian/overrides
     cp $Dir/deb_and_ppa_templates/Cyberfox.sh $Dir/deb_ppa/cyberfox-$VERSION
 	cp $Dir/deb_and_ppa_templates/vendor-gre.js $Dir/deb_ppa/cyberfox-$VERSION
 else
