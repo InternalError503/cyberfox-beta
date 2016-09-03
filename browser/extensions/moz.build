@@ -8,5 +8,4 @@ DIRS += [
     'cyberctr',
     'pdfjs',
     'pocket',
-    'webcompat',
 ]
