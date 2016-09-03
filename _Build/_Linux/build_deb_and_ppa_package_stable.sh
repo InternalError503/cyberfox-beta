@@ -13,13 +13,13 @@ IDENTITY=$2
 
 # Check if source code url was passed to script
 if [ -z "$SOURCE" ] || [ ! -n "$SOURCE" ]; then
-    echo "Source url must be passed to the script build_deb_package.sh 'URL'"
+    echo "Source url must be passed to the script build_deb_and_ppa_package.sh 'URL'"
     exit 1
 fi
 
 # Check if IDENTITY was passed to script
 if [ -z "$IDENTITY" ] || [ ! -n "$IDENTITY" ]; then
-    echo "IDENTITY type must be passed to the script build_deb_package.sh 'IDENTITY'"
+    echo "IDENTITY type must be passed to the script build_deb_and_ppa_package.sh 'IDENTITY'"
     exit 1
 fi
 
@@ -63,13 +63,24 @@ fi
 # Set current directory to directory of package.
 cd $Dir/deb_ppa/cyberfox-$VERSION
 
-# Copy PPA templates
+# Copy DEB and PPA templates
 if [ -d "$Dir/deb_and_ppa_templates/_template" ]; then
 	cp -r $Dir/deb_and_ppa_templates/_template/* $Dir/deb_ppa/cyberfox-$VERSION/debian
 else
     echo "Unable to locate ppa templates!"
     exit 1 
 fi
+
+# Copy control file
+if [ -d "$Dir/deb_and_ppa_templates/" ]; then
+if [ "$IDENTITY" == "Release" ]; then
+	mv $Dir/deb_and_ppa_templates/control.release $Dir/deb_ppa/cyberfox-$VERSION/debian/control
+else if [ "$IDENTITY" == "Beta" ]; then
+	mv $Dir/deb_and_ppa_templates/control.beta $Dir/deb_ppa/cyberfox-$VERSION/debian/control
+else
+    echo "IDENTITY was not set. Unable to copy control file!"
+    exit 1 
+fi	
 
 # Generate change log template
 CHANGELOGDIR=$Dir/deb_ppa/cyberfox-$VERSION/debian/changelog
@@ -102,7 +113,7 @@ fi
 
 # Copy latest build
 if [ -d "../../../../../obj64/dist/Cyberfox" ]; then
-    cp -r ../../../../../obj64/dist/Cyberfox/* $Dir/deb_ppa/cyberfox-$VERSION/usr/lib/Cyberfox
+    cp -r ../../../../../obj64/dist/Cyberfox/* $Dir/deb_ppa/cyberfox-$VERSION/Cyberfox
 	cp $Dir/deb_and_ppa_templates/cyberfox.desktop $Dir/deb_ppa/cyberfox-$VERSION/usr/share/applications
 	cp $Dir/deb_and_ppa_templates/Cyberfox $Dir/deb_ppa/cyberfox-$VERSION/usr/share/lintian/overrides
     cp $Dir/deb_and_ppa_templates/Cyberfox.sh $Dir/deb_ppa/cyberfox-$VERSION
@@ -116,6 +127,7 @@ fi
 if [ ! "$IDENTITY" == "Release" ]; then
     # ToDo: Pull latest applicable language packs when release package, Don't package for beta.
     rm -f $Dir/deb_ppa/cyberfox-$VERSION/debian/cyberfox-locale-pl.install
+	rm -f $Dir/deb_ppa/cyberfox-$VERSION/debian/cyberfox-unity-edition.install
 fi
 
 # Make sure correct permissions are set

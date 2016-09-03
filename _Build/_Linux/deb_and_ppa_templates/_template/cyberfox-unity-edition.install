@@ -3,4 +3,4 @@ vendor-gre.js /usr/lib/Cyberfox/defaults/pref/
 Cyberfox.sh /usr/lib/Cyberfox/
 Cyberfox.png /usr/share/pixmaps/
 cyberfox /usr/bin/
-Cyberfox/* /usr/lib/Cyberfox
+Cyberfox-unity-edition/* /usr/lib/Cyberfox
