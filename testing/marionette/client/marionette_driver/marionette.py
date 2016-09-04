@@ -540,7 +540,7 @@ class Marionette(object):
     TIMEOUT_SEARCH = 'implicit'
     TIMEOUT_SCRIPT = 'script'
     TIMEOUT_PAGE = 'page load'
-    DEFAULT_SOCKET_TIMEOUT = 360
+    DEFAULT_SOCKET_TIMEOUT = 60
     DEFAULT_STARTUP_TIMEOUT = 120
 
     def __init__(self, host='localhost', port=2828, app=None, app_args=None,
@@ -737,7 +737,7 @@ class Marionette(object):
         crashed = False
         if self.instance:
             if self.instance.runner.check_for_crashes(
-                    test_name=self.test_name):
+                    test_name=self.test_name or os.path.basename(__file__)):
                 crashed = True
         if returncode is not None:
             print ('PROCESS-CRASH | %s | abnormal termination with exit code %d' %

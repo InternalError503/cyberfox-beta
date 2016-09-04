@@ -129,11 +129,6 @@ static DllBlockInfo sWindowsDllBlocklist[] = {
   // sprotector.dll crashes, bug 957258
   {"sprotector.dll", ALL_VERSIONS},
 
-  // Topcrash with Websense Endpoint, bug 828184
-  // Mass startup crash with Websense Endpoint set block too {ALL_VERSIONS} for now see if helps.
-  {"qipcap.dll", ALL_VERSIONS},
-  {"qipcap64.dll", ALL_VERSIONS},
-
   // leave these two in always for tests
   { "mozdllblockingtest.dll", ALL_VERSIONS },
   { "mozdllblockingtest_versioned.dll", 0x0000000400000000ULL },
