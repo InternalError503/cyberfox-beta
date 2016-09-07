@@ -127,6 +127,7 @@ chmod  755 $Dir/deb_ppa/cyberfox-$VERSION/debian/control
 chmod  755 $Dir/deb_ppa/cyberfox-$VERSION/debian/cyberfox.prerm
 chmod  755 $Dir/deb_ppa/cyberfox-$VERSION/debian/cyberfox.postinst
 chmod  755 $Dir/deb_ppa/cyberfox-$VERSION/debian/copyright
+chmod  755 $Dir/deb_ppa/cyberfox-$VERSION/debian/rules
 
 # Make symlinks
 ln -s /usr/lib/Cyberfox/Cyberfox.sh $Dir/deb_ppa/cyberfox-$VERSION/cyberfox
@@ -140,10 +141,10 @@ ln -s /usr/share/hunspell $Dir/deb_ppa/cyberfox-$VERSION/usr/lib/Cyberfox/dictio
 # Build .deb package (Requires devscripts to be installed sudo apt install devscripts)
 notify-send "Building deb package!"
 debuild -us -uc #throws error
-if [ -f "$Dir/deb_ppa/cyberfox-$VERSION_amd64.deb" ]; then
-    mv $Dir/deb_ppa/cyberfox-$VERSION_amd64.deb ../../../obj64/dist/Cyberfox-$VERSION.en-US.linux-x86_64.deb
+if [ -f "$Dir/deb_ppa/cyberfox_$VERSION_amd64.deb" ]; then
+    cp $Dir/deb_ppa/cyberfox_$VERSION_amd64.deb ../../../obj64/dist/Cyberfox-$VERSION.en-US.linux-x86_64.deb
 else
-    echo "Unable to move $Dir/deb_ppa/cyberfox-$VERSION_amd64.deb the file maybe missing or had errors during creation!"
+    echo "Unable to move $Dir/deb_ppa/cyberfox_$VERSION_amd64.deb the file maybe missing or had errors during creation!"
     exit 1
 fi
 
