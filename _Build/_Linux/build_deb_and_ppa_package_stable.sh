@@ -8,14 +8,7 @@ cd $Dir
 
 # Init vars
 VERSION=""
-SOURCE=$1
-IDENTITY=$2
-
-# Check if source code url was passed to script
-if [ -z "$SOURCE" ] || [ ! -n "$SOURCE" ]; then
-    echo "Source url must be passed to the script build_deb_and_ppa_package.sh 'URL'"
-    exit 1
-fi
+IDENTITY=$1
 
 # Check if IDENTITY was passed to script
 if [ -z "$IDENTITY" ] || [ ! -n "$IDENTITY" ]; then
@@ -72,11 +65,10 @@ else
 fi
 
 # Copy control file
-if [ -d "$Dir/deb_and_ppa_templates/" ]; then
 if [ "$IDENTITY" == "Release" ]; then
-	mv $Dir/deb_and_ppa_templates/control.release $Dir/deb_ppa/cyberfox-$VERSION/debian/control
-else if [ "$IDENTITY" == "Beta" ]; then
-	mv $Dir/deb_and_ppa_templates/control.beta $Dir/deb_ppa/cyberfox-$VERSION/debian/control
+	cp $Dir/deb_and_ppa_templates/control.release $Dir/deb_ppa/cyberfox-$VERSION/debian/control
+elif [ "$IDENTITY" == "Beta" ]; then
+	cp $Dir/deb_and_ppa_templates/control.beta $Dir/deb_ppa/cyberfox-$VERSION/debian/control
 else
     echo "IDENTITY was not set. Unable to copy control file!"
     exit 1 
@@ -155,7 +147,7 @@ else
     exit 1
 fi
 
-exit 1
+exit 1 #Just exit here until above builds correctly.@
 # Build package for upload to PPA (Requires devscripts to be installed sudo apt install devscripts)
 notify-send "Building package for upload to PPA"
 debuild -S -sa
@@ -165,7 +157,7 @@ cd $Dir/deb_and_ppa
 if [ "$IDENTITY" == "Release" ]; then
     notify-send "Uploading package to PPA"
     dput ppa:8pecxstudios/cyberfox cyberfox-$VERSION-0~ppa1.source.changes
-else if [ "$IDENTITY" == "Beta" ]; then
+elif [ "$IDENTITY" == "Beta" ]; then
     notify-send "Uploading package to PPA"
     dput ppa:8pecxstudios/cyberfox-next cyberfox-$VERSION-0~ppa1.source.changes
 else
