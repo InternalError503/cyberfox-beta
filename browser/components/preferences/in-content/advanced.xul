@@ -88,9 +88,6 @@
 	  <preference id="app.update.check.enabled" 
 						   name="app.update.check.enabled" 
 						   type="bool"/>
-	  <preference id="loop.enabled" 
-						   name="loop.enabled" 
-						   type="bool"/>
 	  <preference id="browser.tabs.copyallurls" 
 						   name="browser.tabs.copyallurls" 
 						   type="bool"/>  
@@ -519,10 +516,6 @@
 			<!-- System Addons -->
 			<groupbox id="alternateOptionsSystem" orient="vertical">
 				<caption label="&systemaddons.label;"/>
-				<label>&systemaddonsmsg.label;</label>
- 					<checkbox id="loop.enabled" label="&enablehellochat.label; (&restartRequiredMSG.label;)"
-							preference="loop.enabled" 
-							tooltiptext="&restartRequiredMSG.label;" />	
  					<checkbox id="extensions.pocket.enabled" label="&enablepocket.label;"
 							preference="extensions.pocket.enabled" />
 			</groupbox>
