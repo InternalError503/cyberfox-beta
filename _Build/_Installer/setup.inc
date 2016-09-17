@@ -74,8 +74,7 @@ ArchitecturesInstallIn64BitMode=x64
 #endif
 DisableDirPage=auto
 DisableProgramGroupPage=auto
-AllowNoIcons=True
-WizardImageBackColor=clWindowText
+AllowNoIcons=yes
 WizardImageFile={#PackageBranding}\WizModernImage.bmp
 WizardSmallImageFile={#PackageBranding}\WizModernSmallImage.bmp
 OutputDir={#PackageOutPutPath}
