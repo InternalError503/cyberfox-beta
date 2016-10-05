@@ -890,6 +890,7 @@ class IonBuilder
 
     // TypedArray intrinsics.
     enum WrappingBehavior { AllowWrappedTypedArrays, RejectWrappedTypedArrays };
+    InliningStatus inlineTypedArray(CallInfo& callInfo, Native native);
     InliningStatus inlineIsTypedArrayHelper(CallInfo& callInfo, WrappingBehavior wrappingBehavior);
     InliningStatus inlineIsTypedArray(CallInfo& callInfo);
     InliningStatus inlineIsPossiblyWrappedTypedArray(CallInfo& callInfo);
@@ -1047,7 +1048,7 @@ class IonBuilder
     JSObject* testSingletonProperty(JSObject* obj, jsid id);
     JSObject* testSingletonPropertyTypes(MDefinition* obj, jsid id);
 
-    MOZ_MUST_USE bool testNotDefinedProperty(MDefinition* obj, jsid id);
+    ResultWithOOM<bool> testNotDefinedProperty(MDefinition* obj, jsid id);
 
     uint32_t getDefiniteSlot(TemporaryTypeSet* types, PropertyName* name, uint32_t* pnfixed);
     MDefinition* convertUnboxedObjects(MDefinition* obj);

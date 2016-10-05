@@ -24,6 +24,7 @@
 #include "nsNetUtil.h"
 #include "nsSerializationHelper.h"
 #include "mozilla/Attributes.h"
+#include "mozilla/dom/Performance.h"
 #include "mozilla/ipc/InputStreamUtils.h"
 #include "mozilla/ipc/URIUtils.h"
 #include "mozilla/ipc/BackgroundUtils.h"
@@ -32,7 +33,6 @@
 #include "SerializedLoadContext.h"
 #include "nsInputStreamPump.h"
 #include "InterceptedChannel.h"
-#include "nsPerformance.h"
 #include "mozIThirdPartyUtil.h"
 #include "nsContentSecurityManager.h"
 #include "nsIDeprecationWarner.h"
@@ -859,6 +859,8 @@ HttpChannelChild::OnStopRequest(const nsresult& channelStatus,
   LOG(("HttpChannelChild::OnStopRequest [this=%p status=%x]\n",
        this, channelStatus));
 
+  mUploadStream = nullptr;
+
   if (mDivertingToParent) {
     MOZ_RELEASE_ASSERT(!mFlushedForDiversion,
       "Should not be processing any more callbacks from parent!");
@@ -896,7 +898,7 @@ HttpChannelChild::OnStopRequest(const nsresult& channelStatus,
   mCacheReadStart = timing.cacheReadStart;
   mCacheReadEnd = timing.cacheReadEnd;
 
-  nsPerformance* documentPerformance = GetPerformance();
+  Performance* documentPerformance = GetPerformance();
   if (documentPerformance) {
       documentPerformance->AddEntry(this, this);
   }
@@ -1459,6 +1461,10 @@ HttpChannelChild::ConnectParent(uint32_t registrarId)
     return NS_ERROR_ILLEGAL_VALUE;
   }
 
+  if (tabChild && !tabChild->IPCOpen()) {
+    return NS_ERROR_FAILURE;
+  }
+
   // The socket transport in the chrome process now holds a logical ref to us
   // until OnStopRequest, or we do a redirect, or we hit an IPDL error.
   AddIPDLReference();
@@ -1977,15 +1983,25 @@ HttpChannelChild::ContinueAsyncOpen()
   mChannelId.ToProvidedString(chid);
   openArgs.channelId().AssignASCII(chid);
 
+  if (tabChild && !tabChild->IPCOpen()) {
+    return NS_ERROR_FAILURE;
+  }
+
+  ContentChild* cc = static_cast<ContentChild*>(gNeckoChild->Manager());
+  if (cc->IsShuttingDown()) {
+    return NS_ERROR_FAILURE;
+  }
+
   // The socket transport in the chrome process now holds a logical ref to us
   // until OnStopRequest, or we do a redirect, or we hit an IPDL error.
   AddIPDLReference();
 
-  PBrowserOrId browser = static_cast<ContentChild*>(gNeckoChild->Manager())
-                         ->GetBrowserOrId(tabChild);
-  gNeckoChild->SendPHttpChannelConstructor(this, browser,
-                                           IPC::SerializedLoadContext(this),
-                                           openArgs);
+  PBrowserOrId browser = cc->GetBrowserOrId(tabChild);
+  if (!gNeckoChild->SendPHttpChannelConstructor(this, browser,
+                                                IPC::SerializedLoadContext(this),
+                                                openArgs)) {
+    return NS_ERROR_FAILURE;
+  }
 
   if (optionalFDs.type() ==
         OptionalFileDescriptorSet::TPFileDescriptorSetChild) {

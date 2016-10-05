@@ -7,6 +7,7 @@
 /* container for a document and its presentation */
 
 #include "mozilla/ServoStyleSet.h"
+#include "nsAutoPtr.h"
 #include "nscore.h"
 #include "nsCOMPtr.h"
 #include "nsCRT.h"
@@ -59,7 +60,7 @@
 #include "nsIBaseWindow.h"
 #include "nsILayoutHistoryState.h"
 #include "nsCharsetSource.h"
-#include "nsHTMLReflowState.h"
+#include "mozilla/ReflowInput.h"
 #include "nsIImageLoadingContent.h"
 #include "nsCopySupport.h"
 #include "nsIDOMHTMLFrameSetElement.h"
@@ -118,7 +119,7 @@
 #include "nsISHistory.h"
 #include "nsISHistoryInternal.h"
 #include "nsIWebNavigation.h"
-#include "nsXMLHttpRequest.h"
+#include "mozilla/dom/XMLHttpRequestMainThread.h"
 
 //paint forcing
 #include <stdio.h>
@@ -2164,27 +2165,6 @@ nsDocumentViewer::RequestWindowClose(bool* aCanClose)
   return NS_OK;
 }
 
-static StyleBackendType
-StyleBackendTypeForDocument(nsIDocument* aDocument, nsIDocShell* aContainer)
-{
-  MOZ_ASSERT(aDocument);
-
-  // XXX For now we use a Servo-backed style set only for (X)HTML documents
-  // in content docshells.  This should let us avoid implementing XUL-specific
-  // CSS features.  And apart from not supporting SVG properties in Servo
-  // yet, the root SVG element likes to create a style sheet for an SVG
-  // document before we have a pres shell (i.e. before we make the decision
-  // here about whether to use a Gecko- or Servo-backed style system), so
-  // we avoid Servo-backed style sets for SVG documents.
-
-  return nsPresContext::StyloEnabled() &&
-         aDocument->IsHTMLOrXHTML() &&
-         aContainer &&
-         aContainer->ItemType() == nsIDocShell::typeContent ?
-           StyleBackendType::Servo :
-           StyleBackendType::Gecko;
-}
-
 StyleSetHandle
 nsDocumentViewer::CreateStyleSet(nsIDocument* aDocument)
 {
@@ -2193,8 +2173,7 @@ nsDocumentViewer::CreateStyleSet(nsIDocument* aDocument)
   // this should eventually get expanded to allow for creating
   // different sets for different media
 
-  StyleBackendType backendType =
-    StyleBackendTypeForDocument(aDocument, mContainer);
+  StyleBackendType backendType = aDocument->GetStyleBackendType();
 
   StyleSetHandle styleSet;
   if (backendType == StyleBackendType::Gecko) {
@@ -2368,7 +2347,8 @@ nsDocumentViewer::CreateStyleSet(nsIDocument* aDocument)
       }
     }
   } else {
-    NS_ERROR("stylo: nsStyleSheetService doesn't handle ServoStyleSheets yet");
+    NS_WARNING("stylo: Not yet checking nsStyleSheetService for Servo-backed "
+               "documents. See bug 1290224");
   }
 
   // Caller will handle calling EndUpdate, per contract.
@@ -2559,7 +2539,7 @@ nsDocumentViewer::GetDocumentSelection()
     return nullptr;
   }
 
-  return mPresShell->GetCurrentSelection(nsISelectionController::SELECTION_NORMAL);
+  return mPresShell->GetCurrentSelection(SelectionType::eNormal);
 }
 
 /* ========================================================================================

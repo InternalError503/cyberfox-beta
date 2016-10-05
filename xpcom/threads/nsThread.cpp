@@ -33,6 +33,7 @@
 #include "mozilla/ChaosMode.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/unused.h"
+#include "mozilla/dom/ScriptSettings.h"
 #include "nsThreadSyncDispatch.h"
 #include "LeakRefPtr.h"
 
@@ -204,11 +205,6 @@ public:
   // completion state.
   void Wait()
   {
-    if (mInitialized) {
-      // Maybe avoid locking...
-      return;
-    }
-
     ReentrantMonitorAutoEnter mon(mMon);
     while (!mInitialized) {
       mon.Wait();
@@ -1028,8 +1024,13 @@ nsThread::ProcessNextEvent(bool aMayWait, bool* aResult)
 
   ++mNestedEventLoopDepth;
 
+  // We only want to create an AutoNoJSAPI on threads that actually do DOM stuff
+  // (including workers).  Those are exactly the threads that have an
+  // mScriptObserver.
+  Maybe<dom::AutoNoJSAPI> noJSAPI;
   bool callScriptObserver = !!mScriptObserver;
   if (callScriptObserver) {
+    noJSAPI.emplace();
     mScriptObserver->BeforeProcessTask(reallyWait);
   }
 
@@ -1078,8 +1079,11 @@ nsThread::ProcessNextEvent(bool aMayWait, bool* aResult)
     obs->AfterProcessNextEvent(this, *aResult);
   }
 
-  if (callScriptObserver && mScriptObserver) {
-    mScriptObserver->AfterProcessTask(mNestedEventLoopDepth);
+  if (callScriptObserver) {
+    if (mScriptObserver) {
+      mScriptObserver->AfterProcessTask(mNestedEventLoopDepth);
+    }
+    noJSAPI.reset();
   }
 
   --mNestedEventLoopDepth;

@@ -829,7 +829,7 @@ ICStubCompiler::PushStubPayload(MacroAssembler& masm, Register scratch)
     masm.adjustFrame(sizeof(intptr_t));
 }
 
-bool
+void
 ICStubCompiler::emitPostWriteBarrierSlot(MacroAssembler& masm, Register obj, ValueOperand val,
                                          Register scratch, LiveGeneralRegisterSet saveRegs)
 {
@@ -851,7 +851,6 @@ ICStubCompiler::emitPostWriteBarrierSlot(MacroAssembler& masm, Register obj, Val
     masm.PopRegsInMask(saveRegs);
 
     masm.bind(&skipBarrier);
-    return true;
 }
 
 SharedStubInfo::SharedStubInfo(JSContext* cx, void* payload, ICEntry* icEntry)
@@ -1406,7 +1405,7 @@ ICBinaryArith_DoubleWithInt32::Compiler::generateStubCode(MacroAssembler& masm)
     {
         Label doneTruncate;
         Label truncateABICall;
-        masm.branchTruncateDouble(FloatReg0, scratchReg, &truncateABICall);
+        masm.branchTruncateDoubleMaybeModUint32(FloatReg0, scratchReg, &truncateABICall);
         masm.jump(&doneTruncate);
 
         masm.bind(&truncateABICall);
@@ -1559,7 +1558,7 @@ ICUnaryArith_Double::Compiler::generateStubCode(MacroAssembler& masm)
 
         Label doneTruncate;
         Label truncateABICall;
-        masm.branchTruncateDouble(FloatReg0, scratchReg, &truncateABICall);
+        masm.branchTruncateDoubleMaybeModUint32(FloatReg0, scratchReg, &truncateABICall);
         masm.jump(&doneTruncate);
 
         masm.bind(&truncateABICall);
@@ -2891,7 +2890,7 @@ ICGetProp_Primitive::Compiler::generateStubCode(MacroAssembler& masm)
     masm.movePtr(ImmGCPtr(prototype_.get()), holderReg);
 
     Address shapeAddr(ICStubReg, ICGetProp_Primitive::offsetOfProtoShape());
-    masm.loadPtr(Address(holderReg, JSObject::offsetOfShape()), scratchReg);
+    masm.loadPtr(Address(holderReg, ShapedObject::offsetOfShape()), scratchReg);
     masm.branchPtr(Assembler::NotEqual, shapeAddr, scratchReg, &failure);
 
     if (!isFixedSlot_)

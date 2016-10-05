@@ -133,6 +133,8 @@ const DEFAULT_ENVIRONMENT_PREFS = new Map([
   ["browser.tabs.animate", {what: RECORD_PREF_VALUE}],
   ["browser.urlbar.suggest.searches", {what: RECORD_PREF_VALUE}],
   ["browser.urlbar.userMadeSearchSuggestionsChoice", {what: RECORD_PREF_VALUE}],
+  // Record "Zoom Text Only" pref in Firefox 50 to 52 (Bug 979323).
+  ["browser.zoom.full", {what: RECORD_PREF_VALUE}],
   ["devtools.chrome.enabled", {what: RECORD_PREF_VALUE}],
   ["devtools.debugger.enabled", {what: RECORD_PREF_VALUE}],
   ["devtools.debugger.remote-enabled", {what: RECORD_PREF_VALUE}],
@@ -175,6 +177,7 @@ const DEFAULT_ENVIRONMENT_PREFS = new Map([
   ["services.sync.serverURL", {what: RECORD_PREF_STATE}],
   ["security.mixed_content.block_active_content", {what: RECORD_PREF_VALUE}],
   ["security.mixed_content.block_display_content", {what: RECORD_PREF_VALUE}],
+  ["security.sandbox.content.level", {what: RECORD_PREF_VALUE}],
 ]);
 
 const LOGGER_NAME = "Toolkit.Telemetry";

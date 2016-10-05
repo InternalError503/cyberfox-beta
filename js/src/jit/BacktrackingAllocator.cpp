@@ -560,7 +560,7 @@ BacktrackingAllocator::buildLivenessInfo()
         for (LInstructionReverseIterator ins = block->rbegin(); ins != block->rend(); ins++) {
             // Calls may clobber registers, so force a spill and reload around the callsite.
             if (ins->isCall()) {
-                for (AnyRegisterIterator iter(allRegisters_.asLiveSet()); iter.more(); iter++) {
+                for (AnyRegisterIterator iter(allRegisters_.asLiveSet()); iter.more(); ++iter) {
                     bool found = false;
                     for (size_t i = 0; i < ins->numDefs(); i++) {
                         if (ins->getDef(i)->isFixed() &&
@@ -569,7 +569,10 @@ BacktrackingAllocator::buildLivenessInfo()
                             break;
                         }
                     }
-                    if (!found) {
+                    // If this register doesn't have an explicit def above, mark
+                    // it as clobbered by the call unless it is actually
+                    // call-preserved.
+                    if (!found && !ins->isCallPreserved(*iter)) {
                         if (!addInitialFixedRange(*iter, outputOf(*ins), outputOf(*ins).next()))
                             return false;
                     }

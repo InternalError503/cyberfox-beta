@@ -77,7 +77,7 @@ using safe_browsing::ClientDownloadRequest_SignatureInfo;
 #define PREF_BLOCK_POTENTIALLY_UNWANTED "browser.safebrowsing.downloads.remote.block_potentially_unwanted"
 #define PREF_BLOCK_UNCOMMON             "browser.safebrowsing.downloads.remote.block_uncommon"
 
-// NSPR_LOG_MODULES=ApplicationReputation:5
+// MOZ_LOG=ApplicationReputation:5
 mozilla::LazyLogModule ApplicationReputationService::prlog("ApplicationReputation");
 #define LOG(args) MOZ_LOG(ApplicationReputationService::prlog, mozilla::LogLevel::Debug, args)
 #define LOG_ENABLED() MOZ_LOG_TEST(ApplicationReputationService::prlog, mozilla::LogLevel::Debug)
@@ -1302,6 +1302,8 @@ PendingLookup::Notify(nsITimer* aTimer)
 {
   LOG(("Remote lookup timed out [this = %p]", this));
   MOZ_ASSERT(aTimer == mTimeoutTimer);
+  Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_REMOTE_LOOKUP_TIMEOUT,
+    true);
   mChannel->Cancel(NS_ERROR_NET_TIMEOUT);
   mTimeoutTimer->Cancel();
   return NS_OK;
@@ -1346,6 +1348,9 @@ PendingLookup::OnStopRequest(nsIRequest *aRequest,
 
   bool shouldBlock = false;
   uint32_t verdict = nsIApplicationReputationService::VERDICT_SAFE;
+  Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_REMOTE_LOOKUP_TIMEOUT,
+    false);
+
   nsresult rv = OnStopRequestInternal(aRequest, aContext, aResult,
                                       &shouldBlock, &verdict);
   OnComplete(shouldBlock, rv, verdict);

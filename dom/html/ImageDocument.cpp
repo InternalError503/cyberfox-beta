@@ -27,7 +27,6 @@
 #include "nsIPresShell.h"
 #include "nsPresContext.h"
 #include "nsStyleContext.h"
-#include "nsAutoPtr.h"
 #include "nsIChannel.h"
 #include "nsIContentPolicy.h"
 #include "nsContentPolicyUtils.h"
@@ -786,7 +785,7 @@ ImageDocument::UpdateTitleAndCharset()
     ratioStr.AppendInt(NSToCoordFloor(GetRatio() * 100));
 
     const char16_t* formatString[1] = { ratioStr.get() };
-    mStringBundle->FormatStringFromName(MOZ_UTF16("ScaledImage"),
+    mStringBundle->FormatStringFromName(u"ScaledImage",
                                         formatString, 1,
                                         getter_Copies(status));
   }

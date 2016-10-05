@@ -41,7 +41,7 @@ bool nsStandardURL::gAlwaysEncodeInUTF8 = true;
 char nsStandardURL::gHostLimitDigits[] = { '/', '\\', '?', '#', 0 };
 
 //
-// setenv NSPR_LOG_MODULES nsStandardURL:5
+// setenv MOZ_LOG nsStandardURL:5
 //
 static LazyLogModule gStandardURLLog("nsStandardURL");
 
@@ -1310,7 +1310,7 @@ nsStandardURL::SetSpec(const nsACString &input)
 
     // Make a backup of the curent URL
     nsStandardURL prevURL(false,false);
-    prevURL.CopyMembers(this, eHonorRef);
+    prevURL.CopyMembers(this, eHonorRef, EmptyCString());
     Clear();
 
     if (IsSpecialProtocol(filteredURI)) {
@@ -1342,11 +1342,16 @@ nsStandardURL::SetSpec(const nsACString &input)
         rv = BuildNormalizedSpec(spec);
     }
 
+    // Make sure that a URLTYPE_AUTHORITY has a non-empty hostname.
+    if (mURLType == URLTYPE_AUTHORITY && mHost.mLen == -1) {
+        rv = NS_ERROR_MALFORMED_URI;
+    }
+
     if (NS_FAILED(rv)) {
         Clear();
         // If parsing the spec has failed, restore the old URL
         // so we don't end up with an empty URL.
-        CopyMembers(&prevURL, eHonorRef);
+        CopyMembers(&prevURL, eHonorRef, EmptyCString());
         return rv;
     }
 
@@ -2036,18 +2041,25 @@ nsStandardURL::StartClone()
 NS_IMETHODIMP
 nsStandardURL::Clone(nsIURI **result)
 {
-    return CloneInternal(eHonorRef, result);
+    return CloneInternal(eHonorRef, EmptyCString(), result);
 }
 
 
 NS_IMETHODIMP
 nsStandardURL::CloneIgnoringRef(nsIURI **result)
 {
-    return CloneInternal(eIgnoreRef, result);
+    return CloneInternal(eIgnoreRef, EmptyCString(), result);
+}
+
+NS_IMETHODIMP
+nsStandardURL::CloneWithNewRef(const nsACString& newRef, nsIURI **result)
+{
+    return CloneInternal(eReplaceRef, newRef, result);
 }
 
 nsresult
 nsStandardURL::CloneInternal(nsStandardURL::RefHandlingEnum refHandlingMode,
+                             const nsACString& newRef,
                              nsIURI **result)
 
 {
@@ -2057,14 +2069,15 @@ nsStandardURL::CloneInternal(nsStandardURL::RefHandlingEnum refHandlingMode,
 
     // Copy local members into clone.
     // Also copies the cached members mFile, mHostA
-    clone->CopyMembers(this, refHandlingMode, true);
+    clone->CopyMembers(this, refHandlingMode, newRef, true);
 
     clone.forget(result);
     return NS_OK;
 }
 
 nsresult nsStandardURL::CopyMembers(nsStandardURL * source,
-    nsStandardURL::RefHandlingEnum refHandlingMode, bool copyCached)
+    nsStandardURL::RefHandlingEnum refHandlingMode, const nsACString& newRef,
+    bool copyCached)
 {
     mSpec = source->mSpec;
     mDefaultPort = source->mDefaultPort;
@@ -2101,6 +2114,8 @@ nsresult nsStandardURL::CopyMembers(nsStandardURL * source,
 
     if (refHandlingMode == eIgnoreRef) {
         SetRef(EmptyCString());
+    } else if (refHandlingMode == eReplaceRef) {
+        SetRef(newRef);
     }
 
     return NS_OK;
@@ -2919,20 +2934,26 @@ nsStandardURL::SetFile(nsIFile *file)
     rv = net_GetURLSpecFromFile(file, url);
     if (NS_FAILED(rv)) return rv;
 
-    SetSpec(url);
+    uint32_t oldURLType = mURLType;
+    uint32_t oldDefaultPort = mDefaultPort;
+    rv = Init(nsIStandardURL::URLTYPE_NO_AUTHORITY, -1, url, nullptr, nullptr);
 
-    rv = Init(mURLType, mDefaultPort, url, nullptr, nullptr);
+    if (NS_FAILED(rv)) {
+        // Restore the old url type and default port if the call to Init fails.
+        mURLType = oldURLType;
+        mDefaultPort = oldDefaultPort;
+        return rv;
+    }
 
     // must clone |file| since its value is not guaranteed to remain constant
-    if (NS_SUCCEEDED(rv)) {
-        InvalidateCache();
-        if (NS_FAILED(file->Clone(getter_AddRefs(mFile)))) {
-            NS_WARNING("nsIFile::Clone failed");
-            // failure to clone is not fatal (GetFile will generate mFile)
-            mFile = 0;
-        }
+    InvalidateCache();
+    if (NS_FAILED(file->Clone(getter_AddRefs(mFile)))) {
+        NS_WARNING("nsIFile::Clone failed");
+        // failure to clone is not fatal (GetFile will generate mFile)
+        mFile = nullptr;
     }
-    return rv;
+
+    return NS_OK;
 }
 
 //----------------------------------------------------------------------------

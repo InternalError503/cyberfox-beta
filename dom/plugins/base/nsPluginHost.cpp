@@ -1115,11 +1115,19 @@ nsPluginHost::GetPermissionStringForType(const nsACString &aMimeType,
   nsresult rv = GetPluginTagForType(aMimeType, aExcludeFlags,
                                     getter_AddRefs(tag));
   NS_ENSURE_SUCCESS(rv, rv);
-  NS_ENSURE_TRUE(tag, NS_ERROR_FAILURE);
+  return GetPermissionStringForTag(tag, aExcludeFlags, aPermissionString);
+}
+
+NS_IMETHODIMP
+nsPluginHost::GetPermissionStringForTag(nsIPluginTag* aTag,
+                                        uint32_t aExcludeFlags,
+                                        nsACString &aPermissionString)
+{
+  NS_ENSURE_TRUE(aTag, NS_ERROR_FAILURE);
 
   aPermissionString.Truncate();
   uint32_t blocklistState;
-  rv = tag->GetBlocklistState(&blocklistState);
+  nsresult rv = aTag->GetBlocklistState(&blocklistState);
   NS_ENSURE_SUCCESS(rv, rv);
 
   if (blocklistState == nsIBlocklistService::STATE_VULNERABLE_UPDATE_AVAILABLE ||
@@ -1131,7 +1139,7 @@ nsPluginHost::GetPermissionStringForType(const nsACString &aMimeType,
   }
 
   nsCString niceName;
-  rv = tag->GetNiceName(niceName);
+  rv = aTag->GetNiceName(niceName);
   NS_ENSURE_SUCCESS(rv, rv);
   NS_ENSURE_TRUE(!niceName.IsEmpty(), NS_ERROR_FAILURE);
 
@@ -2021,7 +2029,7 @@ GetExtensionDirectories(nsCOMArray<nsIFile>& dirs)
     nsCOMPtr<nsIFile> file = do_QueryInterface(next);
     if (file) {
       file->Normalize();
-      dirs.AppendElement(file);
+      dirs.AppendElement(file.forget());
     }
   }
 }
@@ -2211,8 +2219,6 @@ nsresult nsPluginHost::ScanPluginsDirectory(nsIFile *pluginsDir,
   nsCOMArray<nsIFile> extensionDirs;
   GetExtensionDirectories(extensionDirs);
 
-  bool warnOutdated = false;
-
   for (int32_t i = (pluginFiles.Length() - 1); i >= 0; i--) {
     nsCOMPtr<nsIFile>& localfile = pluginFiles[i];
 
@@ -2312,13 +2318,8 @@ nsresult nsPluginHost::ScanPluginsDirectory(nsIFile *pluginsDir,
 
       // If the blocklist says it is risky and we have never seen this
       // plugin before, then disable it.
-      // If the blocklist says this is an outdated plugin, warn about
-      // outdated plugins.
       if (state == nsIBlocklistService::STATE_SOFTBLOCKED && !seenBefore) {
         pluginTag->SetEnabledState(nsIPluginTag::STATE_DISABLED);
-      }
-      if (state == nsIBlocklistService::STATE_OUTDATED && !seenBefore) {
-        warnOutdated = true;
       }
 
       // Plugin unloading is tag-based. If we created a new tag and loaded
@@ -2357,10 +2358,6 @@ nsresult nsPluginHost::ScanPluginsDirectory(nsIFile *pluginsDir,
     }
 
     AddPluginTag(pluginTag);
-  }
-
-  if (warnOutdated) {
-    Preferences::SetBool("plugins.update.notifyUser", true);
   }
 
   return NS_OK;

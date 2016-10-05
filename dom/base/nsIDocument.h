@@ -24,7 +24,6 @@
 #include "nsTHashtable.h"                // for member
 #include "mozilla/net/ReferrerPolicy.h"  // for member
 #include "nsWeakReference.h"
-#include "mozilla/dom/DocumentBinding.h"
 #include "mozilla/UseCounter.h"
 #include "mozilla/WeakPtr.h"
 #include "Units.h"
@@ -37,6 +36,16 @@
 #include "mozilla/StyleBackendType.h"
 #include "mozilla/StyleSheetHandle.h"
 #include <bitset>                        // for member
+
+#ifdef MOZILLA_INTERNAL_API
+#include "mozilla/dom/DocumentBinding.h"
+#else
+namespace mozilla {
+namespace dom {
+class ElementCreationOptionsOrString;
+} // namespace dom
+} // namespace mozilla
+#endif // MOZILLA_INTERNAL_API
 
 class gfxUserFontSet;
 class imgIRequest;
@@ -118,6 +127,7 @@ class DocumentType;
 class DOMImplementation;
 class DOMStringList;
 class Element;
+struct ElementCreationOptions;
 struct ElementRegistrationOptions;
 class Event;
 class EventTarget;
@@ -342,6 +352,10 @@ public:
       return mUpgradeInsecurePreloads;
     }
     return mUpgradeInsecureRequests;
+  }
+
+  void SetReferrer(const nsACString& aReferrer) {
+    mReferrer = aReferrer;
   }
 
   /**
@@ -695,6 +709,11 @@ public:
   {
     return mSandboxFlags;
   }
+
+  /**
+   * Get string representation of sandbox flags (null if no flags are set)
+   */
+  void GetSandboxFlagsAsString(nsAString& aFlags);
 
   /**
    * Set the sandbox flags for this document.
@@ -1071,7 +1090,19 @@ public:
     return mCSSLoader;
   }
 
-  mozilla::StyleBackendType GetStyleBackendType() const;
+  mozilla::StyleBackendType GetStyleBackendType() const {
+    if (mStyleBackendType == mozilla::StyleBackendType(0)) {
+      const_cast<nsIDocument*>(this)->UpdateStyleBackendType();
+    }
+    MOZ_ASSERT(mStyleBackendType != mozilla::StyleBackendType(0));
+    return mStyleBackendType;
+  }
+
+  void UpdateStyleBackendType();
+
+  bool IsStyledByServo() const {
+    return GetStyleBackendType() == mozilla::StyleBackendType::Servo;
+  }
 
   /**
    * Get this document's StyleImageLoader.  This is guaranteed to not return null.
@@ -1487,7 +1518,8 @@ public:
    */
   virtual already_AddRefed<Element> CreateElem(const nsAString& aName,
                                                nsIAtom* aPrefix,
-                                               int32_t aNamespaceID) = 0;
+                                               int32_t aNamespaceID,
+                                               const nsAString* aIs = nullptr) = 0;
 
   /**
    * Get the security info (i.e. SSL state etc) that the document got
@@ -2497,18 +2529,15 @@ public:
   already_AddRefed<nsContentList>
     GetElementsByClassName(const nsAString& aClasses);
   // GetElementById defined above
-  already_AddRefed<Element> CreateElement(const nsAString& aTagName,
-                                          mozilla::ErrorResult& rv);
-  already_AddRefed<Element> CreateElementNS(const nsAString& aNamespaceURI,
-                                            const nsAString& aQualifiedName,
-                                            mozilla::ErrorResult& rv);
-  virtual already_AddRefed<Element> CreateElement(const nsAString& aTagName,
-                                                  const nsAString& aTypeExtension,
-                                                  mozilla::ErrorResult& rv) = 0;
-  virtual already_AddRefed<Element> CreateElementNS(const nsAString& aNamespaceURI,
-                                                    const nsAString& aQualifiedName,
-                                                    const nsAString& aTypeExtension,
-                                                    mozilla::ErrorResult& rv) = 0;
+  virtual already_AddRefed<Element>
+    CreateElement(const nsAString& aTagName,
+                  const mozilla::dom::ElementCreationOptionsOrString& aOptions,
+                  mozilla::ErrorResult& rv) = 0;
+  virtual already_AddRefed<Element>
+    CreateElementNS(const nsAString& aNamespaceURI,
+                    const nsAString& aQualifiedName,
+                    const mozilla::dom::ElementCreationOptions& aOptions,
+                    mozilla::ErrorResult& rv) = 0;
   already_AddRefed<mozilla::dom::DocumentFragment>
     CreateDocumentFragment() const;
   already_AddRefed<nsTextNode> CreateTextNode(const nsAString& aData) const;
@@ -2529,14 +2558,14 @@ public:
                        mozilla::ErrorResult& rv) const;
   already_AddRefed<mozilla::dom::NodeIterator>
     CreateNodeIterator(nsINode& aRoot, uint32_t aWhatToShow,
-                       const mozilla::dom::NodeFilterHolder& aFilter,
+                       mozilla::dom::NodeFilterHolder aFilter,
                        mozilla::ErrorResult& rv) const;
   already_AddRefed<mozilla::dom::TreeWalker>
     CreateTreeWalker(nsINode& aRoot, uint32_t aWhatToShow,
                      mozilla::dom::NodeFilter* aFilter, mozilla::ErrorResult& rv) const;
   already_AddRefed<mozilla::dom::TreeWalker>
     CreateTreeWalker(nsINode& aRoot, uint32_t aWhatToShow,
-                     const mozilla::dom::NodeFilterHolder& aFilter,
+                     mozilla::dom::NodeFilterHolder aFilter,
                      mozilla::ErrorResult& rv) const;
 
   // Deprecated WebIDL bits
@@ -2584,11 +2613,12 @@ public:
     return !!GetFullscreenElement();
   }
   void ExitFullscreen();
-  Element* GetMozPointerLockElement();
-  void MozExitPointerLock()
+  Element* GetPointerLockElement();
+  void ExitPointerLock()
   {
     UnlockPointer(this);
   }
+#ifdef MOZILLA_INTERNAL_API
   bool Hidden() const
   {
     return mVisibilityState != mozilla::dom::VisibilityState::Visible;
@@ -2607,6 +2637,7 @@ public:
     WarnOnceAbout(ePrefixedVisibilityAPI);
     return VisibilityState();
   }
+#endif
   virtual mozilla::dom::StyleSheetList* StyleSheets() = 0;
   void GetSelectedStyleSheetSet(nsAString& aSheetSet);
   virtual void SetSelectedStyleSheetSet(const nsAString& aSheetSet) = 0;
@@ -2900,8 +2931,17 @@ protected:
   // Our readyState
   ReadyState mReadyState;
 
+#ifdef MOZILLA_INTERNAL_API
   // Our visibility state
   mozilla::dom::VisibilityState mVisibilityState;
+  static_assert(sizeof(mozilla::dom::VisibilityState) == sizeof(uint32_t), "Error size of mVisibilityState and mDummy");
+#else
+  uint32_t mDummy;
+#endif
+
+  // Whether this document has (or will have, once we have a pres shell) a
+  // Gecko- or Servo-backed style system.
+  mozilla::StyleBackendType mStyleBackendType;
 
   // True if BIDI is enabled.
   bool mBidiEnabled : 1;

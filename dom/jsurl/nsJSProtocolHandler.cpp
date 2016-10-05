@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsCOMPtr.h"
-#include "nsAutoPtr.h"
 #include "jsapi.h"
 #include "jswrapper.h"
 #include "nsCRT.h"
@@ -1363,7 +1362,8 @@ nsJSURI::Deserialize(const mozilla::ipc::URIParams& aParams)
 
 // nsSimpleURI methods:
 /* virtual */ mozilla::net::nsSimpleURI*
-nsJSURI::StartClone(mozilla::net::nsSimpleURI::RefHandlingEnum /* ignored */)
+nsJSURI::StartClone(mozilla::net::nsSimpleURI::RefHandlingEnum refHandlingMode,
+                    const nsACString& newRef)
 {
     nsCOMPtr<nsIURI> baseClone;
     if (mBaseURI) {
@@ -1374,7 +1374,9 @@ nsJSURI::StartClone(mozilla::net::nsSimpleURI::RefHandlingEnum /* ignored */)
       }
     }
 
-    return new nsJSURI(baseClone);
+    nsJSURI* url = new nsJSURI(baseClone);
+    SetRefOnClone(url, refHandlingMode, newRef);
+    return url;
 }
 
 /* virtual */ nsresult
