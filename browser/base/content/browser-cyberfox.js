@@ -38,11 +38,10 @@ var gCyberfoxCustom = {
         }
     },
     // Clones current tab into new tab or window.
-    CloneCurrent: function(type) {
+    CloneCurrent: function(type, isprivate) {
         try {
-
             if (gURLBar.value) {
-                gBrowser.selectedTab = openUILinkIn(gURLBar.value, type, { relatedToCurrent: true });
+                gBrowser.selectedTab = openUILinkIn(gURLBar.value, type, { relatedToCurrent: true, private: isprivate });	
             }
         } catch (type) {
             // Catch any nasty errors and output to console

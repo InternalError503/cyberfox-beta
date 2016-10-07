@@ -122,7 +122,10 @@
 					        oncommand="gCyberfoxCustom.CloneCurrent('tab');"/>					
 	    <menuitem id="context_CloneCurrentTabNewWindow" 
 					        label="&cloneInNewWindow.label;" 
-					        oncommand="gCyberfoxCustom.CloneCurrent('window');"/>			
+					        oncommand="gCyberfoxCustom.CloneCurrent('window');"/>
+	    <menuitem id="context_CloneCurrentTabNewWindowpb" 
+					        label="&cloneInNewWindow.label; (Private)" 
+					        oncommand="gCyberfoxCustom.CloneCurrent('window', true);"/>							
       <menuitem id="context_reloadAllTabs" label="&reloadAllTabs.label;" accesskey="&reloadAllTabs.accesskey;"
                 tbattr="tabbrowser-multiple-visible"
                 oncommand="gBrowser.reloadAllTabs();"/>
