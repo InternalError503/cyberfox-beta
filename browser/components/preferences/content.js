@@ -2,7 +2,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
- 
+
 XPCOMUtils.defineLazyGetter(this, "AlertsServiceDND", function () {
   try {
     let alertsService = Components.classes["@mozilla.org/alerts-service;1"]
@@ -25,7 +25,7 @@ var gContentPane = {
     if (menulist.selectedIndex == -1) {
       menulist.value = FontBuilder.readFontSelection(menulist);
     }
-	
+
     // Show translation preferences if we may:
     const prefName = "browser.translation.ui.show";
     if (Services.prefs.getBoolPref(prefName)) {
@@ -124,7 +124,7 @@ var gContentPane = {
    * javascript.enabled
    * - true if JavaScript is enabled, false otherwise
    */
- 
+
   // NOTIFICATIONS
 
   /**
@@ -192,12 +192,12 @@ var gContentPane = {
   showImageExceptions: function ()
   {
     var bundlePreferences = document.getElementById("bundlePreferences");
-    var params = {
-					blockVisible: true,
-					sessionVisible: false,
+    var params = { 
+					blockVisible: true, 
+					sessionVisible: false, 
 					allowVisible: true,
-					prefilledHost: "",
-					permissionType: "image" };
+					prefilledHost: "", 
+					permissionType: "image"};
     params.windowTitle = bundlePreferences.getString("imagepermissionstitle");
     params.introText = bundlePreferences.getString("imagepermissionstext");
 
@@ -224,6 +224,11 @@ var gContentPane = {
    */
   _rebuildFonts: function ()
   {
+    var preferences = document.getElementById("contentPreferences");
+    // Ensure preferences are "visible" to ensure bindings work.
+    preferences.hidden = false;
+    // Force flush:
+    preferences.clientHeight;
     var langGroupPref = document.getElementById("font.language.group");
     this._selectDefaultLanguageGroup(langGroupPref.value,
                                      this._readDefaultFontTypeForLanguage(langGroupPref.value) == "serif");
@@ -302,7 +307,7 @@ var gContentPane = {
   /**
    * Displays the fonts dialog, where web page font names and sizes can be
    * configured.
-   */  
+   */
   configureFonts: function ()
   {
     document.documentElement.openSubDialog("chrome://browser/content/preferences/fonts.xul",
@@ -350,5 +355,5 @@ var gContentPane = {
   toggleDoNotDisturbNotifications: function (event)
   {
     AlertsServiceDND.manualDoNotDisturb = event.target.checked;
-  }
+  },
 };

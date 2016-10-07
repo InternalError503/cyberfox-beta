@@ -310,7 +310,7 @@ var gMainPane = {
       const Cc = Components.classes, Ci = Components.interfaces;
       // If we're in instant-apply mode, use the most recent browser window
       var wm = Cc["@mozilla.org/appshell/window-mediator;1"]
-                 .getService(Components.interfaces.nsIWindowMediator);
+                 .getService(Ci.nsIWindowMediator);
       win = wm.getMostRecentWindow("navigator:browser");
     }
     else {
@@ -322,9 +322,18 @@ var gMainPane = {
       // We should only include visible & non-pinned tabs
 
       tabs = win.gBrowser.visibleTabs.slice(win.gBrowser._numPinnedTabs);
+      tabs = tabs.filter(this.isNotAboutPreferences);
     }
-    
+
     return tabs;
+  },
+
+  /**
+   * Check to see if a tab is not about:preferences
+   */
+  isNotAboutPreferences: function (aElement, aIndex, aArray)
+  {
+    return !aElement.linkedBrowser.currentURI.spec.startsWith("about:preferences");
   },
 
   /**
@@ -392,8 +401,8 @@ var gMainPane = {
     var downloadFolder = document.getElementById("downloadFolder");
     var chooseFolder = document.getElementById("chooseFolder");
     var preference = document.getElementById("browser.download.useDownloadDir");
-    downloadFolder.disabled = !preference.value;
-    chooseFolder.disabled = !preference.value;
+    downloadFolder.disabled = !preference.value || preference.locked;
+    chooseFolder.disabled = !preference.value || preference.locked;
 
     // don't override the preference's value in UI
     return undefined;
@@ -632,8 +641,8 @@ var gMainPane = {
       Components.utils.reportError(ex);
       return;
     }
-    let selectedIndex =
-      shellSvc.isDefaultBrowser(false, true) ? 1 : 0;
+
+    let selectedIndex = shellSvc.isDefaultBrowser(false, true) ? 1 : 0;
     document.getElementById("setDefaultPane").selectedIndex = selectedIndex;
   }
 #endif

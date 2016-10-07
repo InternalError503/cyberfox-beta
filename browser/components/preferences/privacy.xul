@@ -110,6 +110,11 @@
                   onchange="gPrivacyPane.updatePrivacyMicroControls();"
                   type="bool"/>
 
+      <!-- Containers -->
+      <preference id="privacy.userContext.enabled"
+                   name="privacy.userContext.enabled"
+                   type="bool"/>
+
     </preferences>
     
     <stringbundle id="bundlePreferences" src="chrome://browser/locale/preferences/preferences.properties"/>
@@ -175,14 +180,13 @@
       <spacer flex="1" />
       <button id="changeBlockListPBM"
               label="&changeBlockList.label;" accesskey="&changeBlockList.accesskey;"
-              preference="pref.privacy.disable_button.change_blocklist"
-              oncommand="gPrivacyPane.showBlockLists();"/>
+              preference="pref.privacy.disable_button.change_blocklist"/>
     </hbox>
       </vbox>
         <vbox>
-    <description>&doNotTrack.pre.label;<html:a
-    class="inline-link" id="doNotTrackSettings" href="#" onclick="gPrivacyPane.showDoNotTrackSettings();"
-    >&doNotTrack.settings.label;</html:a>&doNotTrack.post.label;</description>
+    <description>&doNotTrack.pre.label;<label
+    class="text-link" id="doNotTrackSettings"
+    >&doNotTrack.settings.label;</label>&doNotTrack.post.label;</description>
   </vbox>
 
     </groupbox>
@@ -349,6 +353,19 @@
                   preference="browser.urlbar.suggest.searches"/>
       </vbox>
     </groupbox>
+	<!-- Containers -->
+	<groupbox id="browserContainersGroup" hidden="true">
+		<caption><label>&browserContainersHeader.label;
+		  <label id="browserContainersLearnMore" class="text-link"
+				 value="&browserContainersLearnMore.label;"/>
+		</label></caption>
+	  <vbox id="browserContainersbox" hidden="true">
+		<checkbox id="browserContainersCheckbox"
+				  label="&browserContainersEnabled.label;"
+				  accesskey="&browserContainersEnabled.accesskey;"
+				  preference="privacy.userContext.enabled"/>
+	  </vbox>
+	</groupbox>
         </tabpanel>
 		
 		<tabpanel id="featuresTab" orient="vertical">
