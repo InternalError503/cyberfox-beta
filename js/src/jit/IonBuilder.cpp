@@ -14576,3 +14576,14 @@ IonBuilder::convertToBoolean(MDefinition* input)
 
     return result;
 }
+
+void
+IonBuilder::trace(JSTracer* trc)
+{
+    if (!compartment->runtime()->runtimeMatches(trc->runtime()))
+        return;
+
+    TraceManuallyBarrieredEdge(trc, &script_, "IonBuiler::script_");
+    if (actionableAbortScript_)
+        TraceManuallyBarrieredEdge(trc, &actionableAbortScript_, "IonBuiler::actionableAbortScript_");
+}
