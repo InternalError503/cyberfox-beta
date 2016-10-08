@@ -281,14 +281,13 @@ var gAdvancedPane = {
     this._setupLearnMoreLink("toolkit.telemetry.infoURL", "telemetryLearnMore");
 #endif
   },
-
+#ifdef MOZ_TELEMETRY_REPORTING
   /**
    * Set the status of the telemetry controls based on the input argument.
    * @param {Boolean} aEnabled False disables the controls, true enables them.
    */
   setTelemetrySectionEnabled: function (aEnabled)
   {
-#ifdef MOZ_TELEMETRY_REPORTING
     // If FHR is disabled, additional data sharing should be disabled as well.
     let disabled = !aEnabled;
     document.getElementById("submitTelemetryBox").disabled = disabled;
@@ -297,9 +296,8 @@ var gAdvancedPane = {
       Services.prefs.setBoolPref("toolkit.telemetry.enabled", false);
     }
     document.getElementById("telemetryDataDesc").disabled = disabled;
-#endif
   },
-
+#endif
 #ifdef MOZ_TELEMETRY_REPORTING
   /**
    * Initialize the health report service reference and checkbox.

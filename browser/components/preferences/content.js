@@ -1,4 +1,3 @@
-/* -*- indent-tabs-mode: nil; js-indent-level: 4 -*- */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -19,6 +18,12 @@ XPCOMUtils.defineLazyGetter(this, "AlertsServiceDND", function () {
 var gContentPane = {
   init: function ()
   {
+    function setEventListener(aId, aEventType, aCallback)
+    {
+      document.getElementById(aId)
+              .addEventListener(aEventType, aCallback.bind(gContentPane));
+    }
+
     // Initializes the fonts dropdowns displayed in this pane.
     this._rebuildFonts();
     var menulist = document.getElementById("defaultFont");
@@ -49,6 +54,29 @@ var gContentPane = {
         notificationsDoNotDisturb.setAttribute("checked", true);
       }
     }
+
+    setEventListener("font.language.group", "change",
+      gContentPane._rebuildFonts);
+    setEventListener("notificationsPolicyButton", "command",
+      gContentPane.showNotificationExceptions);
+    setEventListener("popupPolicyButton", "command",
+      gContentPane.showPopupExceptions);
+    setEventListener("loadImagesExceptions", "command",
+      gContentPane.showImageExceptions);
+    setEventListener("advancedJSButton", "command",
+      gContentPane.showAdvancedJS);
+    setEventListener("advancedFonts", "command",
+      gContentPane.configureFonts);
+    setEventListener("colors", "command",
+      gContentPane.configureColors);
+    setEventListener("chooseLanguage", "command",
+      gContentPane.showLanguages);
+    setEventListener("translationAttributionImage", "click",
+      gContentPane.openTranslationProviderAttribution);
+    setEventListener("translateButton", "command",
+      gContentPane.showTranslationExceptions);
+    setEventListener("notificationsDoNotDisturb", "command",
+      gContentPane.toggleDoNotDisturbNotifications);
 
     let notificationInfoURL =
       Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "push";

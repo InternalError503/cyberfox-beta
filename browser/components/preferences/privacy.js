@@ -16,7 +16,6 @@ var gPrivacyPane = {
    */
   _shouldPromptForRestart: true,
 
-#ifdef NIGHTLY_BUILD
   /**
    * Show the Tracking Protection UI depending on the
    * privacy.trackingprotection.ui.enabled pref, and linkify its Learn More link
@@ -35,7 +34,6 @@ var gPrivacyPane = {
     document.getElementById("trackingprotectionbox").hidden = false;
     document.getElementById("trackingprotectionpbmbox").hidden = true;
   },
-#endif
 
   /**
    * Linkify the Learn More link of the Private Browsing Mode Tracking
@@ -86,17 +84,45 @@ var gPrivacyPane = {
     this.updateHistoryModePane();
     this.updatePrivacyMicroControls();
     this.initAutoStartPrivateBrowsingReverter();
-#ifdef NIGHTLY_BUILD
     this._initTrackingProtection();
-#endif
     this._initTrackingProtectionPBM();
     this._initAutocomplete();
     this._initBrowserContainers();
 
+    setEventListener("privacy.sanitize.sanitizeOnShutdown", "change",
+                     gPrivacyPane._updateSanitizeSettingsButton);
+    setEventListener("browser.privatebrowsing.autostart", "change",
+                     gPrivacyPane.updatePrivacyMicroControls);
+    setEventListener("historyMode", "command", function () {
+      gPrivacyPane.updateHistoryModePane();
+      gPrivacyPane.updateHistoryModePrefs();
+      gPrivacyPane.updatePrivacyMicroControls();
+      gPrivacyPane.updateAutostart();
+    });
+    setEventListener("historyRememberClear", "click", function () {
+      gPrivacyPane.clearPrivateDataNow(false);
+      return false;
+    });
+    setEventListener("historyRememberCookies", "click", function () {
+      gPrivacyPane.showCookies();
+      return false;
+    });
+    setEventListener("historyDontRememberClear", "click", function () {
+      gPrivacyPane.clearPrivateDataNow(true);
+      return false;
+    });
     setEventListener("doNotTrackSettings", "click", function () {
       gPrivacyPane.showDoNotTrackSettings();
       return false;
     });
+    setEventListener("privateBrowsingAutoStart", "command",
+                     gPrivacyPane.updateAutostart);
+    setEventListener("cookieExceptions", "command",
+                     gPrivacyPane.showCookieExceptions);
+    setEventListener("showCookiesButton", "command",
+                     gPrivacyPane.showCookies);
+    setEventListener("clearDataSettings", "command",
+                     gPrivacyPane.showClearPrivateDataSettings);
     setEventListener("trackingProtectionRadioGroup", "command",
                      gPrivacyPane.trackingProtectionWritePrefs);
     setEventListener("trackingProtectionExceptions", "command",
