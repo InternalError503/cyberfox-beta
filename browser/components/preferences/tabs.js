@@ -57,7 +57,7 @@ var gTabsPane = {
     if (!TransientPrefs.prefShouldBeVisible("browser.tabs.warnOnOpen"))
       document.getElementById("warnOpenMany").hidden = true;
 
-      setEventListener("useBookmark", "command",
+      setEventListener("useBookmarkNewTabPage", "command",
       gMainPane.setNewTabPageToBookmark);  
       setEventListener("restoreDefaultNewTabPage", "command",
       gMainPane.restoreDefaultNewTabPage);
