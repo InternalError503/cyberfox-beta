@@ -104,6 +104,7 @@
                           observes="workOfflineMenuitemState"
                           oncommand="BrowserOffline.toggleOfflineStatus();"/>
  				       <menuitem id="app_restartBrowser"
+						              class="menuitem-iconic"
 						              label="&restartBrowser.label;"
 						              oncommand="gCyberfoxCustom.restartBrowser();"/>
                 <menuitem id="menu_FileQuitItem"
