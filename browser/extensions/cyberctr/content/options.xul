@@ -47,6 +47,9 @@
 		<preference id="ctraddon_flyweb"		name="dom.flyweb.enabled"							type="bool"		instantApply="true"/>
 		<preference id="ctraddon_oneoffsearch"	name="browser.urlbar.oneOffSearches"				type="bool"		instantApply="true"/>
 		<preference id="ctraddon_hiderecentbm"	name="browser.bookmarks.showRecentlyBookmarked"		type="bool"		instantApply="true" inverted="true"/>
+		<preference id="ctraddon_oneoffsearch"	name="browser.urlbar.oneOffSearches"				type="bool"		instantApply="true"/>
+		<preference id="ctraddon_ctrltabprev"	name="browser.ctrlTab.previews"						type="bool"		instantApply="true"/>
+		<preference id="ctraddon_dl_pm_drop"	name="browser.download.showPanelDropmarker"			type="bool"		instantApply="true"/>
 
 		<preference id="ctraddon_tabs"			name="extensions.classicthemerestorer.tabs" 		type="string"	instantApply="true"/>
 		<preference id="ctraddon_tabsontop"		name="extensions.classicthemerestorer.tabsontop" 	type="string"	instantApply="true"/>
@@ -81,7 +84,6 @@
 		<preference id="ctraddon_smallnavbut"	name="extensions.classicthemerestorer.smallnavbut"	type="bool"		instantApply="true"/>
 		<preference id="ctraddon_hide_bf_popup"	name="extensions.classicthemerestorer.hide_bf_popup" type="bool"	instantApply="true"/>
 		<preference id="ctraddon_nbcompact"		name="extensions.classicthemerestorer.nbcompact"	type="bool"		instantApply="true"/>
-		<preference id="ctraddon_nbcompact"		name="extensions.classicthemerestorer.nbcompact"	type="bool"		instantApply="true"/>
 		<preference id="ctraddon_hidenavbar"	name="extensions.classicthemerestorer.hidenavbar"	type="bool"		instantApply="true"/>
 		<preference id="ctraddon_backforward"	name="extensions.classicthemerestorer.backforward"	type="bool"		instantApply="true"/>
 		<preference id="ctraddon_noconicons"	name="extensions.classicthemerestorer.noconicons"	type="bool"		instantApply="true"/>
@@ -104,6 +106,7 @@
 		<preference id="ctraddon_am_buticons"	name="extensions.classicthemerestorer.am_buticons"	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_am_hovshowb"	name="extensions.classicthemerestorer.am_hovshowb"	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_alt_addonsp"	name="extensions.classicthemerestorer.alt_addonsp"	 type="bool"	instantApply="true"/>
+		<preference id="ctraddon_am_showrecup"	name="extensions.classicthemerestorer.am_showrecup"	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_alt_addonsm"	name="extensions.classicthemerestorer.alt_addonsm"	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_altoptions"	name="extensions.classicthemerestorer.altoptions"	type="string"	instantApply="true"/>
 		<preference id="ctraddon_aboutpages"	name="extensions.classicthemerestorer.aboutpages"	type="bool"		instantApply="true"/>
@@ -149,6 +152,7 @@
 		<preference id="ctraddon_ibinfoico2"	name="extensions.classicthemerestorer.ibinfoico2"	type="bool"		instantApply="true"/>
 		<preference id="ctraddon_iblabels"		name="extensions.classicthemerestorer.iblabels"		type="bool"		instantApply="true"/>
 		<preference id="ctraddon_findbar"		name="extensions.classicthemerestorer.findbar"		type="string"	instantApply="true"/>
+		<preference id="ctraddon_findb_hide_ws"	name="extensions.classicthemerestorer.findb_hide_ws" type="bool"	instantApply="true"/>
 		<preference id="ctraddon_nav_txt_ico"	name="extensions.classicthemerestorer.nav_txt_ico" 	type="string"	instantApply="true"/>
 		<preference id="ctraddon_iat_notf_vt"	name="extensions.classicthemerestorer.iat_notf_vt"	type="bool"		instantApply="true"/>
 		<preference id="ctraddon_closeicong"	name="extensions.classicthemerestorer.closeicong"	type="string"	instantApply="true"/>
@@ -220,6 +224,9 @@
 		<preference id="ctraddon_tabfita_unr"	name="extensions.classicthemerestorer.tabfita_unr"	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_tabfita_hov"	name="extensions.classicthemerestorer.tabfita_hov"	 type="bool"	instantApply="true"/>
 		
+		<preference id="ctraddon_tablowopa_pen"	name="extensions.classicthemerestorer.tablowopa_pen" type="bool"	instantApply="true"/>
+		<preference id="ctraddon_tablowopa_unr"	name="extensions.classicthemerestorer.tablowopa_unr" type="bool"	instantApply="true"/>
+		
 		<preference id="ctraddon_tabc_hov_unl"	name="extensions.classicthemerestorer.tabc_hov_unl"	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_tabc_hov_unr"	name="extensions.classicthemerestorer.tabc_hov_unr"	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_tabc_act_tb"	name="extensions.classicthemerestorer.tabc_act_tb"	 type="bool"	instantApply="true"/>
@@ -241,6 +248,7 @@
 		<preference id="ctraddon_nonavbarbg"	name="extensions.classicthemerestorer.nonavbarbg" 	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_nonavborder"	name="extensions.classicthemerestorer.nonavborder" 	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_nonavtbborder"	name="extensions.classicthemerestorer.nonavtbborder" type="bool"	instantApply="true"/>
+		<preference id="ctraddon_toptb_oldpad"	name="extensions.classicthemerestorer.toptb_oldpad"	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_hidesbclose"	name="extensions.classicthemerestorer.hidesbclose"	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_notextshadow"	name="extensions.classicthemerestorer.notextshadow"	 type="bool"	instantApply="true"/>
 		<preference id="ctraddon_chevronfix"	name="extensions.classicthemerestorer.chevronfix"	 type="bool"	instantApply="true"/>
@@ -390,12 +398,12 @@
   <radiogroup id="CtrRadioGroup" class="ctraddontabs" orient="vertical" flex="1"
 	value="ctraddon_tabsbox" oncommand="classicthemerestorerjso.ctr.onCtrPanelSelect();">
 
-	  <radio value="ctraddon_tabsbox" 		label="&Ctr_tabs; (1)"		class="ctraddontab"/>
+	  <radio value="ctraddon_tabsbox" 		label="&Ctr_tabs; (1)"		class="ctraddontab ctraddon_new_in_v48"/>
 	  <radio value="ctraddon_tabsbox2" 		label="&Ctr_tabs; (2)"		class="ctraddontab ctraddon_new_in_v48"/>
 	  <radio value="ctraddon_fontbox"    	label="&Ctr_tabcolors_t;"	id="ctraddon_sqtabcolorstab" class="ctraddontab"/>
 	  <radio value="ctraddon_appbuttonbox" 	label="&Ctr_appbutton;"		class="ctraddontab"/>
 	  <radio value="ctraddon_generaluibox"	label="&Ctr_ui; (1)"		class="ctraddontab ctraddon_new_in_v48"/>
-	  <radio value="ctraddon_generaluibox2"	label="&Ctr_ui; (2)"		class="ctraddontab ctraddon_new_in_v47 ctraddon_new_in_v49 ctraddon_new_in_v50"/>
+	  <radio value="ctraddon_generaluibox2"	label="&Ctr_ui; (2)"		class="ctraddontab ctraddon_new_in_v47 ctraddon_new_in_v49 ctraddon_new_in_v50 ctraddon_new_in_v51"/>
 	  <radio value="ctraddon_generaluibox3"	label="&Ctr_ui; (3)"		class="ctraddontab"/>
     <!--- CyberCTR customization settings -->
 	  <radio value="ctraddon_abouthomebox"	label="&Ctr_tbp_abouthome;" class="ctraddontab"/>
@@ -410,7 +418,7 @@
 	  <radio value="ctraddon_searchuibox"	label="&Ctr_searchbar;"		class="ctraddontab"/>
 	  <radio value="ctraddon_toolbarsbox"	label="&Ctr_toolbars; (1)"	class="ctraddontab"/>
 	  <radio value="ctraddon_toolbarsbox2"	label="&Ctr_toolbars; (2)"	class="ctraddontab"/>
-	  <radio value="ctraddon_toolbarsbox3"	label="&Ctr_toolbars; (3)"	class="ctraddontab"/>
+	  <radio value="ctraddon_toolbarsbox3"	label="&Ctr_toolbars; (3)"	class="ctraddontab ctraddon_new_in_v51"/>
 	  <radio value="ctraddon_experttweaks"	label="&Ctr_experttweaks;"	id="ctraddon_experttweakstab" class="ctraddontab ctraddon_new_in_v50 ctraddon_new_in_v51"/>
 	  <radio value="ctraddon_ctraddonbox"	label="&Ctr_title;"			class="ctraddontab"/>
 	  <label value=""/>
@@ -533,6 +541,9 @@
 		  <label value="px"/>
 		</hbox>
 		<description id="ctraddon_pw_tabheightinfo" class="ctraddon_topic">&Ctr_tabheightinfo;</description>
+		
+		<checkbox label="&Ctr_ctrltabprev;" preference="ctraddon_ctrltabprev" id="ctraddon_pw_ctrltabprev" class="ctraddon_new_in_v48"/>
+		<description class="ctraddonsuboption">about:config &gt;&gt; browser.ctrlTab.previews</description>
 
 	  </groupbox>
 
@@ -639,7 +650,7 @@
 	  <description class="ctraddon_tabcolorlabel" id="ctraddon_ccap_t_curved">&Ctr_tabs2;</description>
 	  <description class="ctraddon_tabcolorlabel" id="ctraddon_ccap_t_curvedaero">&Ctr_tabs3;</description>
 	  <description>&Ctr_tab_tf_info1;</description>
-	  <description class="ctraddonsuboption text-link"  onclick="if(event.button == 0) { window.close(); window.opener.openURL('https://developer.mozilla.org/docs/Web/CSS/color_value/'); };">blue - #0000ff - rgba(0,0,255,0.8) - hsla(240,100%,50%,0.8)</description>
+	  <description class="ctraddonsuboption text-link"  onclick="if(event.button == 0) { window.close(); classicthemerestorerjso.ctr.openNewTabLinkFromPW('https://developer.mozilla.org/docs/Web/CSS/color_value/'); };">blue - #0000ff - rgba(0,0,255,0.8) - hsla(240,100%,50%,0.8)</description>
 	  <description>&Ctr_tab_tf_info2;</description>
 	  <label value=""/>
 
@@ -793,6 +804,7 @@
 				  </rows>
 				</grid>
 				<checkbox label="&Ctr_notabhov;"	preference="ctraddon_tabc_hov_unl" class="ctraddon_notabhovextra"/>
+				<checkbox label="&Ctr_tablowopa;"	preference="ctraddon_tablowopa_pen" class="ctraddon_notabhovextra"/>
 			</vbox>
 
 		  </tabpanel>
@@ -829,6 +841,7 @@
 				  </rows>
 				</grid>
 				<checkbox label="&Ctr_notabhov;"	preference="ctraddon_tabc_hov_unr" class="ctraddon_notabhovextra"/>
+				<checkbox label="&Ctr_tablowopa;"	preference="ctraddon_tablowopa_unr" class="ctraddon_notabhovextra"/>
 			</vbox>
 
 		  </tabpanel>
@@ -969,6 +982,8 @@
 			<radio label="" value="altabico_white_nd" 	id="ctraddon_altabico_white_nd"/>
 			<radio label="" value="altabico_grey_nd" 	id="ctraddon_altabico_grey_nd"/>
 			<radio label="" value="altabico_dark_nd" 	id="ctraddon_altabico_dark_nd"/>
+			<radio label="" value="altabico_white_pm" 	id="ctraddon_altabico_white_pm"/>
+			<radio label="" value="altabico_dark_pm" 	id="ctraddon_altabico_dark_pm"/>
 		</radiogroup> 
 		<checkbox label="&Ctr_appbuttonct;"	 preference="ctraddon_appbuttonct" id="ctraddon_pw_appbuttonct"/>
 		<checkbox label="&Ctr_appbutmhi;"	 preference="ctraddon_appbutmhi" id="ctraddon_abhigher" class="ctraddon_windowsonly"/>
@@ -1082,6 +1097,9 @@
 		<description id="ctraddon_pw_hiderecentbmdes" class="ctraddonsuboption">about:config &gt;&gt; browser.bookmarks.showRecentlyBookmarked</description>
 		<checkbox label="&Ctr_hideeditbm;"		preference="ctraddon_hideeditbm" id="ctraddon_pw_hideeditbm" class="ctraddon_new_in_v47" oncommand="classicthemerestorerjso.ctr.needsBrowserRestart()"/>
 		<checkbox label="&Ctr_oldplacesbut;"	preference="ctraddon_oldplacesbut" id="ctraddon_pw_oldplacesbut" class="ctraddon_winlinonly ctraddon_new_in_v50"/>
+		<checkbox label="&Ctr_dl_pm_drop;"		preference="ctraddon_dl_pm_drop" id="ctraddon_pw_dl_pm_drop" class="ctraddon_new_in_v51"/>
+		<description id="ctraddon_pw_dl_pm_dropdes" class="ctraddonsuboption">about:config &gt;&gt; browser.download.showPanelDropmarker</description>
+		
 		<description class="ctraddon_font1">&Ctr_bmbutton;</description>
 		<checkbox label="&Ctr_bmbutpanelm;"		preference="ctraddon_bmbutpanelm" id="ctraddon_pw_bmbutpanelm"/>
 		<checkbox label="&Ctr_bmbunsortbm;"		preference="ctraddon_bmbunsortbm" id="ctraddon_pw_bmbunsortbm" oncommand="if(this.checked) {classicthemerestorerjso.ctr.ctrpwUnsortBM(true);} else {classicthemerestorerjso.ctr.ctrpwUnsortBM(false);}"/>
@@ -1294,6 +1312,7 @@
 		<checkbox label="&Ctr_am_hovshowb;"		preference="ctraddon_am_hovshowb" id="ctraddon_pw_am_hovshowb"/>
 		<checkbox label="&Ctr_am_highlight;"	preference="ctraddon_am_highlight" id="ctraddon_pw_am_highlight"/>
 		<checkbox label="&Ctr_alt_addonsp;"		preference="ctraddon_alt_addonsp" id="ctraddon_pw_alt_addonsp"/>
+		<checkbox label="&Ctr_am_showrecup;"	preference="ctraddon_am_showrecup" id="ctraddon_pw_am_showrecup"/>
 		<checkbox label="&Ctr_xpinstallui;"		preference="ctraddon_xpinstallui" id="ctraddon_pw_xpinstallui"/>
 		<description class="ctraddonsuboption">about:config &gt;&gt; xpinstall.customConfirmationUI</description>
 	  </groupbox>
@@ -1607,6 +1626,8 @@
 
 	  <groupbox>
 		<caption  label="&Ctr_findbar;" class="ctraddon_topic"/>
+		<checkbox label="&Ctr_findbar_hws;" preference="ctraddon_findb_hide_ws" id="ctraddon_pw_findb_hide_ws" oncommand="classicthemerestorerjso.ctr.needsBrowserRestart()"/>
+		<description class="ctraddon_font1">&Ctr_findbarpos;</description>
 		<menulist preference="ctraddon_findbar">
 			<menupopup>
 				<menuitem value="findbar_default" label="&Ctr_findbar_def;"/>
@@ -1658,6 +1679,7 @@
 		<checkbox label="&Ctr_transpttbew10;"			 preference="ctraddon_transpttbew10" id="ctraddon_pw_transpttbew10" class="ctraddonsuboption"/>
 		<checkbox label="&Ctr_tbsep_winc; &Ctr_tnot;"	 preference="ctraddon_tbsep_winc" id="ctraddon_pw_tbsep_winc" class="ctraddon_windowsonly"/>
 		<checkbox label="&Ctr_nonavtbborder; &Ctr_tnot;" preference="ctraddon_nonavtbborder" id="ctraddon_pw_nonavtbborder"/>
+		<checkbox label="&Ctr_toptb_oldpad;" 			 preference="ctraddon_toptb_oldpad" id="ctraddon_pw_toptb_oldpad"  class="ctraddon_new_in_v51"/>
 		<checkbox label="&Ctr_navbar;: &Ctr_nonavbarbg;" preference="ctraddon_nonavbarbg" id="ctraddon_pw_nonavbarbg"/>
 		<description id="ctraddon_pw_nonavbarbg1" class="ctraddonsuboption">&Ctr_nonavbarbg1;</description>
 		<description id="ctraddon_pw_nonavbarbg2" class="ctraddonsuboption">&Ctr_nonavbarbg2;</description>

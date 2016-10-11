@@ -427,6 +427,7 @@ classicthemerestorerjso.ctr = {
 	  document.getElementById('ctraddon_pw_anewtaburlpurlbox').style.visibility = 'collapse';
 	  document.getElementById('ctraddon_pw_cresultshbox').style.visibility = 'collapse';
 	  document.getElementById('ctraddon_pw_aboutpages').style.visibility = 'collapse';
+	  document.getElementById('ctraddon_pw_ctrltabprev').style.visibility = 'collapse';
 	}
 
 	if (this.appversion >= 48) {
@@ -458,6 +459,9 @@ classicthemerestorerjso.ctr = {
 	if (this.appversion < 51) {
 	  document.getElementById('ctraddon_pw_oneoffsearchgb').style.visibility = 'collapse';
 	  document.getElementById('ctraddon_pw_hideurlzoom').style.visibility = 'collapse';
+	  document.getElementById('ctraddon_pw_dl_pm_drop').style.visibility = 'collapse';
+	  document.getElementById('ctraddon_pw_dl_pm_dropdes').style.visibility = 'collapse';
+	  document.getElementById('ctraddon_pw_toptb_oldpad').style.visibility = 'collapse';
 	}
 	
 	function PrefListener(branch_name, callback) {
@@ -1534,6 +1538,13 @@ classicthemerestorerjso.ctr = {
 	
 	this.needsBrowserRestart();
 
+  },
+
+  openNewTabLinkFromPW: function(url) {
+	var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+					   .getService(Components.interfaces.nsIWindowMediator);
+	var mainWindow = wm.getMostRecentWindow("navigator:browser");
+	mainWindow.gBrowser.selectedTab = mainWindow.gBrowser.addTab(url);
   },
 
 	// Need to check if json is valid. If json not valid. don't continue and show error.

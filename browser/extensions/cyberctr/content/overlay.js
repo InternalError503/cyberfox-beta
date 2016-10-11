@@ -56,6 +56,9 @@ classicthemerestorerjs.ctr = {
   tabitasheet_hov: sheetIO,
   tabitasheet_pen: sheetIO,
   tabitasheet_unr: sheetIO,
+ 
+  tablowsheet_pen:	sheetIO,
+  tablowopa_unr:		sheetIO,
   
   aerocolors: sheetIO,
   
@@ -775,6 +778,8 @@ classicthemerestorerjs.ctr = {
 			classicthemerestorerjs.ctr.loadUnloadCSS('altabico_dark_nd',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('altabico_grey',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('altabico_grey_nd',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('altabico_white_pm',false);
+			classicthemerestorerjs.ctr.loadUnloadCSS('altabico_dark_pm',false);
 		
 			if (branch.getCharPref("altabico")!="altabico_white"){
 			  classicthemerestorerjs.ctr.loadUnloadCSS(branch.getCharPref("altabico"),true);
@@ -946,7 +951,7 @@ classicthemerestorerjs.ctr = {
 			if (branch.getBoolPref("backforward")) {
 			  classicthemerestorerjs.ctr.loadUnloadCSS("backforward",true);
 			  
-			  if (branch.getBoolPref("nbcompact") && classicthemerestorerjs.ctr.osstring!="Darwin" && branch.getBoolPref("smallnavbut")==false){
+			  if (branch.getBoolPref("nbcompact") && branch.getBoolPref("smallnavbut")==false){
 				classicthemerestorerjs.ctr.loadUnloadCSS("nbcompact",true);
 			  }
 			}
@@ -960,7 +965,7 @@ classicthemerestorerjs.ctr = {
 		  break;
 		  
 		  case "nbcompact":
-			if (branch.getBoolPref("nbcompact") && branch.getBoolPref("backforward") && classicthemerestorerjs.ctr.osstring!="Darwin" && branch.getBoolPref("smallnavbut")==false){
+			if (branch.getBoolPref("nbcompact") && branch.getBoolPref("backforward") && branch.getBoolPref("smallnavbut")==false){
 			  classicthemerestorerjs.ctr.loadUnloadCSS("nbcompact",true);
 
 			  if (branch.getCharPref("nav_txt_ico").indexOf('iconstxt')!=-1)
@@ -1406,6 +1411,21 @@ classicthemerestorerjs.ctr = {
 			}
 		  break;
 		  
+		  case "findb_hide_ws":
+		    if (branch.getBoolPref("findb_hide_ws")) {
+				// close findbar, once mouse wheel is used
+				window.addEventListener("wheel", function() {
+				  if(!gFindBar.hidden) gFindBar.close();
+				}, false);
+				
+				// close findbar, once UP/DOWN keys are used
+				window.addEventListener("keydown", function(event) {
+				  if(event.key=="ArrowUp" || event.key=="ArrowDown")
+					if(!gFindBar.hidden) gFindBar.close();
+				}, false);
+			}
+		  break;
+		  
 		  case "nav_txt_ico":
 			classicthemerestorerjs.ctr.loadUnloadCSS('iconsbig',false);
 			classicthemerestorerjs.ctr.loadUnloadCSS('iconstxt',false);
@@ -1729,6 +1749,16 @@ classicthemerestorerjs.ctr = {
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("tabfita_unr",false);
 		  break;
 		  
+		  case "tablowopa_pen":
+			if (branch.getBoolPref("tablowopa_pen")) classicthemerestorerjs.ctr.loadUnloadCSS("tablowopa_pen",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("tablowopa_pen",false);
+		  break;
+		  
+		  case "tablowopa_unr":
+			if (branch.getBoolPref("tablowopa_unr")) classicthemerestorerjs.ctr.loadUnloadCSS("tablowopa_unr",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("tablowopa_unr",false);
+		  break;
+		  
 		  /* exclude hover settings from unloaded/pending tab */
 		  case "tabc_hov_unl":
 		    if (branch.getBoolPref("tabcolor_pen")) {
@@ -1955,6 +1985,11 @@ classicthemerestorerjs.ctr = {
 			else classicthemerestorerjs.ctr.loadUnloadCSS("nonavtbborder",false);
 		  break;
 		  
+		  case "toptb_oldpad":
+			if (branch.getBoolPref("toptb_oldpad") && classicthemerestorerjs.ctr.appversion >= 51) classicthemerestorerjs.ctr.loadUnloadCSS("toptb_oldpad",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("toptb_oldpad",false);
+		  break;
+
 		  case "hidesbclose":
 			if (branch.getBoolPref("hidesbclose")) classicthemerestorerjs.ctr.loadUnloadCSS("hidesbclose",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("hidesbclose",false);
@@ -2146,6 +2181,11 @@ classicthemerestorerjs.ctr = {
 		  case "alt_addonsp":
 			if (branch.getBoolPref("alt_addonsp")) classicthemerestorerjs.ctr.loadUnloadCSS("alt_addonsp",true);
 			  else classicthemerestorerjs.ctr.loadUnloadCSS("alt_addonsp",false);
+		  break;
+
+		  case "am_showrecup":
+			if (branch.getBoolPref("am_showrecup")) classicthemerestorerjs.ctr.loadUnloadCSS("am_showrecup",true);
+			  else classicthemerestorerjs.ctr.loadUnloadCSS("am_showrecup",false);
 		  break;
 		  
 		  case "alt_addonsm":
@@ -2877,7 +2917,8 @@ classicthemerestorerjs.ctr = {
 				case "appbutton_off":
 					classicthemerestorerjs.ctr.loadUnloadCSS("tree_style_fix",false);
 					if (menutoolbarHasAttribute.getAttribute('autohide', true)){
-						if (treeStyleCompatMode === false){Services.prefs.setBoolPref("browser.tabs.drawInTitlebar", false);}else{}
+						if (!treeStyleCompatMode)
+							Services.prefs.setBoolPref("browser.tabs.drawInTitlebar", false);
 					}
 					Services.prefs.setBoolPref("extensions.classicthemerestorer.titleintitlebar", false);
 					classicthemerestorerjs.ctr.loadUnloadCSS("tabs_titlebar",false);	
@@ -4343,7 +4384,7 @@ classicthemerestorerjs.ctr = {
 
 		break;
 		
-		case "appbuttonc_orange":	manageCSS("appbutton_orange.css");		break;
+		case "appbuttonc_orange":	manageCSS("appbutton_base.css");		break;
 		case "appbuttonc_aurora":	manageCSS("appbutton_aurora.css");		break;
 		case "appbuttonc_nightly":	manageCSS("appbutton_nightly.css");		break;
 		case "appbuttonc_transp":	manageCSS("appbutton_transparent.css");	break;
@@ -4359,6 +4400,8 @@ classicthemerestorerjs.ctr = {
 		case "altabico_dark_nd": 	manageCSS("alt_appbutton_icons3.css");	break;
 		case "altabico_grey": 		manageCSS("alt_appbutton_icons4.css");	break;
 		case "altabico_grey_nd": 	manageCSS("alt_appbutton_icons5.css");	break;
+		case "altabico_white_pm": 	manageCSS("alt_appbutton_icons6.css");	break;
+		case "altabico_dark_pm": 	manageCSS("alt_appbutton_icons7.css");	break;
 		case "appbutmhi": 			manageCSS("appbuthigherposition.css");  break;
 		case "appbutbdl": 			manageCSS("appbutton_borderless.css");  break;
 		
@@ -4427,6 +4470,7 @@ classicthemerestorerjs.ctr = {
 		case "nonavbarbg": 			manageCSS("nonavbarbg.css");			break;
 		case "nonavborder": 		manageCSS("nonavborder.css");			break;
 		case "nonavtbborder": 		manageCSS("nonavtbborder.css");			break;
+		case "toptb_oldpad": 		manageCSS("toptb_oldpadding.css");		break;
 		case "hidesbclose": 		manageCSS("hidesidebarclose.css");		break;
 		case "notextshadow": 		manageCSS("notextshadow.css");			break;
 		case "chevronfix": 			manageCSS("chevronfix.css");			break;
@@ -4464,6 +4508,7 @@ classicthemerestorerjs.ctr = {
 		case "am_buticons": 		manageCSS("am_buttonicons.css");		break;
 		case "am_hovshowb": 		manageCSS("am_hovshowbut.css");			break;
 		case "alt_addonsp": 		manageCSS("alt_addonspage.css");		break;
+		case "am_showrecup": 		manageCSS("am_showrecentupdates.css");	break;
 		case "alt_addonsm": 		manageCSS("alt_addonsmanager.css");		break;
 
 /*		
@@ -4557,7 +4602,7 @@ classicthemerestorerjs.ctr = {
 
 
 
- 		case "appbuttonc_default":	manageCSS("cctr/appbutton_default.css");		break;
+ 		case "appbuttonc_default":	manageCSS("cctr/appbutton_base.css");		break;
 		case "appbuttonc_orange_dark":	manageCSS("cctr/appbutton_orange_dark.css");		break;
 		case "appbuttonc_cyan":	manageCSS("cctr/appbutton_cyan.css");		break;
 		case "appbuttonc_red_dark":		manageCSS("cctr/appbutton_red_dark.css");			break;
@@ -4886,7 +4931,7 @@ classicthemerestorerjs.ctr = {
 			var newColor = this.prefs.getCharPref('cappbutc1')+', '+this.prefs.getCharPref('cappbutc2')+' '+ this.prefs.getIntPref('cappbutcpercent') +'%';	
 			var buttonTextShadow = "";
 			if(this.prefs.getBoolPref('cappbutnotxtsh')){
-				buttonTextShadow = "text-shadow:none!important;";
+				buttonTextShadow = "none!important;";
 			}	
 			if(enable==true && this.prefs.getCharPref('appbuttonc')=='appbuttonc_custom' && (this.prefs.getCharPref('appbutton')=='appbutton_pm' || this.prefs.getCharPref('appbutton')=='appbutton_pm2')) {
 			
@@ -4894,7 +4939,7 @@ classicthemerestorerjs.ctr = {
 					@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);\
 					@-moz-document url(chrome://browser/content/browser.xul) {\
 						#navigator-toolbox #TabsToolbar #ctraddon_panelui-button #PanelUI-menu-button {\
-						  background: linear-gradient('+this.prefs.getCharPref('cappbutc1')+', '+this.prefs.getCharPref('cappbutc2')+' 95%) !important;\
+						  background: linear-gradient('+newColor+') !important;\
 						  border-color: rgba(83,42,6,.9) !important;\
 						  box-shadow: 0 1px 0 rgba(255,255,255,.25) inset,\
 									  0 0 0 1px rgba(255,255,255,.25) inset !important;\
@@ -4902,7 +4947,7 @@ classicthemerestorerjs.ctr = {
 						#navigator-toolbox #TabsToolbar #ctraddon_panelui-button #PanelUI-menu-button:hover:not(:active):not([open]){\
 						  background-image: radial-gradient(farthest-side at center bottom, hsla(210,48%,90%,.5) 10%, hsla(210,48%,90%,0) 70%),\
 																radial-gradient(farthest-side at center bottom, hsla(211,70%,83%,.5), hsla(211,70%,83%,0)),\
-																linear-gradient('+this.prefs.getCharPref('cappbutc1')+', '+this.prefs.getCharPref('cappbutc2')+' 95%) !important;\
+																linear-gradient('+newColor+') !important;\
 						  border-color: rgba(83,42,6,.9) !important;\
 						  box-shadow: 0 1px 0 rgba(255,255,255,.1) inset,\
 									  0 0 2px 1px rgba(250,234,169,.7) inset,\
@@ -4910,7 +4955,7 @@ classicthemerestorerjs.ctr = {
 						}\
 						#navigator-toolbox #TabsToolbar #ctraddon_panelui-button #PanelUI-menu-button:hover:active,\
 						#navigator-toolbox #TabsToolbar #ctraddon_panelui-button #PanelUI-menu-button[open]{\
-						  background-image: linear-gradient('+this.prefs.getCharPref('cappbutc1')+', '+this.prefs.getCharPref('cappbutc2')+' 95%) !important;\
+						  background-image: linear-gradient('+newColor+') !important;\
 						  box-shadow: 0 2px 3px rgba(0,0,0,.4) inset,\
 									  0 1px 1px rgba(0,0,0,.2) inset !important;\
 						}\
@@ -4924,154 +4969,31 @@ classicthemerestorerjs.ctr = {
 				
 				if(this.prefs.getBoolPref('appbuttonct'))
 				appbuttonontoolbar='\
+					@import url(chrome://classic_theme_restorer/content/css/appbuttonontoolbar.css);\
+					@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);\
 					@-moz-document url(chrome://browser/content/browser.xul) {\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton .toolbarbutton-icon,\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton .toolbarbutton-text {\
-						  background: linear-gradient('+newColor+') !important;\
-						  border-color: hsla(210,59%,13%,.9) !important;\
-						  box-shadow: 0 1px 0 hsla(210,48%,90%,.15) inset,\
-									  0 0 2px 1px hsla(211,65%,85%,.15) inset !important;\
-						}\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:not(:active):not([open]) .toolbarbutton-icon,\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:not(:active):not([open]) .toolbarbutton-text {\
-						  background-image: radial-gradient(farthest-side at center bottom, hsla(210,48%,90%,.5) 10%, hsla(210,48%,90%,0) 70%),\
-											radial-gradient(farthest-side at center bottom, hsla(211,70%,83%,.5), hsla(211,70%,83%,0)),\
-											linear-gradient('+newColor+') !important;\
-						  border-color: hsla(210,59%,13%,.9) !important;\
-						  box-shadow: 0 1px 0 hsla(210,48%,90%,.15) inset,\
-									  0 0 2px 1px hsla(210,48%,90%,.4) inset,\
-									  0 -1px 0 hsla(210,48%,90%,.2) inset !important;\
-						}\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:active .toolbarbutton-icon,\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton[open] .toolbarbutton-icon,\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:active .toolbarbutton-text,\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton[open] .toolbarbutton-text {\
-						  background-image: linear-gradient('+newColor+') !important;\
-						  box-shadow: 0 2px 3px rgba(0,0,0,.4) inset,\
-									  0 1px 1px rgba(0,0,0,.2) inset !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton .toolbarbutton-icon,\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton .toolbarbutton-text{\
-						  background-image: linear-gradient(rgb(153,38,211), rgb(105,19,163) 95%) !important;\
-						  border-color: rgba(43,8,65,.9) !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:not(:active):not([open]) .toolbarbutton-icon,\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:not(:active):not([open]) .toolbarbutton-text{\
-						  background-image: radial-gradient(farthest-side at center bottom, rgba(240,193,255,.5) 10%, rgba(240,193,255,0) 70%),\
-											radial-gradient(farthest-side at center bottom, rgb(192,81,247), rgba(236,172,255,0)),\
-											linear-gradient(rgb(144,20,207), rgb(95,0,158) 95%) !important;\
-						  border-color: rgba(43,8,65,.9) !important;\
-						  box-shadow: 0 1px 0 rgba(255,255,255,.1) inset,\
-									  0 0 2px 1px rgba(240,193,255,.7) inset,\
-									  0 -1px 0 rgba(240,193,255,.5) inset !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:active .toolbarbutton-icon,\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton[open] .toolbarbutton-icon,\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:active .toolbarbutton-text,\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton[open] .toolbarbutton-text{\
-						  background-image: linear-gradient(rgb(144,20,207), rgb(95,0,158) 95%) !important;\
-						}\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton .toolbarbutton-text {\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  '+buttonTextShadow+'\
-						  font-weight:bold !important;\
+						:root {\
+							--color-button-main: linear-gradient('+newColor+');\
+							--color-button-text:'+this.prefs.getCharPref('cappbuttxtc')+';\
+							--text-style-shadow:'+buttonTextShadow+';\
 						}\
 					}\
 				';
 				
 				this.appbutton_color=ios.newURI("data:text/css;charset=utf-8," + encodeURIComponent('\
-					@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);\
-					@-moz-document url(chrome://browser/content/browser.xul) {\
-						#ctraddon_appbutton2:not(:hover):not(:active):not([open]){\
-						  background-image: linear-gradient('+newColor+') !important;\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  '+buttonTextShadow+'\
-						  border-color: hsla(210,59%,13%,.9) !important;\
-						  box-shadow: 0 1px 0 hsla(210,48%,90%,.15) inset,\
-									  0 0 2px 1px hsla(211,65%,85%,.15) inset !important;\
-						}\
-						#TabsToolbar #ctraddon_appbutton{\
-						  background: linear-gradient('+newColor+') !important;\
-						  border-color: hsla(210,59%,13%,.9) !important;\
-						  box-shadow: 0 1px 0 hsla(210,48%,90%,.15) inset,\
-									  0 0 2px 1px hsla(211,65%,85%,.15) inset !important;\
-						}\
-						#TabsToolbar #ctraddon_appbutton:hover:not(:active):not([open]),\
-						#ctraddon_appbutton2:hover:not(:active):not([open]){\
-						  background-image: radial-gradient(farthest-side at center bottom, hsla(210,48%,90%,.5) 10%, hsla(210,48%,90%,0) 70%),\
-											radial-gradient(farthest-side at center bottom, hsla(211,70%,83%,.5), hsla(211,70%,83%,0)),\
-											linear-gradient('+newColor+') !important;\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  '+buttonTextShadow+'\
-						  border-color: hsla(210,59%,13%,.9) !important;\
-						  box-shadow: 0 1px 0 hsla(210,48%,90%,.15) inset,\
-									  0 0 2px 1px hsla(210,48%,90%,.4) inset,\
-									  0 -1px 0 hsla(210,48%,90%,.2) inset !important;\
-						}\
-						#TabsToolbar #ctraddon_appbutton:hover:active,\
-						#TabsToolbar #ctraddon_appbutton[open],\
-						#ctraddon_appbutton2:hover:active,\
-						#ctraddon_appbutton2[open] {\
-						  background-image: linear-gradient('+newColor+') !important;\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  '+buttonTextShadow+'\
-						  box-shadow: 0 2px 3px rgba(0,0,0,.4) inset,\
-									  0 1px 1px rgba(0,0,0,.2) inset !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] #TabsToolbar #ctraddon_appbutton,\
-						#main-window[privatebrowsingmode=temporary] #ctraddon_appbutton2{\
-						  background-image: linear-gradient(rgb(153,38,211), rgb(105,19,163) 95%) !important;\
-						  border-color: rgba(43,8,65,.9) !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] #TabsToolbar #ctraddon_appbutton:hover:not(:active):not([open]),\
-						#main-window[privatebrowsingmode=temporary] #ctraddon_appbutton2:hover:not(:active):not([open]){\
-						  background-image: radial-gradient(farthest-side at center bottom, rgba(240,193,255,.5) 10%, rgba(240,193,255,0) 70%),\
-											radial-gradient(farthest-side at center bottom, rgb(192,81,247), rgba(236,172,255,0)),\
-											linear-gradient(rgb(144,20,207), rgb(95,0,158) 95%) !important;\
-						  border-color: rgba(43,8,65,.9) !important;\
-						  box-shadow: 0 1px 0 rgba(255,255,255,.1) inset,\
-									  0 0 2px 1px rgba(240,193,255,.7) inset,\
-									  0 -1px 0 rgba(240,193,255,.5) inset !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] #TabsToolbar #ctraddon_appbutton:hover:active,\
-						#main-window[privatebrowsingmode=temporary] #TabsToolbar #ctraddon_appbutton[open],\
-						#main-window[privatebrowsingmode=temporary] #ctraddon_appbutton2:hover:active,\
-						#main-window[privatebrowsingmode=temporary]  #ctraddon_appbutton2[open] {\
-						  background-image: linear-gradient(rgb(144,20,207), rgb(95,0,158) 95%) !important;\
-						}\
+				@import url(chrome://classic_theme_restorer/content/css/appbutton_base.css);\
+				@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);\
+				@-moz-document url(chrome://browser/content/browser.xul), url(chrome://classic_theme_restorer/content/options.xul) {\
+					:root {\
+					  --color-button-main: linear-gradient('+newColor+');\
+					  --color-button-hover:radial-gradient(farthest-side at center bottom, hsla(210,48%,90%,.5) 10%, hsla(210,48%,90%,0) 70%),\
+															radial-gradient(farthest-side at center bottom, hsla(211,70%,83%,.5), hsla(211,70%,83%,0)),\
+															linear-gradient('+newColor+');\
+					  --color-button-open: linear-gradient('+newColor+');\
+					  --color-button-text:'+this.prefs.getCharPref('cappbuttxtc')+';\
+					  --text-style-shadow:'+buttonTextShadow+';\
 					}\
-					@-moz-document url(chrome://classic_theme_restorer/content/options.xul) {\
-						#ctraddon_pw_appbuttonname {\
-						  -moz-appearance: none !important;\
-						  background-image: linear-gradient('+newColor+') !important;\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  '+buttonTextShadow+'\
-						  box-shadow: 0 1px 0 rgba(255,255,255,.25) inset,\
-									  0 0 0 1px rgba(255,255,255,.25) inset !important;\
-						  background-clip: padding-box !important;\
-						  border-radius: 0 0 4px 4px;\
-						  height:22px !important;\
-						  border-top: 2px solid !important;\
-						  border-right: 2px solid !important;\
-						  border-left: 2px solid !important;\
-						  border-bottom: 2px solid !important;\
-						  -moz-border-top-colors: rgba(255,255,255,.70) hsla(214,89%,21%,.5) !important;\
-						  -moz-border-right-colors: rgba(255,255,255,.60) hsla(214,89%,21%,.5) !important;\
-						  -moz-border-left-colors: rgba(255,255,255,.60) hsla(214,89%,21%,.5) !important;\
-						  -moz-border-bottom-colors: rgba(255,255,255,.70) hsla(214,89%,21%,.5) !important;\
-						}\
-						#ctraddon_pw_appbuttonname label {\
-						  padding: 2px 12px !important;\
-						  background: -moz-image-rect(url(chrome://classic_theme_restorer/content/images/appmenu-dropmarker.png), 0, 16, 16, 0) no-repeat right !important;\
-						  -moz-margin-end:10px !important;\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  text-shadow: 0 0 1px rgba(0,0,0,.7),\
-									   0 1px 1.5px rgba(0,0,0,.5) !important;\
-              '+buttonTextShadow+'\
-						  font-weight: bold !important;\
-						}\
-					}\
-        '+appbuttonontoolbar+'\
+				'+appbuttonontoolbar+'\
 				'), null, null);
 			
 				applyNewSheet(this.appbutton_color);
@@ -5087,7 +5009,7 @@ classicthemerestorerjs.ctr = {
 			var newColor = this.prefs.getCharPref('cappbutc1')+', '+this.prefs.getCharPref('cappbutcm')+', '+this.prefs.getCharPref('cappbutc2')+' '+ this.prefs.getIntPref('cappbutcpercent') +'%';
 			var buttonTextShadow = "";
 			if(this.prefs.getBoolPref('cappbutnotxtsh')){
-				buttonTextShadow = "text-shadow:none!important;";
+				buttonTextShadow = "none!important;";
 			}
       			
 			if(enable==true && this.prefs.getCharPref('appbuttonc')=='appbuttonc_custom' && this.prefs.getCharPref('appbutton')=='appbutton_pm') {
@@ -5096,7 +5018,7 @@ classicthemerestorerjs.ctr = {
 					@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);\
 					@-moz-document url(chrome://browser/content/browser.xul) {\
 						#navigator-toolbox #TabsToolbar #ctraddon_panelui-button #PanelUI-menu-button {\
-						  background: linear-gradient('+this.prefs.getCharPref('cappbutc1')+', '+this.prefs.getCharPref('cappbutc2')+' 95%) !important;\
+						  background: linear-gradient('+newColor+') !important;\
 						  border-color: rgba(83,42,6,.9) !important;\
 						  box-shadow: 0 1px 0 rgba(255,255,255,.25) inset,\
 									  0 0 0 1px rgba(255,255,255,.25) inset !important;\
@@ -5104,7 +5026,7 @@ classicthemerestorerjs.ctr = {
 						#navigator-toolbox #TabsToolbar #ctraddon_panelui-button #PanelUI-menu-button:hover:not(:active):not([open]){\
 						  background-image: radial-gradient(farthest-side at center bottom, hsla(210,48%,90%,.5) 10%, hsla(210,48%,90%,0) 70%),\
 																radial-gradient(farthest-side at center bottom, hsla(211,70%,83%,.5), hsla(211,70%,83%,0)),\
-																linear-gradient('+this.prefs.getCharPref('cappbutc1')+', '+this.prefs.getCharPref('cappbutc2')+' 95%) !important;\
+																linear-gradient('+newColor+') !important;\
 						  border-color: rgba(83,42,6,.9) !important;\
 						  box-shadow: 0 1px 0 rgba(255,255,255,.1) inset,\
 									  0 0 2px 1px rgba(250,234,169,.7) inset,\
@@ -5112,7 +5034,7 @@ classicthemerestorerjs.ctr = {
 						}\
 						#navigator-toolbox #TabsToolbar #ctraddon_panelui-button #PanelUI-menu-button:hover:active,\
 						#navigator-toolbox #TabsToolbar #ctraddon_panelui-button #PanelUI-menu-button[open]{\
-						  background-image: linear-gradient('+this.prefs.getCharPref('cappbutc1')+', '+this.prefs.getCharPref('cappbutc2')+' 95%) !important;\
+						  background-image: linear-gradient('+newColor+') !important;\
 						  box-shadow: 0 2px 3px rgba(0,0,0,.4) inset,\
 									  0 1px 1px rgba(0,0,0,.2) inset !important;\
 						}\
@@ -5127,154 +5049,31 @@ classicthemerestorerjs.ctr = {
 				
 				if(this.prefs.getBoolPref('appbuttonct'))
 				appbuttonontoolbar='\
+					@import url(chrome://classic_theme_restorer/content/css/appbuttonontoolbar.css);\
+					@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);\
 					@-moz-document url(chrome://browser/content/browser.xul) {\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton .toolbarbutton-icon,\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton .toolbarbutton-text {\
-						  background-image: linear-gradient('+newColor+') !important;\
-						  border-color: hsla(210,59%,13%,.9) !important;\
-						  box-shadow: 0 1px 0 hsla(210,48%,90%,.15) inset,\
-									  0 0 2px 1px hsla(211,65%,85%,.15) inset !important;\
-						}\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:not(:active):not([open]) .toolbarbutton-icon,\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:not(:active):not([open]) .toolbarbutton-text {\
-						  background: radial-gradient(farthest-side at center bottom, hsla(210,48%,90%,.5) 10%, hsla(210,48%,90%,0) 70%),\
-											radial-gradient(farthest-side at center bottom, hsla(211,70%,83%,.5), hsla(211,70%,83%,0)),\
-											linear-gradient('+newColor+') !important;\
-						  border-color: hsla(210,59%,13%,.9) !important;\
-						  box-shadow: 0 1px 0 hsla(210,48%,90%,.15) inset,\
-									  0 0 2px 1px hsla(210,48%,90%,.4) inset,\
-									  0 -1px 0 hsla(210,48%,90%,.2) inset !important;\
-						}\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:active .toolbarbutton-icon,\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton[open] .toolbarbutton-icon,\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:active .toolbarbutton-text,\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton[open] .toolbarbutton-text {\
-						  background-image: linear-gradient('+newColor+') !important;\
-						  box-shadow: 0 2px 3px rgba(0,0,0,.4) inset,\
-									  0 1px 1px rgba(0,0,0,.2) inset !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton .toolbarbutton-icon,\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton .toolbarbutton-text{\
-						  background-image: linear-gradient(rgb(153,38,211), rgb(105,19,163) 95%) !important;\
-						  border-color: rgba(43,8,65,.9) !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:not(:active):not([open]) .toolbarbutton-icon,\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:not(:active):not([open]) .toolbarbutton-text{\
-						  background-image: radial-gradient(farthest-side at center bottom, rgba(240,193,255,.5) 10%, rgba(240,193,255,0) 70%),\
-											radial-gradient(farthest-side at center bottom, rgb(192,81,247), rgba(236,172,255,0)),\
-											linear-gradient(rgb(144,20,207), rgb(95,0,158) 95%) !important;\
-						  border-color: rgba(43,8,65,.9) !important;\
-						  box-shadow: 0 1px 0 rgba(255,255,255,.1) inset,\
-									  0 0 2px 1px rgba(240,193,255,.7) inset,\
-									  0 -1px 0 rgba(240,193,255,.5) inset !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:active .toolbarbutton-icon,\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton[open] .toolbarbutton-icon,\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton:hover:active .toolbarbutton-text,\
-						#main-window[privatebrowsingmode=temporary] toolbar:not(#TabsToolbar) #ctraddon_appbutton[open] .toolbarbutton-text{\
-						  background-image: linear-gradient(rgb(144,20,207), rgb(95,0,158) 95%) !important;\
-						}\
-						toolbar:not(#TabsToolbar) #ctraddon_appbutton .toolbarbutton-text {\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  '+buttonTextShadow+'\
-						  font-weight:bold !important;\
+						:root {\
+							--color-button-main: linear-gradient('+newColor+');\
+							--color-button-text:'+this.prefs.getCharPref('cappbuttxtc')+';\
+							--text-style-shadow:'+buttonTextShadow+';\
 						}\
 					}\
 				';
 			
 				this.appbutton_color=ios.newURI("data:text/css;charset=utf-8," + encodeURIComponent('\
-					@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);\
-					@-moz-document url(chrome://browser/content/browser.xul) {\
-						#ctraddon_appbutton2:not(:hover):not(:active):not([open]){\
-						  background-image: linear-gradient('+newColor+') !important;\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  '+buttonTextShadow+'\
-						  border-color: hsla(210,59%,13%,.9) !important;\
-						  box-shadow: 0 1px 0 hsla(210,48%,90%,.15) inset,\
-									  0 0 2px 1px hsla(211,65%,85%,.15) inset !important;\
-						}\
-						#TabsToolbar #ctraddon_appbutton{\
-						  background: linear-gradient('+newColor+') !important;\
-						  border-color: hsla(210,59%,13%,.9) !important;\
-						  box-shadow: 0 1px 0 hsla(210,48%,90%,.15) inset,\
-									  0 0 2px 1px hsla(211,65%,85%,.15) inset !important;\
-						}\
-						#TabsToolbar #ctraddon_appbutton:hover:not(:active):not([open]),\
-						#ctraddon_appbutton2:hover:not(:active):not([open]){\
-						  background-image: radial-gradient(farthest-side at center bottom, hsla(210,48%,90%,.5) 10%, hsla(210,48%,90%,0) 70%),\
-											radial-gradient(farthest-side at center bottom, hsla(211,70%,83%,.5), hsla(211,70%,83%,0)),\
-											linear-gradient('+newColor+') !important;\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  '+buttonTextShadow+'\
-						  border-color: hsla(210,59%,13%,.9) !important;\
-						  box-shadow: 0 1px 0 hsla(210,48%,90%,.15) inset,\
-									  0 0 2px 1px hsla(210,48%,90%,.4) inset,\
-									  0 -1px 0 hsla(210,48%,90%,.2) inset !important;\
-						}\
-						#TabsToolbar #ctraddon_appbutton:hover:active,\
-						#TabsToolbar #ctraddon_appbutton[open],\
-						#ctraddon_appbutton2:hover:active,\
-						#ctraddon_appbutton2[open] {\
-						  background-image: linear-gradient('+newColor+') !important;\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  '+buttonTextShadow+'\
-						  box-shadow: 0 2px 3px rgba(0,0,0,.4) inset,\
-									  0 1px 1px rgba(0,0,0,.2) inset !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] #TabsToolbar #ctraddon_appbutton,\
-						#main-window[privatebrowsingmode=temporary] #ctraddon_appbutton2{\
-						  background-image: linear-gradient(rgb(153,38,211), rgb(105,19,163) 95%) !important;\
-						  border-color: rgba(43,8,65,.9) !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] #TabsToolbar #ctraddon_appbutton:hover:not(:active):not([open]),\
-						#main-window[privatebrowsingmode=temporary] #ctraddon_appbutton2:hover:not(:active):not([open]){\
-						  background-image: radial-gradient(farthest-side at center bottom, rgba(240,193,255,.5) 10%, rgba(240,193,255,0) 70%),\
-											radial-gradient(farthest-side at center bottom, rgb(192,81,247), rgba(236,172,255,0)),\
-											linear-gradient(rgb(144,20,207), rgb(95,0,158) 95%) !important;\
-						  border-color: rgba(43,8,65,.9) !important;\
-						  box-shadow: 0 1px 0 rgba(255,255,255,.1) inset,\
-									  0 0 2px 1px rgba(240,193,255,.7) inset,\
-									  0 -1px 0 rgba(240,193,255,.5) inset !important;\
-						}\
-						#main-window[privatebrowsingmode=temporary] #TabsToolbar #ctraddon_appbutton:hover:active,\
-						#main-window[privatebrowsingmode=temporary] #TabsToolbar #ctraddon_appbutton[open],\
-						#main-window[privatebrowsingmode=temporary] #ctraddon_appbutton2:hover:active,\
-						#main-window[privatebrowsingmode=temporary]  #ctraddon_appbutton2[open] {\
-						  background-image: linear-gradient(rgb(144,20,207), rgb(95,0,158) 95%) !important;\
-						}\
+				@import url(chrome://classic_theme_restorer/content/css/appbutton_base.css);\
+				@namespace url(http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul);\
+				@-moz-document url(chrome://browser/content/browser.xul), url(chrome://classic_theme_restorer/content/options.xul) {\
+					:root {\
+					  --color-button-main: linear-gradient('+newColor+');\
+					  --color-button-hover:radial-gradient(farthest-side at center bottom, hsla(210,48%,90%,.5) 10%, hsla(210,48%,90%,0) 70%),\
+															radial-gradient(farthest-side at center bottom, hsla(211,70%,83%,.5), hsla(211,70%,83%,0)),\
+															linear-gradient('+newColor+');\
+					  --color-button-open: linear-gradient('+newColor+');\
+					  --color-button-text:'+this.prefs.getCharPref('cappbuttxtc')+';\
+					  --text-style-shadow:'+buttonTextShadow+';\
 					}\
-					@-moz-document url(chrome://classic_theme_restorer/content/options.xul) {\
-						#ctraddon_pw_appbuttonname {\
-						  -moz-appearance: none !important;\
-						  background-image: linear-gradient('+newColor+') !important;\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  '+buttonTextShadow+'\
-						  box-shadow: 0 1px 0 rgba(255,255,255,.25) inset,\
-									  0 0 0 1px rgba(255,255,255,.25) inset !important;\
-						  background-clip: padding-box !important;\
-						  border-radius: 0 0 4px 4px;\
-						  height:22px !important;\
-						  border-top: 2px solid !important;\
-						  border-right: 2px solid !important;\
-						  border-left: 2px solid !important;\
-						  border-bottom: 2px solid !important;\
-						  -moz-border-top-colors: rgba(255,255,255,.70) hsla(214,89%,21%,.5) !important;\
-						  -moz-border-right-colors: rgba(255,255,255,.60) hsla(214,89%,21%,.5) !important;\
-						  -moz-border-left-colors: rgba(255,255,255,.60) hsla(214,89%,21%,.5) !important;\
-						  -moz-border-bottom-colors: rgba(255,255,255,.70) hsla(214,89%,21%,.5) !important;\
-						}\
-						#ctraddon_pw_appbuttonname label {\
-						  padding: 2px 12px !important;\
-						  background: -moz-image-rect(url(chrome://classic_theme_restorer/content/images/appmenu-dropmarker.png), 0, 16, 16, 0) no-repeat right !important;\
-						  -moz-margin-end:10px !important;\
-						  color:'+this.prefs.getCharPref('cappbuttxtc')+'!important;\
-						  text-shadow: 0 0 1px rgba(0,0,0,.7),\
-									   0 1px 1.5px rgba(0,0,0,.5) !important;\
-              '+buttonTextShadow+'\
-						  font-weight: bold !important;\
-						}\
-					}\
-					'+appbuttonontoolbar+'\
+				'+appbuttonontoolbar+'\
 				'), null, null);
 			
 				applyNewSheet(this.appbutton_color);
@@ -6465,6 +6264,40 @@ classicthemerestorerjs.ctr = {
 			  }
 
 			  applyNewSheet(this.tabitasheet_unr);
+			}
+
+		break;
+	
+		case "tablowopa_pen":
+
+			removeOldSheet(this.tablowsheet_pen);
+			
+			if(enable==true){
+				
+				this.tablowsheet_pen=ios.newURI("data:text/css;charset=utf-8," + encodeURIComponent('\
+					.tabbrowser-tab[pending] {\
+					  opacity: 0.6 !important;\
+					}\
+				'), null, null);
+
+				applyNewSheet(this.tablowsheet_pen);
+			}
+
+		break;
+		
+		case "tablowopa_unr":
+
+			removeOldSheet(this.tablowopa_unr);
+			
+			if(enable==true){
+				
+				this.tablowopa_unr=ios.newURI("data:text/css;charset=utf-8," + encodeURIComponent('\
+					.tabbrowser-tab[unread] {\
+					  opacity: 0.6 !important;\
+					}\
+				'), null, null);
+
+				applyNewSheet(this.tablowopa_unr);
 			}
 
 		break;
