@@ -244,7 +244,6 @@ WebGLContext::DestroyResourcesAndContext()
     mBoundCopyWriteBuffer = nullptr;
     mBoundPixelPackBuffer = nullptr;
     mBoundPixelUnpackBuffer = nullptr;
-    mBoundTransformFeedbackBuffer = nullptr;
     mBoundUniformBuffer = nullptr;
     mCurrentProgram = nullptr;
     mActiveProgramLinkInfo = nullptr;
@@ -257,8 +256,7 @@ WebGLContext::DestroyResourcesAndContext()
     mBoundTransformFeedback = nullptr;
     mDefaultTransformFeedback = nullptr;
 
-    mBoundTransformFeedbackBuffers.Clear();
-    mBoundUniformBuffers.Clear();
+    mIndexedUniformBufferBindings.clear();
 
     //////
 
@@ -824,8 +822,11 @@ void
 WebGLContext::ThrowEvent_WebGLContextCreationError(const nsACString& text)
 {
     RefPtr<EventTarget> target = mCanvasElement;
-    if (!target) {
+    if (!target && mOffscreenCanvas) {
         target = mOffscreenCanvas;
+    } else if (!target) {
+        GenerateWarning("Failed to create WebGL context: %s", text.BeginReading());
+        return;
     }
 
     const auto kEventName = NS_LITERAL_STRING("webglcontextcreationerror");
@@ -1612,18 +1613,11 @@ WebGLContext::DummyReadFramebufferOperation(const char* funcName)
     if (!mBoundReadFramebuffer)
         return; // Infallible.
 
-    nsCString fbStatusInfo;
-    const auto status = mBoundReadFramebuffer->CheckFramebufferStatus(&fbStatusInfo);
+    const auto status = mBoundReadFramebuffer->CheckFramebufferStatus(funcName);
 
     if (status != LOCAL_GL_FRAMEBUFFER_COMPLETE) {
-        nsCString errorText("Incomplete framebuffer");
-
-        if (fbStatusInfo.Length()) {
-            errorText += ": ";
-            errorText += fbStatusInfo;
-        }
-
-        ErrorInvalidFramebufferOperation("%s: %s.", funcName, errorText.BeginReading());
+        ErrorInvalidFramebufferOperation("%s: Framebuffer must be complete.",
+                                         funcName);
     }
 }
 
@@ -1919,8 +1913,18 @@ WebGLContext::GetSurfaceSnapshot(bool* out_premultAlpha)
     {
         ScopedBindFramebuffer autoFB(gl, 0);
         ClearBackbufferIfNeeded();
-        // TODO: Save, override, then restore glReadBuffer if present.
+
+        // Save, override, then restore glReadBuffer.
+        const GLenum readBufferMode = gl->Screen()->GetReadBufferMode();
+
+        if (readBufferMode != LOCAL_GL_BACK) {
+            gl->fReadBuffer(LOCAL_GL_BACK);
+        }
         ReadPixelsIntoDataSurface(gl, surf);
+
+        if (readBufferMode != LOCAL_GL_BACK) {
+            gl->fReadBuffer(readBufferMode);
+        }
     }
 
     if (out_premultAlpha) {
@@ -2046,6 +2050,30 @@ WebGLContext::ScopedMaskWorkaround::HasDepthButNoStencil(const WebGLFramebuffer*
 
 ////////////////////////////////////////
 
+IndexedBufferBinding::IndexedBufferBinding()
+    : mRangeStart(0)
+    , mRangeSize(0)
+{ }
+
+uint64_t
+IndexedBufferBinding::ByteCount() const
+{
+    if (!mBufferBinding)
+        return 0;
+
+    uint64_t bufferSize = mBufferBinding->ByteLength();
+    if (!mRangeSize) // BindBufferBase
+        return bufferSize;
+
+    if (mRangeStart >= bufferSize)
+        return 0;
+    bufferSize -= mRangeStart;
+
+    return std::min(bufferSize, mRangeSize);
+}
+
+////////////////////////////////////////
+
 ScopedUnpackReset::ScopedUnpackReset(WebGLContext* webgl)
     : ScopedGLWrapper<ScopedUnpackReset>(webgl->gl)
     , mWebGL(webgl)
@@ -2081,6 +2109,24 @@ ScopedUnpackReset::UnwrapImpl()
         }
 
         mGL->fBindBuffer(LOCAL_GL_PIXEL_UNPACK_BUFFER, pbo);
+    }
+}
+
+////////////////////
+
+void
+ScopedFBRebinder::UnwrapImpl()
+{
+    const auto fnName = [&](WebGLFramebuffer* fb) {
+        return fb ? fb->mGLName : 0;
+    };
+
+    if (mWebGL->IsWebGL2()) {
+        mGL->fBindFramebuffer(LOCAL_GL_DRAW_FRAMEBUFFER, fnName(mWebGL->mBoundDrawFramebuffer));
+        mGL->fBindFramebuffer(LOCAL_GL_READ_FRAMEBUFFER, fnName(mWebGL->mBoundReadFramebuffer));
+    } else {
+        MOZ_ASSERT(mWebGL->mBoundDrawFramebuffer == mWebGL->mBoundReadFramebuffer);
+        mGL->fBindFramebuffer(LOCAL_GL_FRAMEBUFFER, fnName(mWebGL->mBoundDrawFramebuffer));
     }
 }
 
@@ -2342,6 +2388,24 @@ WebGLContext::GetUnpackSize(bool isFunc3D, uint32_t width, uint32_t height,
 ////////////////////////////////////////////////////////////////////////////////
 // XPCOM goop
 
+void
+ImplCycleCollectionTraverse(nsCycleCollectionTraversalCallback& callback,
+                            const std::vector<IndexedBufferBinding>& field,
+                            const char* name, uint32_t flags)
+{
+    for (const auto& cur : field) {
+        ImplCycleCollectionTraverse(callback, cur.mBufferBinding, name, flags);
+    }
+}
+
+void
+ImplCycleCollectionUnlink(std::vector<IndexedBufferBinding>& field)
+{
+    field.clear();
+}
+
+////
+
 NS_IMPL_CYCLE_COLLECTING_ADDREF(WebGLContext)
 NS_IMPL_CYCLE_COLLECTING_RELEASE(WebGLContext)
 
@@ -2359,7 +2423,7 @@ NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(WebGLContext,
   mBoundCopyWriteBuffer,
   mBoundPixelPackBuffer,
   mBoundPixelUnpackBuffer,
-  mBoundTransformFeedbackBuffer,
+  mBoundTransformFeedback,
   mBoundUniformBuffer,
   mCurrentProgram,
   mBoundDrawFramebuffer,

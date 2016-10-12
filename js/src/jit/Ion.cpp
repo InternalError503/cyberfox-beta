@@ -1044,7 +1044,7 @@ IonScript::trace(JSTracer* trc)
 
     // Mark all IC stub codes hanging off the IC stub entries.
     for (size_t i = 0; i < numSharedStubs(); i++) {
-        ICEntry& ent = sharedStubList()[i];
+        IonICEntry& ent = sharedStubList()[i];
         ent.trace(trc);
     }
 
@@ -2564,6 +2564,11 @@ jit::CanEnter(JSContext* cx, RunState& state)
         if (status != Method_Compiled)
             return status;
     }
+
+    // Skip if the script is being compiled off thread (again).
+    // The above lines (invoke) could have started an ion compilation.
+    if (rscript->isIonCompilingOffThread())
+        return Method_Skipped;
 
     // Attempt compilation. Returns Method_Compiled if already compiled.
     bool constructing = state.isInvoke() && state.asInvoke()->constructing();
