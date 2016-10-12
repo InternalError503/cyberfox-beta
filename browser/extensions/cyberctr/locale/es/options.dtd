@@ -15,6 +15,7 @@
 <!ENTITY Ctr_windowcontrols	"Min/Max/Cerrar (pantalla completa)">
 <!ENTITY Ctr_rr				"¡Requiere reiniciar!">
 <!ENTITY Ctr_window			"ventana">
+<!ENTITY Ctr_centered		"Centered">
 
 <!ENTITY Ctr_cuibuttons		"Botones">
 <!ENTITY Ctr_cuibutnormal	"Normales">
@@ -152,6 +153,7 @@
 <!ENTITY Ctr_nbisizedelay	"ms (1000 ms = 1 seg)">
 <!ENTITY Ctr_findbar		"Barra de herramientas de búsqueda">
 <!ENTITY Ctr_findbar_hws	"Cerrar la barra de herramientas de búsqueda al desplazar la página">
+<!ENTITY Ctr_findbar_width	"Anchura de los campos de búsqueda: ">
 <!ENTITY Ctr_findbarpos		"Posición en la ventana de la barra de herramientas de búsqueda">
 <!ENTITY Ctr_findbar_def	"Abajo (predeterminada)">
 <!ENTITY Ctr_findbar_top	"Arriba">
@@ -171,6 +173,7 @@
 <!ENTITY Ctr_ctroldsearch	"Menú antiguo de la barra de búsqueda">
 <!ENTITY Ctr_ctroldsearchc	"Limpiar barra de búsqueda después de buscar">
 <!ENTITY Ctr_ctroldsearchr	"Volver al primer motor de búsqueda de la lista después de buscar">
+<!ENTITY Ctr_ctrosearchdel	"Retardo de la activación">
 <!ENTITY Ctr_search_oit		"Abrir búsqueda en una nueva pestaña">
 <!ENTITY Ctr_osearch_meoit	"Clic central: Realiza la búsqueda en una nueva 'pestaña en primer plano'">
 <!ENTITY Ctr_osearch_iwidth	"Ajustar automáticamente la anchura del menú emergente">
@@ -282,6 +285,7 @@
 <!ENTITY Ctr_autocompl_it	"Eliminar los elementos 'Buscar con...' y 'Visitar' (si están presentes)">
 <!ENTITY Ctr_autocompl_hl	"Marcado de coincidencias">
 <!ENTITY Ctr_autocompl_rhl	"Colores Aero para resultados destacados">
+<!ENTITY Ctr_autocompl_not	"Ocultar título de página">
 <!ENTITY Ctr_autocompl_sep	"Mostrar separador entre resultados">
 <!ENTITY Ctr_lbsugresi		"Deshabilitar límite de altura">
 <!ENTITY Ctr_cresultshcb	"Límite de altura personalizado: ">
@@ -378,7 +382,7 @@
 <!ENTITY Ctr_e_tabsaudioico	"Icono de reproducción de audio en las pestañas">
 <!ENTITY Ctr_e_containertab	"Pestañas contenedor">
 <!ENTITY Ctr_e_findbarhl	"Función de resaltado de la barra de herramientas de búsqueda.">
-<!ENTITY Ctr_fx50findbarhl	"Desmarcarlas deshabilita el resaltado de [estilo modal (con atenuación)] / [todas las coincidencias]">
+<!ENTITY Ctr_fx50findbarhl	"Desmarcarlas deshabilita el resaltado: estilo modal (con atenuación) / de todas las coincidencias">
 <!ENTITY Ctr_e_flyweb		"Flyweb">
 <!ENTITY Ctr_e_oneoffsearch	"Selección de búsqueda en menús emergentes de autocompletado">
 <!ENTITY Ctr_fx51OOSeach	"Desmarcar esto elimina el selector de búsqueda del menú de autocompletado de las barras de direcciones.">

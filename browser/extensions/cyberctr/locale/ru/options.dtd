@@ -15,6 +15,7 @@
 <!ENTITY Ctr_windowcontrols	"Свернуть/развернуть/закрыть (В полноэкранном режиме)">
 <!ENTITY Ctr_rr				"Перезапустите &brandShortName;!">
 <!ENTITY Ctr_window			"окно">
+<!ENTITY Ctr_centered		"По центру">
 
 <!ENTITY Ctr_cuibuttons		"Кнопки:">
 <!ENTITY Ctr_cuibutnormal	"Обычные">
@@ -152,6 +153,7 @@
 <!ENTITY Ctr_nbisizedelay	"мс (1000 мс = 1 сек)">
 <!ENTITY Ctr_findbar		"Панель поиска">
 <!ENTITY Ctr_findbar_hws	"Закрывать панель поиска при прокрутке страницы">
+<!ENTITY Ctr_findbar_width	"Ширина панели поиска: ">
 <!ENTITY Ctr_findbarpos		"Положение панели поиска">
 <!ENTITY Ctr_findbar_def	"Положение по умолчанию">
 <!ENTITY Ctr_findbar_top	"Вверху">
@@ -171,6 +173,7 @@
 <!ENTITY Ctr_ctroldsearch	"Старая форма поиска">
 <!ENTITY Ctr_ctroldsearchc	"Очистить форму после поиска">
 <!ENTITY Ctr_ctroldsearchr	"По окончании поиска переключаться на первую в списке поисковую систему">
+<!ENTITY Ctr_ctrosearchdel	"Задержка выполнения">
 <!ENTITY Ctr_search_oit		"Открывать поиск в новой вкладке">
 <!ENTITY Ctr_osearch_meoit	"Клик средней кнопкой: поиск в новой активной вкладке">
 <!ENTITY Ctr_osearch_iwidth	"Автоматически подгонять ширину всплывающего меню">
@@ -281,6 +284,7 @@
 <!ENTITY Ctr_autocompl_it	"Удалить пункты «Искать в...» и «Посетить» (при наличии)">
 <!ENTITY Ctr_autocompl_hl	"Подсветка найденных фрагментов текста">
 <!ENTITY Ctr_autocompl_rhl	"Цвета Aero для подсвеченных результатов">
+<!ENTITY Ctr_autocompl_not	"Скрывать заголовок страницы">
 <!ENTITY Ctr_autocompl_sep	"Разделитель между результатами">
 <!ENTITY Ctr_urlbar_uc		"Отключить функцию «автозаполнение»">
 <!ENTITY Ctr_lbsugresi		"Отображать максимально возможное количество результатов в подсказках (без прокрутки)">

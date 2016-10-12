@@ -15,6 +15,7 @@
 <!ENTITY Ctr_windowcontrols	"最小化/最大化/關閉 (全螢幕)">
 <!ENTITY Ctr_rr				"需重啟 &brandShortName;!">
 <!ENTITY Ctr_window			"視窗">
+<!ENTITY Ctr_centered		"Centered">
 
 <!ENTITY Ctr_cuibuttons		"按鈕">
 <!ENTITY Ctr_cuibutnormal	"標準圖示">
@@ -152,6 +153,7 @@
 <!ENTITY Ctr_nbisizedelay	"毫秒 (1000 毫秒 = 1 秒)">
 <!ENTITY Ctr_findbar		"Findbar">
 <!ENTITY Ctr_findbar_hws	"Close findbar when scrolling page">
+<!ENTITY Ctr_findbar_width	"Findboxes width: ">
 <!ENTITY Ctr_findbarpos		"尋找列位於">
 <!ENTITY Ctr_findbar_def	"預設位置">
 <!ENTITY Ctr_findbar_top	"頂部">
@@ -171,6 +173,7 @@
 <!ENTITY Ctr_ctroldsearch	"傳統搜尋列">
 <!ENTITY Ctr_ctroldsearchc	"搜尋後清除搜尋列">
 <!ENTITY Ctr_ctroldsearchr	"Revert to first search engine in list after search">
+<!ENTITY Ctr_ctrosearchdel	"delay">
 <!ENTITY Ctr_search_oit		"Open search in new tab">
 <!ENTITY Ctr_osearch_meoit	"Middle-clicks: search in new 'foreground tab'">
 <!ENTITY Ctr_osearch_iwidth	"Automatically adjust popup width">
@@ -281,6 +284,7 @@
 <!ENTITY Ctr_autocompl_it	"Remove 'Search with...' and 'Visit' items (if present)">
 <!ENTITY Ctr_autocompl_hl	"Highlighting of text hits">
 <!ENTITY Ctr_autocompl_rhl	"Aero colors for highlighted results">
+<!ENTITY Ctr_autocompl_not	"Hide page title">
 <!ENTITY Ctr_autocompl_sep	"Show separator between results">
 <!ENTITY Ctr_urlbar_uc		"Disable 'unified autocomplete' feature">
 <!ENTITY Ctr_lbsugresi		"Disable height limit">
@@ -339,7 +343,7 @@
 <!ENTITY Ctr_nonavbarbg2	"「Beyond Australis」套件之精簡介面(Slim Chrome)的工具列都受影響。">
 <!ENTITY Ctr_nonavborder	"書籤列: 顯示上邊框">
 <!ENTITY Ctr_nonavtbborder	"頂部工具列: 移除工具列邊框">
-<!ENTITY Ctr_toptb_oldpad	"Top toolbars: old left and right paddings">
+<!ENTITY Ctr_toptb_oldpad	"Top toolbars: old left and right padding">
 <!ENTITY Ctr_hidesbclose	"側邊欄: 隱藏側邊欄關閉按鈕">
 <!ENTITY Ctr_notextshadow	"工具列: 隱藏工具列和分頁的文字陰影">
 <!ENTITY Ctr_chevronfix		"瀏覽工具列: 隱藏工具列末端的雙右箭頭 (「更多工具...」按鈕)">
