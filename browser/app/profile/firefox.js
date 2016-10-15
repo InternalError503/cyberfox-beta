@@ -362,9 +362,6 @@ pref("browser.search.redirectWindowsSearch", true);
 pref("browser.search.redirectWindowsSearch", false);
 #endif
 
-pref("browser.usedOnWindows10", false);
-pref("browser.usedOnWindows10.introURL", "");
-
 pref("browser.sessionhistory.max_entries", 50);
 
 // Built-in default permissions.
@@ -1375,9 +1372,11 @@ pref("privacy.trackingprotection.introURL", "https://www.mozilla.org/%LOCALE%/fi
 #ifdef NIGHTLY_BUILD
 pref("privacy.userContext.enabled", true);
 pref("privacy.userContext.ui.enabled", true);
+pref("privacy.usercontext.about_newtab_segregation.enabled", true);
 #else
 pref("privacy.userContext.enabled", false);
 pref("privacy.userContext.ui.enabled", false);
+pref("privacy.usercontext.about_newtab_segregation.enabled", false);
 #endif
 
 #ifndef RELEASE_BUILD

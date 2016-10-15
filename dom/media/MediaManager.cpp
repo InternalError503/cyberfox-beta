@@ -1142,7 +1142,11 @@ public:
         ApplyConstraints(nsPIDOMWindowInner* aWindow,
                          const MediaTrackConstraints& aConstraints) override
         {
-          if (sInShutdown || !mListener) {
+          if (sInShutdown || !mListener ||
+              mSource == MediaSourceEnum::Browser ||
+              mSource == MediaSourceEnum::Screen ||
+              mSource == MediaSourceEnum::Application ||
+              mSource == MediaSourceEnum::Window) {
             // Track has been stopped, or we are in shutdown. In either case
             // there's no observable outcome, so pretend we succeeded.
             RefPtr<PledgeVoid> p = new PledgeVoid();
@@ -1484,18 +1488,13 @@ public:
     }
     if (errorMsg) {
       LOG(("%s %d", errorMsg, rv));
-      switch (rv) {
-        case NS_ERROR_NOT_AVAILABLE: {
-          MOZ_ASSERT(badConstraint);
-          Fail(NS_LITERAL_STRING("OverconstrainedError"),
-               NS_LITERAL_STRING(""),
-               NS_ConvertUTF8toUTF16(badConstraint));
-          break;
-        }
-        default:
-          Fail(NS_LITERAL_STRING("NotReadableError"),
-               NS_ConvertUTF8toUTF16(errorMsg));
-          break;
+      if (badConstraint) {
+        Fail(NS_LITERAL_STRING("OverconstrainedError"),
+             NS_LITERAL_STRING(""),
+             NS_ConvertUTF8toUTF16(badConstraint));
+      } else {
+        Fail(NS_LITERAL_STRING("NotReadableError"),
+             NS_ConvertUTF8toUTF16(errorMsg));
       }
       return NS_OK;
     }
@@ -3472,7 +3471,7 @@ GetUserMediaCallbackMediaStreamListener::ApplyConstraintsToTrack(
         } else {
           auto* window = nsGlobalWindow::GetInnerWindowWithId(windowId);
           if (window) {
-            if (rv == NS_ERROR_NOT_AVAILABLE) {
+            if (badConstraint) {
               nsString constraint;
               constraint.AssignASCII(badConstraint);
               RefPtr<MediaStreamError> error =
