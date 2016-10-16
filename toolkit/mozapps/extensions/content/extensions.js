@@ -23,7 +23,8 @@ Cu.import("resource://gre/modules/addons/AddonConstants.jsm", CONSTANTS);
 
 XPCOMUtils.defineLazyModuleGetter(this, "PluralForm",
                                   "resource://gre/modules/PluralForm.jsm");
-
+XPCOMUtils.defineLazyModuleGetter(this, "Preferences",
+                                  "resource://gre/modules/Preferences.jsm");
 
 //We are not including this.
 const SIGNING_REQUIRED = false;
