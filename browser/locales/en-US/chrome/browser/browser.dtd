@@ -1082,6 +1082,7 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY browserplugins.label "Browser Plugins">
 <!ENTITY browserpluginsdisabled.label "Disable browser plugins (Disable all plugins).">
 <!ENTITY browserpluginswhitelist.label "Enable plugin whitelist.">
+<!ENTITY browserpluginsflashenabled.label "Enable flash browser plugin.">
 <!ENTITY browserpluginsjavaenabled.label "Enable java browser plugin.">
 
 <!-- System Addons Tweak -->

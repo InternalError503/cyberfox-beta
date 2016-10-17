@@ -144,6 +144,7 @@ static const char *kPrefJavaMIME = "plugin.java.mime";
 static const char *kPrefPluginsDisabled = "plugins.disabled";
 static const char *kPrefPluginsAllowedWhitelist = "plugin.allowed_whitelist.enabled";
 static const char *kPrefPluginsJavaAllowed = "plugin.java_allowed";
+static const char *kPrefPluginsFlashAllowed = "plugin.flash_allowed";
 #endif
 
 // How long we wait before unloading an idle plugin process.
@@ -2109,6 +2110,13 @@ nsPluginHost::ShouldAddPlugin(nsPluginTag* aPluginTag)
 			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/java-deployment-toolkit")) ||
 			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-vm-npruntime")) ||
 			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-java-test")))) {
+			return false;
+		  }
+	  }
+	  if (!Preferences::GetBool(kPrefPluginsFlashAllowed, false)) {
+		  if (StringBeginsWith(aPluginTag->FileName(), NS_LITERAL_CSTRING("NPSWF"), nsCaseInsensitiveCStringComparator()) &&
+			  (aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-shockwave-flash")) ||
+			   aPluginTag->HasMimeType(NS_LITERAL_CSTRING("application/x-shockwave-flash-test")))) {
 			return false;
 		  }
 	  }

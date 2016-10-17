@@ -110,6 +110,9 @@
  	  <preference id="plugin.allowed_whitelist.enabled" 
 						   name="plugin.allowed_whitelist.enabled" 
 						   type="bool"/>
+ 	  <preference id="plugin.flash_allowed" 
+						   name="plugin.flash_allowed" 
+						   type="bool"/>
  	  <preference id="plugin.java_allowed" 
 						   name="plugin.java_allowed" 
 						   type="bool"/>
@@ -502,6 +505,9 @@
 							tooltiptext="&restartRequiredMSG.label;"/>				
 					<checkbox id="plugin.allowed_whitelist.enabled" label="&browserpluginswhitelist.label; (&restartRequiredMSG.label;)"
 							preference="plugin.allowed_whitelist.enabled"
+							tooltiptext="&restartRequiredMSG.label;"/>
+					<checkbox id="plugin.flash_allowed" label="&browserpluginsflashenabled.label;  (&restartRequiredMSG.label;)"
+							preference="plugin.flash_allowed"
 							tooltiptext="&restartRequiredMSG.label;"/>
 					<checkbox id="plugin.java_allowed" label="&browserpluginsjavaenabled.label;  (&restartRequiredMSG.label;)"
 							preference="plugin.java_allowed"

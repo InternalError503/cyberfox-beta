@@ -632,6 +632,11 @@ pref("plugins.disabled", false);
 pref("plugin.allowed_whitelist.enabled", false);
 // Toggle Java plugin allowed state regardless of whitelist.
 pref("plugin.java_allowed", false);
+/* 
+	Toggle Flash plugin allowed state regardless of whitelist.
+	Default state is allowed, Default state in 51.0* will be false.
+*/
+pref("plugin.flash_allowed", true);
 #endif
 
 #ifdef XP_WIN
