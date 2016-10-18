@@ -61,8 +61,12 @@ function init(aEvent)
     window.moveTo((screen.availWidth / 2) - (window.outerWidth / 2), screen.availHeight / 5);
   }
   
-	// Setup button click event.
-	document.getElementById("update-button-download").addEventListener("click", getUpdates.bind(this));
+	// Setup button click event for platform.
+	if(AppConstants.platform == "win"){
+		document.getElementById("update-button-download").addEventListener("click", getUpdates.bind(this));
+	} else {
+		setManualURI();
+	}
 	document.getElementById("update-button-checkNow").addEventListener("click", checkForUpdates.bind(this));
    
    // Append release type prefix to version information
@@ -221,17 +225,8 @@ function checkForUpdates(){
 
     } else {
 
-        // Clear any previous set urls
-        Services.prefs.clearUserPref("app.update.url.manual");
-
-        // Set manual update url from -firefox-branding.js so update in one location is uniform across all references.
-    try {
-            var manualCheck = document.getElementById("checkForUpdatesButton");
-            manualCheck.setAttribute('href', Services.prefs.getCharPref("app.update.url.manual"));
-        } catch (ex) {
-        // Pref is unset
-        Cu.reportError(ex);
-    }
+        setManualURI();
+		
         // Hide buttons		  
         ElementState("update-button-checkNow", false);
         ElementState("update-button-checking-throbber", true);
@@ -240,6 +235,20 @@ function checkForUpdates(){
         ElementState("update-button-download", true);
 
     }
+}
+
+function setManualURI(){
+    // Clear any previous set urls
+    Services.prefs.clearUserPref("app.update.url.manual");
+
+    // Set manual update url from -firefox-branding.js so update in one location is uniform across all references.
+    try {
+            var manualCheck = document.getElementById("checkForUpdatesButton");
+            manualCheck.setAttribute('href', Services.prefs.getCharPref("app.update.url.manual"));
+        } catch (ex) {
+        // Pref is unset
+        Cu.reportError(ex);
+    }	
 }
 	
 function getUpdates(){	

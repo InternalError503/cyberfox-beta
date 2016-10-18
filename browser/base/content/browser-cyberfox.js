@@ -381,13 +381,28 @@ var gCyberfoxCustom = {
 			Services.prefs.getBoolPref("app.update.available") && 
 			Services.prefs.getBoolPref("app.update.check.enabled")){			
         // Clear any previous set urls
-        Services.prefs.clearUserPref("app.update.url.manual");	
+		Services.prefs.clearUserPref("app.update.url.manual");	
+		
+		// Set button text by platform
+		var buttonText = "";
+		if(AppConstants.platform == "win"){
+			buttonText = this.UplodateLocal.GetStringFromName("update.notification.button.win");
+		} else {
+			buttonText = this.UplodateLocal.GetStringFromName("update.notification.button");
+		}
+		
 			// Set notification bar button.
 			var button = [];
 			button = [{
-				label: this.UplodateLocal.GetStringFromName("update.notification.button"),
+				label: buttonText,
 				accessKey: "v",
-				callback: function() { gCyberfoxCustom.getUpdates(); }
+				callback: function() { 
+					if (AppConstants.platform == "win"){
+						gCyberfoxCustom.getUpdates();
+					} else {
+						openUILinkIn(Services.prefs.getCharPref("app.update.url.manual"), 'tab');
+					}
+				}
 			}];		
 			try {
 				if(Services.prefs.getBoolPref("app.update.notification-new")){
