@@ -329,6 +329,52 @@ var gCyberfoxCustom = {
             Cu.reportError(rv);
         }
     },
+	// Version build comparison
+	compareBuildVersions: function compareBuildVersions(_Installed, _Required) {
+	try{
+			var installed = Number(_Installed.substring(_Installed.indexOf("b")+1, _Installed.length));
+			var required = Number(_Required.substring(_Required.indexOf("b")+1, _Required.length));
+			if (installed === required || installed > required) return true;
+			if (installed < required) return false;
+			
+			return true;		
+		} catch (rv) {
+			// Show error
+			Cu.reportError(rv);
+		}
+	},
+	getUpdates: function(){	
+	try {
+			var appDir = Cc["@mozilla.org/file/directory_service;1"]
+						.getService(Ci.nsIProperties).get("GreD", Ci.nsILocalFile);
+			appDir.append("updater.exe");
+			
+			// create an nsIFile for the executable
+			var file = Cc["@mozilla.org/file/local;1"]
+									 .createInstance(Ci.nsIFile);
+			file.initWithPath(appDir.path.toString());
+
+			// create an nsIProcess
+			var process = Cc["@mozilla.org/process/util;1"]
+										.createInstance(Ci.nsIProcess);
+			if (file.exists()){
+				process.init(file);
+
+				// Run the process.
+				// If first param is true, calling thread will be blocked until
+				// called process terminates.
+				// Second and third params are used to pass command-line arguments
+				// to the process.
+				var args = ["--checknow"];
+				process.run(false, args, args.length);
+			}else{
+				throw new Error('Whoops! Hey somethings is not right maybe contact support!');
+			}
+		} catch (rv) {
+			// Show error
+			 Cu.reportError(rv);
+		}
+	},
 	// Update notification notify
 	updateNotification: function(){
 		if (Services.prefs.getBoolPref("app.update.autocheck") && 
@@ -341,7 +387,7 @@ var gCyberfoxCustom = {
 			button = [{
 				label: this.UplodateLocal.GetStringFromName("update.notification.button"),
 				accessKey: "v",
-				callback: function() { openUILinkIn(Services.prefs.getCharPref("app.update.url.manual"), 'tab'); }
+				callback: function() { gCyberfoxCustom.getUpdates(); }
 			}];		
 			try {
 				if(Services.prefs.getBoolPref("app.update.notification-new")){
@@ -376,10 +422,7 @@ var gCyberfoxCustom = {
 		if (Services.prefs.getBoolPref("app.update.startup.check") === false) {
 			return;
 		}	
-		// We are skipping update checks entirely if cyberfox beta for now.
-        if (Services.prefs.getCharPref("app.update.channel.type") === "beta") {
-            return;
-        }
+
         if (Services.prefs.getBoolPref("app.update.autocheck")) {
             try {
                 // Set Global to disable update checks entirely 
@@ -417,19 +460,33 @@ var gCyberfoxCustom = {
 									case "beta":currentVersion = jsObject.beta;break;
 									case "esr":currentVersion = jsObject.esr;break;
 								}
-								if (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString()) === false && aBoolean === true) {
-									try {
+								var updateAvailable = false;
+															
+								if (Services.prefs.getCharPref("app.update.channel.type") === "beta") {
+									updateAvailable = (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString()) === false && 
+									gCyberfoxCustom.compareBuildVersions(AppConstants.MOZ_APP_VERSION_DISPLAY, currentVersion.toString()) === false && aBoolean === true);
+								} else if (Services.prefs.getCharPref("app.update.channel.type") === "release") {
+									updateAvailable = (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString()) === false && aBoolean === true);
+								}
+
+								switch (updateAvailable) {
+									case true:
 										// Set update available
-										Services.prefs.setBoolPref("app.update.available", true);
-										gCyberfoxCustom.updateNotification();
-									  } catch(e) {
-										// Prevents runtime error on platforms that don't implement nsIAlertsService
-									  }								
-								}else{
-									// Set update available
-									Services.prefs.setBoolPref("app.update.available", false);	
-									console.log("Update check event was spawned!");									
-								}	
+										Services.prefs.setBoolPref("app.update.available", false);	
+										console.log("Update check event was spawned!");	
+									break;
+									case false:
+									try {
+											// Set update available
+											Services.prefs.setBoolPref("app.update.available", true);
+											gCyberfoxCustom.updateNotification();
+										  } catch(e) {
+											// Prevents runtime error on platforms that don't implement nsIAlertsService
+										  }
+									break;
+								}
+
+								
 							};
 							request.ontimeout = function(aEvent) {
 								// Log return failed check message for request time-out!
