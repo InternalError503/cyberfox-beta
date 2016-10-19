@@ -330,7 +330,7 @@ var gCyberfoxCustom = {
         }
     },
 	// Version build comparison
-	compareBuildVersions: function compareBuildVersions(_Installed, _Required) {
+	compareBuildVersions: function(_Installed, _Required) {
 	try{
 			var installed = Number(_Installed.substring(_Installed.indexOf("b")+1, _Installed.length));
 			var required = Number(_Required.substring(_Required.indexOf("b")+1, _Required.length));
@@ -478,10 +478,10 @@ var gCyberfoxCustom = {
 								var updateAvailable = false;
 															
 								if (Services.prefs.getCharPref("app.update.channel.type") === "beta") {
-									updateAvailable = (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString()) === false && 
-									gCyberfoxCustom.compareBuildVersions(AppConstants.MOZ_APP_VERSION_DISPLAY, currentVersion.toString()) === false && aBoolean === true);
+									updateAvailable = (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString().replace(/b[0-9]/g, '')) && 
+										gCyberfoxCustom.compareBuildVersions(AppConstants.MOZ_APP_VERSION_DISPLAY, currentVersion.toString()));
 								} else if (Services.prefs.getCharPref("app.update.channel.type") === "release") {
-									updateAvailable = (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString()) === false && aBoolean === true);
+									updateAvailable = (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString()));
 								}
 
 								switch (updateAvailable) {
