@@ -196,11 +196,11 @@ function checkForUpdates(){
                         case 0:// Log return failed request message for status 0 unsent
                         throw new Error(aboutDialogLocal.GetStringFromName("updateCheckErrorTitle") + " " + aboutDialogLocal.GetStringFromName("updateRequestError"));
                         break;
-                        case 1: console.log("Error Status: " + aEvent.target.status);break;
-                        case 2:console.log("Error Status: " + aEvent.target.status);break;
-                        case 3:console.log("Error Status: " + aEvent.target.status);break;
-                        case 4:console.log("Error Status: " + aEvent.target.status);break;
-                        default:console.log("Error Status: " + aEvent.target.status);break;
+                        case 1:throw new Error("Error Status: " + aEvent.target.status);break;
+                        case 2:throw new Error("Error Status: " + aEvent.target.status);break;
+                        case 3:throw new Error("Error Status: " + aEvent.target.status);break;
+                        case 4:throw new Error("Error Status: " + aEvent.target.status);break;
+                        default:throw new Error("Error Status: " + aEvent.target.status);break;
                     }
                      // Hide update buttons		  
                     ElementState("update-button-checkNow", true);
