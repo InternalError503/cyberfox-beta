@@ -92,7 +92,7 @@ function checkForUpdates(){
     ElementState("update-button-checkNow", true);
     ElementState("update-button-checking", false);
     ElementState("update-button-checking-throbber", false);
-    ElementState("update-button-no-update", true);
+    ElementState("noUpdatesFound", true);
     ElementState("update-button-download", true);
 
     // Clear any previous set urls
@@ -140,7 +140,7 @@ function checkForUpdates(){
 						ElementState("update-button-checkNow", false);
 						ElementState("update-button-checking-throbber", true);
 						ElementState("update-button-checking", true);
-						ElementState("update-button-no-update", true);
+						ElementState("noUpdatesFound", true);
 						ElementState("update-button-download", true);
 						// Throw error message	
 						throw new Error("Were sorry but something has gone wrong while trying to parse update.json (json is not valid!)");
@@ -174,7 +174,7 @@ function checkForUpdates(){
 						case true:
 							ElementState("update-button-checking-throbber", true);
 							ElementState("update-button-checking", true);
-							ElementState("update-button-no-update", false);
+							ElementState("noUpdatesFound", false);
 						break;
 					}							
 				};
@@ -185,7 +185,7 @@ function checkForUpdates(){
                     ElementState("update-button-checkNow", true);
                     ElementState("update-button-checking-throbber", true);
                     ElementState("update-button-checking", true);
-                    ElementState("update-button-no-update", true);
+                    ElementState("noUpdatesFound", true);
                     ElementState("update-button-download", false);
                 };
 
@@ -206,7 +206,7 @@ function checkForUpdates(){
                     ElementState("update-button-checkNow", true);
                     ElementState("update-button-checking-throbber", true);
                     ElementState("update-button-checking", true);
-                    ElementState("update-button-no-update", true);
+                    ElementState("noUpdatesFound", true);
                     ElementState("update-button-download", true);
                 };
 
@@ -231,7 +231,7 @@ function checkForUpdates(){
         ElementState("update-button-checkNow", false);
         ElementState("update-button-checking-throbber", true);
         ElementState("update-button-checking", true);
-        ElementState("update-button-no-update", true);
+        ElementState("noUpdatesFound", true);
         ElementState("update-button-download", true);
 
     }
