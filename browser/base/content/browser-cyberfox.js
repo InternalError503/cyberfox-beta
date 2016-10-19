@@ -434,9 +434,7 @@ var gCyberfoxCustom = {
 		}else{Services.prefs.setBoolPref("app.update.available", false);}		
 	},
 	startupUpdateCheck: function(aBoolean){
-		if (Services.prefs.getBoolPref("app.update.startup.check") === false) {
-			return;
-		}	
+		if (!Services.prefs.getBoolPref("app.update.startup.check")) return;
 
         if (Services.prefs.getBoolPref("app.update.autocheck")) {
             try {
@@ -531,7 +529,10 @@ var gCyberfoxCustom = {
                 // Catch any nasty errors
                 Cu.reportError(eve);
             }
-        }
+        } else {
+			// Set update notification (Additional fallback)
+			Services.prefs.setBoolPref("app.update.available", false);	
+		}
 	}
 }
 window.addEventListener("load", function() {
