@@ -2819,8 +2819,10 @@ classicthemerestorerjs.ctr = {
 		  break;
 		  
 		  case "abouthomecustombg": case "abouthomecustomurl":
-			  	try{		  		
-					classicthemerestorerjs.ctr.loadUnloadCSS("abouthome_bg",branch.getBoolPref("abouthomecustombg"));
+			  	try{
+						setTimeout(function() {		  		
+							classicthemerestorerjs.ctr.loadUnloadCSS("abouthome_bg",branch.getBoolPref("abouthomecustombg"));
+						}, 90);
 				} catch(e){}			
 		  break;	
 
@@ -2849,8 +2851,10 @@ classicthemerestorerjs.ctr = {
 		  break;
 		  
 		  case "aboutnewtabcustombg": case "aboutnewtabcustomurl":
-			  	try{		  			
-					classicthemerestorerjs.ctr.loadUnloadCSS("aboutnewtab_bg",branch.getBoolPref("aboutnewtabcustombg"));	
+			  	try{
+						setTimeout(function() {			  			
+							classicthemerestorerjs.ctr.loadUnloadCSS("aboutnewtab_bg",branch.getBoolPref("aboutnewtabcustombg"));
+						}, 90);
 				} catch(e){}			
 		  break;
 		  
@@ -3195,7 +3199,9 @@ classicthemerestorerjs.ctr = {
 			  if (event.target == classicthemerestorerjs.ctr.ctrGetId("appmenu-popup")) {
 			    classicthemerestorerjs.ctr.ctrGetId('ctraddon_appbutton2').setAttribute("open", "true");
 				  try {
-					document.getElementById("appmenuPrimaryPane").insertBefore(document.getElementById("webDeveloperMenu"), document.getElementById("appmenu_webDeveloper"));
+					setTimeout(function(){
+					  document.getElementById("appmenu_webDeveloper").appendChild(document.getElementById("menuWebDeveloperPopup"));
+					},200);
 				  } catch(e){}
 			  }
 			}, false);
@@ -3205,7 +3211,9 @@ classicthemerestorerjs.ctr = {
 			  if (event.target == classicthemerestorerjs.ctr.ctrGetId("appmenu-popup")) {
 			    classicthemerestorerjs.ctr.ctrGetId('ctraddon_appbutton2').removeAttribute("open");
 				try {
-				  document.getElementById("menu_ToolsPopup").insertBefore(document.getElementById("webDeveloperMenu"), document.getElementById("menu_pageInfo"));
+				  setTimeout(function(){
+					document.getElementById("webDeveloperMenu").appendChild(document.getElementById("menuWebDeveloperPopup"));
+				  },200);
 				} catch(e){}
 			  }
 			}, false);
@@ -3962,7 +3970,8 @@ classicthemerestorerjs.ctr = {
   // move 'Tools' menus dev tools into application buttons popup 
   moveDevtoolsmenu: function(){
 	
-	setTimeout(function(){
+	window.addEventListener("DOMContentLoaded", function _moveDevtoolsmenu(){
+	  setTimeout(function(){
 		
 		document.getElementById("ctraddon_appbutton").addEventListener("mousedown", function() {
 
@@ -3972,7 +3981,9 @@ classicthemerestorerjs.ctr = {
 			app_popup.addEventListener("popupshown", function onCtrTitleAppmenuPopupShown(event){
 			  if (event.target == classicthemerestorerjs.ctr.ctrGetId("appmenu-popup")) {
 				try {
-				  document.getElementById("appmenuPrimaryPane").insertBefore(document.getElementById("webDeveloperMenu"), document.getElementById("appmenu_webDeveloper"));
+				  setTimeout(function(){
+					document.getElementById("appmenu_webDeveloper").appendChild(document.getElementById("menuWebDeveloperPopup"));
+				  },200);
 				} catch(e){}
 			  }
 			}, false);
@@ -3981,14 +3992,17 @@ classicthemerestorerjs.ctr = {
 			app_popup.addEventListener("popuphidden", function onCtrTitleAppmenuPopupHidden(event){
 			  if (event.target == classicthemerestorerjs.ctr.ctrGetId("appmenu-popup")) {
 				try {
-				  document.getElementById("menu_ToolsPopup").insertBefore(document.getElementById("webDeveloperMenu"), document.getElementById("menu_pageInfo"));
+				  setTimeout(function(){
+					document.getElementById("webDeveloperMenu").appendChild(document.getElementById("menuWebDeveloperPopup"));
+				  },200);
 				} catch(e){}
 			  }
 			}, false);
 
 		}, false);
 
-	},500);
+	  },500);
+	},false);
   },
   
   // prevent browser from disablning CTRs reload button for no reason
