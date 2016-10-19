@@ -15,8 +15,6 @@ const TELEMETRY_HISTOGRAM_ID_PREFIX = "FX_THUMBNAILS_BG_";
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const HTML_NS = "http://www.w3.org/1999/xhtml";
 
-const ABOUT_NEWTAB_SEGREGATION_PREF = "privacy.usercontext.about_newtab_segregation.enabled";
-
 const { classes: Cc, interfaces: Ci, utils: Cu } = Components;
 
 Cu.import("resource://gre/modules/XPCOMUtils.jsm", this);
@@ -37,8 +35,6 @@ XPCOMUtils.defineConstant(this, "TEL_CAPTURE_DONE_TIMEOUT", TEL_CAPTURE_DONE_TIM
 XPCOMUtils.defineConstant(this, "TEL_CAPTURE_DONE_CRASHED", TEL_CAPTURE_DONE_CRASHED);
 XPCOMUtils.defineConstant(this, "TEL_CAPTURE_DONE_BAD_URI", TEL_CAPTURE_DONE_BAD_URI);
 
-XPCOMUtils.defineLazyModuleGetter(this, "ContextualIdentityService",
-                                  "resource://gre/modules/ContextualIdentityService.jsm");
 const global = this;
 
 const BackgroundPageThumbs = {
@@ -197,13 +193,6 @@ const BackgroundPageThumbs = {
     browser.setAttribute("type", "content");
     browser.setAttribute("remote", "true");
     browser.setAttribute("disableglobalhistory", "true");
-
-    if (Services.prefs.getBoolPref(ABOUT_NEWTAB_SEGREGATION_PREF)) {
-      // Use the private container for thumbnails.
-      let privateIdentity =
-        ContextualIdentityService.getPrivateIdentity("userContextIdInternal.thumbnail");
-      browser.setAttribute("usercontextid", privateIdentity.userContextId);
-    }
 
     // Size the browser.  Make its aspect ratio the same as the canvases' that
     // the thumbnails are drawn into; the canvases' aspect ratio is the same as
@@ -429,14 +418,6 @@ Capture.prototype = {
         catch (err) {
           Cu.reportError(err);
         }
-      }
-
-      if (Services.prefs.getBoolPref(ABOUT_NEWTAB_SEGREGATION_PREF)) {
-        // Clear the data in the private container for thumbnails.
-        let privateIdentity =
-          ContextualIdentityService.getPrivateIdentity("userContextIdInternal.thumbnail");
-        Services.obs.notifyObservers(null, "clear-origin-data",
-          JSON.stringify({ userContextId: privateIdentity.userContextId }));
       }
     };
 
