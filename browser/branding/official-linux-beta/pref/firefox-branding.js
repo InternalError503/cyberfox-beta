@@ -20,13 +20,6 @@ pref("app.update.channel.type", "beta");
 //Set if update available
 pref("app.update.available", false);
 
-
-//Disable update check beta versions not added yet!
-pref("app.update.autocheck", false);
-
-//Disable check browser version (Since we are not ready globally disable)
-pref("app.update.check.enabled", false);
-
  //Since the beta does not have a release notes page we will disable this.
 pref("app.releaseNotesURL", "");
 pref("app.vendorURL", "https://8pecxstudios.com/");
