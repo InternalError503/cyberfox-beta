@@ -1587,6 +1587,10 @@ pref("app.update.startup-timeout", 5000);
 //Set startup last update check.
 pref("app.update.startup.lastcheck", "");
 
+//Set update information page once.
+pref("app.update.infoshown", false);
+pref("app.update.infoshownURL", "https://cyberfox.8pecxstudios.com/cyberfox-update/");
+
 //set bool pref for copy tab url enabled
 pref("browser.tabs.copyurl", true);
 

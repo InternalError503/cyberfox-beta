@@ -531,6 +531,16 @@ nsBrowserContentHandler.prototype = {
     // formatURLPref might return "about:blank" if getting the pref fails
     if (overridePage == "about:blank")
       overridePage = "";
+  
+	// Show update information page once.
+	if (!Services.prefs.getBoolPref("app.update.infoshown") 
+			&& AppConstants.platform == "win"){
+		let onceShowUpdateInfo = Services.urlFormatter.formatURLPref("app.update.infoshownURL");
+		if (onceShowUpdateInfo && onceShowUpdateInfo) {
+			additionalPage = onceShowUpdateInfo;
+			Services.prefs.setBoolPref("app.update.infoshown", true);
+		}		
+	}
 
     if (!additionalPage) {
       additionalPage = LaterRun.getURL() || "";
