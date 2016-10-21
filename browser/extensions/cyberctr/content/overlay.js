@@ -3198,11 +3198,11 @@ classicthemerestorerjs.ctr = {
 			app_popup.addEventListener("popupshown", function onCtrTitleAppmenuPopupShown(event){
 			  if (event.target == classicthemerestorerjs.ctr.ctrGetId("appmenu-popup")) {
 			    classicthemerestorerjs.ctr.ctrGetId('ctraddon_appbutton2').setAttribute("open", "true");
+				setTimeout(function(){
 				  try {
-					setTimeout(function(){
-					  document.getElementById("appmenu_webDeveloper").appendChild(document.getElementById("menuWebDeveloperPopup"));
-					},200);
+					document.getElementById("appmenu_webDeveloper").appendChild(document.getElementById("menuWebDeveloperPopup"));
 				  } catch(e){}
+				},200);
 			  }
 			}, false);
 			
@@ -3210,11 +3210,11 @@ classicthemerestorerjs.ctr = {
 			app_popup.addEventListener("popuphidden", function onCtrTitleAppmenuPopupHidden(event){
 			  if (event.target == classicthemerestorerjs.ctr.ctrGetId("appmenu-popup")) {
 			    classicthemerestorerjs.ctr.ctrGetId('ctraddon_appbutton2').removeAttribute("open");
-				try {
-				  setTimeout(function(){
+				setTimeout(function(){
+				  try {
 					document.getElementById("webDeveloperMenu").appendChild(document.getElementById("menuWebDeveloperPopup"));
-				  },200);
-				} catch(e){}
+				  } catch(e){}
+				},200);
 			  }
 			}, false);
 
@@ -3970,8 +3970,7 @@ classicthemerestorerjs.ctr = {
   // move 'Tools' menus dev tools into application buttons popup 
   moveDevtoolsmenu: function(){
 	
-	window.addEventListener("DOMContentLoaded", function _moveDevtoolsmenu(){
-	  setTimeout(function(){
+	setTimeout(function(){
 		
 		document.getElementById("ctraddon_appbutton").addEventListener("mousedown", function() {
 
@@ -3980,29 +3979,29 @@ classicthemerestorerjs.ctr = {
 			//add attribute 'open'
 			app_popup.addEventListener("popupshown", function onCtrTitleAppmenuPopupShown(event){
 			  if (event.target == classicthemerestorerjs.ctr.ctrGetId("appmenu-popup")) {
-				try {
-				  setTimeout(function(){
+				setTimeout(function(){
+				  try {
 					document.getElementById("appmenu_webDeveloper").appendChild(document.getElementById("menuWebDeveloperPopup"));
-				  },200);
-				} catch(e){}
+				  } catch(e){}
+				},200);
 			  }
 			}, false);
 			
 			// remove attribute 'open'
 			app_popup.addEventListener("popuphidden", function onCtrTitleAppmenuPopupHidden(event){
 			  if (event.target == classicthemerestorerjs.ctr.ctrGetId("appmenu-popup")) {
-				try {
-				  setTimeout(function(){
+				setTimeout(function(){
+				  try {
 					document.getElementById("webDeveloperMenu").appendChild(document.getElementById("menuWebDeveloperPopup"));
-				  },200);
-				} catch(e){}
+				  } catch(e){}
+				},200);
 			  }
 			}, false);
 
 		}, false);
 
-	  },500);
-	},false);
+	},500);
+
   },
   
   // prevent browser from disablning CTRs reload button for no reason
@@ -4412,7 +4411,7 @@ classicthemerestorerjs.ctr = {
 			}
 			if(enable==false && this.prefs.getBoolPref("smallnavbut")==true){
 				enable=true;
-				manageCSS("smallnavbut.css");
+				if(this.fxdefaulttheme) manageCSS("smallnavbut.css");
 				enable=false;
 			}
 			manageCSS("mode_icons_and_text.css");
@@ -4428,7 +4427,7 @@ classicthemerestorerjs.ctr = {
 			}
 			if(enable==false && this.prefs.getBoolPref("smallnavbut")==true){
 				enable=true;
-				manageCSS("smallnavbut.css");
+				if(this.fxdefaulttheme) manageCSS("smallnavbut.css");
 				enable=false;
 			}
 			manageCSS("mode_icons_and_text2.css");
@@ -4444,7 +4443,7 @@ classicthemerestorerjs.ctr = {
 			}
 			if(enable==false && this.prefs.getBoolPref("smallnavbut")==true){
 				enable=true;
-				manageCSS("smallnavbut.css");
+				if(this.fxdefaulttheme) manageCSS("smallnavbut.css");
 				enable=false;
 			}
 			if (classicthemerestorerjs.ctr.osstring=="Darwin") manageCSS("mode_icons_and_text.css");
@@ -4461,7 +4460,7 @@ classicthemerestorerjs.ctr = {
 			}
 			if(enable==false && this.prefs.getBoolPref("smallnavbut")==true){
 				enable=true;
-				manageCSS("smallnavbut.css");
+				if(this.fxdefaulttheme) manageCSS("smallnavbut.css");
 				enable=false;
 			}
 			if (classicthemerestorerjs.ctr.osstring=="Darwin") manageCSS("mode_icons_and_text2.css");
@@ -6622,14 +6621,22 @@ classicthemerestorerjs.ctr = {
 			removeOldSheet(this.abouthome_bg);
 			
 			if(enable==true && this.prefs.getBoolPref("abouthomecustombg")){
+				var IsDefault = "";
+				if (this.prefs.getCharPref("abouthome") === "default"){
+					IsDefault = '\
+						html{\
+							background-image: url('+ this.prefs.getCharPref("abouthomecustomurl") +')!important;\
+						}\
+					';
+				}
 	
 				this.abouthome_bg=ios.newURI("data:text/css;charset=utf-8," + encodeURIComponent('\
 					@namespace url(http://www.w3.org/1999/xhtml);\
 					@-moz-document url("about:home") {\
-						html,\
-						body{\
-							background-image: url('+ this.prefs.getCharPref("abouthomecustomurl") +')!important;\
+						:root{\
+							--main-background-image: url('+ this.prefs.getCharPref("abouthomecustomurl") +')!important;\
 						}\
+						'+ IsDefault +'\
 					}\
 				'), null, null);
 				
