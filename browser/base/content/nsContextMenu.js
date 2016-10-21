@@ -742,7 +742,7 @@ nsContextMenu.prototype = {
         if (this.isMediaURLReusable(mediaURL)) {
           this.mediaURL = mediaURL;
         }
-        if (this.target.isEncrypted) {
+        if (this._isProprietaryDRM()) {
           this.onDRMMedia = true;
         }
         // Firefox always creates a HTMLVideoElement when loading an ogg file
@@ -761,7 +761,7 @@ nsContextMenu.prototype = {
         if (this.isMediaURLReusable(mediaURL)) {
           this.mediaURL = mediaURL;
         }
-        if (this.target.isEncrypted) {
+        if (this._isProprietaryDRM()) {
           this.onDRMMedia = true;
         }
       }
@@ -973,6 +973,11 @@ nsContextMenu.prototype = {
     }
     // Otherwise make sure that nothing in the parent chain disables spellchecking
     return aNode.spellcheck;
+  },
+
+  _isProprietaryDRM: function() {
+    return this.target.isEncrypted && this.target.mediaKeys &&
+           this.target.mediaKeys.keySystem != "org.w3.clearkey";
   },
 
   _openLinkInParameters : function (extra) {

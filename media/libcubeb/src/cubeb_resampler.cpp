@@ -4,6 +4,11 @@
  * This program is made available under an ISC-style license.  See the
  * accompanying file LICENSE for details.
  */
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif // NOMINMAX
+
 #include <algorithm>
 #include <cmath>
 #include <cassert>
@@ -150,7 +155,7 @@ template<typename T, typename InputProcessor, typename OutputProcessor>
 long
 cubeb_resampler_speex<T, InputProcessor, OutputProcessor>
 ::fill_internal_input(T * input_buffer, long * input_frames_count,
-                      T * output_buffer, long output_frames_needed)
+                      T * output_buffer, long /*output_frames_needed*/)
 {
   assert(input_buffer && input_frames_count && *input_frames_count &&
          !output_buffer);
