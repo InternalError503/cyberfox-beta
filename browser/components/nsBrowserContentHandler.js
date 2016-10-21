@@ -536,9 +536,17 @@ nsBrowserContentHandler.prototype = {
 	if (!Services.prefs.getBoolPref("app.update.infoshown") 
 			&& AppConstants.platform == "win"){
 		let onceShowUpdateInfo = Services.urlFormatter.formatURLPref("app.update.infoshownURL");
-		if (onceShowUpdateInfo && onceShowUpdateInfo) {
+		if (onceShowUpdateInfo && onceShowUpdateInfo.length) {
 			additionalPage = onceShowUpdateInfo;
 			Services.prefs.setBoolPref("app.update.infoshown", true);
+		}		
+	}
+	
+	// Show notifications page on first run or after updating
+	if (Services.prefs.getBoolPref("app.update.notifications.enabled")){
+		let onceShowNotificationInfo = Services.urlFormatter.formatURLPref("app.update.notificationsURL");
+		if (onceShowNotificationInfo && onceShowNotificationInfo.length) {
+			additionalPage = onceShowNotificationInfo;
 		}		
 	}
 

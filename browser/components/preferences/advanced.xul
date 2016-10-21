@@ -61,7 +61,10 @@
 						   type="bool"/>			  
 	  <preference id="app.update.autocheck" 
 						   name="app.update.autocheck" 
-						   type="bool"/>				  
+						   type="bool"/>
+	  <preference id="app.update.notifications.enabled" 
+						   name="app.update.notifications.enabled" 
+						   type="bool"/>
 	  <preference id="browser.tabs.copyurl" 
 						   name="browser.tabs.copyurl" 
 						   type="bool"/>
@@ -495,7 +498,9 @@
 					<checkbox id="app.update.startup.check" label="&updatestartupcheck.label;"
 							preference="app.update.startup.check"/>
 					<checkbox id="app.update.check.enabled" label="&updatecheckenabled.label;"
-							preference="app.update.check.enabled"/>								
+							preference="app.update.check.enabled"/>
+					<checkbox id="app.update.notifications.enabled" label="&updatenotificationsenabled.label;"
+							preference="app.update.notifications.enabled"/>
 				</groupbox>
 
 			<!-- Download Settings -->				

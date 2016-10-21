@@ -1599,6 +1599,10 @@ pref("app.update.startup.lastcheck", "");
 pref("app.update.infoshown", false);
 pref("app.update.infoshownURL", "https://cyberfox.8pecxstudios.com/cyberfox-update/");
 
+// Show notifications page on first run or after updating
+pref("app.update.notifications.enabled", false);
+pref("app.update.notificationsURL", "https://cyberfox.8pecxstudios.com/notifications");
+
 //set bool pref for copy tab url enabled
 pref("browser.tabs.copyurl", true);
 

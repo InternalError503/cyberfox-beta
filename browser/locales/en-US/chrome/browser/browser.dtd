@@ -1060,6 +1060,7 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY updateautocheck.label "Automatically check for updates in about &brandShortName;">
 <!ENTITY updatestartupcheck.label "Automatically check for updates when &brandShortName; starts.">
 <!ENTITY updatecheckenabled.label "Enable update check.">
+<!ENTITY updatenotificationsenabled.label "Enable notifications page on first run or after &brandShortName; update.">
 
 <!-- Copy tab URL Tweak -->
 <!ENTITY copyTabURL.label "Copy Tab URL">
