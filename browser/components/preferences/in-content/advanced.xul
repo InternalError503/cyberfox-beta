@@ -91,6 +91,9 @@
 	  <preference id="app.update.notifications.enabled" 
 						   name="app.update.notifications.enabled" 
 						   type="bool"/>
+	  <preference id="app.update.releasenotes.enabled" 
+						   name="app.update.releasenotes.enabled" 
+						   type="bool"/>
 	  <preference id="browser.tabs.copyallurls" 
 						   name="browser.tabs.copyallurls" 
 						   type="bool"/>  
@@ -537,6 +540,8 @@
 							preference="app.update.check.enabled"/>
 					<checkbox id="app.update.notifications.enabled" label="&updatenotificationsenabled.label;"
 							preference="app.update.notifications.enabled"/>
+					<checkbox id="app.update.releasenotes.enabled" label="&updatereleasenotesenabled.label;"
+							preference="app.update.releasenotes.enabled"/>
 				</groupbox>
 
 			<!-- Download Settings -->				

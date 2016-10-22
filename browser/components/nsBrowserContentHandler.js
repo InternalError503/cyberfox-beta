@@ -502,9 +502,11 @@ nsBrowserContentHandler.prototype = {
       if (override != OVERRIDE_NONE) {
         switch (override) {
           case OVERRIDE_NEW_PROFILE:
-            // New profile.
-            overridePage = Services.urlFormatter.formatURLPref("startup.homepage_welcome_url");
-            additionalPage = Services.urlFormatter.formatURLPref("startup.homepage_welcome_url.additional");
+			if (Services.prefs.getBoolPref("app.update.releasenotes.enabled")) {
+				// New profile.
+				overridePage = Services.urlFormatter.formatURLPref("startup.homepage_welcome_url");
+				additionalPage = Services.urlFormatter.formatURLPref("startup.homepage_welcome_url.additional");
+			}
             // Turn on 'later run' pages for new profiles.
             LaterRun.enabled = true;
             break;
@@ -518,11 +520,13 @@ nsBrowserContentHandler.prototype = {
                                .getService(Components.interfaces.nsISessionStartup);
             willRestoreSession = ss.isAutomaticRestoreEnabled();
 
-            overridePage = Services.urlFormatter.formatURLPref("startup.homepage_override_url");
-            if (prefb.prefHasUserValue("app.update.postupdate"))
-              overridePage = getPostUpdateOverridePage(overridePage);
+			if (Services.prefs.getBoolPref("app.update.releasenotes.enabled")) {
+				overridePage = Services.urlFormatter.formatURLPref("startup.homepage_override_url");
+				if (prefb.prefHasUserValue("app.update.postupdate"))
+				  overridePage = getPostUpdateOverridePage(overridePage);
 
-            overridePage = overridePage.replace("%OLD_VERSION%", old_mstone);
+				overridePage = overridePage.replace("%OLD_VERSION%", old_mstone);
+			}
             break;
         }
       }

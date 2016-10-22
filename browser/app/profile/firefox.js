@@ -1603,6 +1603,9 @@ pref("app.update.infoshownURL", "https://cyberfox.8pecxstudios.com/cyberfox-upda
 pref("app.update.notifications.enabled", false);
 pref("app.update.notificationsURL", "https://cyberfox.8pecxstudios.com/notifications");
 
+// Show release notes page on first run or after updating
+pref("app.update.releasenotes.enabled", true);
+
 //set bool pref for copy tab url enabled
 pref("browser.tabs.copyurl", true);
 
