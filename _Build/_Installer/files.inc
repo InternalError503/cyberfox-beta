@@ -58,7 +58,7 @@ Source: "{content}\browser\{#PackageType}\softokn3.dll"; DestDir: "{app}"; Flags
 Source: "{content}\browser\{#PackageType}\ucrtbase.dll"; DestDir: "{app}"; Flags: ignoreversion
 #if PackageType == "beta86" || PackageType == "beta64"
 Source: "{content}\browser\{#PackageType}\update.ini"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{content}\browser\{#PackageType}\updater.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{content}\browser\{#PackageType}\updater.exe"; DestDir: "{app}"; Flags: ignoreversion signonce
 #endif
 Source: "{content}\browser\{#PackageType}\vcruntime*.dll"; DestDir: "{app}"; Flags: ignoreversion
 #if PackageType == "amd86" || PackageType == "amd64"
