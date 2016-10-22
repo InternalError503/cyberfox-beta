@@ -63,6 +63,24 @@ var
 			end;
 		end;
 end;
+
+function StartAfterInstall(const Count : LongInt): boolean;
+var
+	StartAfterInstallation : Boolean;
+	ii : LongInt;
+	Param : String;	
+	begin
+		StartAfterInstallation := FALSE;
+		for ii := 0 to Count do
+		begin
+			Param := ParamStr(ii)
+			if CompareText(Param,'--run')=0 then
+			begin
+				StartAfterInstallation := TRUE;
+				Result := TRUE;
+			end;
+		end;
+end;
 	
 //Get the uninstall string;
 function GetUninstallString: string;
@@ -107,6 +125,22 @@ function cleanUninstall : boolean;
 				Result := False;				
 			end
 		end	
+end;
+
+function startBrowser : boolean;
+	var
+		iResultCode: Integer;
+    begin
+			if ExecAsOriginalUser(ExpandConstant('{app}\{#MyAppExeName}'), '', '',SW_SHOWNORMAL, ewNoWait, iResultCode) then
+			begin
+				log('Program was launched successfully.');
+				Result := True;
+			end
+			else begin
+				log('Error occurred trying to start program.');
+				ExitProcess(12); // Our Exit code for startBrowser after install.
+				Result := False;				
+			end;
 end;
 
 //Check task.
@@ -200,8 +234,11 @@ procedure CurStepChanged(CurStep: TSetupStep);
 		if FileOrDirExists(ExpandConstant('{group}')) then
 				log('Removing start-menu group to prevent duplicate.');
 				DelTree(ExpandConstant('{group}'), True, True, True);
-		end
-
+		end;
+			if CurStep = ssDone then
+	begin
+		if (StartAfterInstall(ParamCount())) then begin startBrowser(); end;
+	end
 end;
 //Check if install exists of not disable clean install check-box
 //Note when changing task ordering to update array order below for clean install checkbox.
