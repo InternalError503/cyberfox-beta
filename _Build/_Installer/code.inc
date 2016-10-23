@@ -188,6 +188,15 @@ begin
   Result := IsProcessorFeaturePresent(10);
 end;
 
+// Check if instllation is upgrading previous install.
+function IsUpgrade(): Boolean;
+var
+  sPrevPath: String;
+begin
+  sPrevPath := WizardForm.PrevAppDir;
+  Result := (sPrevPath <> '');
+end;
+
 // Initialize installer run check for running process.	
 #if Arch == "amd64"
 // Check and warn user if installing Cyberfox x64 bit on x86 OS.
@@ -263,6 +272,14 @@ procedure CurStepChanged(CurStep: TSetupStep);
 		if (StartAfterInstall(ParamCount())) then begin startBrowser(); end;
 	end
 end;
+
+// Skip license page if already installed
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  if IsUpgrade() and (PageID = wpLicense) then
+    Result := True;
+end;
+
 // Check if install exists of not disable clean install check-box
 // Note when changing task ordering to update array order below for clean install checkbox.
 procedure CurPageChanged(CurPageID: Integer);
