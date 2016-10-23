@@ -2,6 +2,10 @@
 //Setup exit code for check for running function.
 procedure ExitProcess(exitCode:integer);
   external 'ExitProcess@kernel32.dll stdcall';
+ 
+//Setup check cpu support function 
+function IsProcessorFeaturePresent(Feature: Integer): Boolean;
+external 'IsProcessorFeaturePresent@kernel32.dll stdcall';
 
 //Check for running process before initializing the installer (Boolean)
 function IsAppRunning(const FileName : string): Boolean;
@@ -172,6 +176,14 @@ begin
 	end
 end;
 
+// Check if cpu supports SSE2
+function Is_SSE2_Supported(): Boolean;
+//const
+  // PF_XMMI64_INSTRUCTIONS_AVAILABLE:= 10;
+begin
+  Result := IsProcessorFeaturePresent(10);
+end;
+
 //Initialize installer run check for running process.	
 #if Arch == "amd64"
 //Check and warn user if installing Cyberfox x64 bit on x86 OS.
@@ -218,7 +230,14 @@ var
 		if CheckIfVista() then
 		begin
 			SuppressibleMsgBox(ExpandConstant('{cm:IsAppRunningOnVista}'), mbCriticalError, MB_OK, IDOK)
-		end		
+		end;	
+		// Check if PC supports SSE2, If not then show error and exit.
+		if Is_SSE2_Supported() then
+		begin
+			msgbox(ExpandConstant('{cm:SystemCpuUnsupported}'), mbError, MB_OK)
+			log('Incompatible CPU: This computer has an older CPU that lacks SSE2 instruction set support. Cyberfox 49.0 and later can not run on this computer.');
+			ExitProcess(13); // Our Exit code for no sse2 support.
+		end;	
 	end
 end;
 //After initializing installer event.
