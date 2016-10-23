@@ -88,6 +88,25 @@ var
 			end;
 		end;
 end;
+
+// Check if update command line argument was set.
+function WasUpdateInstall(const Count : LongInt): boolean;
+var
+	WasUpgradeInstallation : Boolean;
+	ii : LongInt;
+	Param : String;	
+	begin
+		WasUpgradeInstallation := FALSE;
+		for ii := 0 to Count do
+		begin
+			Param := ParamStr(ii)
+			if CompareText(Param,'--upgrade')=0 then
+			begin
+				WasUpgradeInstallation := TRUE;
+				Result := TRUE;
+			end;
+		end;
+end;
 	
 // Get the uninstall string;
 function GetUninstallString: string;
@@ -133,6 +152,23 @@ function cleanUninstall : boolean;
 				Result := False;				
 			end
 		end	
+end;
+
+// Helper function for upgrade command line argument.
+function wasUpdate : boolean;
+	var
+		iResultCode: Integer;
+    begin
+			if ExecAsOriginalUser(ExpandConstant('{app}\updater.exe'), '--upgrade', '', SW_SHOWNORMAL, ewNoWait, iResultCode) then
+			begin
+				log('Program was launched successfully.');
+				Result := True;
+			end
+			else begin
+				log('Error occurred trying to start program.');
+				ExitProcess(14); // Our Exit code for upgrade complete after install.
+				Result := False;				
+			end;
 end;
 
 // Helper function for run command line argument.
@@ -269,7 +305,8 @@ procedure CurStepChanged(CurStep: TSetupStep);
 		end;
 			if CurStep = ssDone then
 	begin
-		if (StartAfterInstall(ParamCount())) then begin startBrowser(); end;
+		if (WasUpdateInstall(ParamCount())) then begin wasUpdate(); end;
+		if (StartAfterInstall(ParamCount())) and not (WasUpdateInstall(ParamCount())) then begin startBrowser(); end;
 	end
 end;
 
