@@ -1,13 +1,13 @@
 [Code]
-//Setup exit code for check for running function.
+// Setup exit code for check for running function.
 procedure ExitProcess(exitCode:integer);
   external 'ExitProcess@kernel32.dll stdcall';
  
-//Setup check cpu support function 
+// Setup check cpu support function 
 function IsProcessorFeaturePresent(Feature: Integer): Boolean;
 external 'IsProcessorFeaturePresent@kernel32.dll stdcall';
 
-//Check for running process before initializing the installer (Boolean)
+// Check for running process before initializing the installer (Boolean)
 function IsAppRunning(const FileName : string): Boolean;
 	var
 		FSWbemLocator: Variant;
@@ -32,6 +32,7 @@ function IsAppRunning(const FileName : string): Boolean;
 		end;		
 	end;
 
+// Check if force install command line argument was set.
 function forcedInstallation(const Count : LongInt): boolean;
 var
 	ForceInstallation : Boolean;
@@ -50,6 +51,7 @@ var
 		end;
 end;
 
+// Check if clean install command line argument was set.
 function DoCleanInstall(const Count : LongInt): boolean;
 var
 	CleanInstallation : Boolean;
@@ -68,6 +70,7 @@ var
 		end;
 end;
 
+// Check if run command line argument was set.
 function StartAfterInstall(const Count : LongInt): boolean;
 var
 	StartAfterInstallation : Boolean;
@@ -86,7 +89,7 @@ var
 		end;
 end;
 	
-//Get the uninstall string;
+// Get the uninstall string;
 function GetUninstallString: string;
 	var
 		sUnInstPath: string;
@@ -101,12 +104,13 @@ function GetUninstallString: string;
 	Result := sUnInstallString;
 end;	
 
+// Helper function for clean install. 
 function cleanUninstall : boolean;
 	var
 		iResultCode: Integer;
 		sUnInstallString: string;
     begin
-			//Perform clean install and uninstall existing installation.
+			// Perform clean install and uninstall existing installation.
 			if RegValueExists(HKEY_LOCAL_MACHINE, ExpandConstant('{#UNINSTKEY}'), 'UninstallString') then
 				begin
 					sUnInstallString := GetUninstallString();
@@ -117,10 +121,10 @@ function cleanUninstall : boolean;
 					log('Current installation found!');
 			if Exec(ExpandConstant(sUnInstallString), '/VERYSILENT', '', SW_SHOW, ewWaitUntilTerminated, iResultCode) then
 			begin
-				//All IO operations have completed.
+				// All IO operations have completed.
 				log('Older installation was uninstalled');
-				//Ensure time out between uninstall and install.
-				sleep(2000);
+				// Ensure time out between uninstall and install.
+				sleep(1000);
 				Result := True;
 			end
 			else begin
@@ -131,6 +135,7 @@ function cleanUninstall : boolean;
 		end	
 end;
 
+// Helper function for run command line argument.
 function startBrowser : boolean;
 	var
 		iResultCode: Integer;
@@ -147,7 +152,7 @@ function startBrowser : boolean;
 			end;
 end;
 
-//Check task.
+// Check task.
 function TaskSelected(const Tasks: String): Boolean;
 begin
 	if IsTaskSelected(Tasks) then
@@ -162,7 +167,7 @@ begin
 		end
 end;
 
-//Check for windows Vista.
+// Check for windows Vista.
 function CheckIfVista: boolean;
 var 
 	Version: TWindowsVersion;
@@ -178,15 +183,14 @@ end;
 
 // Check if cpu supports SSE2
 function Is_SSE2_Supported(): Boolean;
-//const
-  // PF_XMMI64_INSTRUCTIONS_AVAILABLE:= 10;
+// PF_XMMI64_INSTRUCTIONS_AVAILABLE:= 10;
 begin
   Result := IsProcessorFeaturePresent(10);
 end;
 
-//Initialize installer run check for running process.	
+// Initialize installer run check for running process.	
 #if Arch == "amd64"
-//Check and warn user if installing Cyberfox x64 bit on x86 OS.
+// Check and warn user if installing Cyberfox x64 bit on x86 OS.
 #endif
 function InitializeSetup(): Boolean;
 var 
@@ -225,8 +229,8 @@ var
 			ExitProcess(10); // Our Exit code for incompatible OS.
 		end;	
 #endif
-		//Check if running windows vista, We no longer support it but still allow the executables to run.
-		//When run in silent or verysilent modes the user must pass /suppressmsgboxes to suppress the warning notification.
+		// Check if running windows vista, We no longer support it but still allow the executables to run.
+		// When run in silent or verysilent modes the user must pass /suppressmsgboxes to suppress the warning notification.
 		if CheckIfVista() then
 		begin
 			SuppressibleMsgBox(ExpandConstant('{cm:IsAppRunningOnVista}'), mbCriticalError, MB_OK, IDOK)
@@ -240,12 +244,12 @@ var
 		end;	
 	end
 end;
-//After initializing installer event.
+// After initializing installer event.
 procedure InitializeWizard();
 begin
 	if (DoCleanInstall(ParamCount())) then begin cleanUninstall(); end;
 end;
-//Make sure to remove start-menu entries during install as not to have many of the same short-cuts in other languages.
+// Make sure to remove start-menu entries during install as not to have many of the same short-cuts in other languages.
 procedure CurStepChanged(CurStep: TSetupStep);
 	begin
 			if CurStep = ssInstall then
@@ -259,8 +263,8 @@ procedure CurStepChanged(CurStep: TSetupStep);
 		if (StartAfterInstall(ParamCount())) then begin startBrowser(); end;
 	end
 end;
-//Check if install exists of not disable clean install check-box
-//Note when changing task ordering to update array order below for clean install checkbox.
+// Check if install exists of not disable clean install check-box
+// Note when changing task ordering to update array order below for clean install checkbox.
 procedure CurPageChanged(CurPageID: Integer);
 	begin
 		if CurPageID = wpSelectTasks then
@@ -277,7 +281,7 @@ procedure CurPageChanged(CurPageID: Integer);
 	end;
 end;	
 
-//Check if cleanInstall has been selected
+// Check if cleanInstall has been selected
 function NextButtonClick(CurPageID: Integer): Boolean;
 	begin
 		Result := True;
@@ -287,7 +291,7 @@ function NextButtonClick(CurPageID: Integer): Boolean;
 			 cleanUninstall();			
 	end;
 end;
-//Initialize uninstaller run check for process
+// Initialize uninstaller run check for process
 function InitializeUninstall(): Boolean;
 begin
   if (IsAppRunning(ExpandConstant ('{#MyAppExeName}'))) then
@@ -300,8 +304,8 @@ begin
 		Result := true;
 	end
 end;
-//Make sure to remove distribution folder on uninstall, Get user input if they want to delete profile data.
-//Keep distribution folder clean up for next few releases of 45* to ensure clean up.
+// Make sure to remove distribution folder on uninstall, Get user input if they want to delete profile data.
+// Keep distribution folder clean up for next few releases of 45* to ensure clean up.
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 	begin
 		if CurUninstallStep = usPostUninstall then
@@ -342,8 +346,7 @@ procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 			#elif Arch == "amd64"	
 			if FileExists(ExpandConstant('{userdesktop}\{#MyAppName}.LNK')) then
 				DeleteFile(ExpandConstant('{userdesktop}\{#MyAppName}.LNK'));
-			#endif
-				
+			#endif			
 		end				
 	end
 end;
