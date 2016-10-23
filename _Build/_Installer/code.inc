@@ -232,7 +232,7 @@ var
 			SuppressibleMsgBox(ExpandConstant('{cm:IsAppRunningOnVista}'), mbCriticalError, MB_OK, IDOK)
 		end;	
 		// Check if PC supports SSE2, If not then show error and exit.
-		if Is_SSE2_Supported() then
+		if not Is_SSE2_Supported() then
 		begin
 			msgbox(ExpandConstant('{cm:SystemCpuUnsupported}'), mbError, MB_OK)
 			log('Incompatible CPU: This computer has an older CPU that lacks SSE2 instruction set support. Cyberfox 49.0 and later can not run on this computer.');
