@@ -1606,6 +1606,9 @@ pref("app.update.notificationsURL", "https://cyberfox.8pecxstudios.com/notificat
 // Show release notes page on first run or after updating
 pref("app.update.releasenotes.enabled", true);
 
+// Verifiy SHA512 on updates.
+pref("app.update.verifysha", true);
+
 //set bool pref for copy tab url enabled
 pref("browser.tabs.copyurl", true);
 

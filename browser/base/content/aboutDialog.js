@@ -274,6 +274,9 @@ try {
 			// Second and third params are used to pass command-line arguments
 			// to the process.
 			var args = ["--checknow"];
+			if (!Services.prefs.getBoolPref("app.update.verifysha")) { 
+				args.push("--nosha");
+			}
 			process.run(false, args, args.length);
 		}else{
 			throw new Error('Whoops! Hey somethings is not right maybe contact support!');
