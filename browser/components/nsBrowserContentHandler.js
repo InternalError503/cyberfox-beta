@@ -507,6 +507,13 @@ nsBrowserContentHandler.prototype = {
 				overridePage = Services.urlFormatter.formatURLPref("startup.homepage_welcome_url");
 				additionalPage = Services.urlFormatter.formatURLPref("startup.homepage_welcome_url.additional");
 			}
+			// Show notifications page on first run or after updating
+			if (Services.prefs.getBoolPref("app.update.notifications.enabled")){
+				let onceShowNotificationInfo = Services.urlFormatter.formatURLPref("app.update.notificationsURL");
+				if (onceShowNotificationInfo && onceShowNotificationInfo.length) {
+					additionalPage = onceShowNotificationInfo;
+				}		
+			}
             // Turn on 'later run' pages for new profiles.
             LaterRun.enabled = true;
             break;
@@ -527,6 +534,13 @@ nsBrowserContentHandler.prototype = {
 
 				overridePage = overridePage.replace("%OLD_VERSION%", old_mstone);
 			}
+			// Show notifications page on first run or after updating
+			if (Services.prefs.getBoolPref("app.update.notifications.enabled")){
+				let onceShowNotificationInfo = Services.urlFormatter.formatURLPref("app.update.notificationsURL");
+				if (onceShowNotificationInfo && onceShowNotificationInfo.length) {
+					additionalPage = onceShowNotificationInfo;
+				}		
+			}
             break;
         }
       }
@@ -543,14 +557,6 @@ nsBrowserContentHandler.prototype = {
 		if (onceShowUpdateInfo && onceShowUpdateInfo.length) {
 			additionalPage = onceShowUpdateInfo;
 			Services.prefs.setBoolPref("app.update.infoshown", true);
-		}		
-	}
-	
-	// Show notifications page on first run or after updating
-	if (Services.prefs.getBoolPref("app.update.notifications.enabled")){
-		let onceShowNotificationInfo = Services.urlFormatter.formatURLPref("app.update.notificationsURL");
-		if (onceShowNotificationInfo && onceShowNotificationInfo.length) {
-			additionalPage = onceShowNotificationInfo;
 		}		
 	}
 
