@@ -613,7 +613,7 @@ bool get_input_buffer(cubeb_stream * stm)
 
 /* Get an output buffer from the render_client. It has to be released before
  * exiting the callback. */
-bool get_output_buffer(cubeb_stream * stm, float *& buffer, size_t & frame_count)
+bool get_output_buffer(cubeb_stream * stm, size_t max_frames, float *& buffer, size_t & frame_count)
 {
   UINT32 padding_out;
   HRESULT hr;
@@ -635,7 +635,7 @@ bool get_output_buffer(cubeb_stream * stm, float *& buffer, size_t & frame_count
     return true;
   }
 
-  frame_count = stm->output_buffer_frame_count - padding_out;
+  frame_count = std::min<size_t>(max_frames, stm->output_buffer_frame_count - padding_out);
   BYTE * output_buffer;
 
   hr = stm->render_client->GetBuffer(frame_count, &output_buffer);
@@ -673,7 +673,7 @@ refill_callback_duplex(cubeb_stream * stm)
     return true;
   }
 
-  rv = get_output_buffer(stm, output_buffer, output_frames);
+  rv = get_output_buffer(stm, input_frames, output_buffer, output_frames);
   if (!rv) {
     hr = stm->render_client->ReleaseBuffer(output_frames, 0);
     return rv;
@@ -687,7 +687,7 @@ refill_callback_duplex(cubeb_stream * stm)
 
   // When WASAPI has not filled the input buffer yet, send silence.
   double output_duration = double(output_frames) / stm->output_mix_params.rate;
-  double input_duration = double(stm->linear_input_buffer.length() / stm->input_stream_params.channels) / stm->input_mix_params.rate;
+  double input_duration = double(input_frames) / stm->input_mix_params.rate;
   if (input_duration < output_duration) {
     size_t padding = size_t(round((output_duration - input_duration) * stm->input_mix_params.rate));
     LOG("padding silence: out=%f in=%f pad=%u\n", output_duration, input_duration, padding);
@@ -745,7 +745,8 @@ refill_callback_output(cubeb_stream * stm)
 
   XASSERT(!has_input(stm) && has_output(stm));
 
-  rv = get_output_buffer(stm, output_buffer, output_frames);
+  rv = get_output_buffer(stm, std::numeric_limits<size_t>::max(),
+                         output_buffer, output_frames);
   if (!rv) {
     return rv;
   }
@@ -1642,7 +1643,8 @@ wasapi_stream_init(cubeb * context, cubeb_stream ** stream,
   stm->latency = latency_frames;
   stm->volume = 1.0;
 
-  stm->stream_reset_lock = owned_critical_section();
+  // Placement new to call ctor.
+  new (&stm->stream_reset_lock) owned_critical_section();
 
   stm->reconfigure_event = CreateEvent(NULL, 0, 0, NULL);
   if (!stm->reconfigure_event) {
@@ -1738,6 +1740,9 @@ void wasapi_stream_destroy(cubeb_stream * stm)
     auto_lock lock(stm->stream_reset_lock);
     close_wasapi_stream(stm);
   }
+
+  // Need to call dtor to free the resource in owned_critical_section.
+  stm->stream_reset_lock.~owned_critical_section();
 
   free(stm);
 }
