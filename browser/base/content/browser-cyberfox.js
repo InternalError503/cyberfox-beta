@@ -479,7 +479,7 @@ var gCyberfoxCustom = {
 								var updateAvailable = false;
 															
 								if (Services.prefs.getCharPref("app.update.channel.type") === "beta") {
-									updateAvailable = (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString().replace(/b[0-9]/g, '')) && 
+									updateAvailable = (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString().replace(/b[0-9]+/g, '')) && 
 										gCyberfoxCustom.compareBuildVersions(AppConstants.MOZ_APP_VERSION_DISPLAY, currentVersion.toString()));
 								} else if (Services.prefs.getCharPref("app.update.channel.type") === "release") {
 									updateAvailable = (gCyberfoxCustom.compareVersions(Services.appinfo.version, currentVersion.toString()));

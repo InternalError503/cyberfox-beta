@@ -159,7 +159,7 @@ function checkForUpdates(){
 					var manualCheck = document.getElementById("checkForUpdatesButton");
 					var updateAvailable = false;
 					if (Services.prefs.getCharPref("app.update.channel.type") === "beta") {
-						updateAvailable = (compareVersions(Services.appinfo.version, currentVersion.toString().replace(/b[0-9]/g, '')) && 
+						updateAvailable = (compareVersions(Services.appinfo.version, currentVersion.toString().replace(/b[0-9]+/g, '')) && 
 						compareBuildVersions(AppConstants.MOZ_APP_VERSION_DISPLAY, currentVersion.toString()));
 					} else if (Services.prefs.getCharPref("app.update.channel.type") === "release") {
 						updateAvailable = compareVersions(Services.appinfo.version, currentVersion.toString());
