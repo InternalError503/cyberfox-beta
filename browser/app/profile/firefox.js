@@ -1600,7 +1600,7 @@ pref("app.update.infoshown", false);
 pref("app.update.infoshownURL", "https://cyberfox.8pecxstudios.com/cyberfox-update/");
 
 // Show notifications page on first run or after updating
-pref("app.update.notifications.enabled", false);
+pref("app.update.notifications.enabled", true);
 pref("app.update.notificationsURL", "https://cyberfox.8pecxstudios.com/notifications");
 
 // Show release notes page on first run or after updating

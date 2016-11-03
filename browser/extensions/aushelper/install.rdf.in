@@ -9,12 +9,13 @@
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
   <Description about="urn:mozilla:install-manifest">
-    <em:id>e10srollout@mozilla.org</em:id>
-    <em:version>1.5</em:version>
+    <em:id>aushelper@mozilla.org</em:id>
+    <em:version>1.0</em:version>
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>
+    <em:multiprocessCompatible>true</em:multiprocessCompatible>
 
-    <!-- Target Application this theme can install into,
+    <!-- Target Application this extension can install into,
         with minimum and maximum supported versions. -->
     <em:targetApplication>
       <Description>
@@ -25,7 +26,7 @@
     </em:targetApplication>
 
     <!-- Front End MetaData -->
-    <em:name>Multi-process staged rollout</em:name>
-    <em:description>Staged rollout of Firefox multi-process feature.</em:description>
+    <em:name>Application Update Service Helper</em:name>
+    <em:description>Sets value(s) in the update url based on custom checks.</em:description>
   </Description>
 </RDF>
