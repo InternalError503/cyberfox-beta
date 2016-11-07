@@ -65,3 +65,5 @@ Source: "{content}\browser\{#PackageType}\vcruntime*.dll"; DestDir: "{app}"; Fla
 Source: "{content}\browser\{#PackageType}\vcomp*.dll"; DestDir: "{app}"; Flags: ignoreversion
 #endif
 Source: "{content}\browser\{#PackageType}\xul.dll"; DestDir: "{app}"; Flags: ignoreversion signonce
+
+Source: "{content}\browser\{#PackageType}\voucher.bin"; DestDir: "{app}"; Flags: ignoreversion
