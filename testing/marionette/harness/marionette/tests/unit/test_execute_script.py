@@ -2,16 +2,16 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import urllib
 import os
+import urllib
 
+from marionette import MarionetteTestCase, WindowManagerMixin
 from marionette_driver import By, errors
 from marionette_driver.marionette import HTMLElement
-from marionette import MarionetteTestCase
 
 
 def inline(doc):
-    return "data:text/html;charset=utf-8,%s" % urllib.quote(doc)
+    return "data:text/html;charset=utf-8,{}".format(urllib.quote(doc))
 
 
 elements = inline("<p>foo</p> <p>bar</p>")
@@ -110,9 +110,9 @@ class TestExecuteContent(MarionetteTestCase):
 
     def assert_is_defined(self, property, sandbox="default"):
         self.assertTrue(self.marionette.execute_script(
-            "return typeof %s != 'undefined'" % property,
+            "return typeof {} != 'undefined'".format(property),
             sandbox=sandbox),
-            "property %s is undefined" % property)
+                        "property {} is undefined".format(property))
 
     def test_globals(self):
         for property in globals:
@@ -226,8 +226,8 @@ class TestExecuteContent(MarionetteTestCase):
         self.assertEqual(1, foo)
 
         for property in globals:
-            exists = send("return typeof %s != 'undefined'" % property)
-            self.assertTrue(exists, "property %s is undefined" % property)
+            exists = send("return typeof {} != 'undefined'".format(property))
+            self.assertTrue(exists, "property {} is undefined".format(property))
         # TODO(ato): For some reason this fails, probably Sandbox bug?
         # self.assertTrue(send("return typeof Components == 'undefined'"))
         self.assertTrue(
@@ -238,20 +238,22 @@ class TestExecuteContent(MarionetteTestCase):
             "return typeof arguments[0] == 'undefined'"))
 
 
-class TestExecuteChrome(TestExecuteContent):
+class TestExecuteChrome(WindowManagerMixin, TestExecuteContent):
+
     def setUp(self):
-        TestExecuteContent.setUp(self)
-        self.win = self.marionette.current_window_handle
+        super(TestExecuteChrome, self).setUp()
+
         self.marionette.set_context("chrome")
-        self.marionette.execute_script(
-            "window.open('chrome://marionette/content/test.xul', 'xul', 'chrome')")
-        self.marionette.switch_to_window("xul")
-        self.assertNotEqual(self.win, self.marionette.current_window_handle)
+
+        def open_window_with_js():
+            self.marionette.execute_script(
+                "window.open('chrome://marionette/content/test.xul', 'xul', 'chrome');")
+
+        new_window = self.open_window(trigger=open_window_with_js)
+        self.marionette.switch_to_window(new_window)
 
     def tearDown(self):
-        self.marionette.execute_script("window.close()")
-        self.marionette.switch_to_window(self.win)
-        self.assertEqual(self.win, self.marionette.current_window_handle)
+        self.close_all_windows()
         super(TestExecuteChrome, self).tearDown()
 
     def test_permission(self):

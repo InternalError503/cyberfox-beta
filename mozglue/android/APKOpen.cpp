@@ -111,6 +111,7 @@ JNI_Throw(JNIEnv* jenv, const char* classname, const char* msg)
 
 namespace {
     JavaVM* sJavaVM;
+    pthread_t sJavaUiThread;
 }
 
 void
@@ -153,9 +154,17 @@ abortThroughJava(const char* msg)
     env->PopLocalFrame(nullptr);
 }
 
-#define JNI_STUBS
-#include "jni-stubs.inc"
-#undef JNI_STUBS
+NS_EXPORT pthread_t
+getJavaUiThread()
+{
+    return sJavaUiThread;
+}
+
+extern "C" NS_EXPORT void MOZ_JNICALL
+Java_org_mozilla_gecko_GeckoThread_registerUiThread(JNIEnv*, jclass)
+{
+    sJavaUiThread = pthread_self();
+}
 
 static void * xul_handle = nullptr;
 #ifndef MOZ_FOLD_LIBS
@@ -216,10 +225,6 @@ loadGeckoLibs(const char *apkName)
     __android_log_print(ANDROID_LOG_ERROR, "GeckoLibLoad", "Couldn't get a handle to libxul!");
     return FAILURE;
   }
-
-#define JNI_BINDINGS
-#include "jni-stubs.inc"
-#undef JNI_BINDINGS
 
   void (*XRE_StartupTimelineRecord)(int, TimeStamp);
   xul_dlsym("XRE_StartupTimelineRecord", &XRE_StartupTimelineRecord);

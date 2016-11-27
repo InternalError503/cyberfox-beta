@@ -13,7 +13,7 @@ var loader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
     .getService(Ci.mozIJSSubScriptLoader);
 
 Cu.import("chrome://marionette/content/accessibility.js");
-Cu.import("chrome://marionette/content/action.js");
+Cu.import("chrome://marionette/content/legacyaction.js");
 Cu.import("chrome://marionette/content/atom.js");
 Cu.import("chrome://marionette/content/capture.js");
 Cu.import("chrome://marionette/content/cookies.js");
@@ -597,7 +597,7 @@ function emitTouchEvent(type, touch) {
                    getInterface(Components.interfaces.nsIWebNavigation).
                    QueryInterface(Components.interfaces.nsIDocShell);
     if (docShell.asyncPanZoomEnabled && actions.scrolling) {
-      // if we're in APZ and we're scrolling, we must use injectTouchEvent to dispatch our touchmove events
+      // if we're in APZ and we're scrolling, we must use sendNativeTouchPoint to dispatch our touchmove events
       let index = sendSyncMessage("MarionetteFrame:getCurrentFrameId");
       // only call emitTouchEventForIFrame if we're inside an iframe.
       if (index != null) {
@@ -908,7 +908,7 @@ function pollForReadyState(msg, start = undefined, callback = undefined) {
  */
 function get(msg) {
   let start = new Date().getTime();
-  let command_id = msg.json.command_id;
+  let {pageTimeout, url, command_id} = msg.json;
 
   let docShell = curContainer.frame
       .document
@@ -923,7 +923,7 @@ function get(msg) {
   let requestedURL;
   let loadEventExpected = false;
   try {
-    requestedURL = new URL(msg.json.url).toString();
+    requestedURL = new URL(url).toString();
     let curURL = curContainer.frame.location;
     loadEventExpected = navigate.isLoadEventExpected(curURL, requestedURL);
   } catch (e) {
@@ -1003,7 +1003,7 @@ function get(msg) {
     }
   };
 
-  if (msg.json.pageTimeout) {
+  if (typeof pageTimeout != "undefined") {
     let onTimeout = function() {
       if (loadEventExpected) {
         removeEventListener("DOMContentLoaded", onDOMContentLoaded, false);
@@ -1011,7 +1011,7 @@ function get(msg) {
       webProgress.removeProgressListener(loadListener);
       sendError(new TimeoutError("Error loading page, timed out (onDOMContentLoaded)"), command_id);
     }
-    navTimer.initWithCallback(onTimeout, msg.json.pageTimeout, Ci.nsITimer.TYPE_ONE_SHOT);
+    navTimer.initWithCallback(onTimeout, pageTimeout, Ci.nsITimer.TYPE_ONE_SHOT);
   }
 
   // in Firefox we need to move to the top frame before navigating

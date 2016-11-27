@@ -228,7 +228,6 @@ class UpdateTestCase(FirefoxTestCase):
             try:
                 # If updates have already been found, proceed to download
                 if dialog.wizard.selected_panel in [dialog.wizard.updates_found_basic,
-                                                    dialog.wizard.updates_found_billboard,
                                                     dialog.wizard.error_patching,
                                                     ]:
                     dialog.select_next_page()
@@ -278,22 +277,6 @@ class UpdateTestCase(FirefoxTestCase):
             Wait(self.marionette).until(lambda _: (
                 window.deck.selected_panel != window.deck.download_and_install),
                 message='Download of the update has been started.')
-
-        # In case of update failures, clicking the update button will open the
-        # old update wizard dialog.
-        if window.deck.selected_panel == window.deck.apply_billboard:
-            dialog = self.browser.open_window(
-                callback=lambda _: window.deck.update_button.click(),
-                expected_window_class=UpdateWizardDialog
-            )
-            Wait(self.marionette).until(
-                lambda _: dialog.wizard.selected_panel == dialog.wizard.updates_found_basic,
-                message='An update has been found.')
-
-            download_via_update_wizard(dialog)
-            dialog.close()
-
-            return
 
         if wait_for_finish:
             start_time = datetime.now()

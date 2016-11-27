@@ -425,8 +425,8 @@ class RegExpObject : public NativeObject
 
     static unsigned lastIndexSlot() { return LAST_INDEX_SLOT; }
 
-    static bool isInitialShape(NativeObject* nobj) {
-        Shape* shape = nobj->lastProperty();
+    static bool isInitialShape(RegExpObject* rx) {
+        Shape* shape = rx->lastProperty();
         if (!shape->hasSlot())
             return false;
         if (shape->maybeSlot() != LAST_INDEX_SLOT)
@@ -485,6 +485,9 @@ class RegExpObject : public NativeObject
 
     void initIgnoringLastIndex(HandleAtom source, RegExpFlag flags);
 
+    // NOTE: This method is *only* safe to call on RegExps that haven't been
+    //       exposed to script, because it requires that the "lastIndex"
+    //       property be writable.
     void initAndZeroLastIndex(HandleAtom source, RegExpFlag flags, ExclusiveContext* cx);
 
   private:

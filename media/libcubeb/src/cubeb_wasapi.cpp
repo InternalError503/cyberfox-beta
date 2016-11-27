@@ -116,7 +116,7 @@ int wasapi_stream_start(cubeb_stream * stm);
 void close_wasapi_stream(cubeb_stream * stm);
 int setup_wasapi_stream(cubeb_stream * stm);
 static char * wstr_to_utf8(const wchar_t * str);
-static const wchar_t * utf8_to_wstr(char* str);
+static std::unique_ptr<const wchar_t[]> utf8_to_wstr(char* str);
 
 }
 
@@ -613,7 +613,7 @@ bool get_input_buffer(cubeb_stream * stm)
 
 /* Get an output buffer from the render_client. It has to be released before
  * exiting the callback. */
-bool get_output_buffer(cubeb_stream * stm, size_t max_frames, float *& buffer, size_t & frame_count)
+bool get_output_buffer(cubeb_stream * stm, float *& buffer, size_t & frame_count)
 {
   UINT32 padding_out;
   HRESULT hr;
@@ -635,7 +635,7 @@ bool get_output_buffer(cubeb_stream * stm, size_t max_frames, float *& buffer, s
     return true;
   }
 
-  frame_count = std::min<size_t>(max_frames, stm->output_buffer_frame_count - padding_out);
+  frame_count = stm->output_buffer_frame_count - padding_out;
   BYTE * output_buffer;
 
   hr = stm->render_client->GetBuffer(frame_count, &output_buffer);
@@ -673,7 +673,7 @@ refill_callback_duplex(cubeb_stream * stm)
     return true;
   }
 
-  rv = get_output_buffer(stm, input_frames, output_buffer, output_frames);
+  rv = get_output_buffer(stm, output_buffer, output_frames);
   if (!rv) {
     hr = stm->render_client->ReleaseBuffer(output_frames, 0);
     return rv;
@@ -687,7 +687,7 @@ refill_callback_duplex(cubeb_stream * stm)
 
   // When WASAPI has not filled the input buffer yet, send silence.
   double output_duration = double(output_frames) / stm->output_mix_params.rate;
-  double input_duration = double(input_frames) / stm->input_mix_params.rate;
+  double input_duration = double(stm->linear_input_buffer.length() / stm->input_stream_params.channels) / stm->input_mix_params.rate;
   if (input_duration < output_duration) {
     size_t padding = size_t(round((output_duration - input_duration) * stm->input_mix_params.rate));
     LOG("padding silence: out=%f in=%f pad=%u\n", output_duration, input_duration, padding);
@@ -745,8 +745,7 @@ refill_callback_output(cubeb_stream * stm)
 
   XASSERT(!has_input(stm) && has_output(stm));
 
-  rv = get_output_buffer(stm, std::numeric_limits<size_t>::max(),
-                         output_buffer, output_frames);
+  rv = get_output_buffer(stm, output_buffer, output_frames);
   if (!rv) {
     return rv;
   }
@@ -1389,8 +1388,7 @@ int setup_wasapi_stream_one_side(cubeb_stream * stm,
   stm->stream_reset_lock.assert_current_thread_owns();
 
   if (devid) {
-    std::unique_ptr<const wchar_t> id;
-    id.reset(utf8_to_wstr(reinterpret_cast<char*>(devid)));
+    std::unique_ptr<const wchar_t[]> id(utf8_to_wstr(reinterpret_cast<char*>(devid)));
     hr = get_endpoint(&device, id.get());
     if (FAILED(hr)) {
       LOG("Could not get %s endpoint, error: %x\n", DIRECTION_NAME, hr);
@@ -1702,10 +1700,13 @@ void close_wasapi_stream(cubeb_stream * stm)
   SafeRelease(stm->output_client);
   stm->output_client = NULL;
   SafeRelease(stm->input_client);
-  stm->capture_client = NULL;
+  stm->input_client = NULL;
 
   SafeRelease(stm->render_client);
   stm->render_client = NULL;
+
+  SafeRelease(stm->capture_client);
+  stm->capture_client = NULL;
 
   SafeRelease(stm->audio_stream_volume);
   stm->audio_stream_volume = NULL;
@@ -1941,26 +1942,26 @@ wstr_to_utf8(LPCWSTR str)
 
   size = ::WideCharToMultiByte(CP_UTF8, 0, str, -1, ret, 0, NULL, NULL);
   if (size > 0) {
-    ret =  new char[size];
+    ret = static_cast<char *>(malloc(size));
     ::WideCharToMultiByte(CP_UTF8, 0, str, -1, ret, size, NULL, NULL);
   }
 
   return ret;
 }
 
-static const wchar_t *
+static std::unique_ptr<const wchar_t[]>
 utf8_to_wstr(char* str)
 {
-  wchar_t * ret = nullptr;
+  std::unique_ptr<wchar_t[]> ret;
   int size;
 
-  size = ::MultiByteToWideChar(CP_UTF8, 0, str, -1, ret, 0);
+  size = ::MultiByteToWideChar(CP_UTF8, 0, str, -1, nullptr, 0);
   if (size > 0) {
-    ret = new wchar_t[size];
-    ::MultiByteToWideChar(CP_UTF8, 0, str, -1, ret, size);
+    ret.reset(new wchar_t[size]);
+    ::MultiByteToWideChar(CP_UTF8, 0, str, -1, ret.get(), size);
   }
 
-  return ret;
+  return std::move(ret);
 }
 
 static IMMDevice *

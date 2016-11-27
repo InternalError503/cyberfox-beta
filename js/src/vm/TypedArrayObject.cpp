@@ -43,6 +43,7 @@
 
 #include "jsatominlines.h"
 
+#include "gc/Nursery-inl.h"
 #include "gc/StoreBuffer-inl.h"
 #include "vm/ArrayBufferObject-inl.h"
 #include "vm/NativeObject-inl.h"
@@ -77,11 +78,21 @@ TypedArrayObject::dataOffset()
 }
 
 void
-TypedArrayObject::notifyBufferDetached(void* newData)
+TypedArrayObject::notifyBufferDetached(JSContext* cx, void* newData)
 {
     MOZ_ASSERT(!isSharedMemory());
     setFixedSlot(TypedArrayObject::LENGTH_SLOT, Int32Value(0));
     setFixedSlot(TypedArrayObject::BYTEOFFSET_SLOT, Int32Value(0));
+
+    // If the object is in the nursery, the buffer will be freed by the next
+    // nursery GC. Free the data slot pointer if the object has no inline data.
+    Nursery& nursery = cx->runtime()->gc.nursery;
+    if (isTenured() && !hasBuffer() && !hasInlineElements() &&
+        !nursery.isInside(elements()))
+    {
+        js_free(elements());
+    }
+
     setPrivate(newData);
 }
 
@@ -106,6 +117,16 @@ TypedArrayObject::ensureHasBuffer(JSContext* cx, Handle<TypedArrayObject*> tarra
 
     // tarray is not shared, because if it were it would have a buffer.
     memcpy(buffer->dataPointer(), tarray->viewDataUnshared(), tarray->byteLength());
+
+    // If the object is in the nursery, the buffer will be freed by the next
+    // nursery GC. Free the data slot pointer if the object has no inline data.
+    Nursery& nursery = cx->runtime()->gc.nursery;
+    if (tarray->isTenured() && !tarray->hasInlineElements() &&
+        !nursery.isInside(tarray->elements()))
+    {
+        js_free(tarray->elements());
+    }
+
     tarray->setPrivate(buffer->dataPointer());
 
     tarray->setFixedSlot(TypedArrayObject::BUFFER_SLOT, ObjectValue(*buffer));
@@ -134,10 +155,8 @@ TypedArrayObject::finalize(FreeOp* fop, JSObject* obj)
         return;
 
     // Free the data slot pointer if it does not point into the old JSObject.
-    if (!curObj->hasInlineElements()) {
-        MOZ_ASSERT(!fop->runtime()->gc.nursery.isInside(curObj->elements()));
+    if (!curObj->hasInlineElements())
         js_free(curObj->elements());
-    }
 }
 
 /* static */ void
@@ -162,6 +181,7 @@ TypedArrayObject::objectMovedDuringMinorGC(JSTracer* trc, JSObject* obj, const J
     TypedArrayObject* newObj = &obj->as<TypedArrayObject>();
     const TypedArrayObject* oldObj = &old->as<TypedArrayObject>();
     MOZ_ASSERT(newObj->elements() == oldObj->elements());
+    MOZ_ASSERT(obj->isTenured());
 
     // Typed arrays with a buffer object do not need an update.
     if (oldObj->hasBuffer())
@@ -190,13 +210,18 @@ JS_FOR_EACH_TYPED_ARRAY(OBJECT_MOVED_TYPED_ARRAY)
         MOZ_CRASH("Unsupported TypedArray type");
     }
 
-    if (dataOffset() + nbytes <= GetGCKindBytes(newAllocKind)) {
+    size_t headerSize = dataOffset() + sizeof(HeapSlot);
+    if (headerSize + nbytes <= GetGCKindBytes(newAllocKind)) {
+        MOZ_ASSERT(oldObj->hasInlineElements());
         newObj->setInlineElements();
     } else {
+        MOZ_ASSERT(!oldObj->hasInlineElements());
         AutoEnterOOMUnsafeRegion oomUnsafe;
-        uint8_t* data = newObj->zone()->pod_malloc<uint8_t>(nbytes);
+        nbytes = JS_ROUNDUP(nbytes, sizeof(Value));
+        void* data = newObj->zone()->pod_malloc<uint8_t>(nbytes);
         if (!data)
             oomUnsafe.crash("Failed to allocate typed array elements while tenuring.");
+        MOZ_ASSERT(!nursery.isInside(data));
         newObj->initPrivate(data);
     }
 
@@ -204,7 +229,8 @@ JS_FOR_EACH_TYPED_ARRAY(OBJECT_MOVED_TYPED_ARRAY)
 
     // Set a forwarding pointer for the element buffers in case they were
     // preserved on the stack by Ion.
-    nursery.maybeSetForwardingPointer(trc, oldObj->elements(), newObj->elements(), true);
+    nursery.maybeSetForwardingPointer(trc, oldObj->elements(), newObj->elements(),
+                                      /* direct = */nbytes >= sizeof(uintptr_t));
 
     return newObj->hasInlineElements() ? 0 : nbytes;
 }
@@ -212,7 +238,8 @@ JS_FOR_EACH_TYPED_ARRAY(OBJECT_MOVED_TYPED_ARRAY)
 bool
 TypedArrayObject::hasInlineElements() const
 {
-    return elements() == this->fixedData(TypedArrayObject::FIXED_DATA_START);
+    return elements() == this->fixedData(TypedArrayObject::FIXED_DATA_START) &&
+        byteLength() <= TypedArrayObject::INLINE_BUFFER_LIMIT;
 }
 
 void
@@ -471,16 +498,16 @@ class TypedArrayObjectTemplate : public TypedArrayObject
             // If the buffer is for an inline typed object, the data pointer
             // may be in the nursery, so include a barrier to make sure this
             // object is updated if that typed object moves.
-            if (!IsInsideNursery(obj) && cx->runtime()->gc.nursery.isInside(buffer->dataPointerEither())) {
-                // Shared buffer data should never be nursery-allocated, so
-                // we need to fail here if isSharedMemory.  However, mmap()
-                // can place a SharedArrayRawBuffer up against the bottom end
-                // of the nursery, and a zero-length buffer will erroneously be
+            auto ptr = buffer->dataPointerEither();
+            if (!IsInsideNursery(obj) && cx->runtime()->gc.nursery.isInside(ptr)) {
+                // Shared buffer data should never be nursery-allocated, so we
+                // need to fail here if isSharedMemory.  However, mmap() can
+                // place a SharedArrayRawBuffer up against the bottom end of a
+                // nursery chunk, and a zero-length buffer will erroneously be
                 // perceived as being inside the nursery; sidestep that.
                 if (isSharedMemory) {
                     MOZ_ASSERT(buffer->byteLength() == 0 &&
-                               cx->runtime()->gc.nursery.start() ==
-                                   buffer->dataPointerEither().unwrapValue());
+                               (uintptr_t(ptr.unwrapValue()) & gc::ChunkMask) == 0);
                 } else {
                     cx->runtime()->gc.storeBuffer.putWholeCell(obj);
                 }
@@ -530,8 +557,9 @@ class TypedArrayObjectTemplate : public TypedArrayObject
     }
 
     static TypedArrayObject*
-    makeTemplateObject(JSContext* cx, uint32_t len)
+    makeTemplateObject(JSContext* cx, int32_t len)
     {
+        MOZ_ASSERT(len >= 0);
         size_t nbytes;
         MOZ_ALWAYS_TRUE(CalculateAllocSize<NativeType>(len, &nbytes));
         MOZ_ASSERT(nbytes < TypedArrayObject::SINGLETON_BYTE_LENGTH);
@@ -540,7 +568,7 @@ class TypedArrayObjectTemplate : public TypedArrayObject
         const Class* clasp = instanceClass();
         gc::AllocKind allocKind = !fitsInline
                                   ? GetGCObjectKind(clasp)
-                                  : AllocKindForLazyBuffer(len * sizeof(NativeType));
+                                  : AllocKindForLazyBuffer(nbytes);
         MOZ_ASSERT(CanBeFinalizedInBackground(allocKind, clasp));
         allocKind = GetBackgroundAllocKind(allocKind);
 
@@ -559,27 +587,38 @@ class TypedArrayObjectTemplate : public TypedArrayObject
         }
 
         TypedArrayObject* tarray = &tmp->as<TypedArrayObject>();
+        initTypedArraySlots(cx, tarray, len);
+
         // Template objects do not need memory for its elements, since there
-        // won't be any elements to store. Therefore, we set the pointer to the
-        // inline data and avoid allocating memory that will never be used.
-        void* buf = tarray->fixedData(FIXED_DATA_START);
-        initTypedArraySlots(tarray, len, buf, allocKind);
+        // won't be any elements to store. Therefore, we set the pointer to
+        // nullptr and avoid allocating memory that will never be used.
+        tarray->initPrivate(nullptr);
 
         return tarray;
     }
 
     static void
-    initTypedArraySlots(TypedArrayObject* tarray, uint32_t len, void* buf,
-                        AllocKind allocKind)
+    initTypedArraySlots(JSContext* cx, TypedArrayObject* tarray, int32_t len)
     {
+        MOZ_ASSERT(len >= 0);
         tarray->setFixedSlot(TypedArrayObject::BUFFER_SLOT, NullValue());
         tarray->setFixedSlot(TypedArrayObject::LENGTH_SLOT, Int32Value(AssertedCast<int32_t>(len)));
         tarray->setFixedSlot(TypedArrayObject::BYTEOFFSET_SLOT, Int32Value(0));
 
         // Verify that the private slot is at the expected place.
         MOZ_ASSERT(tarray->numFixedSlots() == TypedArrayObject::DATA_SLOT);
+    }
 
+    static void
+    initTypedArrayData(JSContext* cx, TypedArrayObject* tarray, int32_t len,
+                       void* buf, AllocKind allocKind)
+    {
         if (buf) {
+#ifdef DEBUG
+            Nursery& nursery = cx->runtime()->gc.nursery;
+            MOZ_ASSERT_IF(!nursery.isInside(buf) && !tarray->hasInlineElements(),
+                          tarray->isTenured());
+#endif
             tarray->initPrivate(buf);
         } else {
             size_t nbytes = len * sizeof(NativeType);
@@ -595,28 +634,15 @@ class TypedArrayObjectTemplate : public TypedArrayObject
         }
     }
 
-    static void*
-    allocateTypedArrayElementsBuffer(JSContext* cx, uint32_t len)
-    {
-        if (len == 0)
-            return nullptr;
-
-        void* buf = cx->runtime()->pod_callocCanGC<HeapSlot>(len);
-        if (!buf) {
-            ReportOutOfMemory(cx);
-            return nullptr;
-        }
-        return buf;
-    }
-
     static TypedArrayObject*
-    makeTypedArrayWithTemplate(JSContext* cx, TypedArrayObject* templateObj, uint32_t len)
+    makeTypedArrayWithTemplate(JSContext* cx, TypedArrayObject* templateObj, int32_t len)
     {
         size_t nbytes;
-        if (!js::CalculateAllocSize<NativeType>(len, &nbytes))
+        if (len < 0 || !js::CalculateAllocSize<NativeType>(len, &nbytes)) {
+            JS_ReportErrorNumber(cx, GetErrorMessage, nullptr, JSMSG_TYPED_ARRAY_BAD_ARGS);
             return nullptr;
+        }
 
-        MOZ_ASSERT(nbytes < TypedArrayObject::SINGLETON_BYTE_LENGTH);
         bool fitsInline = nbytes <= INLINE_BUFFER_LIMIT;
 
         AutoSetNewObjectMetadata metadata(cx);
@@ -624,26 +650,31 @@ class TypedArrayObjectTemplate : public TypedArrayObject
         const Class* clasp = templateObj->group()->clasp();
         gc::AllocKind allocKind = !fitsInline
                                   ? GetGCObjectKind(clasp)
-                                  : AllocKindForLazyBuffer(len * sizeof(NativeType));
+                                  : AllocKindForLazyBuffer(nbytes);
         MOZ_ASSERT(CanBeFinalizedInBackground(allocKind, clasp));
         allocKind = GetBackgroundAllocKind(allocKind);
         RootedObjectGroup group(cx, templateObj->group());
 
-        NewObjectKind newKind = GenericObject;
+        NewObjectKind newKind = TenuredObject;
 
-        void* buf = nullptr;
-        if (!fitsInline) {
-            buf = allocateTypedArrayElementsBuffer(cx, len);
-            if (!buf)
+        ScopedJSFreePtr<void> buf;
+        if (!fitsInline && len > 0) {
+            buf = cx->zone()->pod_malloc<uint8_t>(nbytes);
+            if (!buf) {
+                ReportOutOfMemory(cx);
                 return nullptr;
-        }
+            }
+
+            memset(buf, 0, nbytes);
+         }
 
         RootedObject tmp(cx, NewObjectWithGroup<TypedArrayObject>(cx, group, allocKind, newKind));
         if (!tmp)
             return nullptr;
 
         TypedArrayObject* obj = &tmp->as<TypedArrayObject>();
-        initTypedArraySlots(obj, len, buf, allocKind);
+        initTypedArraySlots(cx, obj, len);
+        initTypedArrayData(cx, obj, len, buf.forget(), allocKind);
 
         return obj;
     }
@@ -742,15 +773,6 @@ class TypedArrayObjectTemplate : public TypedArrayObject
     fromBufferWithProto(JSContext* cx, HandleObject bufobj, uint32_t byteOffset, int32_t lengthInt,
                         HandleObject proto)
     {
-        ESClass cls;
-        if (!GetBuiltinClass(cx, bufobj, &cls))
-            return nullptr;
-        if (cls != ESClass::ArrayBuffer && cls != ESClass::SharedArrayBuffer) {
-            JS_ReportErrorNumber(cx, GetErrorMessage, nullptr, JSMSG_TYPED_ARRAY_BAD_ARGS);
-            return nullptr;
-        }
-
-        MOZ_ASSERT(IsArrayBuffer(bufobj) || IsSharedArrayBuffer(bufobj) || bufobj->is<ProxyObject>());
         if (bufobj->is<ProxyObject>()) {
             /*
              * Normally, NonGenericMethodGuard handles the case of transparent
@@ -768,44 +790,48 @@ class TypedArrayObjectTemplate : public TypedArrayObject
                 JS_ReportError(cx, "Permission denied to access object");
                 return nullptr;
             }
-            if (IsArrayBuffer(wrapped) || IsSharedArrayBuffer(wrapped)) {
-                /*
-                 * And for even more fun, the new view's prototype should be
-                 * set to the origin compartment's prototype object, not the
-                 * target's (specifically, the actual view in the target
-                 * compartment will use as its prototype a wrapper around the
-                 * origin compartment's view.prototype object).
-                 *
-                 * Rather than hack some crazy solution together, implement
-                 * this all using a private helper function, created when
-                 * ArrayBufferObject was initialized and cached in the global.
-                 * This reuses all the existing cross-compartment crazy so we
-                 * don't have to do anything *uniquely* crazy here.
-                 */
 
-                RootedObject protoRoot(cx, proto);
-                if (!protoRoot) {
-                    if (!GetBuiltinPrototype(cx, JSCLASS_CACHED_PROTO_KEY(instanceClass()), &protoRoot))
-                        return nullptr;
-                }
-
-                FixedInvokeArgs<3> args(cx);
-
-                args[0].setNumber(byteOffset);
-                args[1].setInt32(lengthInt);
-                args[2].setObject(*protoRoot);
-
-                RootedValue fval(cx);
-                if (!getOrCreateCreateArrayFromBufferFunction(cx, &fval))
-                    return nullptr;
-
-                RootedValue thisv(cx, ObjectValue(*bufobj));
-                RootedValue rval(cx);
-                if (!js::Call(cx, fval, thisv, args, &rval))
-                    return nullptr;
-
-                return &rval.toObject();
+            if (!IsArrayBuffer(wrapped) && !IsSharedArrayBuffer(wrapped)) {
+                JS_ReportErrorNumber(cx, GetErrorMessage, nullptr, JSMSG_TYPED_ARRAY_BAD_ARGS);
+                return nullptr; // must be arrayBuffer
             }
+
+            /*
+             * And for even more fun, the new view's prototype should be
+             * set to the origin compartment's prototype object, not the
+             * target's (specifically, the actual view in the target
+             * compartment will use as its prototype a wrapper around the
+             * origin compartment's view.prototype object).
+             *
+             * Rather than hack some crazy solution together, implement
+             * this all using a private helper function, created when
+             * ArrayBufferObject was initialized and cached in the global.
+             * This reuses all the existing cross-compartment crazy so we
+             * don't have to do anything *uniquely* crazy here.
+             */
+
+            RootedObject protoRoot(cx, proto);
+            if (!protoRoot) {
+                if (!GetBuiltinPrototype(cx, JSCLASS_CACHED_PROTO_KEY(instanceClass()), &protoRoot))
+                    return nullptr;
+            }
+
+            FixedInvokeArgs<3> args(cx);
+
+            args[0].setNumber(byteOffset);
+            args[1].setInt32(lengthInt);
+            args[2].setObject(*protoRoot);
+
+            RootedValue fval(cx);
+            if (!getOrCreateCreateArrayFromBufferFunction(cx, &fval))
+                return nullptr;
+
+            RootedValue thisv(cx, ObjectValue(*bufobj));
+            RootedValue rval(cx);
+            if (!js::Call(cx, fval, thisv, args, &rval))
+                return nullptr;
+
+            return &rval.toObject();
         }
 
         if (!IsArrayBuffer(bufobj) && !IsSharedArrayBuffer(bufobj)) {
@@ -1251,7 +1277,7 @@ TypedArrayObject::GetTemplateObjectForNative(JSContext* cx, Native native, uint3
     if (native == &TypedArrayObjectTemplate<T>::class_constructor) { \
         size_t nbytes; \
         if (!js::CalculateAllocSize<T>(len, &nbytes)) \
-            return false; \
+            return true; \
         \
         if (nbytes < TypedArrayObject::SINGLETON_BYTE_LENGTH) { \
             res.set(TypedArrayObjectTemplate<T>::makeTemplateObject(cx, len)); \
@@ -1305,8 +1331,8 @@ BufferGetterImpl(JSContext* cx, const CallArgs& args)
     return true;
 }
 
-static bool
-TypedArray_bufferGetter(JSContext* cx, unsigned argc, Value* vp)
+/*static*/ bool
+js::TypedArray_bufferGetter(JSContext* cx, unsigned argc, Value* vp)
 {
     CallArgs args = CallArgsFromVp(argc, vp);
     return CallNonGenericMethod<TypedArrayObject::is, BufferGetterImpl>(cx, args);
@@ -1318,6 +1344,7 @@ TypedArrayObject::protoAccessors[] = {
     JS_PSG("buffer", TypedArray_bufferGetter, 0),
     JS_PSG("byteLength", TypedArray_byteLengthGetter, 0),
     JS_PSG("byteOffset", TypedArray_byteOffsetGetter, 0),
+    JS_SELF_HOSTED_SYM_GET(toStringTag, "TypedArrayToStringTag", 0),
     JS_PS_END
 };
 
@@ -1335,7 +1362,7 @@ TypedArrayObject::protoFunctions[] = {
 #if 0 /* disabled until perf-testing is completed */
     JS_SELF_HOSTED_FN("set", "TypedArraySet", 2, 0),
 #else
-    JS_FN("set", TypedArrayObject::set, 2, 0),
+    JS_FN("set", TypedArrayObject::set, 1, 0),
 #endif
     JS_SELF_HOSTED_FN("copyWithin", "TypedArrayCopyWithin", 3, 0),
     JS_SELF_HOSTED_FN("every", "TypedArrayEvery", 2, 0),
@@ -1359,6 +1386,8 @@ TypedArrayObject::protoFunctions[] = {
     JS_SELF_HOSTED_FN("values", "TypedArrayValues", 0, 0),
     JS_SELF_HOSTED_SYM_FN(iterator, "TypedArrayValues", 0, 0),
     JS_SELF_HOSTED_FN("includes", "TypedArrayIncludes", 2, 0),
+    JS_SELF_HOSTED_FN("toString", "ArrayToString", 0, 0),
+    JS_SELF_HOSTED_FN("toLocaleString", "TypedArrayToLocaleString", 2, 0),
     JS_FS_END
 };
 
@@ -2707,6 +2736,9 @@ DataViewObject::initClass(JSContext* cx)
         return false;
 
     if (!JS_DefineFunctions(cx, proto, DataViewObject::jsfuncs))
+        return false;
+
+    if (!DefineToStringTag(cx, proto, cx->names().DataView))
         return false;
 
     /*

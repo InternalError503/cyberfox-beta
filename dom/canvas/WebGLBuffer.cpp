@@ -16,6 +16,7 @@ WebGLBuffer::WebGLBuffer(WebGLContext* webgl, GLuint buf)
     : WebGLContextBoundObject(webgl)
     , mGLName(buf)
     , mContent(Kind::Undefined)
+    , mUsage(LOCAL_GL_STATIC_DRAW)
     , mByteLength(0)
     , mNumActiveTFOs(0)
     , mBoundForTF(false)
@@ -102,6 +103,11 @@ WebGLBuffer::BufferData(GLenum target, size_t size, const void* data, GLenum usa
 {
     const char funcName[] = "bufferData";
 
+    // Careful: data.Length() could conceivably be any uint32_t, but GLsizeiptr
+    // is like intptr_t.
+    if (!CheckedInt<GLsizeiptr>(size).isValid())
+        return mContext->ErrorOutOfMemory("%s: bad size", funcName);
+
     if (!ValidateBufferUsageEnum(mContext, funcName, usage))
         return;
 
@@ -114,6 +120,7 @@ WebGLBuffer::BufferData(GLenum target, size_t size, const void* data, GLenum usa
 
     const auto& gl = mContext->gl;
     gl->MakeCurrent();
+    const ScopedLazyBind lazyBind(gl, target, this);
     mContext->InvalidateBufferFetching();
 
 #ifdef XP_MACOSX
@@ -141,6 +148,7 @@ WebGLBuffer::BufferData(GLenum target, size_t size, const void* data, GLenum usa
         gl->fBufferData(target, size, data, usage);
     }
 
+    mUsage = usage;
     mByteLength = size;
 
     // Warning: Possibly shared memory.  See bug 1225033.
@@ -148,6 +156,25 @@ WebGLBuffer::BufferData(GLenum target, size_t size, const void* data, GLenum usa
         mByteLength = 0;
         mContext->ErrorOutOfMemory("%s: Failed update index buffer cache.", funcName);
     }
+}
+
+bool
+WebGLBuffer::ValidateRange(const char* funcName, size_t byteOffset, size_t byteLen) const
+{
+    auto availLength = mByteLength;
+    if (byteOffset > availLength) {
+        mContext->ErrorInvalidValue("%s: Offset passes the end of the buffer.", funcName);
+        return false;
+    }
+    availLength -= byteOffset;
+
+    if (byteLen > availLength) {
+        mContext->ErrorInvalidValue("%s: Offset+size passes the end of the buffer.",
+                                    funcName);
+        return false;
+    }
+
+    return true;
 }
 
 ////////////////////////////////////////

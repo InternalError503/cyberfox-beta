@@ -25,20 +25,22 @@ const {ToolSidebar} = require("devtools/client/framework/sidebar");
 const {HTMLTooltip} = require("devtools/client/shared/widgets/HTMLTooltip");
 const {setImageTooltip, getImageDimensions} =
   require("devtools/client/shared/widgets/tooltip/ImageTooltipHelper");
-const DevToolsUtils = require("devtools/shared/DevToolsUtils");
-const {LocalizationHelper} = require("devtools/client/shared/l10n");
+const { testing: isTesting } = require("devtools/shared/flags");
+const {LocalizationHelper} = require("devtools/shared/l10n");
 const {PrefsHelper} = require("devtools/client/shared/prefs");
 const {ViewHelpers, Heritage, WidgetMethods, setNamedTimeout} =
   require("devtools/client/shared/widgets/view-helpers");
 const {gDevTools} = require("devtools/client/framework/devtools");
+const {Curl, CurlUtils} = require("devtools/client/shared/curl");
 
 /**
  * Localization convenience methods.
  */
-const NET_STRINGS_URI = "chrome://devtools/locale/netmonitor.properties";
-const WEBCONSOLE_STRINGS_URI = "chrome://devtools/locale/webconsole.properties";
+const NET_STRINGS_URI = "devtools/locale/netmonitor.properties";
+const WEBCONSOLE_STRINGS_URI = "devtools/locale/webconsole.properties";
 var L10N = new LocalizationHelper(NET_STRINGS_URI);
 const WEBCONSOLE_L10N = new LocalizationHelper(WEBCONSOLE_STRINGS_URI);
+const {PluralForm} = require("devtools/shared/plural-form");
 
 // ms
 const WDA_DEFAULT_VERIFY_INTERVAL = 50;
@@ -48,7 +50,7 @@ const WDA_DEFAULT_VERIFY_INTERVAL = 50;
 // be at least equal to the general mochitest timeout of 45 seconds so that this
 // never gets hit during testing.
 // ms
-const WDA_DEFAULT_GIVE_UP_TIMEOUT = DevToolsUtils.testing ? 45000 : 2000;
+const WDA_DEFAULT_GIVE_UP_TIMEOUT = isTesting ? 45000 : 2000;
 
 /**
  * Shortcuts for accessing various network monitor preferences.
@@ -342,7 +344,7 @@ var NetMonitorView = {
         ]);
       } catch (ex) {
         // Timed out while waiting for data. Continue with what we have.
-        DevToolsUtils.reportException("showNetworkStatisticsView", ex);
+        console.error(ex);
       }
 
       statisticsView.createPrimedCacheChart(requestsView.items);
@@ -2061,7 +2063,7 @@ RequestsMenuView.prototype = Heritage.extend(WidgetMethods, {
    */
   _createWaterfallView: function (item, timings, fromCache) {
     let { target } = item;
-    let sections = ["dns", "connect", "send", "wait", "receive"];
+    let sections = ["blocked", "dns", "connect", "send", "wait", "receive"];
     // Skipping "blocked" because it doesn't work yet.
 
     let timingsNode = $(".requests-menu-timings", target);

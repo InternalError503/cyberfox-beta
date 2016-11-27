@@ -335,6 +335,7 @@ function webAPIForAddon(addon) {
 
   // A few properties are computed for a nicer API
   result.isEnabled = !addon.userDisabled;
+  result.canUninstall = Boolean(addon.permissions & AddonManager.PERM_CAN_UNINSTALL);
 
   return result;
 }
@@ -884,7 +885,7 @@ var AddonManagerInternal = {
       try {
         let defaultBranch = Services.prefs.getDefaultBranch("");
         gCheckUpdateSecurityDefault = defaultBranch.getBoolPref(PREF_EM_CHECK_UPDATE_SECURITY);
-      } catch(e) {}
+      } catch (e) {}
 
       try {
         gCheckUpdateSecurity = Services.prefs.getBoolPref(PREF_EM_CHECK_UPDATE_SECURITY);
@@ -1199,7 +1200,7 @@ var AddonManagerInternal = {
       try {
         yield gShutdownBarrier.wait();
       }
-      catch(err) {
+      catch (err) {
         savedError = err;
         logger.error("Failure during wait for shutdown barrier", err);
         AddonManagerPrivate.recordException("AMI", "Async shutdown of AddonManager providers", err);
@@ -1212,7 +1213,7 @@ var AddonManagerInternal = {
       yield AddonRepository.shutdown();
       gRepoShutdownState = "done";
     }
-    catch(err) {
+    catch (err) {
       savedError = err;
       logger.error("Failure during AddonRepository shutdown", err);
       AddonManagerPrivate.recordException("AMI", "Async shutdown of AddonRepository", err);
@@ -1264,7 +1265,7 @@ var AddonManagerInternal = {
         let oldValue = gCheckCompatibility;
         try {
           gCheckCompatibility = Services.prefs.getBoolPref(PREF_EM_CHECK_COMPATIBILITY);
-        } catch(e) {
+        } catch (e) {
           gCheckCompatibility = true;
         }
 
@@ -1279,7 +1280,7 @@ var AddonManagerInternal = {
         let oldValue = gStrictCompatibility;
         try {
           gStrictCompatibility = Services.prefs.getBoolPref(PREF_EM_STRICT_COMPATIBILITY);
-        } catch(e) {
+        } catch (e) {
           gStrictCompatibility = true;
         }
 
@@ -1294,7 +1295,7 @@ var AddonManagerInternal = {
         let oldValue = gCheckUpdateSecurity;
         try {
           gCheckUpdateSecurity = Services.prefs.getBoolPref(PREF_EM_CHECK_UPDATE_SECURITY);
-        } catch(e) {
+        } catch (e) {
           gCheckUpdateSecurity = true;
         }
 
@@ -1309,7 +1310,7 @@ var AddonManagerInternal = {
         let oldValue = gUpdateEnabled;
         try {
           gUpdateEnabled = Services.prefs.getBoolPref(PREF_EM_UPDATE_ENABLED);
-        } catch(e) {
+        } catch (e) {
           gUpdateEnabled = true;
         }
 
@@ -1320,7 +1321,7 @@ var AddonManagerInternal = {
         let oldValue = gAutoUpdateDefault;
         try {
           gAutoUpdateDefault = Services.prefs.getBoolPref(PREF_EM_AUTOUPDATE_DEFAULT);
-        } catch(e) {
+        } catch (e) {
           gAutoUpdateDefault = true;
         }
 
@@ -1330,7 +1331,7 @@ var AddonManagerInternal = {
       case PREF_EM_HOTFIX_ID: {
         try {
           gHotfixID = Services.prefs.getCharPref(PREF_EM_HOTFIX_ID);
-        } catch(e) {
+        } catch (e) {
           gHotfixID = null;
         }
         break;
@@ -1410,7 +1411,7 @@ var AddonManagerInternal = {
         var paramHandler = Cc[contractID].getService(Ci.nsIPropertyBag2);
         return paramHandler.getPropertyAsAString(aParam);
       }
-      catch(e) {
+      catch (e) {
         return aMatch;
       }
     });
@@ -2262,7 +2263,7 @@ var AddonManagerInternal = {
    * Adds new or overrides existing UpgradeListener.
    *
    * @param  aInstanceID
-   *         The instance ID of an addon to listen to register a listener for.
+   *         The instance ID of an addon to register a listener for.
    * @param  aCallback
    *         The callback to invoke when updates are available for this addon.
    * @throws if there is no addon matching the instanceID
@@ -2281,7 +2282,7 @@ var AddonManagerInternal = {
        throw Error("No addon matching instanceID:", aInstanceID.toString());
      }
      let addonId = wrapper.addonId();
-     logger.debug(`Registering upgrade listener for ${addonId}`)
+     logger.debug(`Registering upgrade listener for ${addonId}`);
      this.upgradeListeners.set(addonId, aCallback);
    });
   },

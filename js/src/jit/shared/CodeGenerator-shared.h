@@ -343,7 +343,7 @@ class CodeGeneratorShared : public LElementVisitor
     void emitTruncateDouble(FloatRegister src, Register dest, MInstruction* mir);
     void emitTruncateFloat32(FloatRegister src, Register dest, MInstruction* mir);
 
-    void emitAsmJSCallBase(LAsmJSCallBase* ins);
+    void emitWasmCallBase(LWasmCallBase* ins);
 
     void emitPreBarrier(Register base, const LAllocation* index, int32_t offsetAdjustment);
     void emitPreBarrier(Address address);
@@ -546,15 +546,14 @@ class CodeGeneratorShared : public LElementVisitor
     }
 
   protected:
-    inline void verifyHeapAccessDisassembly(uint32_t begin, uint32_t end, bool isLoad, bool isInt64,
-                                            Scalar::Type type, unsigned numElems,
-                                            const Operand& mem, LAllocation alloc);
+    inline void verifyHeapAccessDisassembly(uint32_t begin, uint32_t end, bool isLoad,
+                                            Scalar::Type type, Operand mem, LAllocation alloc);
 
   public:
-    inline void verifyLoadDisassembly(uint32_t begin, uint32_t end, bool isInt64, Scalar::Type type,
-                                      unsigned numElems, const Operand& mem, LAllocation alloc);
-    inline void verifyStoreDisassembly(uint32_t begin, uint32_t end, bool isInt64, Scalar::Type type,
-                                       unsigned numElems, const Operand& mem, LAllocation alloc);
+    inline void verifyLoadDisassembly(uint32_t begin, uint32_t end, Scalar::Type type,
+                                      Operand mem, LAllocation alloc);
+    inline void verifyStoreDisassembly(uint32_t begin, uint32_t end, Scalar::Type type,
+                                       Operand mem, LAllocation alloc);
 
     bool isGlobalObject(JSObject* object);
 };

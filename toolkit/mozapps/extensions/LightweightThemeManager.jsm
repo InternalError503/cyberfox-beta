@@ -79,7 +79,7 @@ var _themeIDBeingDisabled = null;
   let wasThemeSelected = false;
   try {
     wasThemeSelected = _prefs.getBoolPref("isThemeSelected");
-  } catch(e) { }
+  } catch (e) { }
 
   if (wasThemeSelected) {
     _prefs.clearUserPref("isThemeSelected");
@@ -185,6 +185,10 @@ this.LightweightThemeManager = {
     }
 
     this._builtInThemes.set(theme.id, theme);
+
+    if (_prefs.getCharPref("selectedThemeID") == theme.id) {
+      this.currentTheme = theme;
+    }
   },
 
   forgetBuiltInTheme: function(id) {
@@ -365,12 +369,10 @@ this.LightweightThemeManager = {
         AddonManagerPrivate.callAddonListeners("onOperationCancelled",
                                                new AddonWrapper(this.getUsedTheme(next)));
       }
-      else {
-        if (id == current.id) {
-          AddonManagerPrivate.callAddonListeners("onOperationCancelled",
-                                                 new AddonWrapper(current));
-          return;
-        }
+      else if (id == current.id) {
+        AddonManagerPrivate.callAddonListeners("onOperationCancelled",
+                                               new AddonWrapper(current));
+        return;
       }
     }
     catch (e) {
@@ -698,7 +700,7 @@ function _setCurrentTheme(aData, aLocal) {
     _updateUsedThemes(usedThemes);
 
     if (isInstall)
-       AddonManagerPrivate.callAddonListeners("onInstalled", wrapper);
+      AddonManagerPrivate.callAddonListeners("onInstalled", wrapper);
   }
 
   if (cancel.data)

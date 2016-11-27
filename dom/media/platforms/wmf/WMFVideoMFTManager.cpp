@@ -30,6 +30,8 @@
 #include "nsPrintfCString.h"
 #include "MediaTelemetryConstants.h"
 #include "GMPUtils.h" // For SplitAt. TODO: Move SplitAt to a central place.
+#include "MP4Decoder.h"
+#include "VPXDecoder.h"
 
 #define LOG(...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, (__VA_ARGS__))
 
@@ -96,12 +98,11 @@ WMFVideoMFTManager::WMFVideoMFTManager(
   MOZ_COUNT_CTOR(WMFVideoMFTManager);
 
   // Need additional checks/params to check vp8/vp9
-  if (aConfig.mMimeType.EqualsLiteral("video/mp4") ||
-      aConfig.mMimeType.EqualsLiteral("video/avc")) {
+  if (MP4Decoder::IsH264(aConfig.mMimeType)) {
     mStreamType = H264;
-  } else if (aConfig.mMimeType.EqualsLiteral("video/webm; codecs=vp8")) {
+  } else if (VPXDecoder::IsVP8(aConfig.mMimeType)) {
     mStreamType = VP8;
-  } else if (aConfig.mMimeType.EqualsLiteral("video/webm; codecs=vp9")) {
+  } else if (VPXDecoder::IsVP9(aConfig.mMimeType)) {
     mStreamType = VP9;
   } else {
     mStreamType = Unknown;
@@ -299,7 +300,7 @@ public:
     , mFailureReason(aFailureReason)
   {}
 
-  NS_IMETHOD Run() {
+  NS_IMETHOD Run() override {
     NS_ASSERTION(NS_IsMainThread(), "Must be on main thread.");
     nsACString* failureReason = &mFailureReason;
     nsCString secondFailureReason;
@@ -451,7 +452,7 @@ WMFVideoMFTManager::InitInternal(bool aForceD3D9)
       if (SUCCEEDED(hr)) {
         mUseHwAccel = true;
       } else {
-        mDXVA2Manager = nullptr;
+        DeleteOnMainThread(mDXVA2Manager);
         mDXVAFailureReason = nsPrintfCString("MFT_MESSAGE_SET_D3D_MANAGER failed with code %X", hr);
       }
     }
@@ -524,6 +525,8 @@ WMFVideoMFTManager::Input(MediaRawData* aSample)
   NS_ENSURE_TRUE(SUCCEEDED(hr) && mLastInput != nullptr, hr);
 
   mLastDuration = aSample->mDuration;
+  mLastTime = aSample->mTime;
+  mSamplesCount++;
 
   // Forward sample data to the decoder.
   return mDecoder->Input(mLastInput);
@@ -739,15 +742,16 @@ WMFVideoMFTManager::CreateBasicVideoFrame(IMFSample* aSample,
 
   if (mLayersBackend != LayersBackend::LAYERS_D3D9 &&
       mLayersBackend != LayersBackend::LAYERS_D3D11) {
-    RefPtr<VideoData> v = VideoData::Create(mVideoInfo,
-                                            mImageContainer,
-                                            aStreamOffset,
-                                            pts.ToMicroseconds(),
-                                            duration.ToMicroseconds(),
-                                            b,
-                                            false,
-                                            -1,
-                                            pictureRegion);
+    RefPtr<VideoData> v =
+      VideoData::CreateAndCopyData(mVideoInfo,
+                                   mImageContainer,
+                                   aStreamOffset,
+                                   pts.ToMicroseconds(),
+                                   duration.ToMicroseconds(),
+                                   b,
+                                   false,
+                                   -1,
+                                   pictureRegion);
     if (twoDBuffer) {
       twoDBuffer->Unlock2D();
     } else {
@@ -768,7 +772,6 @@ WMFVideoMFTManager::CreateBasicVideoFrame(IMFSample* aSample,
 
   RefPtr<VideoData> v =
     VideoData::CreateFromImage(mVideoInfo,
-                               mImageContainer,
                                aStreamOffset,
                                pts.ToMicroseconds(),
                                duration.ToMicroseconds(),
@@ -799,7 +802,6 @@ WMFVideoMFTManager::CreateD3DVideoFrame(IMFSample* aSample,
   RefPtr<Image> image;
   hr = mDXVA2Manager->CopyToImage(aSample,
                                   pictureRegion,
-                                  mImageContainer,
                                   getter_AddRefs(image));
   NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
   NS_ENSURE_TRUE(image, E_FAIL);
@@ -809,7 +811,6 @@ WMFVideoMFTManager::CreateD3DVideoFrame(IMFSample* aSample,
   media::TimeUnit duration = GetSampleDuration(aSample);
   NS_ENSURE_TRUE(duration.IsValid(), E_FAIL);
   RefPtr<VideoData> v = VideoData::CreateFromImage(mVideoInfo,
-                                                   mImageContainer,
                                                    aStreamOffset,
                                                    pts.ToMicroseconds(),
                                                    duration.ToMicroseconds(),
@@ -833,6 +834,15 @@ WMFVideoMFTManager::Output(int64_t aStreamOffset,
   HRESULT hr;
   aOutData = nullptr;
   int typeChangeCount = 0;
+  bool wasDraining = mDraining;
+  int64_t sampleCount = mSamplesCount;
+  if (wasDraining) {
+    mSamplesCount = 0;
+    mDraining = false;
+  }
+
+  media::TimeUnit pts;
+  media::TimeUnit duration;
 
   // Loop until we decode a sample, or an unexpected error that we can't
   // handle occurs.
@@ -874,12 +884,21 @@ WMFVideoMFTManager::Output(int64_t aStreamOffset,
         }
         continue;
       }
+      pts = GetSampleTime(sample);
+      duration = GetSampleDuration(sample);
+      if (!pts.IsValid() || !duration.IsValid()) {
+        return E_FAIL;
+      }
+      if (wasDraining && sampleCount == 1 && pts == media::TimeUnit()) {
+        // WMF is unable to calculate a duration if only a single sample
+        // was parsed. Additionally, the pts always comes out at 0 under those
+        // circumstances.
+        // Seeing that we've only fed the decoder a single frame, the pts
+        // and duration are known, it's of the last sample.
+        pts = media::TimeUnit::FromMicroseconds(mLastTime);
+        duration = media::TimeUnit::FromMicroseconds(mLastDuration);
+      }
       if (mSeekTargetThreshold.isSome()) {
-        media::TimeUnit pts = GetSampleTime(sample);
-		media::TimeUnit duration = GetSampleDuration(sample);
-        if (!pts.IsValid() || !duration.IsValid()) {
-          return E_FAIL;
-        }
         if ((pts + duration) < mSeekTargetThreshold.ref()) {
           LOG("Dropping video frame which pts is smaller than seek target.");
           // It is necessary to clear the pointer to release the previous output
@@ -908,6 +927,9 @@ WMFVideoMFTManager::Output(int64_t aStreamOffset,
   NS_ENSURE_TRUE(frame, E_FAIL);
 
   aOutData = frame;
+  // Set the potentially corrected pts and duration.
+  aOutData->mTime = pts.ToMicroseconds();
+  aOutData->mDuration = duration.ToMicroseconds();
 
   if (mNullOutputCount) {
     mGotValidOutputAfterNullOutput = true;
