@@ -237,6 +237,122 @@ CreateMenuSeparatorWidget()
   return widget;
 }
 
+static GtkWidget*
+CreateTreeViewWidget()
+{
+  GtkWidget* widget = gtk_tree_view_new();
+  AddToWindowContainer(widget);
+  return widget;
+}
+
+static GtkWidget*
+CreateTreeHeaderCellWidget()
+{
+  /*
+   * Some GTK engines paint the first and last cell
+   * of a TreeView header with a highlight.
+   * Since we do not know where our widget will be relative
+   * to the other buttons in the TreeView header, we must
+   * paint it as a button that is between two others,
+   * thus ensuring it is neither the first or last button
+   * in the header.
+   * GTK doesn't give us a way to do this explicitly,
+   * so we must paint with a button that is between two
+   * others.
+   */
+  GtkTreeViewColumn* firstTreeViewColumn;
+  GtkTreeViewColumn* middleTreeViewColumn;
+  GtkTreeViewColumn* lastTreeViewColumn;
+
+  GtkWidget *treeView = GetWidget(MOZ_GTK_TREEVIEW);
+
+  /* Create and append our three columns */
+  firstTreeViewColumn = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(firstTreeViewColumn, "M");
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeView),
+                              firstTreeViewColumn);
+
+  middleTreeViewColumn = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(middleTreeViewColumn, "M");
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeView),
+                              middleTreeViewColumn);
+
+  lastTreeViewColumn = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(lastTreeViewColumn, "M");
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeView),
+                              lastTreeViewColumn);
+
+  /* Use the middle column's header for our button */
+  return gtk_tree_view_column_get_button(middleTreeViewColumn);
+}
+
+static GtkWidget*
+CreateTreeHeaderSortArrowWidget()
+{
+  /* TODO, but it can't be NULL */
+  GtkWidget* widget = gtk_button_new();
+  AddToWindowContainer(widget);
+  return widget;
+}
+
+static GtkWidget*
+CreateHPanedWidget()
+{
+  GtkWidget* widget = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+  AddToWindowContainer(widget);
+  return widget;
+}
+
+static GtkWidget*
+CreateVPanedWidget()
+{
+  GtkWidget* widget = gtk_paned_new(GTK_ORIENTATION_VERTICAL);
+  AddToWindowContainer(widget);
+  return widget;
+}
+
+static GtkWidget*
+CreateImageMenuItemWidget()
+{
+  GtkWidget* widget = gtk_image_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL(GetWidget(MOZ_GTK_MENUPOPUP)), widget);
+  gtk_widget_realize(widget);
+  return widget;
+}
+
+static GtkWidget*
+CreateCheckMenuItemWidget()
+{
+  GtkWidget* widget = gtk_check_menu_item_new();
+  gtk_menu_shell_append(GTK_MENU_SHELL(GetWidget(MOZ_GTK_MENUPOPUP)), widget);
+  gtk_widget_realize(widget);
+  return widget;
+}
+
+static GtkWidget*
+CreateRadioMenuItemWidget()
+{
+  GtkWidget* widget = gtk_radio_menu_item_new(nullptr);
+  gtk_menu_shell_append(GTK_MENU_SHELL(GetWidget(MOZ_GTK_MENUPOPUP)), widget);
+  gtk_widget_realize(widget);
+  return widget;
+}
+
+static GtkWidget*
+CreateScaleWidget(GtkOrientation aOrientation)
+{
+  GtkWidget* widget = gtk_scale_new(aOrientation, nullptr);
+  AddToWindowContainer(widget);
+  return widget;
+}
+
+static GtkWidget*
+CreateNotebookWidget()
+{
+  GtkWidget* widget = gtk_notebook_new();
+  AddToWindowContainer(widget);
+  return widget;
+}
 
 static GtkWidget*
 CreateWidget(WidgetNodeType aWidgetType)
@@ -294,6 +410,28 @@ CreateWidget(WidgetNodeType aWidgetType)
       return CreateScrolledWindowWidget();
     case MOZ_GTK_TEXT_VIEW:
       return CreateTextViewWidget();
+    case MOZ_GTK_TREEVIEW:
+      return CreateTreeViewWidget();
+    case MOZ_GTK_TREE_HEADER_CELL:
+      return CreateTreeHeaderCellWidget();
+    case MOZ_GTK_TREE_HEADER_SORTARROW:
+      return CreateTreeHeaderSortArrowWidget();
+    case MOZ_GTK_SPLITTER_HORIZONTAL:
+      return CreateHPanedWidget();
+    case MOZ_GTK_SPLITTER_VERTICAL:
+      return CreateVPanedWidget();
+    case MOZ_GTK_IMAGEMENUITEM:
+      return CreateImageMenuItemWidget();
+    case MOZ_GTK_CHECKMENUITEM_CONTAINER:
+      return CreateCheckMenuItemWidget();
+    case MOZ_GTK_RADIOMENUITEM_CONTAINER:
+      return CreateRadioMenuItemWidget();
+    case MOZ_GTK_SCALE_HORIZONTAL:
+      return CreateScaleWidget(GTK_ORIENTATION_HORIZONTAL);
+    case MOZ_GTK_SCALE_VERTICAL:
+      return CreateScaleWidget(GTK_ORIENTATION_VERTICAL);
+    case MOZ_GTK_NOTEBOOK:
+      return CreateNotebookWidget();
     default:
       /* Not implemented */
       return nullptr;
@@ -416,6 +554,14 @@ GetCssNodeStyleInternal(WidgetNodeType aNodeType)
       style = CreateChildCSSNode(GTK_STYLE_CLASS_CHECK,
                                  MOZ_GTK_CHECKBUTTON_CONTAINER);
       break;
+    case MOZ_GTK_RADIOMENUITEM:
+      style = CreateChildCSSNode(GTK_STYLE_CLASS_RADIO,
+                                 MOZ_GTK_RADIOMENUITEM_CONTAINER);
+      break;
+    case MOZ_GTK_CHECKMENUITEM:
+      style = CreateChildCSSNode(GTK_STYLE_CLASS_CHECK,
+                                 MOZ_GTK_CHECKMENUITEM_CONTAINER);
+      break;
     case MOZ_GTK_PROGRESS_TROUGH:
       /* Progress bar background (trough) */
       style = CreateChildCSSNode(GTK_STYLE_CLASS_TROUGH,
@@ -451,7 +597,75 @@ GetCssNodeStyleInternal(WidgetNodeType aNodeType)
       return GetWidgetStyleWithClass(MOZ_GTK_TEXT_VIEW,
                                      GTK_STYLE_CLASS_VIEW);
     case MOZ_GTK_FRAME_BORDER:
-      return CreateChildCSSNode("border", MOZ_GTK_FRAME);
+      style = CreateChildCSSNode("border", MOZ_GTK_FRAME);
+      break;
+    case MOZ_GTK_TREEVIEW_VIEW:
+      // TODO - create from CSS node
+      return GetWidgetStyleWithClass(MOZ_GTK_TREEVIEW,
+                                     GTK_STYLE_CLASS_VIEW);
+    case MOZ_GTK_TREEVIEW_EXPANDER:
+      // TODO - create from CSS node
+      return GetWidgetStyleWithClass(MOZ_GTK_TREEVIEW,
+                                     GTK_STYLE_CLASS_EXPANDER);
+    case MOZ_GTK_SPLITTER_SEPARATOR_HORIZONTAL:
+      style = CreateChildCSSNode("separator",
+                                 MOZ_GTK_SPLITTER_HORIZONTAL);
+      break;
+    case MOZ_GTK_SPLITTER_SEPARATOR_VERTICAL:
+      style = CreateChildCSSNode("separator",
+                                 MOZ_GTK_SPLITTER_VERTICAL);
+      break;
+    case MOZ_GTK_SCALE_CONTENTS_HORIZONTAL:
+      style = CreateChildCSSNode("contents",
+                                 MOZ_GTK_SCALE_HORIZONTAL);
+      break;
+    case MOZ_GTK_SCALE_CONTENTS_VERTICAL:
+      style = CreateChildCSSNode("contents",
+                                 MOZ_GTK_SCALE_VERTICAL);
+      break; 
+    case MOZ_GTK_SCALE_TROUGH_HORIZONTAL:
+      style = CreateChildCSSNode(GTK_STYLE_CLASS_TROUGH,
+                                 MOZ_GTK_SCALE_CONTENTS_HORIZONTAL);
+      break; 
+    case MOZ_GTK_SCALE_TROUGH_VERTICAL:
+      style = CreateChildCSSNode(GTK_STYLE_CLASS_TROUGH,
+                                 MOZ_GTK_SCALE_CONTENTS_VERTICAL);
+      break;
+    case MOZ_GTK_SCALE_THUMB_HORIZONTAL:
+      style = CreateChildCSSNode(GTK_STYLE_CLASS_SLIDER,
+                                 MOZ_GTK_SCALE_TROUGH_HORIZONTAL);
+      break;
+    case MOZ_GTK_SCALE_THUMB_VERTICAL:
+      style = CreateChildCSSNode(GTK_STYLE_CLASS_SLIDER,
+                                 MOZ_GTK_SCALE_TROUGH_VERTICAL);
+      break;
+    case MOZ_GTK_TAB_TOP:
+    {
+      // TODO - create from CSS node
+      style = GetWidgetStyleWithClass(MOZ_GTK_NOTEBOOK,
+                                      GTK_STYLE_CLASS_TOP);
+      gtk_style_context_add_region(style, GTK_STYLE_REGION_TAB,
+                                   static_cast<GtkRegionFlags>(0));
+      return style;
+    }
+    case MOZ_GTK_TAB_BOTTOM:
+    {
+      // TODO - create from CSS node
+      style = GetWidgetStyleWithClass(MOZ_GTK_NOTEBOOK,
+                                      GTK_STYLE_CLASS_BOTTOM);
+      gtk_style_context_add_region(style, GTK_STYLE_REGION_TAB,
+                                   static_cast<GtkRegionFlags>(0));
+      return style;
+    }
+    case MOZ_GTK_NOTEBOOK:
+    case MOZ_GTK_NOTEBOOK_HEADER:
+    case MOZ_GTK_TABPANELS:
+    case MOZ_GTK_TAB_SCROLLARROW:
+    { 
+      // TODO - create from CSS node
+      GtkWidget* widget = GetWidget(MOZ_GTK_NOTEBOOK);
+      return gtk_widget_get_style_context(widget);
+    }
     default:
       // TODO - create style from style path
       GtkWidget* widget = GetWidget(aNodeType);
@@ -485,6 +699,12 @@ GetWidgetStyleInternal(WidgetNodeType aNodeType)
                                      GTK_STYLE_CLASS_RADIO);
     case MOZ_GTK_CHECKBUTTON:
       return GetWidgetStyleWithClass(MOZ_GTK_CHECKBUTTON_CONTAINER,
+                                     GTK_STYLE_CLASS_CHECK);
+    case MOZ_GTK_RADIOMENUITEM:
+      return GetWidgetStyleWithClass(MOZ_GTK_RADIOMENUITEM_CONTAINER,
+                                     GTK_STYLE_CLASS_RADIO);
+    case MOZ_GTK_CHECKMENUITEM:
+      return GetWidgetStyleWithClass(MOZ_GTK_CHECKMENUITEM_CONTAINER,
                                      GTK_STYLE_CLASS_CHECK);
     case MOZ_GTK_PROGRESS_TROUGH:
       return GetWidgetStyleWithClass(MOZ_GTK_PROGRESSBAR,
@@ -520,6 +740,54 @@ GetWidgetStyleInternal(WidgetNodeType aNodeType)
                                      GTK_STYLE_CLASS_VIEW);
     case MOZ_GTK_FRAME_BORDER:
       return GetWidgetStyleInternal(MOZ_GTK_FRAME);
+    case MOZ_GTK_TREEVIEW_VIEW:
+      return GetWidgetStyleWithClass(MOZ_GTK_TREEVIEW,
+                                     GTK_STYLE_CLASS_VIEW);
+    case MOZ_GTK_TREEVIEW_EXPANDER:
+      return GetWidgetStyleWithClass(MOZ_GTK_TREEVIEW,
+                                     GTK_STYLE_CLASS_EXPANDER);
+    case MOZ_GTK_SPLITTER_SEPARATOR_HORIZONTAL:
+      return GetWidgetStyleWithClass(MOZ_GTK_SPLITTER_HORIZONTAL,
+                                     GTK_STYLE_CLASS_PANE_SEPARATOR);
+    case MOZ_GTK_SPLITTER_SEPARATOR_VERTICAL:
+      return GetWidgetStyleWithClass(MOZ_GTK_SPLITTER_VERTICAL,
+                                     GTK_STYLE_CLASS_PANE_SEPARATOR);
+    case MOZ_GTK_SCALE_TROUGH_HORIZONTAL:
+      return GetWidgetStyleWithClass(MOZ_GTK_SCALE_HORIZONTAL,
+                                     GTK_STYLE_CLASS_TROUGH);
+    case MOZ_GTK_SCALE_TROUGH_VERTICAL:
+      return GetWidgetStyleWithClass(MOZ_GTK_SCALE_VERTICAL,
+                                     GTK_STYLE_CLASS_TROUGH);
+    case MOZ_GTK_SCALE_THUMB_HORIZONTAL:
+      return GetWidgetStyleWithClass(MOZ_GTK_SCALE_HORIZONTAL,
+                                     GTK_STYLE_CLASS_SLIDER);
+    case MOZ_GTK_SCALE_THUMB_VERTICAL:
+      return GetWidgetStyleWithClass(MOZ_GTK_SCALE_VERTICAL,
+                                     GTK_STYLE_CLASS_SLIDER);
+    case MOZ_GTK_TAB_TOP:
+    {
+      GtkStyleContext* style = GetWidgetStyleWithClass(MOZ_GTK_NOTEBOOK,
+                                                       GTK_STYLE_CLASS_TOP);
+      gtk_style_context_add_region(style, GTK_STYLE_REGION_TAB,
+                                   static_cast<GtkRegionFlags>(0));
+      return style;
+    }
+    case MOZ_GTK_TAB_BOTTOM:
+    {
+      GtkStyleContext* style = GetWidgetStyleWithClass(MOZ_GTK_NOTEBOOK,
+                                                       GTK_STYLE_CLASS_BOTTOM);
+      gtk_style_context_add_region(style, GTK_STYLE_REGION_TAB,
+                                   static_cast<GtkRegionFlags>(0));
+      return style;
+    }
+    case MOZ_GTK_NOTEBOOK:
+    case MOZ_GTK_NOTEBOOK_HEADER:
+    case MOZ_GTK_TABPANELS:
+    case MOZ_GTK_TAB_SCROLLARROW:
+    { 
+      GtkWidget* widget = GetWidget(MOZ_GTK_NOTEBOOK);
+      return gtk_widget_get_style_context(widget);
+    }
     default:
       GtkWidget* widget = GetWidget(aNodeType);
       MOZ_ASSERT(widget);

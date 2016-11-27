@@ -150,7 +150,7 @@ var gContentPane = {
     params.windowTitle = bundlePreferences.getString("popuppermissionstitle");
     params.introText = bundlePreferences.getString("popuppermissionstext");
 
-    gSubDialog.open("chrome://browser/content/preferences/permissions.xul", 
+    gSubDialog.open("chrome://browser/content/preferences/permissions.xul",
                     "resizable=yes", params);
   },
 

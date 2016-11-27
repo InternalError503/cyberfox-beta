@@ -45,6 +45,7 @@ public:
 
     size_t SizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf) const;
 
+    GLenum Usage() const { return mUsage; }
     size_t ByteLength() const { return mByteLength; }
 
     bool ElementArrayCacheBufferData(const void* ptr, size_t bufferSizeInBytes);
@@ -53,6 +54,7 @@ public:
                                         size_t updateSizeInBytes);
 
     bool Validate(GLenum type, uint32_t max_allowed, size_t first, size_t count) const;
+    bool ValidateRange(const char* funcName, size_t byteOffset, size_t byteLen) const;
 
     bool IsElementArrayUsedWithMultipleTypes() const;
 
@@ -74,6 +76,7 @@ protected:
     ~WebGLBuffer();
 
     Kind mContent;
+    GLenum mUsage;
     size_t mByteLength;
     UniquePtr<WebGLElementArrayCache> mCache;
     size_t mNumActiveTFOs;

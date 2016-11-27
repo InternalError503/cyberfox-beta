@@ -974,8 +974,6 @@ WebGLFramebuffer::ResolveAttachmentData(const char* funcName) const
                                       LOCAL_GL_STENCIL_BUFFER_BIT);
 
     //////
-    if (!clearBits && tex3DAttachmentsToInit.empty())
-        return true;
 
     for (const auto& attach : tex3DAttachmentsToInit) {
         const auto& tex = attach->Texture();

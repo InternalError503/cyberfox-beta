@@ -219,6 +219,9 @@ public:
         if (!gFontHintingEnabled || !isAxisAligned(*rec)) {
             rec->setHinting(SkPaint::kNo_Hinting);
         }
+
+        // Don't apply any gamma so that we match cairo-ft's results.
+        rec->ignorePreBlend();
     }
 
     virtual void onGetFontDescriptor(SkFontDescriptor*, bool*) const override
@@ -472,11 +475,17 @@ void SkScalerContext_CairoFT::parsePattern(FcPattern* pattern)
         fRec.fMaskFormat = SkMask::kBW_Format;
     }
 
-    if (fRec.getHinting() != SkPaint::kNo_Hinting &&
-        (FcPatternGetBool(pattern, FC_HINTING, 0, &hinting) != FcResultMatch || hinting)) {
+    if (fRec.getHinting() != SkPaint::kNo_Hinting) {
+        // Hinting was requested, so check if the fontconfig pattern needs to override it.
+        // If hinting is either explicitly enabled by fontconfig or not configured, try to
+        // parse the hint style. Otherwise, ensure hinting is disabled.
         int hintstyle;
-        if (FcPatternGetInteger(pattern, FC_HINT_STYLE, 0, &hintstyle) != FcResultMatch) {
-            hintstyle = FC_HINT_FULL;
+        if (FcPatternGetBool(pattern, FC_HINTING, 0, &hinting) != FcResultMatch || hinting) {
+            if (FcPatternGetInteger(pattern, FC_HINT_STYLE, 0, &hintstyle) != FcResultMatch) {
+                hintstyle = FC_HINT_FULL;
+            }
+        } else {
+            hintstyle = FC_HINT_NONE;
         }
         switch (hintstyle) {
         case FC_HINT_NONE:
@@ -760,7 +769,7 @@ void SkScalerContext_CairoFT::generatePath(const SkGlyph& glyph, SkPath* path)
     CairoLockedFTFace faceLock(fScaledFont);
     FT_Face face = faceLock.getFace();
 
-    SkASSERT(&glyph && path);
+    SkASSERT(path);
 
     uint32_t flags = fLoadGlyphFlags;
     flags |= FT_LOAD_NO_BITMAP; // ignore embedded bitmaps so we're sure to get the outline
@@ -780,7 +789,9 @@ void SkScalerContext_CairoFT::generatePath(const SkGlyph& glyph, SkPath* path)
 
 void SkScalerContext_CairoFT::generateFontMetrics(SkPaint::FontMetrics* metrics)
 {
-    SkDEBUGCODE(SkDebugf("SkScalerContext_CairoFT::generateFontMetrics unimplemented\n"));
+    if (metrics) {
+        memset(metrics, 0, sizeof(SkPaint::FontMetrics));
+    }
 }
 
 SkUnichar SkScalerContext_CairoFT::generateGlyphToChar(uint16_t glyph)

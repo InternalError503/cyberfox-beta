@@ -264,7 +264,7 @@ public:
   uint32_t input_needed_for_output(uint32_t output_frame_count)
   {
     return (uint32_t)ceilf((output_frame_count - samples_to_frames(resampling_out_buffer.length()))
-                          * resampling_ratio);
+                           * resampling_ratio);
 
   }
 

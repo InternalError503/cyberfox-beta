@@ -34,46 +34,16 @@ MatchIIDPtrKey(const PLDHashEntryHdr* entry, const void* key)
 }
 
 static PLDHashNumber
-HashNativeKey(const void* key)
+HashNativeKey(const void* data)
 {
-    auto Key = static_cast<const XPCNativeSetKey*>(key);
-
-    PLDHashNumber h = 0;
-
-    XPCNativeSet* Set = Key->GetBaseSet();
-    XPCNativeInterface* Addition = Key->GetAddition();
-    uint16_t Position = Key->GetPosition();
-
-    if (!Set) {
-        MOZ_ASSERT(Addition, "bad key");
-        // This would be an XOR like below.
-        // But "0 ^ x == x". So it does not matter.
-        h = (js::HashNumber) NS_PTR_TO_INT32(Addition) >> 2;
-    } else {
-        XPCNativeInterface** Current = Set->GetInterfaceArray();
-        uint16_t count = Set->GetInterfaceCount();
-        if (Addition) {
-            count++;
-            for (uint16_t i = 0; i < count; i++) {
-                if (i == Position)
-                    h ^= (js::HashNumber) NS_PTR_TO_INT32(Addition) >> 2;
-                else
-                    h ^= (js::HashNumber) NS_PTR_TO_INT32(*(Current++)) >> 2;
-            }
-        } else {
-            for (uint16_t i = 0; i < count; i++)
-                h ^= (js::HashNumber) NS_PTR_TO_INT32(*(Current++)) >> 2;
-        }
-    }
-
-    return h;
+    return static_cast<const XPCNativeSetKey*>(data)->Hash();
 }
 
 /***************************************************************************/
 // implement JSObject2WrappedJSMap...
 
 void
-JSObject2WrappedJSMap::UpdateWeakPointersAfterGC(XPCJSRuntime* runtime)
+JSObject2WrappedJSMap::UpdateWeakPointersAfterGC(XPCJSContext* context)
 {
     // Check all wrappers and update their JSObject pointer if it has been
     // moved. Release any wrappers whose weakly held JSObject has died.
@@ -308,24 +278,17 @@ NativeSetMap::Entry::Match(const PLDHashEntryHdr* entry, const void* key)
     if (!Addition && Set == SetInTable)
         return true;
 
-    uint16_t count = Set->GetInterfaceCount() + (Addition ? 1 : 0);
-    if (count != SetInTable->GetInterfaceCount())
+    uint16_t count = Set->GetInterfaceCount();
+    if (count + (Addition ? 1 : 0) != SetInTable->GetInterfaceCount())
         return false;
 
-    uint16_t Position = Key->GetPosition();
     XPCNativeInterface** CurrentInTable = SetInTable->GetInterfaceArray();
     XPCNativeInterface** Current = Set->GetInterfaceArray();
     for (uint16_t i = 0; i < count; i++) {
-        if (Addition && i == Position) {
-            if (Addition != *(CurrentInTable++))
-                return false;
-        } else {
-            if (*(Current++) != *(CurrentInTable++))
-                return false;
-        }
+        if (*(Current++) != *(CurrentInTable++))
+            return false;
     }
-
-    return true;
+    return !Addition || Addition == *(CurrentInTable++);
 }
 
 const struct PLDHashTableOps NativeSetMap::Entry::sOps =
@@ -470,12 +433,13 @@ XPCNativeScriptableSharedMap::GetNewOrUsed(uint32_t flags,
     NS_PRECONDITION(name,"bad param");
     NS_PRECONDITION(si,"bad param");
 
-    XPCNativeScriptableShared key(flags, name, /* populate = */ false);
-    auto entry = static_cast<Entry*>(mTable.Add(&key, fallible));
+    RefPtr<XPCNativeScriptableShared> key =
+        new XPCNativeScriptableShared(flags, name, /* populate = */ false);
+    auto entry = static_cast<Entry*>(mTable.Add(key, fallible));
     if (!entry)
         return false;
 
-    XPCNativeScriptableShared* shared = entry->key;
+    RefPtr<XPCNativeScriptableShared> shared = entry->key;
 
     // XXX: this XPCNativeScriptableShared is heap-allocated, which means the
     // js::Class it contains is also heap-allocated. This causes problems for
@@ -487,11 +451,11 @@ XPCNativeScriptableSharedMap::GetNewOrUsed(uint32_t flags,
     // StatsCellCallback() should be reinstated.
     //
     if (!shared) {
-        entry->key = shared =
-            new XPCNativeScriptableShared(flags, key.TransferNameOwnership(),
-                                          /* populate = */ true);
+        shared = new XPCNativeScriptableShared(flags, key->TransferNameOwnership(),
+                                               /* populate = */ true);
+        entry->key = shared;
     }
-    si->SetScriptableShared(shared);
+    si->SetScriptableShared(shared.forget());
     return true;
 }
 

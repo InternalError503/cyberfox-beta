@@ -31,6 +31,8 @@ typedef struct JSProperty JSProperty;
 
 namespace js {
 
+enum class TypedArrayLength { Fixed, Dynamic };
+
 /*
  * TypedArrayObject
  *
@@ -118,8 +120,7 @@ class TypedArrayObject : public NativeObject
     AllocKindForLazyBuffer(size_t nbytes)
     {
         MOZ_ASSERT(nbytes <= INLINE_BUFFER_LIMIT);
-        /* For GGC we need at least one slot in which to store a forwarding pointer. */
-        size_t dataSlots = Max(size_t(1), AlignBytes(nbytes, sizeof(Value)) / sizeof(Value));
+        size_t dataSlots = AlignBytes(nbytes, sizeof(Value)) / sizeof(Value);
         MOZ_ASSERT(nbytes <= dataSlots * sizeof(Value));
         return gc::GetGCObjectKind(FIXED_DATA_START + dataSlots);
     }
@@ -170,7 +171,7 @@ class TypedArrayObject : public NativeObject
     Value getElement(uint32_t index);
     static void setElement(TypedArrayObject& obj, uint32_t index, double d);
 
-    void notifyBufferDetached(void* newData);
+    void notifyBufferDetached(JSContext* cx, void* newData);
 
     static bool
     GetTemplateObjectForNative(JSContext* cx, Native native, uint32_t len,
@@ -291,6 +292,8 @@ class TypedArrayObject : public NativeObject
 
     static bool set(JSContext* cx, unsigned argc, Value* vp);
 };
+
+MOZ_MUST_USE bool TypedArray_bufferGetter(JSContext* cx, unsigned argc, Value* vp);
 
 extern TypedArrayObject*
 TypedArrayCreateWithTemplate(JSContext* cx, HandleObject templateObj, int32_t len);

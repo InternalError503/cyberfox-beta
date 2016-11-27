@@ -102,13 +102,11 @@ pref("app.update.log", false);
 // the failure.
 pref("app.update.backgroundMaxErrors", 10);
 
-// The aus update xml certificate checks for application update are disabled on
-// Windows, Mac OS X, and Linux since the mar signature check are implemented on
-// these platforms and is sufficient to prevent us from applying a mar that is
-// not valid. Bug 1182352 will remove the update xml certificate checks and the
-// following two preferences.
+// When |app.update.cert.requireBuiltIn| is true or not specified the
+// final certificate and all certificates the connection is redirected to before
+// the final certificate for the url specified in the |app.update.url|
+// preference must be built-in.
 pref("app.update.cert.requireBuiltIn", false);
-pref("app.update.cert.checkAttributes", false);
 
 // Whether or not app updates are enabled
 pref("app.update.enabled", true);
@@ -297,6 +295,12 @@ pref("browser.urlbar.suggest.history.onlyTyped",    false);
 pref("browser.urlbar.formatting.enabled", true);
 pref("browser.urlbar.trimURLs", true);
 
+#if defined(NIGHTLY_BUILD)
+pref("browser.urlbar.oneOffSearches", true);
+#else
+pref("browser.urlbar.oneOffSearches", false);
+#endif
+
 pref("browser.altClickSave", false);
 
 // Enable logging downloads operations to the Console.
@@ -312,6 +316,12 @@ pref("browser.download.useDownloadDir", true);
 pref("browser.download.folderList", 1);
 pref("browser.download.manager.addToRecentDocs", true);
 pref("browser.download.manager.resumeOnWakeDelay", 10000);
+
+#ifdef RELEASE_BUILD
+pref("browser.download.showPanelDropmarker", false);
+#else
+pref("browser.download.showPanelDropmarker", true);
+#endif
 
 // This allows disabling the animated notifications shown by
 // the Downloads Indicator when a download starts or completes.
@@ -342,9 +352,9 @@ pref("browser.search.geoSpecificDefaults", false);
 pref("browser.search.geoSpecificDefaults.url", "https://search.services.mozilla.com/1/%APP%/%VERSION%/%CHANNEL%/%LOCALE%/%REGION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%");
 
 // US specific default (used as a fallback if the geoSpecificDefaults request fails).
-pref("browser.search.defaultenginename.US",      "data:text/plain,browser.search.defaultenginename.US=Google");
-pref("browser.search.order.US.1",                "data:text/plain,browser.search.order.US.1=Google");
-pref("browser.search.order.US.2",                "data:text/plain,browser.search.order.US.2=duckduckgo");
+pref("browser.search.defaultenginename.US",      "data:text/plain,browser.search.defaultenginename.US=Yahoo");
+pref("browser.search.order.US.1",                "data:text/plain,browser.search.order.US.1=Yahoo");
+pref("browser.search.order.US.2",                "data:text/plain,browser.search.order.US.2=Google");
 pref("browser.search.order.US.3",                "data:text/plain,browser.search.order.US.3=Bing");
 
 // search bar results always open in a new tab
@@ -361,6 +371,8 @@ pref("browser.search.redirectWindowsSearch", true);
 #else
 pref("browser.search.redirectWindowsSearch", false);
 #endif
+
+pref("browser.search.reset.enabled", true);
 
 pref("browser.sessionhistory.max_entries", 50);
 
@@ -500,6 +512,8 @@ pref("privacy.sanitize.migrateFx3Prefs",    false);
 
 pref("privacy.panicButton.enabled",         true);
 
+pref("privacy.firstparty.isolate",          false);
+
 pref("network.proxy.share_proxy_settings",  false); // use the same proxy settings for all protocols
 
 // simple gestures support
@@ -608,6 +622,11 @@ pref("accessibility.typeaheadfind.timeout", 5000);
 pref("accessibility.typeaheadfind.linksonly", false);
 pref("accessibility.typeaheadfind.flashBar", 1);
 
+#ifdef NIGHTLY_BUILD
+pref("findbar.highlightAll", true);
+pref("findbar.modalHighlight", true);
+#endif
+
 // Tracks when accessibility is loaded into the previous session.
 pref("accessibility.loadedInLastSession", false);
 
@@ -632,11 +651,10 @@ pref("plugins.disabled", false);
 pref("plugin.allowed_whitelist.enabled", false);
 // Toggle Java plugin allowed state regardless of whitelist.
 pref("plugin.java_allowed", false);
-/* 
-	Toggle Flash plugin allowed state regardless of whitelist.
-	Default state is allowed, Default state in 51.0* will be false.
-*/
-pref("plugin.flash_allowed", true);
+// Toggle Flash plugin allowed state regardless of whitelist.
+pref("plugin.flash_allowed", false);
+// Toggle Silverlight plugin allowed state regardless of whitelist.
+pref("plugin.silverlight_allowed", true);
 #endif
 
 #ifdef XP_WIN
@@ -1086,7 +1104,6 @@ pref("services.sync.prefs.sync.security.tls.version.max", true);
 pref("services.sync.prefs.sync.services.sync.syncedTabs.showRemoteIcons", true);
 pref("services.sync.prefs.sync.signon.rememberSignons", true);
 pref("services.sync.prefs.sync.spellchecker.dictionary", true);
-pref("services.sync.prefs.sync.xpinstall.whitelist.required", true);
 
 // A preference that controls whether we should show the icon for a remote tab.
 // This pref has no UI but exists because some people may be concerned that
@@ -1274,11 +1291,6 @@ pref("identity.fxaccounts.profile_image.enabled", true);
 // Token server used by the FxA Sync identity.
 pref("identity.sync.tokenserver.uri", "https://token.services.mozilla.com/1.0/sync/1.5");
 
-// URLs for promo links to mobile browsers. Note that consumers are expected to
-// append a value for utm_campaign.
-pref("identity.mobilepromo.android", "");
-pref("identity.mobilepromo.ios", "");
-
 // Migrate any existing Firefox Account data from the default profile to the
 // Developer Edition profile.
 #ifdef MOZ_DEV_EDITION
@@ -1292,7 +1304,7 @@ pref("identity.fxaccounts.migrateToDevEdition", false);
 pref("ui.key.menuAccessKeyFocuses", true);
 #endif
 
-// Encrypted media extensions. (Enabled due to video playback issues on socialmedia)
+// Encrypted media extensions.
 #ifdef XP_LINUX
 // On Linux EME is visible but disabled by default. This is so that the
 // "Play DRM content" checkbox in the Firefox UI is unchecked by default.
@@ -1377,9 +1389,11 @@ pref("privacy.trackingprotection.introURL", "https://www.mozilla.org/%LOCALE%/fi
 #ifdef NIGHTLY_BUILD
 pref("privacy.userContext.enabled", true);
 pref("privacy.userContext.ui.enabled", true);
+pref("privacy.usercontext.about_newtab_segregation.enabled", true);
 #else
 pref("privacy.userContext.enabled", false);
 pref("privacy.userContext.ui.enabled", false);
+pref("privacy.usercontext.about_newtab_segregation.enabled", false);
 #endif
 
 #ifndef RELEASE_BUILD
@@ -1461,7 +1475,11 @@ pref("browser.esedbreader.loglevel", "Error");
 
 pref("browser.laterrun.enabled", false);
 
+#if MOZ_UPDATE_CHANNEL == beta
+pref("browser.migrate.automigrate.enabled", true);
+#else
 pref("browser.migrate.automigrate.enabled", false);
+#endif
 // 4 here means the suggestion notification will be automatically
 // hidden the 4th day, so it will actually be shown on 3 different days.
 pref("browser.migrate.automigrate.daysToOfferUndo", 4);
@@ -1492,6 +1510,22 @@ pref("print.use_simplify_page", true);
 // Space separated list of URLS that are allowed to send objects (instead of
 // only strings) through webchannels. This list is duplicated in mobile/android/app/mobile.js
 pref("webchannel.allowObject.urlWhitelist", "https://accounts.firefox.com https://content.cdn.mozilla.net https://input.mozilla.org https://support.mozilla.org https://install.mozilla.org");
+
+// Whether or not the browser should scan for unsubmitted
+// crash reports, and then show a notification for submitting
+// those reports.
+#ifdef EARLY_BETA_OR_EARLIER
+pref("browser.crashReports.unsubmittedCheck.enabled", true);
+#else
+pref("browser.crashReports.unsubmittedCheck.enabled", false);
+#endif
+
+// chancesUntilSuppress is how many times we'll show the unsubmitted
+// crash report notification across different days and shutdown
+// without a user choice before we suppress the notification for
+// some number of days.
+pref("browser.crashReports.unsubmittedCheck.chancesUntilSuppress", 4);
+pref("browser.crashReports.unsubmittedCheck.autoSubmit", false);
 
 //Minimize ram useage on browser minimizes to taskbar
 pref("config.trim_on_minimize", true);

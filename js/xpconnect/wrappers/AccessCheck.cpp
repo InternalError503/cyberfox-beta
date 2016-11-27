@@ -19,6 +19,7 @@
 #include "mozilla/jsipc/CrossProcessObjectWrappers.h"
 #include "nsIDOMWindowCollection.h"
 #include "nsJSUtils.h"
+#include "xpcprivate.h"
 
 using namespace mozilla;
 using namespace JS;
@@ -238,7 +239,7 @@ AccessCheck::checkPassToPrivilegedCode(JSContext* cx, HandleObject wrapper, Hand
     if (AccessCheck::isChrome(js::UncheckedUnwrap(wrapper)) && WrapperFactory::IsCOW(obj)) {
         RootedObject target(cx, js::UncheckedUnwrap(obj));
         JSAutoCompartment ac(cx, target);
-        RootedId id(cx, GetRTIdByIndex(cx, XPCJSRuntime::IDX_EXPOSEDPROPS));
+        RootedId id(cx, GetJSIDByIndex(cx, XPCJSContext::IDX_EXPOSEDPROPS));
         bool found = false;
         if (!JS_HasPropertyById(cx, target, id, &found))
             return false;
@@ -291,7 +292,7 @@ ExposedPropertiesOnly::check(JSContext* cx, HandleObject wrapper, HandleId id, W
                check(cx, wrapper, id, Wrapper::SET);
     }
 
-    RootedId exposedPropsId(cx, GetRTIdByIndex(cx, XPCJSRuntime::IDX_EXPOSEDPROPS));
+    RootedId exposedPropsId(cx, GetJSIDByIndex(cx, XPCJSContext::IDX_EXPOSEDPROPS));
 
     // We need to enter the wrappee's compartment to look at __exposedProps__,
     // but we want to be in the wrapper's compartment if we call Deny().

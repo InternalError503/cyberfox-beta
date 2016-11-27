@@ -9,6 +9,7 @@ this.EXPORTED_SYMBOLS = ["MigrationUtils", "MigratorPrototype"];
 const { classes: Cc, interfaces: Ci, results: Cr, utils: Cu } = Components;
 const TOPIC_WILL_IMPORT_BOOKMARKS = "initial-migration-will-import-default-bookmarks";
 const TOPIC_DID_IMPORT_BOOKMARKS = "initial-migration-did-import-default-bookmarks";
+const TOPIC_PLACES_DEFAULTS_FINISHED = "places-browser-init-complete";
 
 Cu.import("resource://gre/modules/AppConstants.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
@@ -19,10 +20,16 @@ XPCOMUtils.defineLazyModuleGetter(this, "AutoMigrate",
                                   "resource:///modules/AutoMigrate.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "BookmarkHTMLUtils",
                                   "resource://gre/modules/BookmarkHTMLUtils.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "LoginHelper",
+                                  "resource://gre/modules/LoginHelper.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "PlacesUtils",
                                   "resource://gre/modules/PlacesUtils.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "PromiseUtils",
                                   "resource://gre/modules/PromiseUtils.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "Sqlite",
+                                  "resource://gre/modules/Sqlite.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "WindowsRegistry",
+                                  "resource://gre/modules/WindowsRegistry.jsm");
 
 var gMigrators = null;
 var gProfileStartup = null;
@@ -31,7 +38,7 @@ var gMigrationBundle = null;
 XPCOMUtils.defineLazyGetter(this, "gAvailableMigratorKeys", function() {
   if (AppConstants.platform == "win") {
     return [
-      "firefox", "edge", "ie", "chrome", "chromium", "safari", "360se",
+      "firefox", "edge", "ie", "chrome", "chromium", "360se",
       "canary"
     ];
   }
@@ -239,6 +246,9 @@ this.MigratorPrototype = {
         Services.obs.notifyObservers(null, aMsg, aItemType);
       }
 
+      for (let resourceType of Object.keys(MigrationUtils._importQuantities)) {
+        MigrationUtils._importQuantities[resourceType] = 0;
+      }
       notify("Migration:Started");
       for (let [key, value] of resourcesGroupedByItems) {
         // Workaround bug 449811.
@@ -271,7 +281,7 @@ this.MigratorPrototype = {
           try {
             resource.migrate(resourceDone);
           }
-          catch(ex) {
+          catch (ex) {
             Cu.reportError(ex);
             resourceDone(false);
           }
@@ -290,28 +300,35 @@ this.MigratorPrototype = {
 
     if (MigrationUtils.isStartupMigration && !this.startupOnlyMigrator) {
       MigrationUtils.profileStartup.doStartup();
-
-      // If we're about to migrate bookmarks, first import the default bookmarks.
-      // Note We do not need to do so for the Firefox migrator
+      // First import the default bookmarks.
+      // Note: We do not need to do so for the Firefox migrator
       // (=startupOnlyMigrator), as it just copies over the places database
       // from another profile.
-      const BOOKMARKS = MigrationUtils.resourceTypes.BOOKMARKS;
-      let migratingBookmarks = resources.some(r => r.type == BOOKMARKS);
-      if (migratingBookmarks) {
+      Task.spawn(function* () {
+        // Tell nsBrowserGlue we're importing default bookmarks.
         let browserGlue = Cc["@mozilla.org/browser/browserglue;1"].
                           getService(Ci.nsIObserver);
         browserGlue.observe(null, TOPIC_WILL_IMPORT_BOOKMARKS, "");
 
-        // Note doMigrate doesn't care about the success of the import.
-        let onImportComplete = function() {
-          browserGlue.observe(null, TOPIC_DID_IMPORT_BOOKMARKS, "");
-          doMigrate();
-        };
-        BookmarkHTMLUtils.importFromURL(
-          "chrome://browser/locale/bookmarks.html", true).then(
-          onImportComplete, onImportComplete);
-        return;
-      }
+        // Import the default bookmarks. We ignore whether or not we succeed.
+        yield BookmarkHTMLUtils.importFromURL(
+          "chrome://browser/locale/bookmarks.html", true).catch(r => r);
+
+        // We'll tell nsBrowserGlue we've imported bookmarks, but before that
+        // we need to make sure we're going to know when it's finished
+        // initializing places:
+        let placesInitedPromise = new Promise(resolve => {
+          let onPlacesInited = function() {
+            Services.obs.removeObserver(onPlacesInited, TOPIC_PLACES_DEFAULTS_FINISHED);
+            resolve();
+          };
+          Services.obs.addObserver(onPlacesInited, TOPIC_PLACES_DEFAULTS_FINISHED, false);
+        });
+        browserGlue.observe(null, TOPIC_DID_IMPORT_BOOKMARKS, "");
+        yield placesInitedPromise;
+        doMigrate();
+      });
+      return;
     }
     doMigrate();
   },
@@ -341,7 +358,7 @@ this.MigratorPrototype = {
         exists = profiles.length > 0;
       }
     }
-    catch(ex) {
+    catch (ex) {
       Cu.reportError(ex);
     }
     return exists;
@@ -415,7 +432,7 @@ this.MigrationUtils = Object.freeze({
         aFunction.apply(null, arguments);
         success = true;
       }
-      catch(ex) {
+      catch (ex) {
         Cu.reportError(ex);
       }
       // Do not change this to call aCallback directly in try try & catch
@@ -507,6 +524,69 @@ this.MigrationUtils = Object.freeze({
     })).guid;
   }),
 
+  /**
+   * Get all the rows corresponding to a select query from a database, without
+   * requiring a lock on the database. If fetching data fails (because someone
+   * else tried to write to the DB at the same time, for example), we will
+   * retry the fetch after a 100ms timeout, up to 10 times.
+   *
+   * @param path
+   *        the file path to the database we want to open.
+   * @param description
+   *        a developer-readable string identifying what kind of database we're
+   *        trying to open.
+   * @param selectQuery
+   *        the SELECT query to use to fetch the rows.
+   *
+   * @return a promise that resolves to an array of rows. The promise will be
+   *         rejected if the read/fetch failed even after retrying.
+   */
+  getRowsFromDBWithoutLocks(path, description, selectQuery) {
+    let dbOptions = {
+      readOnly: true,
+      ignoreLockingMode: true,
+      path,
+    };
+
+    const RETRYLIMIT = 10;
+    const RETRYINTERVAL = 100;
+    return Task.spawn(function* innerGetRows() {
+      let rows = null;
+      for (let retryCount = RETRYLIMIT; retryCount && !rows; retryCount--) {
+        // Attempt to get the rows. If this succeeds, we will bail out of the loop,
+        // close the database in a failsafe way, and pass the rows back.
+        // If fetching the rows throws, we will wait RETRYINTERVAL ms
+        // and try again. This will repeat a maximum of RETRYLIMIT times.
+        let db;
+        let didOpen = false;
+        let exceptionSeen;
+        try {
+          db = yield Sqlite.openConnection(dbOptions);
+          didOpen = true;
+          rows = yield db.execute(selectQuery);
+        } catch (ex) {
+          if (!exceptionSeen) {
+            Cu.reportError(ex);
+          }
+          exceptionSeen = ex;
+        } finally {
+          try {
+            if (didOpen) {
+              yield db.close();
+            }
+          } catch (ex) {}
+        }
+        if (exceptionSeen) {
+          yield new Promise(resolve => setTimeout(resolve, RETRYINTERVAL));
+        }
+      }
+      if (!rows) {
+        throw new Error("Couldn't get rows from the " + description + " database.");
+      }
+      return rows;
+    });
+  },
+
   get _migrators() {
     return gMigrators ? gMigrators : gMigrators = new Map();
   },
@@ -518,7 +598,7 @@ this.MigrationUtils = Object.freeze({
    * @param aKey internal name of the migration source.
    *             Supported values: ie (windows),
    *                               edge (windows),
-   *                               safari (mac/windows),
+   *                               safari (mac),
    *                               canary (mac/windows),
    *                               chrome (mac/windows/linux),
    *                               chromium (mac/windows/linux),
@@ -543,7 +623,7 @@ this.MigrationUtils = Object.freeze({
         migrator = Cc["@mozilla.org/profile/migrator;1?app=browser&type=" +
                       aKey].createInstance(Ci.nsIBrowserProfileMigrator);
       }
-      catch(ex) { Cu.reportError(ex) }
+      catch (ex) { Cu.reportError(ex) }
       this._migrators.set(aKey, migrator);
     }
 
@@ -574,17 +654,39 @@ this.MigrationUtils = Object.freeze({
     };
 
     let browserDesc = "";
+    let key = "";
     try {
       let browserDesc =
         Cc["@mozilla.org/uriloader/external-protocol-service;1"].
         getService(Ci.nsIExternalProtocolService).
         getApplicationDescription("http");
-      return APP_DESC_TO_KEY[browserDesc] || "";
+      key = APP_DESC_TO_KEY[browserDesc] || "";
     }
-    catch(ex) {
+    catch (ex) {
       Cu.reportError("Could not detect default browser: " + ex);
     }
-    return "";
+
+    // "firefox" is the least useful entry here, and might just be because we've set
+    // ourselves as the default (on Windows 7 and below). In that case, check if we
+    // have a registry key that tells us where to go:
+    if (key == "firefox" && AppConstants.isPlatformAndVersionAtMost("win", "6.2")) {
+      const kRegPath = "Software\\8pecxstudios\\Cyberfox";
+      let oldDefault = WindowsRegistry.readRegKey(
+          Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER, kRegPath, "OldDefaultBrowserCommand");
+      if (oldDefault) {
+        // Remove the key:
+        WindowsRegistry.removeRegKey(
+          Ci.nsIWindowsRegKey.ROOT_KEY_CURRENT_USER, kRegPath, "OldDefaultBrowserCommand");
+        try {
+          let file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFileWin);
+          file.initWithCommandLine(oldDefault);
+          key = APP_DESC_TO_KEY[file.getVersionInfoField("FileDescription")] || key;
+        } catch (ex) {
+          Cu.reportError("Could not convert old default browser value to description.");
+        }
+      }
+    }
+    return key;
   },
 
   // Whether or not we're in the process of startup migration
@@ -774,6 +876,27 @@ this.MigrationUtils = Object.freeze({
       aProfileToMigrate,
     ];
     this.showMigrationWizard(null, params);
+  },
+
+  _importQuantities: {
+    bookmarks: 0,
+    logins: 0,
+    history: 0,
+  },
+
+  insertBookmarkWrapper(bookmark) {
+    this._importQuantities.bookmarks++;
+    return PlacesUtils.bookmarks.insert(bookmark);
+  },
+
+  insertVisitsWrapper(places, options) {
+    this._importQuantities.history += places.length;
+    return PlacesUtils.asyncHistory.updatePlaces(places, options);
+  },
+
+  insertLoginWrapper(login) {
+    this._importQuantities.logins++;
+    return LoginHelper.maybeImportLogin(login);
   },
 
   /**

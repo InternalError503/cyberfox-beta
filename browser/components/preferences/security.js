@@ -116,11 +116,10 @@ var gSecurityPane = {
       document.getElementById("savePasswords").disabled = true;
       excepts.disabled = true;
       return false;
-    } else {
-      excepts.disabled = !pref.value;
-      // don't override pref value in UI
-      return undefined;
     }
+    excepts.disabled = !pref.value;
+    // don't override pref value in UI
+    return undefined;
   },
 
   /**
@@ -129,9 +128,21 @@ var gSecurityPane = {
    */
   showPasswordExceptions: function ()
   {
-    document.documentElement.openWindow("Toolkit:PasswordManagerExceptions",
-                                        "chrome://passwordmgr/content/passwordManagerExceptions.xul",
-                                        "resizable", null);
+    var bundlePrefs = document.getElementById("bundlePreferences");
+    var params = {
+      blockVisible: true,
+      sessionVisible: false,
+      allowVisible: false,
+      hideStatusColumn: true,
+      prefilledHost: "",
+      permissionType: "login-saving",
+      windowTitle: bundlePrefs.getString("savedLoginsExceptions_title"),
+      introText: bundlePrefs.getString("savedLoginsExceptions_desc")
+    };
+
+    document.documentElement.openWindow("Browser:Permissions",
+                                        "chrome://browser/content/preferences/permissions.xul",
+                                        null, params);
   },
 
   /**
@@ -255,7 +266,6 @@ var gSecurityPane = {
    */
   _removeMasterPassword: function ()
   {
-    const Cc = Components.classes, Ci = Components.interfaces;
     var secmodDB = Cc["@mozilla.org/security/pkcs11moduledb;1"].
                    getService(Ci.nsIPKCS11ModuleDB);
     if (secmodDB.isFIPSEnabled) {

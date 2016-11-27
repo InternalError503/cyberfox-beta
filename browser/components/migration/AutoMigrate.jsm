@@ -35,16 +35,6 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
-let gAutoMigrationBundle;
-
-function getBundle() {
-  if (!gAutoMigrationBundle) {
-    gAutoMigrationBundle = Services.strings.createBundle(
-     "chrome://browser/content/migration/automigration.properties");
-  }
-  return gAutoMigrationBundle;
-}
-
 const AutoMigrate = {
   get resourceTypesToUse() {
     let {BOOKMARKS, HISTORY, PASSWORDS} = Ci.nsIBrowserProfileMigrator;
@@ -72,10 +62,7 @@ const AutoMigrate = {
   },
 
   init() {
-    this.enabled = this._checkIfEnabled() &&
-                   Cc["@mozilla.org/chrome/chrome-registry;1"].
-                     getService(Ci.nsIXULChromeRegistry).
-                     getSelectedLocale("browser") == "en-US";
+    this.enabled = this._checkIfEnabled();
     if (this.enabled) {
       this.maybeInitUndoObserver();
     }
@@ -322,19 +309,13 @@ const AutoMigrate = {
     return null;
   },
 
-  getLocalizedString(str, args) {
-    if (args === undefined)
-      return getBundle().GetStringFromName(str);
-    return getBundle().formatStringFromName(
-      str, args, args.length);
-  },
-
   maybeShowUndoNotification(target) {
     // The tab might have navigated since we requested the undo state:
     if (!this.canUndo() || target.currentURI.spec != "about:home" ||
         !Preferences.get(kUndoUIEnabledPref, false)) {
       return;
     }
+
     let win = target.ownerGlobal;
     let notificationBox = win.gBrowser.getNotificationBox(target);
     if (!notificationBox || notificationBox.getNotificationWithValue("abouthome-automigration-undo")) {
@@ -352,23 +333,23 @@ const AutoMigrate = {
     let browserName = this.getBrowserUsedForMigration();
     let message;
     if (browserName) {
-      message = this.getLocalizedString("automigration.undo.message",
+      message = MigrationUtils.getLocalizedString("automigration.undo.message",
                                                   [browserName]);
     } else {
-      message = this.getLocalizedString("automigration.undo.unknownBrowserMessage");
+      message = MigrationUtils.getLocalizedString("automigration.undo.unknownBrowserMessage");
     }
 
     let buttons = [
       {
-        label: this.getLocalizedString("automigration.undo.keep.label"),
-        accessKey: this.getLocalizedString("automigration.undo.keep.accesskey"),
+        label: MigrationUtils.getLocalizedString("automigration.undo.keep.label"),
+        accessKey: MigrationUtils.getLocalizedString("automigration.undo.keep.accesskey"),
         callback: () => {
           this.removeUndoOption(this.UNDO_REMOVED_REASON_OFFER_REJECTED);
         },
       },
       {
-        label: this.getLocalizedString("automigration.undo.dontkeep.label"),
-        accessKey: this.getLocalizedString("automigration.undo.dontkeep.accesskey"),
+        label: MigrationUtils.getLocalizedString("automigration.undo.dontkeep.label"),
+        accessKey: MigrationUtils.getLocalizedString("automigration.undo.dontkeep.accesskey"),
         callback: () => {
           this.undo();
         },
@@ -377,6 +358,8 @@ const AutoMigrate = {
     notificationBox.appendNotification(
       message, kNotificationId, null, notificationBox.PRIORITY_INFO_HIGH, buttons
     );
+    let remainingDays = Preferences.get(kAutoMigrateDaysToOfferUndoPref, 0);
+    Services.telemetry.getHistogramById("FX_STARTUP_MIGRATION_UNDO_OFFERED").add(4 - remainingDays);
   },
 
   shouldStillShowUndoPrompt() {
