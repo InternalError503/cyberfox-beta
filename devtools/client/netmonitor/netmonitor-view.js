@@ -339,7 +339,7 @@ var NetMonitorView = {
         // • The response content size and request total time are necessary for
         // populating the statistics view.
         // • The response mime type is used for categorization.
-        yield whenDataAvailable(requestsView.attachments, [
+        yield whenDataAvailable(requestsView, [
           "responseHeaders", "status", "contentSize", "mimeType", "totalTime"
         ]);
       } catch (ex) {

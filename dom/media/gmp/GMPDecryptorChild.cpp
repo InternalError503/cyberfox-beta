@@ -20,6 +20,8 @@
 namespace mozilla {
 namespace gmp {
 
+static uint32_t sDecryptorCount = 0;
+
 GMPDecryptorChild::GMPDecryptorChild(GMPContentChild* aPlugin,
                                      const nsTArray<uint8_t>& aPluginVoucher,
                                      const nsTArray<uint8_t>& aSandboxVoucher)
@@ -27,8 +29,10 @@ GMPDecryptorChild::GMPDecryptorChild(GMPContentChild* aPlugin,
   , mPlugin(aPlugin)
   , mPluginVoucher(aPluginVoucher)
   , mSandboxVoucher(aSandboxVoucher)
+  , mId(++sDecryptorCount)
 {
   MOZ_ASSERT(mPlugin);
+  MOZ_ASSERT(mId > 0);
 }
 
 GMPDecryptorChild::~GMPDecryptorChild()
@@ -73,6 +77,11 @@ GMPDecryptorChild::Init(GMPDecryptor* aSession)
 {
   MOZ_ASSERT(aSession);
   mSession = aSession;
+  // The ID of this decryptor is the IPDL actor ID. Note it's unique inside
+  // the child process, but not necessarily across all gecko processes. However,
+  // since GMPDecryptors are segregated by node ID/origin, we shouldn't end up
+  // with clashes in the content process.
+  SendSetDecryptorId(Id());
 }
 
 void
