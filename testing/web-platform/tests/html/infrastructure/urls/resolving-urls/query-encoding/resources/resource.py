@@ -100,7 +100,7 @@ def main(request, response):
         return [("Content-Type", "image/svg+xml")], "<svg xmlns='http://www.w3.org/2000/svg'>%s</svg>" % q
     elif type == 'xmlstylesheet_css':
         return ([("Content-Type", "application/xhtml+xml; charset=%s" % encoding)],
-                (u"""<?xml-stylesheet href="?q=\u00E5&amp;type=css&amp;encoding=%s"?><html xmlns="http://www.w3.org/1999/xhtml"/>""" % encoding)
+                (u"""<?xml-stylesheet href="?q=&#x00E5;&amp;type=css&amp;encoding=%s"?><html xmlns="http://www.w3.org/1999/xhtml"/>""" % encoding)
                 .encode(encoding))
     elif type == 'png':
         if q == '%E5':
@@ -111,7 +111,7 @@ def main(request, response):
             image = 'green-16x16.png'
         else:
             image = 'green-256x256.png'
-        rv = open(os.path.join(request.doc_root, "images", image)).read()
+        rv = open(os.path.join(request.doc_root, "images", image), "rb").read()
         return [("Content-Type", "image/png")], rv
     elif type == 'video':
         ext = request.GET['ext']
@@ -123,7 +123,7 @@ def main(request, response):
             video = 'green-at-15' # duration: 30
         else:
             video = 'movie_300' # duration: 300
-        rv = open(os.path.join(request.doc_root, "media", "%s.%s" % (video, ext))).read()
+        rv = open(os.path.join(request.doc_root, "media", "%s.%s" % (video, ext)), "rb").read()
         if ext == 'ogv':
             ext = 'ogg'
         return [("Content-Type", "video/%s" % ext)], rv
