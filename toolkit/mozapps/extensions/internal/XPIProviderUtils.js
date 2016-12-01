@@ -5,7 +5,7 @@
 "use strict";
 
 // These are injected from XPIProvider.jsm
-/*globals ADDON_SIGNING, SIGNED_TYPES, BOOTSTRAP_REASONS, DB_SCHEMA,
+/*globals SIGNED_TYPES, BOOTSTRAP_REASONS, DB_SCHEMA,
           AddonInternal, XPIProvider, XPIStates, syncLoadManifestFromFile,
           isUsableAddon, recordAddonTelemetry, applyBlocklistChanges,
           flushChromeCaches, canRunInSafeMode*/
@@ -1861,7 +1861,7 @@ this.XPIDatabaseReconcile = {
 
     // If updating from a version of the app that didn't support signedState
     // then fetch that property now
-    if (aOldAddon.signedState === undefined && ADDON_SIGNING &&
+    if (aOldAddon.signedState === undefined &&
         SIGNED_TYPES.has(aOldAddon.type)) {
       let file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
       file.persistentDescriptor = aAddonState.descriptor;
