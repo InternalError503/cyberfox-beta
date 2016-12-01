@@ -2833,7 +2833,7 @@ pref("dom.ipc.plugins.asyncdrawing.enabled", false);
 pref("dom.ipc.plugins.asyncdrawing.enabled", true);
 #endif
 
-pref("dom.ipc.processCount", 1);
+pref("dom.ipc.processCount", 2);
 
 // Enable caching of Moz2D Path objects for SVG geometry elements
 pref("svg.path-caching.enabled", true);
