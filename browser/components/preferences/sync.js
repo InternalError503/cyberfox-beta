@@ -140,6 +140,15 @@ var gSyncPane = {
     XPCOMUtils.defineLazyGetter(this, '_accountsStringBundle', () => {
       return Services.strings.createBundle("chrome://browser/locale/accounts.properties");
     });
+	
+    document.getElementById("tosPP-small-ToS").setAttribute("href", gSyncUtils.tosURL);
+    document.getElementById("tosPP-normal-ToS").setAttribute("href", gSyncUtils.tosURL);
+    document.getElementById("tosPP-small-PP").setAttribute("href", gSyncUtils.privacyPolicyURL);
+    document.getElementById("tosPP-normal-PP").setAttribute("href", gSyncUtils.privacyPolicyURL);
+
+    fxAccounts.promiseAccountsManageURI(this._getEntryPoint()).then(url => {
+      document.getElementById("verifiedManage").setAttribute("href", url);
+    });
 
     this.updateWeavePrefs();
 
@@ -448,6 +457,22 @@ var gSyncPane = {
       gSyncUtils.resetPassphrase();
   },
 
+  _getEntryPoint: function () {
+    let params = new URLSearchParams(document.URL.split("#")[0].split("?")[1] || "");
+    return params.get("entrypoint") || "preferences";
+  },
+
+  _openAboutAccounts: function(action) {
+    let entryPoint = this._getEntryPoint();
+    let params = new URLSearchParams();
+    if (action) {
+      params.set("action", action);
+    }
+    params.set("entrypoint", entryPoint);
+
+    this.replaceTabWithUrl("about:accounts?" + params);
+  },
+
   /**
    * Invoke the Sync setup wizard.
    *
@@ -463,7 +488,7 @@ var gSyncPane = {
                   .wrappedJSObject;
 
     if (service.fxAccountsEnabled) {
-      this.openContentInBrowser("about:accounts");
+      this._openAboutAccounts();
     } else {
       let win = Services.wm.getMostRecentWindow("Weave:AccountSetup");
       if (win)
@@ -488,6 +513,17 @@ var gSyncPane = {
     win.switchToTabHavingURI(url, true, options);
     // seeing as we are doing this in a tab we close the prefs dialog.
     window.close();
+  },
+
+  // Replace the current tab with the specified URL.
+  replaceTabWithUrl(url) {
+    // Get the <browser> element hosting us.
+    let browser = window.QueryInterface(Ci.nsIInterfaceRequestor)
+                        .getInterface(Ci.nsIWebNavigation)
+                        .QueryInterface(Ci.nsIDocShell)
+                        .chromeEventHandler;
+    // And tell it to load our URL.
+    browser.loadURI(url);
   },
 
   signUp: function() {
@@ -533,7 +569,7 @@ var gSyncPane = {
   },
 
   manageFirefoxAccount: function() {
-    fxAccounts.promiseAccountsManageURI()
+    fxAccounts.promiseAccountsManageURI(this._getEntryPoint())
       .then(url => {
         this.openContentInBrowser(url, {
           replaceQueryString: true

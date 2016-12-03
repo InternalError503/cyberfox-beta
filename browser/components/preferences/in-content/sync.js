@@ -139,6 +139,15 @@ var gSyncPane = {
     XPCOMUtils.defineLazyGetter(this, '_accountsStringBundle', () => {
       return Services.strings.createBundle("chrome://browser/locale/accounts.properties");
     });
+	
+    document.getElementById("tosPP-small-ToS").setAttribute("href", gSyncUtils.tosURL);
+    document.getElementById("tosPP-normal-ToS").setAttribute("href", gSyncUtils.tosURL);
+    document.getElementById("tosPP-small-PP").setAttribute("href", gSyncUtils.privacyPolicyURL);
+    document.getElementById("tosPP-normal-PP").setAttribute("href", gSyncUtils.privacyPolicyURL);
+
+    fxAccounts.promiseAccountsManageURI(this._getEntryPoint()).then(url => {
+      document.getElementById("verifiedManage").setAttribute("href", url);
+    });
 
     this.updateWeavePrefs();
 
