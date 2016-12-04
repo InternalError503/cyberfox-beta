@@ -315,15 +315,13 @@
         </groupbox>
       </vbox>
     </hbox>
-    <groupbox>
-      <caption>
+    <vbox> 
         <label accesskey="&syncDeviceName.accesskey;"
                control="fxaSyncComputerName">
           &fxaSyncDeviceName.label;
         </label>
-      </caption>
       <hbox id="fxaDeviceName">
-        <textbox id="fxaSyncComputerName" disabled="true" flex="1"/>
+        <textbox id="fxaSyncComputerName" disabled="true" width="375"/>
         <hbox>
           <button id="fxaChangeDeviceName"
                   label="&changeSyncDeviceName.label;"/>
@@ -335,7 +333,7 @@
                   hidden="true"/>
         </hbox>
       </hbox>
-    </groupbox>
+    </vbox>
     <spacer flex="1"/>
     <hbox id="tosPP-small" pack="center">
       <label id="tosPP-small-ToS" class="text-link">
