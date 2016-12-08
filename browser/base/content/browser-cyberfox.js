@@ -156,9 +156,11 @@ var gCyberfoxCustom = {
                     if (Services.prefs.getBoolPref("browser.tabs.clonetab")) {
                         gCyberfoxCustom._ElementState("context_CloneCurrentTab", false);
                         gCyberfoxCustom._ElementState("context_CloneCurrentTabNewWindow", false);
+                        gCyberfoxCustom._ElementState("context_CloneCurrentTabNewWindowpb", false);
                     } else {
                         gCyberfoxCustom._ElementState("context_CloneCurrentTab", true);
                         gCyberfoxCustom._ElementState("context_CloneCurrentTabNewWindow", true);
+                        gCyberfoxCustom._ElementState("context_CloneCurrentTabNewWindowpb", true);
                     }
                     // Copy current tab url
                     if (Services.prefs.getBoolPref("browser.tabs.copyurl")) {
