@@ -113,7 +113,7 @@
       <menuseparator/>
 	    <menuitem id="context_CopyCurrentTabUrl" 
 					        label="&copyTabURL.label;" 
-					        oncommand="gCyberfoxCustom.CopyCurrentTabUrl();"/>
+					        oncommand="gCyberfoxCustom.CopyCurrentTabUrl(TabContextMenu.contextTab.linkedBrowser.currentURI.spec);"/>
 	    <menuitem id="context_CopyAllTabUrls" 
 					        label="&copyAllTabUrls.label;" 
 					        oncommand="gCyberfoxCustom.CopyAllTabUrls();"/>                  		  

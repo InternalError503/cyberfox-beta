@@ -1647,6 +1647,7 @@ pref("app.update.verifysha", true);
 
 //set bool pref for copy tab url enabled
 pref("browser.tabs.copyurl", true);
+pref("browser.tabs.copyurl.activetab", true);
 
 //set bool pref for copy all tab urls enabled
 pref("browser.tabs.copyallurls", true);

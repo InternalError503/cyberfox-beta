@@ -49,11 +49,15 @@ var gCyberfoxCustom = {
         }
     },
     // Copies current tab url to clipboard	
-    CopyCurrentTabUrl: function(e) {
+    CopyCurrentTabUrl: function(uri) {
         try {
             var gClipboardHelper = Cc["@mozilla.org/widget/clipboardhelper;1"]
                 .getService(Ci.nsIClipboardHelper);
-            gClipboardHelper.copyString(gBrowser.currentURI.spec);
+			if (Services.prefs.getBoolPref("browser.tabs.copyurl.activetab")){	
+				gClipboardHelper.copyString(gBrowser.currentURI.spec);
+			} else {
+				gClipboardHelper.copyString(uri);
+			}
         } catch (e) {
             // Catch any nasty errors and output to console
             throw new Error("Were sorry but something has gone wrong with 'CopyCurrentTabUrl' " + e);
