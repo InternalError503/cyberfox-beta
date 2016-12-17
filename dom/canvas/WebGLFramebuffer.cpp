@@ -1288,7 +1288,7 @@ WebGLFramebuffer::FramebufferRenderbuffer(const char* funcName, GLenum attachEnu
 
     // `attachment`
     const auto maybeAttach = GetAttachPoint(attachEnum);
-    if (!maybeAttach) {
+    if (!maybeAttach || !maybeAttach.value()) {
         mContext->ErrorInvalidEnum("%s: Bad `attachment`: 0x%x.", funcName, attachEnum);
         return;
     }
@@ -1326,7 +1326,7 @@ WebGLFramebuffer::FramebufferTexture2D(const char* funcName, GLenum attachEnum,
 
     // `attachment`
     const auto maybeAttach = GetAttachPoint(attachEnum);
-    if (!maybeAttach) {
+    if (!maybeAttach || !maybeAttach.value()) {
         mContext->ErrorInvalidEnum("%s: Bad `attachment`: 0x%x.", funcName, attachEnum);
         return;
     }
@@ -1413,7 +1413,7 @@ WebGLFramebuffer::FramebufferTextureLayer(const char* funcName, GLenum attachEnu
 
     // `attachment`
     const auto maybeAttach = GetAttachPoint(attachEnum);
-    if (!maybeAttach) {
+    if (!maybeAttach || !maybeAttach.value()) {
         mContext->ErrorInvalidEnum("%s: Bad `attachment`: 0x%x.", funcName, attachEnum);
         return;
     }
@@ -1633,8 +1633,8 @@ WebGLFramebuffer::BlitFramebuffer(WebGLContext* webgl,
         dstDepthFormat = fnGetFormat(dstFB->mResolvedCompleteData->depthBuffer);
         dstStencilFormat = fnGetFormat(dstFB->mResolvedCompleteData->stencilBuffer);
 
-        for (const auto& drawBuffer : dstFB->mColorDrawBuffers) {
-            fnCheckColorFormat(drawBuffer->Format()->format);
+        for (const auto& drawBufferEntry : dstFB->mResolvedCompleteData->drawSet) {
+            fnCheckColorFormat(drawBufferEntry.mRef.Format()->format);
         }
     } else {
         dstSampleBuffers = bool(gl->Screen()->Samples());

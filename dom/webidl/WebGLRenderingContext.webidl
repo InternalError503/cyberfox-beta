@@ -80,8 +80,7 @@ interface WebGLTexture {
 interface WebGLUniformLocation {
 };
 
-[NoInterfaceObject]
-interface WebGLVertexArrayObjectOES {
+interface WebGLVertexArrayObject {
 };
 
 [Exposed=(Window,Worker),
@@ -982,10 +981,10 @@ interface EXT_color_buffer_half_float
 interface OES_vertex_array_object {
     const GLenum VERTEX_ARRAY_BINDING_OES = 0x85B5;
 
-    WebGLVertexArrayObjectOES? createVertexArrayOES();
-    void deleteVertexArrayOES(WebGLVertexArrayObjectOES? arrayObject);
-    [WebGLHandlesContextLoss] GLboolean isVertexArrayOES(WebGLVertexArrayObjectOES? arrayObject);
-    void bindVertexArrayOES(WebGLVertexArrayObjectOES? arrayObject);
+    WebGLVertexArrayObject? createVertexArrayOES();
+    void deleteVertexArrayOES(WebGLVertexArrayObject? arrayObject);
+    [WebGLHandlesContextLoss] GLboolean isVertexArrayOES(WebGLVertexArrayObject? arrayObject);
+    void bindVertexArrayOES(WebGLVertexArrayObject? arrayObject);
 };
 
 [NoInterfaceObject]
@@ -1003,8 +1002,7 @@ interface EXT_blend_minmax {
     const GLenum MAX_EXT = 0x8008;
 };
 
-[NoInterfaceObject]
-interface WebGLTimerQueryEXT {
+interface WebGLQuery {
 };
 
 [NoInterfaceObject]
@@ -1017,12 +1015,12 @@ interface EXT_disjoint_timer_query {
     const GLenum TIMESTAMP_EXT = 0x8E28;
     const GLenum GPU_DISJOINT_EXT = 0x8FBB;
 
-    WebGLTimerQueryEXT? createQueryEXT();
-    void deleteQueryEXT(WebGLTimerQueryEXT? query);
-    [WebGLHandlesContextLoss] boolean isQueryEXT(WebGLTimerQueryEXT? query);
-    void beginQueryEXT(GLenum target, WebGLTimerQueryEXT? query);
+    WebGLQuery? createQueryEXT();
+    void deleteQueryEXT(WebGLQuery? query);
+    [WebGLHandlesContextLoss] boolean isQueryEXT(WebGLQuery? query);
+    void beginQueryEXT(GLenum target, WebGLQuery? query);
     void endQueryEXT(GLenum target);
-    void queryCounterEXT(WebGLTimerQueryEXT? query, GLenum target);
+    void queryCounterEXT(WebGLQuery? query, GLenum target);
     any getQueryEXT(GLenum target, GLenum pname);
-    any getQueryObjectEXT(WebGLTimerQueryEXT? query, GLenum pname);
+    any getQueryObjectEXT(WebGLQuery? query, GLenum pname);
 };
