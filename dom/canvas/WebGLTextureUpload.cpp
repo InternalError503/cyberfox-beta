@@ -13,6 +13,7 @@
 #include "GLContext.h"
 #include "mozilla/gfx/2D.h"
 #include "mozilla/dom/HTMLVideoElement.h"
+#include "mozilla/dom/ImageBitmap.h"
 #include "mozilla/dom/ImageData.h"
 #include "mozilla/MathAlgorithms.h"
 #include "mozilla/Scoped.h"
@@ -211,6 +212,35 @@ FromPboOffset(WebGLContext* webgl, const char* funcName, TexImageTarget target,
 }
 
 static UniquePtr<webgl::TexUnpackBlob>
+FromImageBitmap(WebGLContext* webgl, const char* funcName, TexImageTarget target,
+              uint32_t width, uint32_t height, uint32_t depth,
+              const dom::ImageBitmap& imageBitmap)
+{
+    UniquePtr<dom::ImageBitmapCloneData> cloneData = Move(imageBitmap.ToCloneData());
+    const RefPtr<gfx::DataSourceSurface> surf = cloneData->mSurface;
+
+    ////
+
+    if (!width) {
+        width = surf->GetSize().width;
+    }
+
+    if (!height) {
+        height = surf->GetSize().height;
+    }
+
+    ////
+
+
+    // WhatWG "HTML Living Standard" (30 October 2015):
+    // "The getImageData(sx, sy, sw, sh) method [...] Pixels must be returned as
+    //  non-premultiplied alpha values."
+    const bool isAlphaPremult = cloneData->mIsPremultipliedAlpha;
+    return MakeUnique<webgl::TexUnpackSurface>(webgl, target, width, height, depth, surf,
+                                               isAlphaPremult);
+}
+
+static UniquePtr<webgl::TexUnpackBlob>
 FromImageData(WebGLContext* webgl, const char* funcName, TexImageTarget target,
               uint32_t width, uint32_t height, uint32_t depth,
               const dom::ImageData& imageData, dom::Uint8ClampedArray* scopedArr)
@@ -378,6 +408,11 @@ WebGLContext::From(const char* funcName, TexImageTarget target, GLsizei rawWidth
     if (mBoundPixelUnpackBuffer) {
         ErrorInvalidOperation("%s: PIXEL_UNPACK_BUFFER must be null.", funcName);
         return nullptr;
+    }
+
+    if (src.mImageBitmap) {
+        return FromImageBitmap(this, funcName, target, width, height, depth,
+                               *(src.mImageBitmap));
     }
 
     if (src.mImageData) {
@@ -1947,8 +1982,7 @@ DoCopyTexOrSubImage(WebGLContext* webgl, const char* funcName, bool isSubImage,
                     uint32_t dstWidth, uint32_t dstHeight,
                     const webgl::FormatUsageInfo* dstUsage)
 {
-    gl::GLContext* gl = webgl->gl;
-    gl->MakeCurrent();
+    const auto& gl = webgl->gl;
 
     ////
 
@@ -2094,6 +2128,9 @@ WebGLTexture::CopyTexImage2D(TexImageTarget target, GLint level, GLenum internal
     ////////////////////////////////////
     // Do the thing!
 
+    mContext->gl->MakeCurrent();
+    mContext->OnBeforeReadCall();
+
     const bool isSubImage = false;
     if (!DoCopyTexOrSubImage(mContext, funcName, isSubImage, this, target, level, x, y,
                              srcTotalWidth, srcTotalHeight, srcUsage, 0, 0, 0, width,
@@ -2168,6 +2205,9 @@ WebGLTexture::CopyTexSubImage(const char* funcName, TexImageTarget target, GLint
 
     ////////////////////////////////////
     // Do the thing!
+
+    mContext->gl->MakeCurrent();
+    mContext->OnBeforeReadCall();
 
     bool uploadWillInitialize;
     if (!EnsureImageDataInitializedForUpload(this, funcName, target, level, xOffset,

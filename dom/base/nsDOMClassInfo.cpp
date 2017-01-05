@@ -19,6 +19,7 @@
 
 #include "xpcpublic.h"
 #include "xpcprivate.h"
+#include "xpc_make_class.h"
 #include "XPCWrapper.h"
 
 #include "mozilla/DOMEventTargetHelper.h"
@@ -138,6 +139,9 @@ using namespace mozilla::dom;
                                         _chromeOnly, _allowXBL)               \
   { #_class,                                                                  \
     nullptr,                                                                  \
+    XPC_MAKE_CLASS_OPS(_flags),                                               \
+    XPC_MAKE_CLASS(#_class, _flags,                                           \
+                   &sClassInfoData[eDOMClassInfo_##_class##_id].mClassOps),   \
     _helper::doCreate,                                                        \
     nullptr,                                                                  \
     nullptr,                                                                  \
@@ -788,6 +792,13 @@ nsDOMClassInfo::GetScriptableFlags()
   return mData->mScriptableFlags;
 }
 
+// virtual
+const js::Class*
+nsDOMClassInfo::GetClass()
+{
+    return &mData->mClass;
+}
+
 NS_IMETHODIMP
 nsDOMClassInfo::PreCreate(nsISupports *nativeObj, JSContext *cx,
                           JSObject *globalObj, JSObject **parentObj)
@@ -1351,6 +1362,12 @@ nsDOMConstructor::HasInstance(nsIXPConnectWrappedNative *wrapper,
     JS::Rooted<JSObject*> dot_prototype(cx, &desc.value().toObject());
 
     JS::Rooted<JSObject*> proto(cx, dom_obj);
+    JSAutoCompartment ac(cx, proto);
+
+    if (!JS_WrapObject(cx, &dot_prototype)) {
+      return NS_ERROR_UNEXPECTED;
+    }
+
     for (;;) {
       if (!JS_GetPrototype(cx, proto, &proto)) {
         return NS_ERROR_UNEXPECTED;

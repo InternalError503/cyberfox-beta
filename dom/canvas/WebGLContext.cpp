@@ -120,7 +120,7 @@ WebGLContext::WebGLContext()
     , mMaxFetchedInstances(0)
     , mLayerIsMirror(false)
     , mBypassShaderValidation(false)
-    , mBuffersForUB_Dirty(true)
+    , mEmptyTFO(0)
     , mContextLossHandler(this)
     , mNeedsFakeNoAlpha(false)
     , mNeedsFakeNoDepth(false)
@@ -142,18 +142,6 @@ WebGLContext::WebGLContext()
     mUnderlyingGLError = 0;
 
     mActiveTexture = 0;
-
-    mVertexAttrib0Vector[0] = 0;
-    mVertexAttrib0Vector[1] = 0;
-    mVertexAttrib0Vector[2] = 0;
-    mVertexAttrib0Vector[3] = 1;
-    mFakeVertexAttrib0BufferObjectVector[0] = 0;
-    mFakeVertexAttrib0BufferObjectVector[1] = 0;
-    mFakeVertexAttrib0BufferObjectVector[2] = 0;
-    mFakeVertexAttrib0BufferObjectVector[3] = 1;
-    mFakeVertexAttrib0BufferObjectSize = 0;
-    mFakeVertexAttrib0BufferObject = 0;
-    mFakeVertexAttrib0BufferStatus = WebGLVertexAttrib0Status::Default;
 
     mStencilRefFront = 0;
     mStencilRefBack = 0;
@@ -202,8 +190,6 @@ WebGLContext::WebGLContext()
     mLastUseIndex = 0;
 
     InvalidateBufferFetching();
-
-    mBackbufferNeedsClear = true;
 
     mDisableFragHighP = false;
 
@@ -264,7 +250,6 @@ WebGLContext::DestroyResourcesAndContext()
     mQuerySlot_TimeElapsed = nullptr;
 
     mIndexedUniformBufferBindings.clear();
-    OnUBIndexedBindingsChanged();
 
     //////
 
@@ -279,6 +264,13 @@ WebGLContext::DestroyResourcesAndContext()
     ClearLinkedList(mTextures);
     ClearLinkedList(mTransformFeedbacks);
     ClearLinkedList(mVertexArrays);
+
+    //////
+
+    if (mEmptyTFO) {
+        gl->fDeleteTransformFeedbacks(1, &mEmptyTFO);
+        mEmptyTFO = 0;
+    }
 
     //////
 
@@ -1133,14 +1125,6 @@ WebGLContext::ClearBackbufferIfNeeded()
 {
     if (!mBackbufferNeedsClear)
         return;
-
-#ifdef DEBUG
-    gl->MakeCurrent();
-
-    GLuint fb = 0;
-    gl->GetUIntegerv(LOCAL_GL_FRAMEBUFFER_BINDING, &fb);
-    MOZ_ASSERT(fb == 0);
-#endif
 
     ClearScreen();
 
@@ -2039,12 +2023,16 @@ WebGLContext::ValidateCurFBForRead(const char* funcName,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-WebGLContext::ScopedMaskWorkaround::ScopedMaskWorkaround(WebGLContext& webgl)
+WebGLContext::ScopedDrawCallWrapper::ScopedDrawCallWrapper(WebGLContext& webgl)
     : mWebGL(webgl)
     , mFakeNoAlpha(ShouldFakeNoAlpha(webgl))
     , mFakeNoDepth(ShouldFakeNoDepth(webgl))
     , mFakeNoStencil(ShouldFakeNoStencil(webgl))
 {
+    if (!mWebGL.mBoundDrawFramebuffer) {
+        mWebGL.ClearBackbufferIfNeeded();
+    }
+
     if (mFakeNoAlpha) {
         mWebGL.gl->fColorMask(mWebGL.mColorWriteMask[0],
                               mWebGL.mColorWriteMask[1],
@@ -2059,7 +2047,7 @@ WebGLContext::ScopedMaskWorkaround::ScopedMaskWorkaround(WebGLContext& webgl)
     }
 }
 
-WebGLContext::ScopedMaskWorkaround::~ScopedMaskWorkaround()
+WebGLContext::ScopedDrawCallWrapper::~ScopedDrawCallWrapper()
 {
     if (mFakeNoAlpha) {
         mWebGL.gl->fColorMask(mWebGL.mColorWriteMask[0],
@@ -2074,14 +2062,29 @@ WebGLContext::ScopedMaskWorkaround::~ScopedMaskWorkaround()
         MOZ_ASSERT(mWebGL.mStencilTestEnabled);
         mWebGL.gl->fEnable(LOCAL_GL_STENCIL_TEST);
     }
+
+    if (!mWebGL.mBoundDrawFramebuffer) {
+        mWebGL.Invalidate();
+        mWebGL.mShouldPresent = true;
+    }
 }
 
 /*static*/ bool
-WebGLContext::ScopedMaskWorkaround::HasDepthButNoStencil(const WebGLFramebuffer* fb)
+WebGLContext::ScopedDrawCallWrapper::HasDepthButNoStencil(const WebGLFramebuffer* fb)
 {
     const auto& depth = fb->DepthAttachment();
     const auto& stencil = fb->StencilAttachment();
     return depth.IsDefined() && !stencil.IsDefined();
+}
+
+////
+
+void
+WebGLContext::OnBeforeReadCall()
+{
+    if (!mBoundReadFramebuffer) {
+        ClearBackbufferIfNeeded();
+    }
 }
 
 ////////////////////////////////////////
@@ -2386,42 +2389,6 @@ WebGLContext::ValidateArrayBufferView(const char* funcName,
 
     *out_bytes = bytes + (elemOffset * elemSize);
     *out_byteLen = elemCount * elemSize;
-    return true;
-}
-
-////
-
-const decltype(WebGLContext::mBuffersForUB)&
-WebGLContext::BuffersForUB() const
-{
-    if (mBuffersForUB_Dirty) {
-        mBuffersForUB.clear();
-        for (const auto& cur : mIndexedUniformBufferBindings) {
-            if (cur.mBufferBinding) {
-                mBuffersForUB.insert(cur.mBufferBinding.get());
-            }
-        }
-        mBuffersForUB_Dirty = false;
-    }
-    return mBuffersForUB;
-}
-
-////
-
-bool
-WebGLContext::ValidateForNonTransformFeedback(const char* funcName, WebGLBuffer* buffer)
-{
-    if (!mBoundTransformFeedback)
-        return true;
-
-    const auto& buffersForTF = mBoundTransformFeedback->BuffersForTF();
-    if (buffersForTF.count(buffer)) {
-        ErrorInvalidOperation("%s: Specified WebGLBuffer is currently bound for transform"
-                              " feedback.",
-                              funcName);
-        return false;
-    }
-
     return true;
 }
 
