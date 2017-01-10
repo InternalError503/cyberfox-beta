@@ -210,13 +210,21 @@ pref("general.autoScroll", true);
 pref("browser.shell.checkDefaultBrowser", true);
 pref("browser.shell.shortcutFavicons",true);
 pref("browser.shell.mostRecentDateSetAsDefault", "");
+#ifdef RELEASE_OR_BETA
+pref("browser.shell.skipDefaultBrowserCheckOnFirstRun", false);
+#else
+pref("browser.shell.skipDefaultBrowserCheckOnFirstRun", true);
+#endif
 pref("browser.shell.skipDefaultBrowserCheck", true);
 pref("browser.shell.defaultBrowserCheckCount", 0);
+pref("browser.defaultbrowser.notificationbar", false);
 
 // 0 = blank, 1 = home (browser.startup.homepage), 2 = last visited page, 3 = resume previous browser session
 // The behavior of option 3 is detailed at: http://wiki.mozilla.org/Session_Restore
 pref("browser.startup.page",                1);
 pref("browser.startup.homepage",            "chrome://branding/locale/browserconfig.properties");
+// Whether we should skip the homepage when opening the first-run page
+pref("browser.startup.firstrunSkipsHomepage", false);
 
 pref("browser.enable_automatic_image_resizing", true);
 pref("browser.casting.enabled", false);
@@ -1144,6 +1152,9 @@ pref("browser.newtabpage.introShown", false);
 // Toggles the content of 'about:newtab'. Shows the grid when enabled.
 pref("browser.newtabpage.enabled", true);
 
+// enables Activity Stream inspired layout
+pref("browser.newtabpage.compact", false);
+
 // number of rows of newtab grid
 pref("browser.newtabpage.rows", 3);
 
@@ -1415,8 +1426,6 @@ pref("extensions.interposition.prefetching", true);
 #ifdef RELEASE_BUILD
 pref("extensions.e10sBlocksEnabling", true);
 #endif
-
-pref("browser.defaultbrowser.notificationbar", false);
 
 // How often to check for CPOW timeouts. CPOWs are only timed out by
 // the hang monitor.

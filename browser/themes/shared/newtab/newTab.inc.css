@@ -106,26 +106,32 @@
 
 /* CELLS */
 .newtab-cell {
+  --cell-corner-radius: 8px;
   background-color: rgba(255,255,255,.2);
-  border-radius: 8px;
+  border-radius: var(--cell-corner-radius);
+}
+
+body.compact .newtab-cell {
+  --cell-corner-radius: 2px;
 }
 
 .newtab-cell:empty {
   outline: 2px dashed #c1c1c1;
-  -moz-outline-radius: 8px;
+  outline-offset: -2px;
+  -moz-outline-radius: var(--cell-corner-radius);
 }
 
 /* SITES */
-.newtab-site {
-  border-radius: inherit;
+body:not(.compact) .newtab-site {
+  border-radius: var(--cell-corner-radius);
   box-shadow: 0 1px 3px #c1c1c1;
   text-decoration: none;
   transition-property: top, left, opacity, box-shadow, background-color;
 }
 
-.newtab-cell:not([ignorehover]) .newtab-control:hover ~ .newtab-link,
-.newtab-cell:not([ignorehover]) .newtab-link:hover,
-.newtab-site[dragged] {
+body:not(.compact) .newtab-cell:not([ignorehover]) .newtab-control:hover ~ .newtab-link,
+body:not(.compact) .newtab-cell:not([ignorehover]) .newtab-link:hover,
+body:not(.compact) .newtab-site[dragged] {
   border: 2px solid white;
   box-shadow: 0 0 6px 1px #4cb1ff;
   margin: -2px;
@@ -138,7 +144,7 @@
 
 /* LINKS */
 .newtab-link {
-  border-radius: 10px;
+  border-radius: var(--cell-corner-radius);
   overflow: hidden;
 }
 
@@ -154,10 +160,16 @@
   background-clip: padding-box;
   background-repeat: no-repeat;
   background-size: cover;
-  border-radius: 8px 8px 0px 0px;
   height: 180px;
   transition: opacity 100ms ease-out;
-  border-radius: 8px 8px 0px 0px;
+}
+
+body.compact .newtab-thumbnail {
+  height: 100%;
+  border-radius: calc(var(--cell-corner-radius) + 1px);
+  outline: 1px solid hsla(0,0%,0%,.1);
+  -moz-outline-radius: var(--cell-corner-radius);
+  outline-offset: -1px;
 }
 
 .newtab-site[type=organic] .newtab-thumbnail {
@@ -166,9 +178,16 @@
 }
 
 /* TITLES */
+
 .newtab-title {
   color: #5c5c5c;
-  border-radius: 0px 0px 8px 8px;
+  border-radius: 0 0 var(--cell-corner-radius) var(--cell-corner-radius);
+}
+
+body.compact .newtab-title {
+  background-color: hsla(0,0%,100%,.8);
+  font-size: 12px;
+  line-height: 21px;
 }
 
 .newtab-site:hover .newtab-title {
@@ -206,6 +225,31 @@
   border: none;
   height: 24px;
   width: 24px;
+  top: 4px;
+}
+
+.newtab-control-pin:dir(ltr),
+.newtab-control-block:dir(rtl) {
+  left: 4px;
+}
+
+.newtab-control-block:dir(ltr),
+.newtab-control-pin:dir(rtl) {
+  right: 4px;
+}
+
+body.compact .newtab-control {
+  top: -8px;
+}
+
+body.compact .newtab-control-pin:dir(ltr),
+body.compact .newtab-control-block:dir(rtl) {
+  left: -8px;
+}
+
+body.compact .newtab-control-block:dir(ltr),
+body.compact .newtab-control-pin:dir(rtl) {
+  right: -8px;
 }
 
 .newtab-control-pin,

@@ -122,13 +122,17 @@ var gPage = {
 
     this._initialized = true;
 
+    if (Services.prefs.getBoolPref("browser.newtabpage.compact")) {
+      document.body.classList.add("compact");
+    }
+
     // Initialize search.
     gSearch.init();
 
     if (document.hidden) {
       addEventListener("visibilitychange", this);
     } else {
-      setTimeout(_ => this.onPageFirstVisible());
+      setTimeout(() => this.onPageFirstVisible());
     }
 
     // Initialize and render the grid.

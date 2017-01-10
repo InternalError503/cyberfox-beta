@@ -138,9 +138,9 @@ function gotoPref(aCategory) {
     throw ex;
   }
 
-  let newHash = internalPrefCategoryNameToFriendlyName(category);
+  let friendlyName = internalPrefCategoryNameToFriendlyName(category);
   if (gLastHash || category != kDefaultCategoryInternalName) {
-    document.location.hash = newHash;
+    document.location.hash = friendlyName;
   }
   // Need to set the gLastHash before setting categories.selectedItem since
   // the categories 'select' event will re-enter the gotoPref codepath.
