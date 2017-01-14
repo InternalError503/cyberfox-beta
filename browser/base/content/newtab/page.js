@@ -251,6 +251,8 @@ var gPage = {
   onPageVisibleAndLoaded() {
     // Send the index of the last visible tile.
     this.reportLastVisibleTileIndex();
+    // Maybe tell the user they can undo an initial automigration
+    this.maybeShowAutoMigrationUndoNotification();
   },
 
   reportLastVisibleTileIndex() {
@@ -273,5 +275,8 @@ var gPage = {
       }
     }
   
-  }
+  },
+  maybeShowAutoMigrationUndoNotification() {
+    sendAsyncMessage("NewTab:MaybeShowAutoMigrationUndoNotification");
+  },
 };

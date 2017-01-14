@@ -380,7 +380,9 @@ pref("browser.search.redirectWindowsSearch", true);
 pref("browser.search.redirectWindowsSearch", false);
 #endif
 
+#ifndef RELEASE_BUILD
 pref("browser.search.reset.enabled", true);
+#endif
 
 pref("browser.sessionhistory.max_entries", 50);
 
@@ -1154,6 +1156,9 @@ pref("browser.newtabpage.enabled", true);
 
 // enables Activity Stream inspired layout
 pref("browser.newtabpage.compact", false);
+
+// enables showing basic placeholders for missing thumbnails
+pref("browser.newtabpage.thumbnailPlaceholder", false);
 
 // number of rows of newtab grid
 pref("browser.newtabpage.rows", 3);

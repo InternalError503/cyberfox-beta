@@ -172,6 +172,16 @@ body.compact .newtab-thumbnail {
   outline-offset: -1px;
 }
 
+.newtab-thumbnail.placeholder {
+  color: white;
+  font-size: 85px;
+  line-height: 200%;
+}
+
+body.compact .newtab-thumbnail.placeholder {
+  font-size: 45px;
+}
+
 .newtab-site[type=organic] .newtab-thumbnail {
   background-position: center center;
   background-size: auto;
