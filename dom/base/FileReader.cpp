@@ -333,6 +333,7 @@ FileReader::DoReadData(uint64_t aCount)
     }
 
     uint32_t bytesRead = 0;
+    MOZ_DIAGNOSTIC_ASSERT(mFileData);
     mAsyncStream->Read(mFileData + mDataLen, aCount, &bytesRead);
     NS_ASSERTION(bytesRead == aCount, "failed to read data");
   }
@@ -420,6 +421,7 @@ FileReader::ReadFileContent(Blob& aBlob,
     if (!mFileData) {
       NS_WARNING("Preallocation failed for ReadFileData");
       aRv.Throw(NS_ERROR_OUT_OF_MEMORY);
+      return;
     }
   }
 
@@ -734,13 +736,15 @@ FileReader::Notify(Status aStatus)
 void
 FileReader::Shutdown()
 {
-  FreeFileData();
-  mResultArrayBuffer = nullptr;
+  mReadyState = DONE;
 
   if (mAsyncStream) {
     mAsyncStream->Close();
     mAsyncStream = nullptr;
   }
+
+  FreeFileData();
+  mResultArrayBuffer = nullptr;
 
   if (mWorkerPrivate && mBusyCount != 0) {
     ReleaseWorker();
