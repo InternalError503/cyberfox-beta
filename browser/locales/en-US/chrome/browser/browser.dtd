@@ -954,6 +954,7 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY turnonclone.label "Turn on clone tab feature.">
 <!ENTITY cloneCurrentTab.label "Clone Current Tab">
 <!ENTITY cloneInNewWindow.label "Clone In New Window">
+<!ENTITY cloneInNewPrivate.label "Private">
 <!-- End Clone Current Tab Tweak -->
 
 <!-- Features Tab Tweak -->
