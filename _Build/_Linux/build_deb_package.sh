@@ -1,7 +1,7 @@
 #!/bin/bash
 # Built from template by hawkeye116477
 # Full repo https://github.com/hawkeye116477/cyberfox-deb
-# Script Version: 1.0.5
+# Script Version: 1.0.7
 # Set current directory to script directory.
 Dir=$(cd "$(dirname "$0")" && pwd)
 cd $Dir
@@ -84,6 +84,7 @@ cd $Dir
 
 # Make sure correct permissions are set
 chmod  755 $Dir/deb/DEBIAN/control
+chmod  755 $Dir/deb/DEBIAN/postinst
 chmod  755 $Dir/deb/DEBIAN/prerm
 chmod  755 $Dir/deb/DEBIAN/copyright
 chmod  644 $Dir/deb/DEBIAN/md5sums
@@ -98,6 +99,12 @@ fi
 
 ln -s /usr/lib/Cyberfox/Cyberfox.sh $Dir/deb/usr/bin/cyberfox
 ln -s /usr/lib/Cyberfox/browser/icons/mozicon128.png $Dir/deb/usr/share/pixmaps/Cyberfox.png
+
+# Linux has hunspell dictionaries, so we can remove Cyberfox dictionaries and make symlink to Linux dictionaries. 
+# Just like Ubuntu Mozilla Team did
+# Thanks to this, we don't have to download dictionary from AMO for our language.
+rm -rf $Dir/deb/usr/lib/Cyberfox/dictionaries
+ln -s /usr/share/hunspell $Dir/deb/usr/lib/Cyberfox/dictionaries
 
 # Build debian package
 dpkg -b $Dir/deb ../../../obj64/dist/Cyberfox-$VERSION.en-US.linux-x86_64.deb
