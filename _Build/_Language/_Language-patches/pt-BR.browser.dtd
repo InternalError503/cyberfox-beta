@@ -176,13 +176,17 @@
 <!-- about:config Menu Tweak -->
 <!ENTITY turnoffmenuabout.label "Adicionar 'about:config' ao menu.">
 
+<!-- Language Settings Tweak -->
+<!ENTITY userLanguages.label "Select Language">
+<!ENTITY userLanguages.desc "Choose your preferred language for &brandShortName;">
+
 <!-- Plugin Settings Tweak -->
 <!ENTITY browserplugins.label "Plugins do navegador">
 <!ENTITY browserpluginsdisabled.label "Desabilitar plugins do navegador (Desabilitar todos os plugins).">
 <!ENTITY browserpluginswhitelist.label "Habilitar plugins da lista branca.">
 <!ENTITY browserpluginsflashenabled.label "Habilitar plugin flash do navegador.">
 <!ENTITY browserpluginsjavaenabled.label "Habilitar plugin java do navegador.">
-<!ENTITY browserpluginssilverlightenabled.label "Enable silverlight browser plugin.">
+<!ENTITY browserpluginssilverlightenabled.label "Habilitar o plugin silverlight do navegador.">
 
 <!-- System Addons Tweak -->
 <!ENTITY systemaddons.label "Complementos do sistema">
@@ -191,7 +195,7 @@
 <!ENTITY enablepocket.label "Habilitar pocket.">
 
 <!-- Helpful ToolTips -->
-<!ENTITY restartRequiredMSG.label "Necessário reiniciar o navegador.">
+<!ENTITY restartRequiredMSG.label "Necessário reiniciar o navegador">
 
 <!-- Flashplayer Protect Mode -->
 <!ENTITY disableflashprotectgroup.label "Adobe Flash Player">

@@ -176,13 +176,17 @@
 <!-- about:config Menu Tweak -->
 <!ENTITY turnoffmenuabout.label "Включить доступ к about:config в меню">
 
+<!-- Language Settings Tweak -->
+<!ENTITY userLanguages.label "Select Language">
+<!ENTITY userLanguages.desc "Choose your preferred language for &brandShortName;">
+
 <!-- Plugin Settings Tweak -->
 <!ENTITY browserplugins.label "Плагины браузера">
 <!ENTITY browserpluginsdisabled.label "Отключить плагины браузера (отключаются все плагины)">
 <!ENTITY browserpluginswhitelist.label "Разрешить белый список плагинов">
-<!ENTITY browserpluginsflashenabled.label "Включить плагин Flash.">
+<!ENTITY browserpluginsflashenabled.label "Включить плагин Flash">
 <!ENTITY browserpluginsjavaenabled.label "Включить плагин Java">
-<!ENTITY browserpluginssilverlightenabled.label "Enable silverlight browser plugin.">
+<!ENTITY browserpluginssilverlightenabled.label "Включить плагин Silverlight">
 
 <!-- System Addons Tweak -->
 <!ENTITY systemaddons.label "Системные дополнения">

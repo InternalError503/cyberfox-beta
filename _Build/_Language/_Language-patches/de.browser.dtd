@@ -176,6 +176,10 @@
 <!-- about:config Menu Tweak -->
 <!ENTITY turnoffmenuabout.label "Menüpunkt 'about:config' anzeigen.">
 
+<!-- Language Settings Tweak -->
+<!ENTITY userLanguages.label "Select Language">
+<!ENTITY userLanguages.desc "Choose your preferred language for &brandShortName;">
+
 <!-- Plugin Settings Tweak -->
 <!ENTITY browserplugins.label "Browser Plugins">
 <!ENTITY browserpluginsdisabled.label "Disable browser plugins (Disable all plugins).">
@@ -191,7 +195,7 @@
 <!ENTITY enablepocket.label "Enable pocket.">
 
 <!-- Helpful ToolTips -->
-<!ENTITY restartRequiredMSG.label "Browser Neustart benötigt.">
+<!ENTITY restartRequiredMSG.label "Browser Neustart benötigt">
 
 <!-- Flashplayer Protect Mode -->
 <!ENTITY disableflashprotectgroup.label "Adobe Flash Player">
