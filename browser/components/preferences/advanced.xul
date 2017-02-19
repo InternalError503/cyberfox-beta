@@ -68,9 +68,11 @@
 	  <preference id="app.update.releasenotes.enabled" 
 						   name="app.update.releasenotes.enabled" 
 						   type="bool"/>
+#ifdef XP_WIN
 	  <preference id="app.update.verifysha" 
 						   name="app.update.verifysha" 
 						   type="bool"/>
+#endif
 	  <preference id="browser.tabs.copyurl" 
 						   name="browser.tabs.copyurl" 
 						   type="bool"/>
@@ -430,8 +432,10 @@
 							preference="app.update.startup.check"/>
 					<checkbox id="app.update.check.enabled" label="&updatecheckenabled.label;"
 							preference="app.update.check.enabled"/>
+#ifdef XP_WIN
 					<checkbox id="app.update.verifysha" label="&updateverifysha.label;"
 							preference="app.update.verifysha"/>
+#endif
 					<checkbox id="app.update.notifications.enabled" label="&updatenotificationsenabled.label;"
 							preference="app.update.notifications.enabled"/>
 					<checkbox id="app.update.releasenotes.enabled" label="&updatereleasenotesenabled.label;"
