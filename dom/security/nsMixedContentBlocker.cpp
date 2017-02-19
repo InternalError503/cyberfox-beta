@@ -90,33 +90,6 @@ IsEligibleForHSTSPriming(nsIURI* aContentLocation) {
   return (PR_StringToNetAddr(hostname.get(), &hostAddr) != PR_SUCCESS);
 }
 
-bool
-IsEligibleForHSTSPriming(nsIURI* aContentLocation) {
-  bool isHttpScheme = false;
-  nsresult rv = aContentLocation->SchemeIs("http", &isHttpScheme);
-  NS_ENSURE_SUCCESS(rv, false);
-  if (!isHttpScheme) {
-    return false;
-  }
-
-  int32_t port = -1;
-  rv = aContentLocation->GetPort(&port);
-  NS_ENSURE_SUCCESS(rv, false);
-  int32_t defaultPort = NS_GetDefaultPort("https");
-
-  if (port != -1 && port != defaultPort) {
-    // HSTS priming requests are only sent if the port is the default port
-    return false;
-  }
-
-  nsAutoCString hostname;
-  rv = aContentLocation->GetHost(hostname);
-  NS_ENSURE_SUCCESS(rv, false);
-
-  PRNetAddr hostAddr;
-  return (PR_StringToNetAddr(hostname.get(), &hostAddr) != PR_SUCCESS);
-}
-
 // Fired at the document that attempted to load mixed content.  The UI could
 // handle this event, for example, by displaying an info bar that offers the
 // choice to reload the page with mixed content permitted.
