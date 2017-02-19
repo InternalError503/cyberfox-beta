@@ -1053,8 +1053,9 @@ DrawTarget* CanvasRenderingContext2D::sErrorTarget = nullptr;
 
 
 
-CanvasRenderingContext2D::CanvasRenderingContext2D()
+CanvasRenderingContext2D::CanvasRenderingContext2D(layers::LayersBackend aCompositorBackend)
   : mRenderingMode(RenderingMode::OpenGLBackendMode)
+  , mCompositorBackend(aCompositorBackend)
   // these are the default values from the Canvas spec
   , mWidth(0), mHeight(0)
   , mZero(false), mOpaque(false)
@@ -1075,7 +1076,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D()
   nsContentUtils::RegisterShutdownObserver(mShutdownObserver);
 
   // The default is to use OpenGL mode
-  if (gfxPlatform::GetPlatform()->UseAcceleratedCanvas()) {
+  if (AllowOpenGLCanvas()) {
     mDrawObserver = new CanvasDrawObserver(this);
   } else {
     mRenderingMode = RenderingMode::SoftwareBackendMode;
@@ -1321,6 +1322,26 @@ CanvasRenderingContext2D::RedrawUser(const gfxRect& aR)
   Redraw(newr);
 }
 
+bool
+CanvasRenderingContext2D::AllowOpenGLCanvas() const
+{
+  // If we somehow didn't have the correct compositor in the constructor,
+  // we could do something like this to get it:
+  //
+  // HTMLCanvasElement* el = GetCanvas();
+  // if (el) {
+  //   mCompositorBackend = el->GetCompositorBackendType();
+  // }
+  //
+  // We could have LAYERS_NONE if there was no widget at the time of
+  // canvas creation, but in that case the
+  // HTMLCanvasElement::GetCompositorBackendType would return LAYERS_NONE
+  // as well, so it wouldn't help much.
+
+  return (mCompositorBackend == LayersBackend::LAYERS_OPENGL) &&
+    gfxPlatform::GetPlatform()->AllowOpenGLCanvas();
+}
+
 bool CanvasRenderingContext2D::SwitchRenderingMode(RenderingMode aRenderingMode)
 {
   if (!IsTargetValid() || mRenderingMode == aRenderingMode) {
@@ -1332,7 +1353,7 @@ bool CanvasRenderingContext2D::SwitchRenderingMode(RenderingMode aRenderingMode)
 #ifdef USE_SKIA_GPU
   // Do not attempt to switch into GL mode if the platform doesn't allow it.
   if ((aRenderingMode == RenderingMode::OpenGLBackendMode) &&
-      !gfxPlatform::GetPlatform()->UseAcceleratedCanvas()) {
+      !AllowOpenGLCanvas()) {
       return false;
   }
 #endif
@@ -1708,13 +1729,10 @@ CanvasRenderingContext2D::TrySkiaGLTarget(RefPtr<gfx::DrawTarget>& aOutDT,
   aOutDT = nullptr;
   aOutProvider = nullptr;
 
-
   mIsSkiaGL = false;
 
   IntSize size(mWidth, mHeight);
-  if (!gfxPlatform::GetPlatform()->UseAcceleratedCanvas() ||
-      !CheckSizeForSkiaGL(size)) {
-
+  if (!AllowOpenGLCanvas() || !CheckSizeForSkiaGL(size)) {
     return false;
   }
 
@@ -2440,7 +2458,9 @@ CanvasRenderingContext2D::CreatePattern(const CanvasImageSource& aSource,
       if (!srcSurf) {
         JSContext* context = nsContentUtils::GetCurrentJSContext();
         if (context) {
-          JS_ReportWarning(context, "CanvasRenderingContext2D.createPattern() failed to snapshot source canvas.");
+          JS_ReportWarningASCII(context,
+                                "CanvasRenderingContext2D.createPattern()"
+                                " failed to snapshot source canvas.");
         }
         aError.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
         return nullptr;
@@ -2471,7 +2491,9 @@ CanvasRenderingContext2D::CreatePattern(const CanvasImageSource& aSource,
     if (!srcSurf) {
       JSContext* context = nsContentUtils::GetCurrentJSContext();
       if (context) {
-        JS_ReportWarning(context, "CanvasRenderingContext2D.createPattern() failed to prepare source ImageBitmap.");
+        JS_ReportWarningASCII(context,
+                              "CanvasRenderingContext2D.createPattern()"
+                              " failed to prepare source ImageBitmap.");
       }
       aError.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
       return nullptr;
@@ -2682,7 +2704,7 @@ GetFontStyleContext(Element* aElement, const nsAString& aFont,
   // parsed (including having line-height removed).  (Older drafts of
   // the spec required font sizes be converted to pixels, but that no
   // longer seems to be required.)
-  decl->GetValue(eCSSProperty_font, aOutUsedFont);
+  decl->GetPropertyValueByID(eCSSProperty_font, aOutUsedFont);
 
   return sc.forget();
 }
@@ -4445,39 +4467,6 @@ CanvasRenderingContext2D::GetLineJoin(nsAString& aLinejoinStyle, ErrorResult& aE
 }
 
 void
-CanvasRenderingContext2D::SetMozDash(JSContext* aCx,
-                                     const JS::Value& aMozDash,
-                                     ErrorResult& aError)
-{
-  nsTArray<Float> dash;
-  aError = JSValToDashArray(aCx, aMozDash, dash);
-  if (!aError.Failed()) {
-    ContextState& state = CurrentState();
-    state.dash = Move(dash);
-    if (state.dash.IsEmpty()) {
-      state.dashOffset = 0;
-    }
-  }
-}
-
-void
-CanvasRenderingContext2D::GetMozDash(JSContext* aCx,
-                                     JS::MutableHandle<JS::Value> aRetval,
-                                     ErrorResult& aError)
-{
-  DashArrayToJSVal(CurrentState().dash, aCx, aRetval, aError);
-}
-
-void
-CanvasRenderingContext2D::SetMozDashOffset(double aMozDashOffset)
-{
-  ContextState& state = CurrentState();
-  if (!state.dash.IsEmpty()) {
-    state.dashOffset = aMozDashOffset;
-  }
-}
-
-void
 CanvasRenderingContext2D::SetLineDash(const Sequence<double>& aSegments,
                                       ErrorResult& aRv)
 {
@@ -4789,7 +4778,7 @@ CanvasRenderingContext2D::DrawImage(const CanvasImageSource& aImage,
       mIsSkiaGL &&
       !srcSurf &&
       aImage.IsHTMLVideoElement() &&
-      gfxPlatform::GetPlatform()->UseAcceleratedCanvas()) {
+      AllowOpenGLCanvas()) {
     mozilla::gl::GLContext* gl = gfxPlatform::GetPlatform()->GetSkiaGLGlue()->GetGLContext();
     MOZ_ASSERT(gl);
 
@@ -4970,6 +4959,11 @@ CanvasRenderingContext2D::DrawImage(const CanvasImageSource& aImage,
   if (NeedToCalculateBounds()) {
     bounds = gfx::Rect(aDx, aDy, aDw, aDh);
     bounds = mTarget->GetTransform().TransformBounds(bounds);
+  }
+
+  if (!IsTargetValid()) {
+    gfxCriticalError() << "Unexpected invalid target in a Canvas2d.";
+    return;
   }
 
   if (srcSurf) {
@@ -5779,6 +5773,8 @@ CanvasRenderingContext2D::PutImageData_explicit(int32_t aX, int32_t aY, uint32_t
   //uint8_t *src = aArray->Data();
   uint8_t *dst = imgsurf->Data();
   uint8_t* srcLine = aArray->Data() + copyY * (aW * 4) + copyX * 4;
+  // For opaque canvases, we must still premultiply the RGB components, but write the alpha as opaque.
+  uint8_t alphaMask = mOpaque ? 255 : 0;
 #if 0
   printf("PutImageData_explicit: dirty x=%d y=%d w=%d h=%d copy x=%d y=%d w=%d h=%d ext x=%d y=%d w=%d h=%d\n",
        dirtyRect.x, dirtyRect.y, copyWidth, copyHeight,
@@ -5798,9 +5794,9 @@ CanvasRenderingContext2D::PutImageData_explicit(int32_t aX, int32_t aY, uint32_t
       *dst++ = gfxUtils::sPremultiplyTable[a * 256 + b];
       *dst++ = gfxUtils::sPremultiplyTable[a * 256 + g];
       *dst++ = gfxUtils::sPremultiplyTable[a * 256 + r];
-      *dst++ = a;
+      *dst++ = a | alphaMask;
 #else
-      *dst++ = a;
+      *dst++ = a | alphaMask;
       *dst++ = gfxUtils::sPremultiplyTable[a * 256 + r];
       *dst++ = gfxUtils::sPremultiplyTable[a * 256 + g];
       *dst++ = gfxUtils::sPremultiplyTable[a * 256 + b];

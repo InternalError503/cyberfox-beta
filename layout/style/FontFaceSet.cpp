@@ -1698,7 +1698,7 @@ FontFaceSet::PrefEnabled()
 // nsICSSLoaderObserver
 
 NS_IMETHODIMP
-FontFaceSet::StyleSheetLoaded(StyleSheetHandle aSheet,
+FontFaceSet::StyleSheetLoaded(StyleSheet* aSheet,
                               bool aWasAlternate,
                               nsresult aStatus)
 {

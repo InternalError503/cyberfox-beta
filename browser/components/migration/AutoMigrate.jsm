@@ -79,30 +79,20 @@ const AutoMigrate = {
    *         failed for some reason.
    */
   migrate(profileStartup, migratorKey, profileToMigrate) {
-    let histogram = Services.telemetry.getHistogramById(
-      "FX_STARTUP_MIGRATION_AUTOMATED_IMPORT_PROCESS_SUCCESS");
-    histogram.add(0);
     let {migrator, pickedKey} = this.pickMigrator(migratorKey);
-    histogram.add(5);
 
     profileToMigrate = this.pickProfile(migrator, profileToMigrate);
-    histogram.add(10);
 
     let resourceTypes = migrator.getMigrateData(profileToMigrate, profileStartup);
     if (!(resourceTypes & this.resourceTypesToUse)) {
       throw new Error("No usable resources were found for the selected browser!");
     }
-    histogram.add(15);
 
     let sawErrors = false;
-    let migrationObserver = (subject, topic, data) => {
+    let migrationObserver = (subject, topic) => {
       if (topic == "Migration:ItemError") {
         sawErrors = true;
       } else if (topic == "Migration:Ended") {
-        histogram.add(25);
-        if (sawErrors) {
-          histogram.add(26);
-        }
         Services.obs.removeObserver(migrationObserver, "Migration:Ended");
         Services.obs.removeObserver(migrationObserver, "Migration:ItemError");
         Services.prefs.setCharPref(kAutoMigrateBrowserPref, pickedKey);
@@ -118,7 +108,6 @@ const AutoMigrate = {
     Services.obs.addObserver(migrationObserver, "Migration:Ended", false);
     Services.obs.addObserver(migrationObserver, "Migration:ItemError", false);
     migrator.migrate(this.resourceTypesToUse, profileStartup, profileToMigrate);
-    histogram.add(20);
   },
 
   /**
@@ -194,16 +183,12 @@ const AutoMigrate = {
   }),
 
   undo: Task.async(function* () {
-    let histogram = Services.telemetry.getHistogramById("FX_STARTUP_MIGRATION_AUTOMATED_IMPORT_UNDO");
-    histogram.add(0);
     if (!(yield this.canUndo())) {
-      histogram.add(5);
       throw new Error("Can't undo!");
     }
 
     this._pendingUndoTasks = true;
     this._removeNotificationBars();
-    histogram.add(10);
 
     let readPromise = OS.File.read(kUndoStateFullPath, {
       encoding: "utf-8",
@@ -211,13 +196,10 @@ const AutoMigrate = {
     });
     let stateData = this._dejsonifyUndoState(yield readPromise);
     yield this._removeUnchangedBookmarks(stateData.get("bookmarks"));
-    histogram.add(15);
 
     yield this._removeSomeVisits(stateData.get("visits"));
-    histogram.add(20);
 
     yield this._removeUnchangedLogins(stateData.get("logins"));
-    histogram.add(25);
 
     // This is async, but no need to wait for it.
     NewTabUtils.links.populateCache(() => {
@@ -225,7 +207,6 @@ const AutoMigrate = {
     }, true);
 
     this._purgeUndoState(this.UNDO_REMOVED_REASON_UNDO_USED);
-    histogram.add(30);
   }),
 
   _removeNotificationBars() {
@@ -253,10 +234,6 @@ const AutoMigrate = {
 
     let migrationBrowser = Preferences.get(kAutoMigrateBrowserPref, "unknown");
     Services.prefs.clearUserPref(kAutoMigrateBrowserPref);
-
-    let histogram =
-      Services.telemetry.getKeyedHistogramById("FX_STARTUP_MIGRATION_UNDO_REASON");
-    histogram.add(migrationBrowser, reason);
   },
 
   getBrowserUsedForMigration() {
@@ -323,8 +300,6 @@ const AutoMigrate = {
     notificationBox.appendNotification(
       message, kNotificationId, null, notificationBox.PRIORITY_INFO_HIGH, buttons
     );
-    let remainingDays = Preferences.get(kAutoMigrateDaysToOfferUndoPref, 0);
-    Services.telemetry.getHistogramById("FX_STARTUP_MIGRATION_UNDO_OFFERED").add(4 - remainingDays);
   }),
 
   shouldStillShowUndoPrompt() {
@@ -463,7 +438,12 @@ const AutoMigrate = {
         let foundLogin = foundLogins[0];
         foundLogin.QueryInterface(Ci.nsILoginMetaInfo);
         if (foundLogin.timePasswordChanged == login.timePasswordChanged) {
-          Services.logins.removeLogin(foundLogin);
+          try {
+            Services.logins.removeLogin(foundLogin);
+          } catch (ex) {
+            Cu.reportError("Failed to remove a login for " + foundLogins.hostname);
+            Cu.reportError(ex);
+          }
         }
       }
     }
@@ -477,12 +457,21 @@ const AutoMigrate = {
       } catch (ex) {
         continue;
       }
-      yield PlacesUtils.history.removeVisitsByFilter({
+      let visitData = {
         url: urlObj,
         beginDate: PlacesUtils.toDate(urlVisits.first),
         endDate: PlacesUtils.toDate(urlVisits.last),
         limit: urlVisits.visitCount,
-      });
+      };
+      try {
+        yield PlacesUtils.history.removeVisitsByFilter(visitData);
+      } catch(ex) {
+        try {
+          visitData.url = visitData.url.href;
+        } catch (ex) {}
+        Cu.reportError("Failed to remove a visit: " + JSON.stringify(visitData));
+        Cu.reportError(ex);
+      }
     }
   }),
 

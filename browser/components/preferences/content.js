@@ -43,7 +43,10 @@ var gContentPane = {
         document.getElementById("bingAttribution").removeAttribute("hidden");
       }
     }
-
+	
+    // Grab current set locale from 'general.useragent.locale'
+    this.updateDefaultLocale();
+	
     let doNotDisturbAlertsEnabled = false;
     if (AlertsServiceDND) {
       let notificationsDoNotDisturbRow =
@@ -78,7 +81,13 @@ var gContentPane = {
       gContentPane.showTranslationExceptions);
     setEventListener("notificationsDoNotDisturb", "command",
       gContentPane.toggleDoNotDisturbNotifications);
-
+    setEventListener("languageMenu", "popuphidden", function () {
+      gContentPane.setDefaultLocale();
+    });
+    setEventListener("languageMenu", "keypress", function (e) {
+      gContentPane._setDefaultLocale(e);
+    });
+	
     let notificationInfoURL =
       Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "push";
     document.getElementById("notificationsPolicyLearnMore").setAttribute("href",
@@ -384,5 +393,54 @@ var gContentPane = {
   toggleDoNotDisturbNotifications: function (event)
   {
     AlertsServiceDND.manualDoNotDisturb = event.target.checked;
+  },
+  
+  // Grab current set locale from 'general.useragent.locale'
+  updateDefaultLocale: function ()
+  {
+	  document.getElementById("languageMenu").value = Services.prefs.getCharPref('general.useragent.locale');
+  },
+  setDefaultLocale: function ()
+  {	  
+	  var languageMenu = document.getElementById("languageMenu");
+	  var currentLocale = Services.prefs.getCharPref('general.useragent.locale');
+		function revertChange(error) {
+			languageMenu.value = Services.prefs.getCharPref('general.useragent.locale');
+			if (error) {
+			  Cu.reportError("Failed to reset localization selection: " + error);
+			}
+		}		
+		// Don't fire on same value
+		if (currentLocale === languageMenu.value) return;
+
+	  var button_index = confirmRestartPrompt(languageMenu.value,
+                                              0, false, true);
+      switch (button_index) {
+        case CONFIRM_RESTART_PROMPT_CANCEL:
+          revertChange();
+          return;
+        case CONFIRM_RESTART_PROMPT_RESTART_NOW:
+          const Cc = Components.classes, Ci = Components.interfaces;
+          var cancelQuit = Cc["@mozilla.org/supports-PRBool;1"]
+                             .createInstance(Ci.nsISupportsPRBool);
+          Services.obs.notifyObservers(cancelQuit, "quit-application-requested",
+                                        "restart");
+          if (!cancelQuit.data) {
+            Services.prefs.setCharPref('general.useragent.locale', languageMenu.value);
+			Services.startup.quit(Ci.nsIAppStartup.eAttemptQuit |  Ci.nsIAppStartup.eRestart);
+            return;
+          }
+          // Revert the value in case we didn't quit
+          revertChange();
+          return;
+        case CONFIRM_RESTART_PROMPT_RESTART_LATER:
+          Services.prefs.setCharPref('general.useragent.locale', languageMenu.value);
+          return;
+      }  
+  },
+    _setDefaultLocale: function (e)
+  {
+    if (e.which == 13 || e.keyCode == 13)
+		this.setDefaultLocale();
   },
 };

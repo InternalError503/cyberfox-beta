@@ -510,7 +510,7 @@ this.SocialService = {
     }
     // force/fixup origin
     let URI = Services.io.newURI(installOrigin, null, null);
-    principal = Services.scriptSecurityManager.createCodebasePrincipal(URI, {});
+    let principal = Services.scriptSecurityManager.createCodebasePrincipal(URI, {});
     data.origin = principal.origin;
 
     // iconURL and name are required
@@ -566,7 +566,7 @@ this.SocialService = {
     };
 
     let options = {
-                    learnMoreURL: Services.urlFormatter.formatURLPref("app.support.baseURL") + "social-api",
+                    learnMoreURL: Services.urlFormatter.formatURLPref("app.helpdoc.baseURI") + "social-api",
                   };
     let anchor = "servicesInstall-notification-icon";
     let notificationid = "servicesInstall";

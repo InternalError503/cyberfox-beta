@@ -392,6 +392,8 @@ These should match what Safari and other Apple applications use on OS X Lion. --
 <!ENTITY openCmd.commandkey           "l">
 <!ENTITY urlbar.placeholder2          "Search or enter address">
 <!ENTITY urlbar.accesskey             "d">
+<!-- LOCALIZATION NOTE (urlbar.extension.label): Used to indicate that a selected autocomplete entry is provided by an extension. -->
+<!ENTITY urlbar.extension.label       "Extension:">
 <!ENTITY urlbar.switchToTab.label     "Switch to tab:">
 
 <!ENTITY urlbar.searchSuggestionsNotification.question "Would you like to improve your search experience with suggestions?">
@@ -1060,6 +1062,10 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!-- about:config Menu Tweak -->
 <!ENTITY turnoffmenuabout.label "Turn on about:config menu item.">
 
+<!-- Languaage Settings Tweak -->
+<!ENTITY userLanguages.label "Select Language">
+<!ENTITY userLanguages.desc "Choose your preferred language for &brandShortName;">
+
 <!-- Plugin Settings Tweak -->
 <!ENTITY browserplugins.label "Browser Plugins">
 <!ENTITY browserpluginsdisabled.label "Disable browser plugins (Disable all plugins).">
@@ -1075,14 +1081,11 @@ you can use these alternative items. Otherwise, their values should be empty.  -
 <!ENTITY enablepocket.label "Enable pocket.">
 
 <!-- Helpful ToolTips -->
-<!ENTITY restartRequiredMSG.label "Browser Restart Required.">
+<!ENTITY restartRequiredMSG.label "Browser Restart Required">
 
 <!-- Flashplayer Protect Mode -->
 <!ENTITY disableflashprotectgroup.label "Adobe Flash Player">
 <!ENTITY disableflashprotect.label "Disable flash player protection mode">
-
-<!-- Toggle JavaScript in tab feature -->
-<!ENTITY togglescriptintab.label "Toggle JavaScript">
 
 <!-- Toggle WebRTC P2P Connection (See:#959893) feature -->
 <!ENTITY webrtcp2group.description "WebRTC peer connection">

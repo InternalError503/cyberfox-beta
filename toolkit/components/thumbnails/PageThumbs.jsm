@@ -618,10 +618,10 @@ this.PageThumbsStorage = {
         tmpPath: path + ".tmp",
         bytes: aData.byteLength,
         noOverwrite: aNoOverwrite,
-        flush: false /*thumbnails do not require the level of guarantee provided by flush*/
+        flush: false /* thumbnails do not require the level of guarantee provided by flush*/
       }];
     return PageThumbsWorker.post("writeAtomic", msg,
-      msg /*we don't want that message garbage-collected,
+      msg /* we don't want that message garbage-collected,
            as OS.Shared.Type.void_t.in_ptr.toMsg uses C-level
            memory tricks to enforce zero-copy*/).
       then(() => this._updateRevision(aURL), this._eatNoOverwriteError(aNoOverwrite));
@@ -859,7 +859,6 @@ var PageThumbsExpiration = {
   },
 
   expireThumbnails: function Expiration_expireThumbnails(aURLsToKeep) {
-    let path = this.path;
     let keep = aURLsToKeep.map(url => PageThumbsStorage.getLeafNameForURL(url));
     let msg = [
       PageThumbsStorage.path,

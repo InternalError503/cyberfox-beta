@@ -486,7 +486,7 @@ CycleCollectedJSContext::~CycleCollectedJSContext()
 }
 
 static void
-MozCrashWarningReporter(JSContext*, const char*, JSErrorReport*)
+MozCrashWarningReporter(JSContext*, JSErrorReport*)
 {
   MOZ_CRASH("Why is someone touching JSAPI without an AutoJSAPI?");
 }
@@ -507,6 +507,8 @@ CycleCollectedJSContext::Initialize(JSContext* aParentContext,
   if (!mJSContext) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
+
+  NS_GetCurrentThread()->SetCanInvokeJS(true);
 
   if (!JS_AddExtraGCRootsTracer(mJSContext, TraceBlackJS, this)) {
     MOZ_CRASH("JS_AddExtraGCRootsTracer failed");

@@ -1,4 +1,6 @@
-let AutoMigrateBackstage = Cu.import("resource:///modules/AutoMigrate.jsm");
+"use strict";
+
+let AutoMigrateBackstage = Cu.import("resource:///modules/AutoMigrate.jsm"); /* globals AutoMigrate */
 
 let gShimmedMigratorKeyPicker = null;
 let gShimmedMigrator = null;
@@ -608,3 +610,7 @@ add_task(function* checkUndoVisitsState() {
   yield PlacesTestUtils.clearHistory();
 });
 
+add_task(function* checkHistoryRemovalCompletion() {
+  yield AutoMigrate._removeSomeVisits([{url: "http://www.example.com/", limit: -1}]);
+  ok(true, "Removing visits should complete even if removing some visits failed.");
+});

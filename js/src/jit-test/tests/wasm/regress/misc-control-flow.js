@@ -1,14 +1,36 @@
-// |jit-test| test-also-wasm-baseline
 load(libdir + "wasm.js");
 
-assertEq(wasmEvalText(`(module
+wasmFailValidateText(`(module
    (func (result i32) (param i32)
      (loop (if (i32.const 0) (br 0)) (get_local 0)))
    (export "" 0)
-)`)(42), 42);
+)`, /unused values not explicitly dropped by end of block/);
+
+wasmFailValidateText(`(module
+   (func (param i32)
+     (loop (if (i32.const 0) (br 0)) (get_local 0)))
+   (export "" 0)
+)`, /unused values not explicitly dropped by end of block/);
+
+wasmFailValidateText(`(module
+   (func (result i32) (param i32)
+     (loop (if (i32.const 0) (br 0)) (drop (get_local 0))))
+   (export "" 0)
+)`, mismatchError("void", "i32"));
+
+assertEq(wasmEvalText(`(module
+   (func (result i32) (param i32)
+     (loop (if (i32.const 0) (br 0))) (get_local 0))
+   (export "" 0)
+)`).exports[""](42), 42);
+
+wasmFailValidateText(`(module (func $func$0
+      (block (if (i32.const 1) (loop (br_table 0 (br 0)))))
+  )
+)`, /non-fallthrough instruction must be followed by end or else/);
 
 wasmEvalText(`(module (func $func$0
-      (block (if (i32.const 1) (loop (br_table 0 (br 0)))))
+      (block (if (i32.const 1) (loop (br_table 0 (block i32 (br 1))))))
   )
 )`);
 
@@ -17,16 +39,17 @@ wasmEvalText(`(module (func
   )
 )`);
 
-wasmEvalText(`(module (func
+wasmEvalText(`(module (func (result i32)
   (select
-    (block
-      (block
+    (block i32
+      (drop (block i32
         (br_table
          1
          0
          (i32.const 1)
+         (i32.const 0)
         )
-      )
+      ))
       (i32.const 2)
     )
     (i32.const 3)
@@ -35,15 +58,23 @@ wasmEvalText(`(module (func
 ))
 `);
 
-wasmEvalText(`(module
+wasmFailValidateText(`(module
   (func (result i32) (param i32) (param i32) (i32.const 0))
   (func (result i32)
    (call 0 (i32.const 1) (call 0 (i32.const 2) (i32.const 3)))
    (call 0 (unreachable) (i32.const 4))
   )
+)`, /non-fallthrough instruction must be followed by end or else/);
+
+wasmEvalText(`(module
+  (func (result i32) (param i32) (param i32) (i32.const 0))
+  (func (result i32)
+   (call 0 (i32.const 1) (call 0 (i32.const 2) (i32.const 3)))
+   (call 0 (block i32 (unreachable)) (i32.const 4))
+  )
 )`);
 
-wasmEvalText(`
+wasmFailValidateText(`
 (module
 
  (func
@@ -63,25 +94,47 @@ wasmEvalText(`
 
  (export "" 1)
 )
-`)();
+`, /non-fallthrough instruction must be followed by end or else/);
+
+wasmEvalText(`
+(module
+
+ (func
+  (param i32) (param i32) (param i32) (param i32)
+  (result i32)
+  (i32.const 0)
+ )
+
+ (func (result i32)
+  (call 0
+   (i32.const 42)
+   (i32.const 53)
+   (call 0 (i32.const 100) (i32.const 13) (i32.const 37) (i32.const 128))
+   (block i32 (return (i32.const 42)))
+  )
+ )
+
+ (export "" 1)
+)
+`).exports[""]();
 
 wasmEvalText(`
 (module
     (import "check" "one" (param i32))
     (import "check" "two" (param i32) (param i32))
-    (func (param i32) (call_import 0 (get_local 0)))
-    (func (param i32) (param i32) (call_import 1 (get_local 0) (get_local 1)))
+    (func (param i32) (call 0 (get_local 0)))
+    (func (param i32) (param i32) (call 1 (get_local 0) (get_local 1)))
     (func
         (call 1
             (i32.const 43)
-            (block $b
+            (block $b i32
                 (if (i32.const 1)
                     (call 0
-                        (block
+                        (block i32
                             (call 0 (i32.const 42))
                             (br $b (i32.const 10)))))
                 (i32.const 44))))
-    (export "foo" 2))
+    (export "foo" 4))
 `, {
     check: {
         one(x) {
@@ -92,10 +145,37 @@ wasmEvalText(`
             assertEq(y, 10);
         }
     }
-}).foo();
+}).exports.foo();
 
-wasmEvalText(`(module (func
+wasmFailValidateText(`(module (func
+ (return)
+ (select
+  (loop (i32.const 1))
+  (loop (i32.const 2))
+  (i32.const 3)
+ )
+) (export "" 0))`, /non-fallthrough instruction must be followed by end or else/);
+
+assertEq(wasmEvalText(`(module (func
+ (block (return))
+ (select
+  (loop (i32.const 1))
+  (loop (i32.const 2))
+  (i32.const 3)
+ )
+) (export "" 0))`).exports[""](), undefined);
+
+wasmFailValidateText(`(module (func (result i32)
  (return (i32.const 0))
+ (select
+  (loop (i32.const 1))
+  (loop (i32.const 2))
+  (i32.const 3)
+ )
+))`, /non-fallthrough instruction must be followed by end or else/);
+
+wasmEvalText(`(module (func (result i32)
+ (block (return (i32.const 0)))
  (select
   (loop (i32.const 1))
   (loop (i32.const 2))
@@ -130,16 +210,16 @@ wasmEvalText(`(module (func
  )
 ))`);
 
-wasmEvalText(`
-(module
+wasmFailValidateText(
+`(module
   (func $func$0
    (select
-    (if
+    (if f32
      (i32.const 0)
      (f32.const 0)
      (i32.const 0)
     )
-    (if
+    (if f32
      (i32.const 0)
      (f32.const 0)
      (i32.const 0)
@@ -147,20 +227,19 @@ wasmEvalText(`
     (i32.const 0)
    )
   )
-)
-`);
+)`, mismatchError("i32", "f32"));
 
 wasmEvalText(`
 (module
- (func
+ (func (result i32)
   (i32.add
-   (block $outer
-    (block $middle
-     (block $inner
+   (block $outer i32
+    (drop (block $middle i32
+     (block $inner i32
       (br_table $middle $outer $inner (i32.const 42) (i32.const 1))
      )
      (nop)
-    )
+    ))
     (i32.const 0)
    )
    (i32.const 13)
@@ -168,3 +247,33 @@ wasmEvalText(`
  )
 )
 `);
+
+wasmFailValidateText(`
+(module
+    (func (result i32)
+      (loop
+        (i32.const 0)
+        (br_table 1 0 (i32.const 15))
+      )
+    )
+)`, mismatchError("i32", "void"));
+
+wasmFailValidateText(`
+(module
+  (func (result i32)
+    (loop i32
+      (i32.const 0)
+      (br_table 1 0 (i32.const 15))
+    )
+  )
+)`, mismatchError("i32", "void"));
+
+wasmValidateText(`
+(module
+    (func
+        (loop
+          (i32.const 0)
+          (br_table 1 0 (i32.const 15))
+        )
+    )
+)`);

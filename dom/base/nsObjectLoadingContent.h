@@ -27,6 +27,7 @@
 class nsAsyncInstantiateEvent;
 class nsStopPluginRunnable;
 class AutoSetInstantiatingToFalse;
+class nsIPrincipal;
 class nsFrameLoader;
 class nsPluginFrame;
 class nsXULElement;
@@ -179,7 +180,7 @@ class nsObjectLoadingContent : public nsImageLoadingContent
                              mozilla::ErrorResult& aRv);
 
     // WebIDL API
-    nsIDocument* GetContentDocument();
+    nsIDocument* GetContentDocument(nsIPrincipal& aSubjectPrincipal);
     void GetActualType(nsAString& aType) const
     {
       CopyUTF8toUTF16(mContentType, aType);
@@ -254,6 +255,8 @@ class nsObjectLoadingContent : public nsImageLoadingContent
     {
       return mRewrittenYoutubeEmbed;
     }
+
+    void PresetOpenerWindow(mozIDOMWindowProxy* aOpenerWindow, mozilla::ErrorResult& aRv);
 
   protected:
     /**

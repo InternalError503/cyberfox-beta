@@ -1258,10 +1258,22 @@ nsObjectLoadingContent::GetParentApplication(mozIApplication** aApplication)
   return NS_OK;
 }
 
+void
+nsObjectLoadingContent::PresetOpenerWindow(mozIDOMWindowProxy* aWindow, mozilla::ErrorResult& aRv)
+{
+  aRv.Throw(NS_ERROR_FAILURE);
+}
+
 NS_IMETHODIMP
 nsObjectLoadingContent::SetIsPrerendered()
 {
   return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+void
+nsObjectLoadingContent::InternalSetFrameLoader(nsIFrameLoader* aNewFrameLoader)
+{
+  MOZ_CRASH("You shouldn't be calling this function, it doesn't make any sense on this type.");
 }
 
 NS_IMETHODIMP
@@ -1445,15 +1457,7 @@ nsObjectLoadingContent::ObjectState() const
           return NS_EVENT_STATE_BROKEN | NS_EVENT_STATE_HANDLER_BLOCKED;
         case eFallbackCrashed:
           return NS_EVENT_STATE_BROKEN | NS_EVENT_STATE_HANDLER_CRASHED;
-        case eFallbackUnsupported: {
-          // Check to see if plugins are blocked on this platform.
-          char* pluginsBlocked = PR_GetEnv("MOZ_PLUGINS_BLOCKED");
-          if (pluginsBlocked && pluginsBlocked[0] == '1') {
-            return NS_EVENT_STATE_BROKEN | NS_EVENT_STATE_TYPE_UNSUPPORTED_PLATFORM;
-          } else {
-            return NS_EVENT_STATE_BROKEN | NS_EVENT_STATE_TYPE_UNSUPPORTED;
-          }
-        }
+        case eFallbackUnsupported:
         case eFallbackOutdated:
         case eFallbackAlternate:
           return NS_EVENT_STATE_BROKEN;
@@ -2458,6 +2462,7 @@ nsObjectLoadingContent::LoadObject(bool aNotify,
       }
 
       mFrameLoader = nsFrameLoader::Create(thisContent->AsElement(),
+                                           /* aOpener = */ nullptr,
                                            mNetworkCreated);
       if (!mFrameLoader) {
         NS_NOTREACHED("nsFrameLoader::Create failed");
@@ -2671,8 +2676,11 @@ nsObjectLoadingContent::OpenChannel()
                      nsIChannel::LOAD_CALL_CONTENT_SNIFFERS |
                      nsIChannel::LOAD_CLASSIFY_URI |
                      nsIChannel::LOAD_BYPASS_SERVICE_WORKER);
-
   NS_ENSURE_SUCCESS(rv, rv);
+  if (inherit) {
+    nsCOMPtr<nsILoadInfo> loadinfo = chan->GetLoadInfo();
+    loadinfo->SetPrincipalToInherit(thisContent->NodePrincipal());
+  }
 
   // Referrer
   nsCOMPtr<nsIHttpChannel> httpChan(do_QueryInterface(chan));
@@ -2902,7 +2910,7 @@ nsObjectLoadingContent::CreateStaticClone(nsObjectLoadingContent* aDest) const
   if (mFrameLoader) {
     nsCOMPtr<nsIContent> content =
       do_QueryInterface(static_cast<nsIImageLoadingContent*>(aDest));
-    nsFrameLoader* fl = nsFrameLoader::Create(content->AsElement(), false);
+    nsFrameLoader* fl = nsFrameLoader::Create(content->AsElement(), nullptr, false);
     if (fl) {
       aDest->mFrameLoader = fl;
       mFrameLoader->CreateStaticClone(fl);
@@ -3529,7 +3537,7 @@ nsObjectLoadingContent::ShouldPlay(FallbackType &aReason, bool aIgnoreCurrentTyp
 }
 
 nsIDocument*
-nsObjectLoadingContent::GetContentDocument()
+nsObjectLoadingContent::GetContentDocument(nsIPrincipal& aSubjectPrincipal)
 {
   nsCOMPtr<nsIContent> thisContent =
     do_QueryInterface(static_cast<nsIImageLoadingContent*>(this));
@@ -3544,7 +3552,7 @@ nsObjectLoadingContent::GetContentDocument()
   }
 
   // Return null for cross-origin contentDocument.
-  if (!nsContentUtils::SubjectPrincipal()->SubsumesConsideringDomain(sub_doc->NodePrincipal())) {
+  if (!aSubjectPrincipal.SubsumesConsideringDomain(sub_doc->NodePrincipal())) {
     return nullptr;
   }
 

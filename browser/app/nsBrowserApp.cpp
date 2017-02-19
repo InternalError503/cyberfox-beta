@@ -39,6 +39,7 @@
 
 #include "nsXPCOMPrivate.h" // for MAXPATHLEN and XPCOM_DLL
 
+#include "mozilla/Sprintf.h"
 #include "mozilla/Telemetry.h"
 #include "mozilla/WindowsDllBlocklist.h"
 
@@ -192,7 +193,7 @@ static int do_main(int argc, char* argv[], char* envp[], nsIFile *xreDirectory)
     }
 
     char appEnv[MAXPATHLEN];
-    snprintf(appEnv, MAXPATHLEN, "XUL_APP_FILE=%s", argv[2]);
+    SprintfLiteral(appEnv, "XUL_APP_FILE=%s", argv[2]);
     if (putenv(strdup(appEnv))) {
       Output("Couldn't set %s.\n", appEnv);
       return 255;
@@ -360,14 +361,6 @@ int main(int argc, char* argv[], char* envp[])
 
 #ifdef HAS_DLL_BLOCKLIST
   DllBlocklist_Initialize();
-
-#ifdef DEBUG
-  // In order to be effective against AppInit DLLs, the blocklist must be
-  // initialized before user32.dll is loaded into the process (bug 932100).
-  if (GetModuleHandleA("user32.dll")) {
-    fprintf(stderr, "DLL blocklist was unable to intercept AppInit DLLs.\n");
-  }
-#endif
 #endif
 
 #ifdef MOZ_BROWSER_CAN_BE_CONTENTPROC
