@@ -147,14 +147,15 @@ GetPrincipalDomainOrigin(nsIPrincipal* aPrincipal,
   return GetOriginFromURI(uri, aOrigin);
 }
 
-inline void SetPendingException(JSContext *cx, const char *aMsg)
+inline void SetPendingExceptionASCII(JSContext *cx, const char *aMsg)
 {
-    JS_ReportError(cx, "%s", aMsg);
+    JS_ReportErrorASCII(cx, "%s", aMsg);
 }
 
 inline void SetPendingException(JSContext *cx, const char16_t *aMsg)
 {
-    JS_ReportError(cx, "%hs", aMsg);
+    NS_ConvertUTF16toUTF8 msg(aMsg);
+    JS_ReportErrorUTF8(cx, "%s", msg.get());
 }
 
 // Helper class to get stuff from the ClassInfo and not waste extra time with
@@ -333,6 +334,17 @@ nsScriptSecurityManager::GetChannelResultPrincipal(nsIChannel* aChannel,
                                                    bool aIgnoreSandboxing)
 {
     NS_PRECONDITION(aChannel, "Must have channel!");
+    // Check whether we have an nsILoadInfo that says what we should do.
+    nsCOMPtr<nsILoadInfo> loadInfo = aChannel->GetLoadInfo();
+    if (loadInfo && loadInfo->GetForceInheritPrincipalOverruleOwner()) {
+      nsCOMPtr<nsIPrincipal> principalToInherit = loadInfo->PrincipalToInherit();
+      if (!principalToInherit) {
+        principalToInherit = loadInfo->TriggeringPrincipal();
+      }
+      principalToInherit.forget(aPrincipal);
+      return NS_OK;
+    }
+
     nsCOMPtr<nsISupports> owner;
     aChannel->GetOwner(getter_AddRefs(owner));
     if (owner) {
@@ -342,9 +354,6 @@ nsScriptSecurityManager::GetChannelResultPrincipal(nsIChannel* aChannel,
         }
     }
 
-    // Check whether we have an nsILoadInfo that says what we should do.
-    nsCOMPtr<nsILoadInfo> loadInfo;
-    aChannel->GetLoadInfo(getter_AddRefs(loadInfo));
     if (loadInfo) {
         if (!aIgnoreSandboxing && loadInfo->GetLoadingSandboxed()) {
             RefPtr<nsNullPrincipal> prin;
@@ -362,17 +371,21 @@ nsScriptSecurityManager::GetChannelResultPrincipal(nsIChannel* aChannel,
             return NS_OK;
         }
 
-        bool forceInterit = loadInfo->GetForceInheritPrincipal();
-        if (aIgnoreSandboxing && !forceInterit) {
+        bool forceInherit = loadInfo->GetForceInheritPrincipal();
+        if (aIgnoreSandboxing && !forceInherit) {
           // Check if SEC_FORCE_INHERIT_PRINCIPAL was dropped because of
           // sandboxing:
           if (loadInfo->GetLoadingSandboxed() &&
               loadInfo->GetForceInheritPrincipalDropped()) {
-            forceInterit = true;
+            forceInherit = true;
           }
         }
-        if (forceInterit) {
-            NS_ADDREF(*aPrincipal = loadInfo->TriggeringPrincipal());
+        if (forceInherit) {
+            nsCOMPtr<nsIPrincipal> principalToInherit = loadInfo->PrincipalToInherit();
+            if (!principalToInherit) {
+              principalToInherit = loadInfo->TriggeringPrincipal();
+            }
+            principalToInherit.forget(aPrincipal);
             return NS_OK;
         }
 
@@ -386,15 +399,18 @@ nsScriptSecurityManager::GetChannelResultPrincipal(nsIChannel* aChannel,
 
             nsCOMPtr<nsIURI> uri;
             nsresult rv = NS_GetFinalChannelURI(aChannel, getter_AddRefs(uri));
-            NS_ENSURE_SUCCESS(rv, rv);
-            nsCOMPtr<nsIPrincipal> triggeringPrincipal = loadInfo->TriggeringPrincipal();
+            NS_ENSURE_SUCCESS(rv, rv); 
+            nsCOMPtr<nsIPrincipal> principalToInherit = loadInfo->PrincipalToInherit();
+            if (!principalToInherit) {
+              principalToInherit = loadInfo->TriggeringPrincipal();
+            }
             bool inheritForAboutBlank = loadInfo->GetAboutBlankInherits();
 
-            if (nsContentUtils::ChannelShouldInheritPrincipal(triggeringPrincipal,
-                                                               uri,
-                                                               inheritForAboutBlank,
-                                                               false)) {
-                triggeringPrincipal.forget(aPrincipal);
+            if (nsContentUtils::ChannelShouldInheritPrincipal(principalToInherit,
+                                                              uri,
+                                                              inheritForAboutBlank,
+                                                              false)) {
+                principalToInherit.forget(aPrincipal);
                 return NS_OK;
             }
         }
@@ -599,7 +615,7 @@ nsScriptSecurityManager::CheckLoadURIFromScript(JSContext *cx, nsIURI *aURI)
     nsAutoCString msg("Access to '");
     msg.Append(spec);
     msg.AppendLiteral("' from script denied");
-    SetPendingException(cx, msg.get());
+    SetPendingExceptionASCII(cx, msg.get());
     return NS_ERROR_DOM_BAD_URI;
 }
 
@@ -1298,7 +1314,7 @@ nsScriptSecurityManager::CanCreateInstance(JSContext *cx,
     char cidStr[NSID_LENGTH];
     aCID.ToProvidedString(cidStr);
     errorMsg.Append(cidStr);
-    SetPendingException(cx, errorMsg.get());
+    SetPendingExceptionASCII(cx, errorMsg.get());
     return NS_ERROR_DOM_XPCONNECT_ACCESS_DENIED;
 }
 
@@ -1315,7 +1331,7 @@ nsScriptSecurityManager::CanGetService(JSContext *cx,
     char cidStr[NSID_LENGTH];
     aCID.ToProvidedString(cidStr);
     errorMsg.Append(cidStr);
-    SetPendingException(cx, errorMsg.get());
+    SetPendingExceptionASCII(cx, errorMsg.get());
     return NS_ERROR_DOM_XPCONNECT_ACCESS_DENIED;
 }
 
@@ -1537,46 +1553,6 @@ nsScriptSecurityManager::InitPrefs()
     Preferences::AddStrongObservers(this, kObservedPrefs);
 
     return NS_OK;
-}
-
-namespace mozilla {
-
-void
-GetJarPrefix(uint32_t aAppId, bool aInIsolatedMozBrowser, nsACString& aJarPrefix)
-{
-  MOZ_ASSERT(aAppId != nsIScriptSecurityManager::UNKNOWN_APP_ID);
-
-  if (aAppId == nsIScriptSecurityManager::UNKNOWN_APP_ID) {
-    aAppId = nsIScriptSecurityManager::NO_APP_ID;
-  }
-
-  aJarPrefix.Truncate();
-
-  // Fallback.
-  if (aAppId == nsIScriptSecurityManager::NO_APP_ID && !aInIsolatedMozBrowser) {
-    return;
-  }
-
-  // aJarPrefix = appId + "+" + { 't', 'f' } + "+";
-  aJarPrefix.AppendInt(aAppId);
-  aJarPrefix.Append('+');
-  aJarPrefix.Append(aInIsolatedMozBrowser ? 't' : 'f');
-  aJarPrefix.Append('+');
-
-  return;
-}
-
-} // namespace mozilla
-
-NS_IMETHODIMP
-nsScriptSecurityManager::GetJarPrefix(uint32_t aAppId,
-                                      bool aInIsolatedMozBrowser,
-                                      nsACString& aJarPrefix)
-{
-  MOZ_ASSERT(aAppId != nsIScriptSecurityManager::UNKNOWN_APP_ID);
-
-  mozilla::GetJarPrefix(aAppId, aInIsolatedMozBrowser, aJarPrefix);
-  return NS_OK;
 }
 
 NS_IMETHODIMP

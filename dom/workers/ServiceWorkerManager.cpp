@@ -94,7 +94,7 @@ BEGIN_WORKERS_NAMESPACE
 
 #define PURGE_DOMAIN_DATA "browser:purge-domain-data"
 #define PURGE_SESSION_HISTORY "browser:purge-session-history"
-#define CLEAR_ORIGIN_DATA "clear-origin-data"
+#define CLEAR_ORIGIN_DATA "clear-origin-attributes-data"
 
 static_assert(nsIHttpChannelInternal::CORS_MODE_SAME_ORIGIN == static_cast<uint32_t>(RequestMode::Same_origin),
               "RequestMode enumeration value should match Necko CORS mode value.");
@@ -231,8 +231,6 @@ ServiceWorkerManager::ServiceWorkerManager()
   : mActor(nullptr)
   , mShuttingDown(false)
 {
-  // Register this component to PBackground.
-  MOZ_ALWAYS_TRUE(BackgroundChild::GetOrCreateForCurrentThread(this));
 }
 
 ServiceWorkerManager::~ServiceWorkerManager()
@@ -268,6 +266,12 @@ ServiceWorkerManager::Init(ServiceWorkerRegistrar* aRegistrar)
       rv = obs->AddObserver(this, CLEAR_ORIGIN_DATA, false /* ownsWeak */);
       MOZ_ASSERT(NS_SUCCEEDED(rv));
     }
+  }
+
+  if (!BackgroundChild::GetOrCreateForCurrentThread(this)) {
+    // Make sure to do this last as our failure cleanup expects Init() to have
+    // executed.
+    ActorFailed();
   }
 }
 
@@ -3212,7 +3216,7 @@ ServiceWorkerManager::RemoveRegistration(ServiceWorkerRegistrationInfo* aRegistr
 
 namespace {
 /**
- * See browser/components/sessionstore/Utils.jsm function hasRootDomain().
+ * See toolkit/modules/sessionstore/Utils.jsm function hasRootDomain().
  *
  * Returns true if the |url| passed in is part of the given root |domain|.
  * For example, if |url| is "www.mozilla.org", and we pass in |domain| as

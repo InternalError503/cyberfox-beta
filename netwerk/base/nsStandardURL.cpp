@@ -65,6 +65,19 @@ static LazyLogModule gStandardURLLog("nsStandardURL");
 
 //----------------------------------------------------------------------------
 
+#ifdef MOZ_RUST_URLPARSE
+extern "C" int32_t c_fn_set_size(void * container, size_t size)
+{
+  ((nsACString *) container)->SetLength(size);
+  return 0;
+}
+
+extern "C" char * c_fn_get_buffer(void * container)
+{
+  return ((nsACString *) container)->BeginWriting();
+}
+#endif
+
 static nsresult
 EncodeString(nsIUnicodeEncoder *encoder, const nsAFlatString &str, nsACString &result)
 {
@@ -380,7 +393,7 @@ void
 nsStandardURL::InvalidateCache(bool invalidateCachedFile)
 {
     if (invalidateCachedFile)
-        mFile = 0;
+        mFile = nullptr;
     if (mHostA) {
         free(mHostA);
         mHostA = nullptr;
@@ -1178,6 +1191,7 @@ NS_IMPL_RELEASE(nsStandardURL)
 NS_INTERFACE_MAP_BEGIN(nsStandardURL)
     NS_INTERFACE_MAP_ENTRY_AMBIGUOUS(nsISupports, nsIStandardURL)
     NS_INTERFACE_MAP_ENTRY(nsIURI)
+    NS_INTERFACE_MAP_ENTRY(nsIURIWithQuery)
     NS_INTERFACE_MAP_ENTRY(nsIURL)
     NS_INTERFACE_MAP_ENTRY_CONDITIONAL(nsIFileURL, mSupportsFileURL)
     NS_INTERFACE_MAP_ENTRY(nsIStandardURL)
@@ -1913,6 +1927,12 @@ nsStandardURL::SetHost(const nsACString &input)
     nsresult rv = NormalizeIDN(flat, hostBuf);
     if (NS_FAILED(rv)) {
         return rv;
+    }
+
+    nsAutoCString ipString;
+    rv = NormalizeIPv4(hostBuf, ipString);
+    if (NS_SUCCEEDED(rv)) {
+      hostBuf = ipString;
     }
 
     // NormalizeIDN always copies if the call was successful
@@ -3088,7 +3108,7 @@ nsStandardURL::SetFile(nsIFile *file)
         if (NS_FAILED(file->Clone(getter_AddRefs(mFile)))) {
             NS_WARNING("nsIFile::Clone failed");
             // failure to clone is not fatal (GetFile will generate mFile)
-            mFile = 0;
+            mFile = nullptr;
         }
     }
     return rv;

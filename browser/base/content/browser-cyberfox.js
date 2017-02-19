@@ -99,14 +99,8 @@
 				} else {
 					gCyberfoxCustom.toggleState("context-sendLink", true);
 				}
-				// Toggle tab JavaScript
-				if (Services.prefs.getBoolPref("browser.context.togglejavascript")) {
-					gCyberfoxCustom.toggleState("context-javascript", false);
-				} else {
-					gCyberfoxCustom.toggleState("context-javascript", true);
-				}
 			} catch (e) {
-				throw new Error("Were sorry but something has gone wrong with 'browser.context.emaillink' | 'browser.context.togglejavascript' " + e);
+				throw new Error("Were sorry but something has gone wrong with 'browser.context.emaillink' " + e);
 			}
 		},
 
@@ -280,25 +274,6 @@
 				document.getElementById(element).hidden = state;
 			} catch (e) {
 				throw new Error("Were sorry but something has gone wrong with 'toggleState' " + e);
-			}
-		},
-		
-		// Toggle tab javascript
-		toggleTabJavascript: function () {
-			try {
-				if (gBrowser.docShell.allowJavascript) {
-					gBrowser.docShell.allowJavascript = false;
-					var delayedTrigger = setTimeout(function () {
-						gBrowser.reload();
-					}, 10);
-				} else {
-					gBrowser.docShell.allowJavascript = true;
-					var delayedTrigger = setTimeout(function () {
-						gBrowser.reload();
-					}, 10);
-				}
-			} catch (e) {
-				throw new Error("Were sorry but something has gone wrong with 'toggleTabJavascript' " + e);
 			}
 		},
 		

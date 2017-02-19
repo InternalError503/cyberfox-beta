@@ -2,9 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-////////////////////////////////////////////////////////////////////////////////
-//// StarUI
-
 var StarUI = {
   _itemId: -1,
   uri: null,
@@ -121,8 +118,9 @@ var StarUI = {
           case KeyEvent.DOM_VK_RETURN:
             if (aEvent.target.classList.contains("expander-up") ||
                 aEvent.target.classList.contains("expander-down") ||
-                aEvent.target.id == "editBMPanel_newFolderButton")  {
-              //XXX Why is this necessary? The defaultPrevented check should
+                aEvent.target.id == "editBMPanel_newFolderButton" ||
+                aEvent.target.id == "editBookmarkPanelRemoveButton") {
+              // XXX Why is this necessary? The defaultPrevented check should
               //    be enough.
               break;
             }
@@ -152,6 +150,7 @@ var StarUI = {
           if (this._closePanelQuickForTesting) {
             delay /= 10;
           }
+          clearTimeout(this._autoCloseTimer);
           this._autoCloseTimer = setTimeout(() => {
             this.panel.hidePopup();
           }, delay);
@@ -260,12 +259,26 @@ var StarUI = {
         parent.setAttribute("open", "true");
       }
     }
-    this.panel.openPopup(aAnchorElement, aPosition);
+    let panel = this.panel;
+    let target = panel;
+    if (target.parentNode) {
+      // By targeting the panel's parent and using a capturing listener, we
+      // can have our listener called before others waiting for the panel to
+      // be shown (which probably expect the panel to be fully initialized)
+      target = target.parentNode;
+    }
+    target.addEventListener("popupshown", function shownListener(event) {
+      if (event.target == panel) {
+        target.removeEventListener("popupshown", shownListener, true);
 
-    gEditItemOverlay.initPanel({ node: aNode
-                               , hiddenRows: ["description", "location",
-                                              "loadInSidebar", "keyword"]
-                               , focusedElement: "preferred" });
+        gEditItemOverlay.initPanel({ node: aNode
+                                   , hiddenRows: ["description", "location",
+                                                  "loadInSidebar", "keyword"]
+                                   , focusedElement: "preferred"});
+      }
+    }, true);
+
+    this.panel.openPopup(aAnchorElement, aPosition);
   }),
 
   panelShown:
@@ -330,9 +343,6 @@ var StarUI = {
     this._batching = false;
   }
 };
-
-////////////////////////////////////////////////////////////////////////////////
-//// PlacesCommandHook
 
 var PlacesCommandHook = {
   /**
@@ -658,9 +668,6 @@ var PlacesCommandHook = {
   }
 };
 
-////////////////////////////////////////////////////////////////////////////////
-//// HistoryMenu
-
 XPCOMUtils.defineLazyModuleGetter(this, "RecentlyClosedTabsAndWindowsMenuUtils",
   "resource:///modules/sessionstore/RecentlyClosedTabsAndWindowsMenuUtils.jsm");
 
@@ -738,9 +745,6 @@ HistoryMenu.prototype = {
   populateUndoWindowSubmenu: function PHM_populateUndoWindowSubmenu() {
     let undoMenu = this._rootElt.getElementsByClassName("recentlyClosedWindowsMenu")[0];
     let undoPopup = undoMenu.firstChild;
-    let menuLabelString = gNavigatorBundle.getString("menuUndoCloseWindowLabel");
-    let menuLabelStringSingleTab =
-      gNavigatorBundle.getString("menuUndoCloseWindowSingleTabLabel");
 
     // remove existing menu items
     while (undoPopup.hasChildNodes())
@@ -797,9 +801,6 @@ HistoryMenu.prototype = {
   }
 };
 
-////////////////////////////////////////////////////////////////////////////////
-//// BookmarksEventHandler
-
 /**
  * Functions for handling events in the Bookmarks Toolbar and menu.
  */
@@ -831,7 +832,7 @@ var BookmarksEventHandler = {
     // If this event bubbled up from a menu or menuitem, close the menus.
     // Do this before opening tabs, to avoid hiding the open tabs confirm-dialog.
     if (target.localName == "menu" || target.localName == "menuitem") {
-      for (node = target.parentNode; node; node = node.parentNode) {
+      for (let node = target.parentNode; node; node = node.parentNode) {
         if (node.localName == "menupopup")
           node.hidePopup();
         else if (node.localName != "menu" &&
@@ -925,9 +926,6 @@ var BookmarksEventHandler = {
     return true;
   }
 };
-
-////////////////////////////////////////////////////////////////////////////////
-//// PlacesMenuDNDHandler
 
 // Handles special drag and drop functionality for Places menus that are not
 // part of a Places view (e.g. the bookmarks menu in the menubar).
@@ -1056,9 +1054,6 @@ var PlacesMenuDNDHandler = {
     event.stopPropagation();
   }
 };
-
-////////////////////////////////////////////////////////////////////////////////
-//// PlacesToolbarHelper
 
 /**
  * This object handles the initialization and uninitialization of the bookmarks
@@ -1203,9 +1198,6 @@ var PlacesToolbarHelper = {
     }
   },
 };
-
-////////////////////////////////////////////////////////////////////////////////
-//// BookmarkingUI
 
 /**
  * Handles the bookmarks menu-button in the toolbar.
@@ -1987,4 +1979,3 @@ var AutoShowBookmarksToolbar = {
     setToolbarVisibility(toolbar, true);
   }
 };
-

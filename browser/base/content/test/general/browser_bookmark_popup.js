@@ -98,6 +98,7 @@ add_task(function* panel_shown_once_for_slow_doubleclick_on_new_bookmark_star_an
               "browser-places.js for this.");
   return;
 
+  /*
   yield test_bookmarks_popup({
     isNewBookmark: true,
     *popupShowFn() {
@@ -108,6 +109,7 @@ add_task(function* panel_shown_once_for_slow_doubleclick_on_new_bookmark_star_an
     shouldAutoClose: true,
     isBookmarkRemoved: false,
   });
+  */
 });
 
 add_task(function* panel_shown_for_keyboardshortcut_on_new_bookmark_star_and_autocloses() {
@@ -247,6 +249,30 @@ add_task(function* ctrl_d_edit_bookmark_remove_bookmark() {
     shouldAutoClose: true,
     popupHideFn() {
       document.getElementById("editBookmarkPanelRemoveButton").click();
+    },
+    isBookmarkRemoved: true,
+  });
+});
+
+add_task(function* enter_on_remove_bookmark_should_remove_bookmark() {
+  if (AppConstants.platform == "macosx") {
+    // "Full Keyboard Access" is disabled by default, and thus doesn't allow
+    // keyboard navigation to the "Remove Bookmarks" button by default.
+    return;
+  }
+
+  yield test_bookmarks_popup({
+    isNewBookmark: true,
+    popupShowFn(browser) {
+      EventUtils.synthesizeKey("D", {accelKey: true}, window);
+    },
+    shouldAutoClose: true,
+    popupHideFn() {
+      while (!document.activeElement ||
+             document.activeElement.id != "editBookmarkPanelRemoveButton") {
+        EventUtils.sendChar("VK_TAB", window);
+      }
+      EventUtils.sendChar("VK_RETURN", window);
     },
     isBookmarkRemoved: true,
   });

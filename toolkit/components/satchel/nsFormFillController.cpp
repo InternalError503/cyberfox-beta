@@ -39,6 +39,7 @@
 #include "nsILoadContext.h"
 #include "nsIFrame.h"
 #include "nsIScriptSecurityManager.h"
+#include "nsFocusManager.h"
 
 using namespace mozilla::dom;
 
@@ -68,6 +69,7 @@ nsFormFillController::nsFormFillController() :
   mTimeout(50),
   mMinResultsForPopup(1),
   mMaxRows(0),
+  mContextMenuFiredBeforeFocus(false),
   mDisableAutoComplete(false),
   mCompleteDefaultIndex(false),
   mCompleteSelectedIndex(false),
@@ -216,7 +218,7 @@ void
 nsFormFillController::MaybeRemoveMutationObserver(nsINode* aNode)
 {
   // Nodes being tracked in mPwmgrInputs will have their observers removed when
-  // they stop being tracked. 
+  // they stop being tracked.
   if (!mPwmgrInputs.Get(aNode)) {
     aNode->RemoveMutationObserver(this);
   }
@@ -270,8 +272,26 @@ nsFormFillController::MarkAsLoginManagerField(nsIDOMHTMLInputElement *aInput)
    */
   nsCOMPtr<nsINode> node = do_QueryInterface(aInput);
   NS_ENSURE_STATE(node);
+
+  // If the field was already marked, we don't want to show the popup again.
+  if (mPwmgrInputs.Get(node)) {
+    return NS_OK;
+  }
+
   mPwmgrInputs.Put(node, true);
   node->AddMutationObserverUnlessExists(this);
+
+  nsFocusManager *fm = nsFocusManager::GetFocusManager();
+  if (fm) {
+    nsCOMPtr<nsIContent> focusedContent = fm->GetFocusedContent();
+    if (SameCOMIdentity(focusedContent, node)) {
+      nsCOMPtr<nsIDOMHTMLInputElement> input = do_QueryInterface(node);
+      if (!mFocusedInput) {
+        MaybeStartControllingInput(input);
+      }
+      ShowPopup();
+    }
+  }
 
   if (!mLoginManager)
     mLoginManager = do_GetService("@mozilla.org/login-manager;1");
@@ -519,6 +539,13 @@ nsFormFillController::SetTextValue(const nsAString & aTextValue)
     mSuppressOnInput = false;
   }
   return NS_OK;
+}
+
+NS_IMETHODIMP
+nsFormFillController::SetTextValueWithReason(const nsAString & aTextValue,
+                                             uint16_t aReason)
+{
+  return SetTextValue(aTextValue);
 }
 
 NS_IMETHODIMP
@@ -847,6 +874,7 @@ nsFormFillController::HandleEvent(nsIDOMEvent* aEvent)
     return NS_OK;
   }
   if (type.EqualsLiteral("contextmenu")) {
+    mContextMenuFiredBeforeFocus = true;
     if (mFocusedPopup)
       mFocusedPopup->ClosePopup();
     return NS_OK;
@@ -893,7 +921,7 @@ nsFormFillController::MaybeStartControllingInput(nsIDOMHTMLInputElement* aInput)
     return;
 
   nsCOMPtr<nsIFormControl> formControl = do_QueryInterface(aInput);
-  if (!formControl || !formControl->IsSingleLineTextControl(true))
+  if (!formControl || !formControl->IsSingleLineTextControl(false))
     return;
 
   bool isReadOnly = false;
@@ -922,6 +950,14 @@ nsFormFillController::Focus(nsIDOMEvent* aEvent)
   nsCOMPtr<nsIDOMHTMLInputElement> input = do_QueryInterface(
     aEvent->InternalDOMEvent()->GetTarget());
   MaybeStartControllingInput(input);
+
+  // If this focus doesn't immediately follow a contextmenu event then show
+  // the autocomplete popup
+  if (!mContextMenuFiredBeforeFocus && mPwmgrInputs.Get(mFocusedInputNode)) {
+    ShowPopup();
+  }
+
+  mContextMenuFiredBeforeFocus = false;
   return NS_OK;
 }
 
@@ -1054,6 +1090,12 @@ nsFormFillController::MouseDown(nsIDOMEvent* aEvent)
   if (button != 0)
     return NS_OK;
 
+  return ShowPopup();
+}
+
+nsresult
+nsFormFillController::ShowPopup()
+{
   bool isOpen = false;
   GetPopupOpen(&isOpen);
   if (isOpen) {
@@ -1216,6 +1258,10 @@ nsFormFillController::StopControllingInput()
 
     mFocusedInputNode = nullptr;
     mFocusedInput = nullptr;
+  }
+
+  if (mFocusedPopup) {
+    mFocusedPopup->ClosePopup();
   }
   mFocusedPopup = nullptr;
 }

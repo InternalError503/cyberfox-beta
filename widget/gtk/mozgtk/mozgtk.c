@@ -9,6 +9,7 @@ STUB(gdk_atom_name)
 STUB(gdk_beep)
 STUB(gdk_cairo_create)
 STUB(gdk_color_free)
+STUB(gdk_color_parse)
 STUB(gdk_cursor_new_for_display)
 STUB(gdk_cursor_new_from_name)
 STUB(gdk_cursor_new_from_pixbuf)
@@ -612,6 +613,9 @@ STUB(gdkx_visual_get)
 STUB(gtk_object_get_type)
 #endif
 
+#ifndef GTK3_SYMBOLS
+// Only define the following workaround when using GTK3, which we detect
+// by checking if GTK3 stubs are not provided.
 #include <X11/Xlib.h>
 // Bug 1271100
 // We need to trick system Cairo into not using the XShm extension due to
@@ -625,4 +629,5 @@ XShmQueryExtension(Display* aDisplay)
 {
   return False;
 }
+#endif
 

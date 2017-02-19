@@ -160,7 +160,10 @@ nsresult nsJSThunk::EvaluateScript(nsIChannel *aChannel,
         nsCOMPtr<nsILoadInfo> loadInfo;
         aChannel->GetLoadInfo(getter_AddRefs(loadInfo));
         if (loadInfo && loadInfo->GetForceInheritPrincipal()) {
-            principal = loadInfo->TriggeringPrincipal();
+            principal = loadInfo->PrincipalToInherit();
+            if (!principal) {
+                principal = loadInfo->TriggeringPrincipal();
+            }
         } else {
             // No execution without a principal!
             NS_ASSERTION(!owner, "Non-principal owner?");
@@ -180,6 +183,7 @@ nsresult nsJSThunk::EvaluateScript(nsIChannel *aChannel,
         bool allowsInlineScript = true;
         rv = csp->GetAllowsInline(nsIContentPolicy::TYPE_SCRIPT,
                                   EmptyString(), // aNonce
+                                  true,         // aParserCreated
                                   EmptyString(), // aContent
                                   0,             // aLineNumber
                                   &allowsInlineScript);

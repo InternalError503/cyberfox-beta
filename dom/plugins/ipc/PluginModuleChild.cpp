@@ -32,6 +32,7 @@
 #include "mozilla/plugins/BrowserStreamChild.h"
 #include "mozilla/plugins/PluginStreamChild.h"
 #include "mozilla/dom/CrashReporterChild.h"
+#include "mozilla/Sprintf.h"
 #include "mozilla/Unused.h"
 
 #include "nsNPAPIPlugin.h"
@@ -265,7 +266,7 @@ PluginModuleChild::InitForChrome(const std::string& aPluginFilename,
 #if defined(XP_MACOSX)
     const char* namePrefix = "Plugin Content";
     char nameBuffer[80];
-    snprintf(nameBuffer, sizeof(nameBuffer), "%s (%s)", namePrefix, info.fName);
+    SprintfLiteral(nameBuffer, "%s (%s)", namePrefix, info.fName);
     mozilla::plugins::PluginUtilsOSX::SetProcessName(nameBuffer);
 #endif
     pluginFile.FreePluginInfo(info);
@@ -2617,4 +2618,63 @@ PluginModuleChild::RecvGatherProfile()
 
     Unused << SendProfile(profileCString);
     return true;
+}
+
+NPError
+PluginModuleChild::PluginRequiresAudioDeviceChanges(
+                          PluginInstanceChild* aInstance,
+                          NPBool aShouldRegister)
+{
+#ifdef XP_WIN
+    // Maintain a set of PluginInstanceChildren that we need to tell when the
+    // default audio device has changed.
+    NPError rv = NPERR_NO_ERROR;
+    if (aShouldRegister) {
+        if (mAudioNotificationSet.IsEmpty()) {
+            // We are registering the first plugin.  Notify the PluginModuleParent
+            // that it needs to start sending us audio device notifications.
+            if (!CallNPN_SetValue_NPPVpluginRequiresAudioDeviceChanges(
+                                                      aShouldRegister, &rv)) {
+                return NPERR_GENERIC_ERROR;
+            }
+        }
+        if (rv == NPERR_NO_ERROR) {
+            mAudioNotificationSet.PutEntry(aInstance);
+        }
+    }
+    else if (!mAudioNotificationSet.IsEmpty()) {
+        mAudioNotificationSet.RemoveEntry(aInstance);
+        if (mAudioNotificationSet.IsEmpty()) {
+            // We released the last plugin.  Unregister from the PluginModuleParent.
+            if (!CallNPN_SetValue_NPPVpluginRequiresAudioDeviceChanges(
+    	      	                                        aShouldRegister, &rv)) {
+                return NPERR_GENERIC_ERROR;
+            }
+        }
+    }
+    return rv;
+#else
+    NS_RUNTIMEABORT("PluginRequiresAudioDeviceChanges is not available on this platform.");
+    return NPERR_GENERIC_ERROR;
+#endif // XP_WIN
+}
+
+bool
+PluginModuleChild::RecvNPP_SetValue_NPNVaudioDeviceChangeDetails(
+                              const NPAudioDeviceChangeDetailsIPC& detailsIPC)
+{
+#if defined(XP_WIN)
+    NPAudioDeviceChangeDetails details;
+    details.flow = detailsIPC.flow;
+    details.role = detailsIPC.role;
+    details.defaultDevice = detailsIPC.defaultDevice.c_str();
+    for (auto iter = mAudioNotificationSet.ConstIter(); !iter.Done(); iter.Next()) {
+      PluginInstanceChild* pluginInst = iter.Get()->GetKey();
+      pluginInst->DefaultAudioDeviceChanged(details);
+    }
+    return true;
+#else
+    NS_RUNTIMEABORT("NPP_SetValue_NPNVaudioDeviceChangeDetails is a Windows-only message");
+    return false;
+#endif
 }

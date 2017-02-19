@@ -4,6 +4,8 @@
 
 package org.mozilla.gecko.media;
 
+import org.mozilla.gecko.util.HardwareCodecCapabilityUtils;
+
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.os.Handler;
@@ -87,7 +89,15 @@ final class JellyBeanAsyncCodec implements AsyncCodec {
 
             Message msg = obtainMessage(MSG_INPUT_BUFFER_AVAILABLE);
             msg.arg1 = index;
-            sendMessage(msg);
+            processMessage(msg);
+        }
+
+        private void processMessage(Message msg) {
+            if (Looper.myLooper() == getLooper()) {
+                handleMessage(msg);
+            } else {
+                sendMessage(msg);
+            }
         }
 
         public void notifyOutputBuffer(int index, MediaCodec.BufferInfo info) {
@@ -97,20 +107,19 @@ final class JellyBeanAsyncCodec implements AsyncCodec {
 
             Message msg = obtainMessage(MSG_OUTPUT_BUFFER_AVAILABLE, info);
             msg.arg1 = index;
-            sendMessage(msg);
+            processMessage(msg);
         }
 
         public void notifyOutputFormat(MediaFormat format) {
             if (isCanceled()) {
                 return;
             }
-
-            sendMessage(obtainMessage(MSG_OUTPUT_FORMAT_CHANGE, format));
+            processMessage(obtainMessage(MSG_OUTPUT_FORMAT_CHANGE, format));
         }
 
         public void notifyError(int result) {
             Log.e(LOGTAG, "codec error:" + result);
-            sendMessage(obtainMessage(MSG_ERROR, result, 0));
+            processMessage(obtainMessage(MSG_ERROR, result, 0));
         }
 
         protected boolean handleMessageLocked(Message msg) {
@@ -291,6 +300,11 @@ final class JellyBeanAsyncCodec implements AsyncCodec {
         assertCallbacks();
 
         mCodec.configure(format, surface, null, flags);
+    }
+
+    @Override
+    public boolean isAdaptivePlaybackSupported(String mimeType) {
+        return HardwareCodecCapabilityUtils.checkSupportsAdaptivePlayback(mCodec, mimeType);
     }
 
     private void assertCallbacks() {

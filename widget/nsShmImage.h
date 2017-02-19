@@ -48,7 +48,7 @@ private:
   bool CreateImage(const mozilla::gfx::IntSize& aSize);
   void DestroyImage();
 
-  bool WaitIfPendingReply();
+  void WaitIfPendingReply();
 
   xcb_connection_t*            mConnection;
   Window                       mWindow;
@@ -60,7 +60,6 @@ private:
 
   xcb_pixmap_t                 mPixmap;
   xcb_gcontext_t               mGC;
-  xcb_void_cookie_t            mPutRequest;
   xcb_get_input_focus_cookie_t mSyncRequest;
   bool                         mRequestPending;
 

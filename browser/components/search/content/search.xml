@@ -806,8 +806,6 @@
             case "cmd_clearhistory":
               var param = this._self.getAttribute("autocompletesearchparam");
 
-              let searchBar = this._self.parentNode;
-
               BrowserSearch.searchBar.FormHistory.update({ op : "remove", fieldname : param }, null);
               this._self.value = "";
               break;
@@ -851,7 +849,7 @@
       <handler event="dragover">
       <![CDATA[
         var types = event.dataTransfer.types;
-        if (types.contains("text/plain") || types.contains("text/x-moz-text-internal"))
+        if (types.includes("text/plain") || types.includes("text/x-moz-text-internal"))
           event.preventDefault();
       ]]>
       </handler>
@@ -1666,9 +1664,6 @@
         <parameter name="aWrapAround"/>
         <parameter name="aCycleEngines"/>
         <body><![CDATA[
-          let popup = this.popup;
-          let list = document.getAnonymousElementByAttribute(popup, "anonid",
-                                                             "search-panel-one-offs");
           let selectedButton = this.selectedButton;
           let buttons = this.getSelectableButtons(aCycleEngines);
 
@@ -1963,14 +1958,6 @@
 
         if (!engine)
           return;
-
-        // For some reason, if the context menu had been opened prior to the
-        // click, the suggestions popup won't be closed after loading the search
-        // in the current tab - so we hide it manually. Some focusing magic
-        // that happens when a search is loaded ensures that the popup is opened
-        // again if it needs to be, so we don't need to worry about which cases
-        // require manual hiding.
-        this.popup.hidePopup();
 
         // Select the clicked button so that consumers can easily tell which
         // button was acted on.

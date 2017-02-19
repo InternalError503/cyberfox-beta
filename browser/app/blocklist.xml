@@ -272,10 +272,6 @@
       <versionRange minVersion="208.7.0" maxVersion="208.7.0" severity="3"/>
       <versionRange minVersion="199.7.0" maxVersion="208.7.0" severity="3"/>
     </emItem>
-    <emItem blockID="i1523" id="{a0d7ccb3-214d-498b-b4aa-0e8fda9a7bf7}">
-      <prefs/>
-      <versionRange minVersion="0" maxVersion="20170120" severity="1"/>
-    </emItem>
     <emItem blockID="i1227" id="{A34CAF42-A3E3-11E5-945F-18C31D5D46B0}">
       <prefs>
         <pref>security.csp.enable</pref>
@@ -1236,10 +1232,6 @@
       <prefs/>
       <versionRange minVersion="2.4.6.4" maxVersion="2.4.6.4" severity="1"/>
     </emItem>
-    <emItem blockID="i1524" id="ext@alibonus.com">
-      <prefs/>
-      <versionRange minVersion="0" maxVersion="1.20.9" severity="1"/>
-    </emItem>
     <emItem blockID="i670" id="/^({ad9a41d2-9a49-4fa6-a79e-71a0785364c8})|(ffxtlbr@mysearchdial\.com)$/">
       <prefs>
         <pref>browser.search.defaultenginename</pref>
@@ -2143,16 +2135,12 @@
       <versionRange maxVersion="13.0.0.302" minVersion="13.0.0.302" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
     <pluginItem blockID="p1495" os="Linux">
-      <match exp="" name="name"/>
       <match exp="libflashplayer\.so" name="filename"/>
-      <match exp="" name="description"/>
       <infoURL>https://get.adobe.com/flashplayer/</infoURL>
       <versionRange maxVersion="24.0.0.186" minVersion="23.0.0.207" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
-    <pluginItem blockID="p1420" os="">
-      <match exp="" name="name"/>
+    <pluginItem blockID="p1420">
       <match exp="(NPSWF32.*\.dll)|(NPSWF64.*\.dll)|(Flash\ Player\.plugin)" name="filename"/>
-      <match exp="" name="description"/>
       <infoURL>https://get.adobe.com/flashplayer/</infoURL>
       <versionRange maxVersion="23.0.0.205" minVersion="23.0.0.185" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
@@ -2206,9 +2194,7 @@
       <versionRange maxVersion="*" minVersion="0"/>
     </pluginItem>
     <pluginItem blockID="p1419" os="Linux">
-      <match exp="" name="name"/>
       <match exp="libflashplayer\.so" name="filename"/>
-      <match exp="" name="description"/>
       <infoURL>https://get.adobe.com/flashplayer/</infoURL>
       <versionRange maxVersion="11.2.202.643" minVersion="11.2.202.637" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
@@ -2465,10 +2451,8 @@
       <infoURL>https://get.adobe.com/flashplayer/</infoURL>
       <versionRange maxVersion="18.0.0.232" minVersion="18.0.0.204" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
-    <pluginItem blockID="p1274" os="">
-      <match exp="" name="name"/>
+    <pluginItem blockID="p1274">
       <match exp="(NPSWF32.*\.dll)|(NPSWF64.*\.dll)|(Flash\ Player\.plugin)" name="filename"/>
-      <match exp="" name="description"/>
       <infoURL>https://get.adobe.com/flashplayer/</infoURL>
       <versionRange maxVersion="22.0.0.211" minVersion="22.0.0.192" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
@@ -2579,10 +2563,8 @@
         </targetApplication>
       </versionRange>
     </pluginItem>
-    <pluginItem blockID="p1494" os="">
-      <match exp="" name="name"/>
+    <pluginItem blockID="p1494">
       <match exp="(NPSWF32.*\.dll)|(NPSWF64.*\.dll)|(Flash\ Player\.plugin)" name="filename"/>
-      <match exp="" name="description"/>
       <infoURL>https://get.adobe.com/flashplayer/</infoURL>
       <versionRange maxVersion="24.0.0.186" minVersion="23.0.0.207" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
@@ -2650,10 +2632,8 @@
       <infoURL>https://get.adobe.com/flashplayer/</infoURL>
       <versionRange maxVersion="18.0.0.352" minVersion="18.0.0.343" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
-    <pluginItem blockID="p160" os="">
-      <match exp="" name="name"/>
+    <pluginItem blockID="p160">
       <match exp="NPSWF32\.dll" name="filename"/>
-      <match exp="" name="description"/>
       <infoURL>https://get.adobe.com/flashplayer/</infoURL>
       <versionRange maxVersion="10.2.9999" minVersion="0" severity="0" vulnerabilitystatus="1">
         <targetApplication id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}">
@@ -2822,9 +2802,7 @@
       <match exp="NPFFAddOn.dll" name="filename"/>
     </pluginItem>
     <pluginItem blockID="p1421" os="Linux">
-      <match exp="" name="name"/>
       <match exp="libflashplayer\.so" name="filename"/>
-      <match exp="" name="description"/>
       <infoURL>https://get.adobe.com/flashplayer/</infoURL>
       <versionRange maxVersion="23.0.0.207" minVersion="11.2.202.643" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
@@ -3020,10 +2998,8 @@
       <infoURL>https://get.adobe.com/reader</infoURL>
       <versionRange maxVersion="15.006.30174" minVersion="15.006.30174" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
-    <pluginItem blockID="p1422" os="">
-      <match exp="" name="name"/>
+    <pluginItem blockID="p1422">
       <match exp="(NPSWF32.*\.dll)|(NPSWF64.*\.dll)|(Flash\ Player\.plugin)" name="filename"/>
-      <match exp="" name="description"/>
       <infoURL>https://get.adobe.com/flashplayer/</infoURL>
       <versionRange maxVersion="23.0.0.207" minVersion="23.0.0.205" severity="0" vulnerabilitystatus="1"/>
     </pluginItem>
@@ -3542,9 +3518,6 @@
     <certItem issuerName="MFExCzAJBgNVBAYTAkpQMRMwEQYDVQQKEwpGdWppIFhlcm94MS0wKwYDVQQDEyRGdWppIFhlcm94IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IDI=">
       <serialNumber>AUa47POQ1dN5</serialNumber>
     </certItem>
-    <certItem issuerName="MFAxJDAiBgNVBAsTG0dsb2JhbFNpZ24gRUNDIFJvb3QgQ0EgLSBSNDETMBEGA1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbg==">
-      <serialNumber>RnQ3dg5KdDZs0nyFZk4=</serialNumber>
-    </certItem>
     <certItem issuerName="MFYxCzAJBgNVBAYTAkpQMQ8wDQYDVQQKEwZKSVBERUMxGjAYBgNVBAsTEUpDQU4gU3ViIFJvb3QgQ0EwMRowGAYDVQQDExFKQ0FOIFN1YiBSb290IENBMA==">
       <serialNumber>BAAAAAABK84ykc0=</serialNumber>
     </certItem>
@@ -3589,9 +3562,6 @@
     </certItem>
     <certItem issuerName="MFgxCzAJBgNVBAYTAk5MMR4wHAYDVQQKDBVTdGFhdCBkZXIgTmVkZXJsYW5kZW4xKTAnBgNVBAMMIFN0YWF0IGRlciBOZWRlcmxhbmRlbiBFViBSb290IENB">
       <serialNumber>AJiWmg==</serialNumber>
-    </certItem>
-    <certItem issuerName="MIG0MRQwEgYDVQQKEwtFbnRydXN0Lm5ldDFAMD4GA1UECxQ3d3d3LmVudHJ1c3QubmV0L0NQU18yMDQ4IGluY29ycC4gYnkgcmVmLiAobGltaXRzIGxpYWIuKTElMCMGA1UECxMcKGMpIDE5OTkgRW50cnVzdC5uZXQgTGltaXRlZDEzMDEGA1UEAxMqRW50cnVzdC5uZXQgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkgKDIwNDgp">
-      <serialNumber>TA5iEg==</serialNumber>
     </certItem>
     <certItem issuerName="MDcxJDAiBgNVBAMTG1JDUyBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTEPMA0GA1UEChMGSFQgc3Js">
       <serialNumber>AN9bfYOvlR1t</serialNumber>
@@ -3833,9 +3803,6 @@
     <certItem issuerName="MEcxCzAJBgNVBAYTAkhLMRYwFAYDVQQKEw1Ib25na29uZyBQb3N0MSAwHgYDVQQDExdIb25na29uZyBQb3N0IFJvb3QgQ0EgMQ==">
       <serialNumber>BGU=</serialNumber>
     </certItem>
-    <certItem issuerName="MFAxJDAiBgNVBAsTG0dsb2JhbFNpZ24gRUNDIFJvb3QgQ0EgLSBSNDETMBEGA1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbg==">
-      <serialNumber>Hwexgn/ZCJicZPcsIyI8zxQ=</serialNumber>
-    </certItem>
     <certItem issuerName="MDQxCzAJBgNVBAYTAkZSMRIwEAYDVQQKDAlEaGlteW90aXMxETAPBgNVBAMMCENlcnRpZ25h">
       <serialNumber>Fw==</serialNumber>
     </certItem>
@@ -3970,9 +3937,6 @@
     </certItem>
     <certItem issuerName="MG0xCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMRswGQYDVQQLExJQcmltYXJ5IENsYXNzIDIgQ0ExJjAkBgNVBAMTHUdsb2JhbFNpZ24gUHJpbWFyeSBDbGFzcyAyIENB">
       <serialNumber>BAAAAAABHkSl6Co=</serialNumber>
-    </certItem>
-    <certItem issuerName="MFwxCzAJBgNVBAYTAkJFMRUwEwYDVQQLEwxUcnVzdGVkIFJvb3QxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExGzAZBgNVBAMTElRydXN0ZWQgUm9vdCBDQSBHMg==">
-      <serialNumber>Iqpyf/YoGgvHc8HiDAxAI8o=</serialNumber>
     </certItem>
     <certItem issuerName="MEgxCzAJBgNVBAYTAlVTMSAwHgYDVQQKExdTZWN1cmVUcnVzdCBDb3Jwb3JhdGlvbjEXMBUGA1UEAxMOU2VjdXJlVHJ1c3QgQ0E=">
       <serialNumber>MABJTA==</serialNumber>
@@ -4418,9 +4382,6 @@
     <certItem issuerName="MEIxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1HZW9UcnVzdCBJbmMuMRswGQYDVQQDExJHZW9UcnVzdCBHbG9iYWwgQ0E=">
       <serialNumber>AjqK</serialNumber>
     </certItem>
-    <certItem issuerName="MFAxJDAiBgNVBAsTG0dsb2JhbFNpZ24gRUNDIFJvb3QgQ0EgLSBSNDETMBEGA1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbg==">
-      <serialNumber>RnQ3dYovwvB0D5q2YGY=</serialNumber>
-    </certItem>
     <certItem issuerName="MIGuMQswCQYDVQQGEwJVUzELMAkGA1UECBMCVVQxFzAVBgNVBAcTDlNhbHQgTGFrZSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxITAfBgNVBAsTGGh0dHA6Ly93d3cudXNlcnRydXN0LmNvbTE2MDQGA1UEAxMtVVROLVVTRVJGaXJzdC1DbGllbnQgQXV0aGVudGljYXRpb24gYW5kIEVtYWls">
       <serialNumber>D/wZ7+m1Mv8SONSEFcs73w==</serialNumber>
     </certItem>
@@ -4501,9 +4462,6 @@
     </certItem>
     <certItem issuerName="MEAxCzAJBgNVBAYTAkZSMRIwEAYDVQQKDAlPcGVuVHJ1c3QxHTAbBgNVBAMMFE9wZW5UcnVzdCBSb290IENBIEcx">
       <serialNumber>ESDDtMgFFiaUfKo7HD9qImM7</serialNumber>
-    </certItem>
-    <certItem issuerName="MFoxCzAJBgNVBAYTAklFMRIwEAYDVQQKEwlCYWx0aW1vcmUxEzARBgNVBAsTCkN5YmVyVHJ1c3QxIjAgBgNVBAMTGUJhbHRpbW9yZSBDeWJlclRydXN0IFJvb3Q=">
-      <serialNumber>BydSYg==</serialNumber>
     </certItem>
     <certItem issuerName="MFgxCzAJBgNVBAYTAkpQMSswKQYDVQQKEyJKYXBhbiBDZXJ0aWZpY2F0aW9uIFNlcnZpY2VzLCBJbmMuMRwwGgYDVQQDExNTZWN1cmVTaWduIFJvb3RDQTEx">
       <serialNumber>Aw==</serialNumber>

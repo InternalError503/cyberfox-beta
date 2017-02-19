@@ -1,4 +1,3 @@
-// |jit-test| test-also-wasm-baseline
-// TODO custom NaN
+// TODO: This spec test has instructions between br/etc. and end/etc.
 quit();
 var importedArgs = ['select.wast']; load(scriptdir + '../spec.js');

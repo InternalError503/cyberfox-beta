@@ -1,4 +1,3 @@
-// |jit-test| test-also-wasm-baseline
-// TODO br_if not typed with its br value
+// TODO: This spec test has instructions between br/etc. and end/etc.
 quit();
 var importedArgs = ['labels.wast']; load(scriptdir + '../spec.js');

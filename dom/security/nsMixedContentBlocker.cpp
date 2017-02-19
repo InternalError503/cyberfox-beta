@@ -60,6 +60,35 @@ bool nsMixedContentBlocker::sBlockMixedDisplay = false;
 bool nsMixedContentBlocker::sUseHSTS = false;
 // Do we send an HSTS priming request
 bool nsMixedContentBlocker::sSendHSTSPriming = false;
+// Default HSTS Priming failure timeout to 7 days, in seconds
+uint32_t nsMixedContentBlocker::sHSTSPrimingCacheTimeout = (60 * 24 * 7);
+
+bool
+IsEligibleForHSTSPriming(nsIURI* aContentLocation) {
+  bool isHttpScheme = false;
+  nsresult rv = aContentLocation->SchemeIs("http", &isHttpScheme);
+  NS_ENSURE_SUCCESS(rv, false);
+  if (!isHttpScheme) {
+    return false;
+  }
+
+  int32_t port = -1;
+  rv = aContentLocation->GetPort(&port);
+  NS_ENSURE_SUCCESS(rv, false);
+  int32_t defaultPort = NS_GetDefaultPort("https");
+
+  if (port != -1 && port != defaultPort) {
+    // HSTS priming requests are only sent if the port is the default port
+    return false;
+  }
+
+  nsAutoCString hostname;
+  rv = aContentLocation->GetHost(hostname);
+  NS_ENSURE_SUCCESS(rv, false);
+
+  PRNetAddr hostAddr;
+  return (PR_StringToNetAddr(hostname.get(), &hostAddr) != PR_SUCCESS);
+}
 
 bool
 IsEligibleForHSTSPriming(nsIURI* aContentLocation) {
@@ -237,6 +266,10 @@ nsMixedContentBlocker::nsMixedContentBlocker()
   // Cache the pref for sending HSTS priming
   Preferences::AddBoolVarCache(&sSendHSTSPriming,
                                "security.mixed_content.send_hsts_priming");
+
+  // Cache the pref for HSTS priming failure cache time
+  Preferences::AddUintVarCache(&sHSTSPrimingCacheTimeout,
+                               "security.mixed_content.hsts_priming_cache_timeout");
 }
 
 nsMixedContentBlocker::~nsMixedContentBlocker()

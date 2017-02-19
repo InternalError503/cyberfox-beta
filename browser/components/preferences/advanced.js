@@ -50,8 +50,8 @@ var gAdvancedPane = {
     if (AppConstants.MOZ_CRASHREPORTER) {
       this.initSubmitCrashes();
     }
-    this.initTelemetry();
     if (AppConstants.MOZ_TELEMETRY_REPORTING) {
+      this.initTelemetry();
       this.initSubmitHealthReport();
     }
     this.updateOnScreenKeyboardVisibility();

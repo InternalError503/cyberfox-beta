@@ -29,6 +29,7 @@ class VerifyPreTracer;
 namespace gc {
 
 typedef Vector<JS::Zone*, 4, SystemAllocPolicy> ZoneVector;
+using BlackGrayEdgeVector = Vector<TenuredCell*, 0, SystemAllocPolicy>;
 
 class AutoMaybeStartBackgroundAllocation;
 class MarkingValidator;
@@ -720,13 +721,6 @@ class GCRuntime
         --noNurseryAllocationCheck;
     }
 
-    bool isInsideUnsafeRegion() { return inUnsafeRegion != 0; }
-    void enterUnsafeRegion() { ++inUnsafeRegion; }
-    void leaveUnsafeRegion() {
-        MOZ_ASSERT(inUnsafeRegion > 0);
-        --inUnsafeRegion;
-    }
-
     bool isStrictProxyCheckingEnabled() { return disableStrictProxyCheckingCount == 0; }
     void disableStrictProxyChecking() { ++disableStrictProxyCheckingCount; }
     void enableStrictProxyChecking() {
@@ -734,6 +728,18 @@ class GCRuntime
         --disableStrictProxyCheckingCount;
     }
 #endif // DEBUG
+
+    bool isInsideUnsafeRegion() { return inUnsafeRegion != 0; }
+    void enterUnsafeRegion() { ++inUnsafeRegion; }
+    void leaveUnsafeRegion() {
+        MOZ_ASSERT(inUnsafeRegion > 0);
+        --inUnsafeRegion;
+    }
+
+    void verifyIsSafeToGC() {
+        MOZ_DIAGNOSTIC_ASSERT(!isInsideUnsafeRegion(),
+                              "[AutoAssertNoGC] possible GC in GC-unsafe region");
+    }
 
     void setAlwaysPreserveCode() { alwaysPreserveCode = true; }
 
@@ -792,7 +798,11 @@ class GCRuntime
     }
 
     JS::Zone* getCurrentZoneGroup() { return currentZoneGroup; }
-    void setFoundBlackGrayEdges() { foundBlackGrayEdges = true; }
+    void setFoundBlackGrayEdges(TenuredCell& target) {
+        AutoEnterOOMUnsafeRegion oomUnsafe;
+        if (!foundBlackGrayEdges.append(&target))
+            oomUnsafe.crash("OOM|small: failed to insert into foundBlackGrayEdges");
+    }
 
     uint64_t gcNumber() const { return number; }
 
@@ -893,7 +903,8 @@ class GCRuntime
     friend class ArenaLists;
     Chunk* pickChunk(const AutoLockGC& lock,
                      AutoMaybeStartBackgroundAllocation& maybeStartBGAlloc);
-    Arena* allocateArena(Chunk* chunk, Zone* zone, AllocKind kind, const AutoLockGC& lock);
+    Arena* allocateArena(Chunk* chunk, Zone* zone, AllocKind kind,
+                         ShouldCheckThresholds checkThresholds, const AutoLockGC& lock);
     void arenaAllocatedDuringGC(JS::Zone* zone, Arena* arena);
 
     // Allocator internals
@@ -923,7 +934,7 @@ class GCRuntime
     void requestMajorGC(JS::gcreason::Reason reason);
     SliceBudget defaultBudget(JS::gcreason::Reason reason, int64_t millis);
     void budgetIncrementalGC(SliceBudget& budget, AutoLockForExclusiveAccess& lock);
-    void resetIncrementalGC(const char* reason, AutoLockForExclusiveAccess& lock);
+    void resetIncrementalGC(AbortReason reason, AutoLockForExclusiveAccess& lock);
 
     // Assert if the system state is such that we should never
     // receive a request to do GC work.
@@ -1168,7 +1179,7 @@ class GCRuntime
     bool releaseObservedTypes;
 
     /* Whether any black->gray edges were found during marking. */
-    bool foundBlackGrayEdges;
+    BlackGrayEdgeVector foundBlackGrayEdges;
 
     /* Singly linekd list of zones to be swept in the background. */
     ZoneList backgroundSweepZones;
@@ -1339,7 +1350,6 @@ class GCRuntime
     /* Always preserve JIT code during GCs, for testing. */
     bool alwaysPreserveCode;
 
-#ifdef DEBUG
     /*
      * Some regions of code are hard for the static rooting hazard analysis to
      * understand. In those cases, we trade the static analysis for a dynamic
@@ -1348,6 +1358,7 @@ class GCRuntime
      */
     int inUnsafeRegion;
 
+#ifdef DEBUG
     size_t noGCOrAllocationCheck;
     size_t noNurseryAllocationCheck;
 

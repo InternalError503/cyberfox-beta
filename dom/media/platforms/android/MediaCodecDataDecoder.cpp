@@ -123,6 +123,8 @@ public:
     return NS_OK;
   }
 
+  bool SupportDecoderRecycling() const override { return mIsCodecSupportAdaptivePlayback; }
+
 protected:
   layers::ImageContainer* mImageContainer;
   const VideoInfo& mConfig;
@@ -273,6 +275,18 @@ MediaCodecDataDecoder::InitDecoder(Surface::Param aSurface)
     return NS_ERROR_FAILURE;
   }
 
+  // Check if the video codec supports adaptive playback or not.
+  if (aSurface) {
+    mIsCodecSupportAdaptivePlayback =
+      java::HardwareCodecCapabilityUtils::CheckSupportsAdaptivePlayback(mDecoder,
+        nsCString(TranslateMimeType(mMimeType)));
+    if (mIsCodecSupportAdaptivePlayback) {
+        // TODO: may need to find a way to not use hard code to decide the max w/h.
+        mFormat->SetInteger(MediaFormat::KEY_MAX_WIDTH, 1920);
+        mFormat->SetInteger(MediaFormat::KEY_MAX_HEIGHT, 1080);
+    }
+  }
+
   nsresult rv;
   NS_ENSURE_SUCCESS(rv = mDecoder->Configure(mFormat, aSurface, nullptr, 0), rv);
   NS_ENSURE_SUCCESS(rv = mDecoder->Start(), rv);
@@ -394,8 +408,15 @@ MediaCodecDataDecoder::QueueSample(const MediaRawData* aSample)
 
   PodCopy(static_cast<uint8_t*>(directBuffer), aSample->Data(), aSample->Size());
 
-  res = mDecoder->QueueInputBuffer(inputIndex, 0, aSample->Size(),
-                                   aSample->mTime, 0);
+  CryptoInfo::LocalRef cryptoInfo = GetCryptoInfoFromSample(aSample);
+  if (cryptoInfo) {
+    res = mDecoder->QueueSecureInputBuffer(inputIndex, 0, cryptoInfo,
+                                           aSample->mTime, 0);
+  } else {
+    res = mDecoder->QueueInputBuffer(inputIndex, 0, aSample->Size(),
+                                     aSample->mTime, 0);
+  }
+
   if (NS_FAILED(res)) {
     return res;
   }
