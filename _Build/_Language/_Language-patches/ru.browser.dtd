@@ -177,8 +177,8 @@
 <!ENTITY turnoffmenuabout.label "Включить доступ к about:config в меню">
 
 <!-- Language Settings Tweak -->
-<!ENTITY userLanguages.label "Select Language">
-<!ENTITY userLanguages.desc "Choose your preferred language for &brandShortName;">
+<!ENTITY userLanguages.label "Выбор языка">
+<!ENTITY userLanguages.desc "Выберите предпочитаемый язык локализации &brandShortName;">
 
 <!-- Plugin Settings Tweak -->
 <!ENTITY browserplugins.label "Плагины браузера">
