@@ -1612,6 +1612,9 @@ pref("browser.safebrowsing.warning.infoURL", "https://support.mozilla.org/en-US/
 //Add information Url for click to play
 pref("plugins.clickToActivateInfo.url", "https://support.mozilla.org/1/Firefox/%VERSION%/%OS%/%LOCALE%/clicktoplay"); 
 
+//Add plugins disabled Informational URL.
+pref("app.learn.more.plugins_disabled", "https://8pecxstudios.com/Forums/viewtopic.php?f=8&t=1490");
+
 //NewTab page search feature
 pref("browser.newtab.search.enabled", true);
 

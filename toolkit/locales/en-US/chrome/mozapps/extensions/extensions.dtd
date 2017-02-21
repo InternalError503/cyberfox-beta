@@ -253,3 +253,6 @@
 
 <!ENTITY pluginDeprecation.description "Missing something? Some plugins are no longer supported by &brandShortName;.">
 <!ENTITY pluginDeprecation.learnMore "Learn More.">
+
+<!ENTITY pluginDisabled.description "Missing something? Plugins are disabled by default in &brandShortName;.">
+<!ENTITY pluginDisabled.learnMore "Learn More.">

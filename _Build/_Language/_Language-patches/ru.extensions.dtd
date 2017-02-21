@@ -1,3 +1,6 @@
 <!-- global informations -->
 <!ENTITY info.plugincheck.label "Проверить актуальность версий установленных у вас плагинов">
 <!ENTITY info.plugincheck.tooltip "Проверить актуальность версий установленных у вас плагинов">
+
+<!ENTITY pluginDisabled.description "Missing something? Plugins are disabled by default in &brandShortName;.">
+<!ENTITY pluginDisabled.learnMore "Learn More.">

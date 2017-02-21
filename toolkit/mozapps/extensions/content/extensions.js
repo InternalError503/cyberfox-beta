@@ -2749,6 +2749,13 @@ var gListView = {
     } catch (e) {
       document.getElementById("signing-dev-info").hidden = true;
     }
+
+    if (Preferences.get("plugins.disabled", true)) {
+      document.getElementById("plugindisabled-learnmore-link")
+        .setAttribute("href", Services.urlFormatter.formatURLPref("app.learn.more.plugins_disabled"));
+    } else {
+      document.getElementById("plugindisabled-notice").hidden = true;
+    }
   },
 
   show: function(aType, aRequest) {
