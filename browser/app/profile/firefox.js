@@ -657,7 +657,7 @@ pref("plugin.java_allowed", false);
 // Toggle Flash plugin allowed state regardless of whitelist.
 pref("plugin.flash_allowed", false);
 // Toggle Silverlight plugin allowed state regardless of whitelist.
-pref("plugin.silverlight_allowed", true);
+pref("plugin.silverlight_allowed", false);
 #endif
 
 #ifdef XP_WIN
