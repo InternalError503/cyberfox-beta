@@ -2,5 +2,5 @@
 <!ENTITY info.plugincheck.label                 "Sprawdź, czy zainstalowane wtyczki są aktualne">
 <!ENTITY info.plugincheck.tooltip               "Sprawdź, czy zainstalowane wtyczki są aktualne">
 
-<!ENTITY pluginDisabled.description "Missing something? Plugins are disabled by default in &brandShortName;.">
-<!ENTITY pluginDisabled.learnMore "Learn More.">
+<!ENTITY pluginDisabled.description "Czegoś brakuje? Wtyczki są domyślnie wyłączone w programie &brandShortName;.">
+<!ENTITY pluginDisabled.learnMore "Dowiedz się więcej.">
