@@ -649,7 +649,7 @@ pref("plugin.state.java", 1);
 
 #ifdef XP_WIN
 // Toggle all browser plugins
-pref("plugins.disabled", false);
+pref("plugins.disabled", true);
 // Toggle plugin whitelist (Flash, Silverlight)
 pref("plugin.allowed_whitelist.enabled", false);
 // Toggle Java plugin allowed state regardless of whitelist.
