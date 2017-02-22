@@ -17,6 +17,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/DownloadUtils.jsm");
 Cu.import("resource://gre/modules/AddonManager.jsm");
 Cu.import("resource://gre/modules/addons/AddonRepository.jsm");
+Cu.import("resource://gre/modules/AppConstants.jsm");
 
 XPCOMUtils.defineLazyModuleGetter(this, "PluralForm",
                                   "resource://gre/modules/PluralForm.jsm");
@@ -2750,7 +2751,7 @@ var gListView = {
       document.getElementById("signing-dev-info").hidden = true;
     }
 
-    if (Preferences.get("plugins.disabled", true)) {
+    if (Preferences.get("plugins.disabled", true) && AppConstants.platform == "win") {
       document.getElementById("plugindisabled-learnmore-link")
         .setAttribute("href", Services.urlFormatter.formatURLPref("app.learn.more.plugins_disabled"));
     } else {
