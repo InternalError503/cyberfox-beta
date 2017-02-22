@@ -2027,10 +2027,11 @@ WebSocket::CreateAndDispatchCloseEvent(bool aWasClean,
                                        uint16_t aCode,
                                        const nsAString& aReason)
 {
-  MOZ_ASSERT(mImpl);
   AssertIsOnTargetThread();
 
-  if (mImpl->mChannel) {
+  // This method is called by a runnable and it can happen that, in the
+  // meantime, GC unlinked this object, so mImpl could be null.
+  if (mImpl && mImpl->mChannel) {
     mImpl->mService->WebSocketClosed(mImpl->mChannel->Serial(),
                                      mImpl->mInnerWindowID,
                                      aWasClean, aCode, aReason);
@@ -2295,6 +2296,11 @@ WebSocketImpl::UnregisterWorkerHolder()
   MOZ_ASSERT(mWorkerPrivate);
   mWorkerPrivate->AssertIsOnWorkerThread();
   MOZ_ASSERT(mWorkerHolder);
+
+  {
+    MutexAutoLock lock(mMutex);
+    mWorkerShuttingDown = true;
+  }
 
   // The DTOR of this WorkerHolder will release the worker for us.
   mWorkerHolder = nullptr;
@@ -2850,7 +2856,7 @@ WebSocketImpl::Dispatch(already_AddRefed<nsIRunnable> aEvent, uint32_t aFlags)
     return NS_OK;
   }
 
-  MOZ_ASSERT(mWorkerPrivate);
+  MOZ_DIAGNOSTIC_ASSERT(mWorkerPrivate);
 
 #ifdef DEBUG
   MOZ_ASSERT(HasWorkerHolderRegistered());

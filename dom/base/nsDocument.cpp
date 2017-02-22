@@ -1494,6 +1494,11 @@ nsDocument::~nsDocument()
   for (StyleSheet* sheet : mStyleSheets) {
     sheet->SetOwningDocument(nullptr);
   }
+  for (auto& sheets : mAdditionalSheets) {
+    for (StyleSheet* sheet : sheets) {
+      sheet->SetOwningDocument(nullptr);
+    }
+  }
   if (mAttrStyleSheet) {
     mAttrStyleSheet->SetOwningDocument(nullptr);
   }
@@ -4301,9 +4306,7 @@ nsDocument::SetScopeObject(nsIGlobalObject* aGlobal)
       // window, we should be able to join a DocGroup!
       nsAutoCString docGroupKey;
       mozilla::dom::DocGroup::GetKey(NodePrincipal(), docGroupKey);
-      if (mDocGroup) {
-        MOZ_RELEASE_ASSERT(mDocGroup->MatchesKey(docGroupKey));
-      } else {
+      if (!mDocGroup) {
         mDocGroup = tabgroup->AddDocument(docGroupKey, this);
         MOZ_ASSERT(mDocGroup);
       }

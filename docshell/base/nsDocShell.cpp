@@ -2960,11 +2960,11 @@ nsDocShell::GetSessionStorageForPrincipal(nsIPrincipal* aPrincipal,
   AssertOriginAttributesMatchPrivateBrowsing();
   if (aCreate) {
     return manager->CreateStorage(domWin->GetCurrentInnerWindow(), aPrincipal,
-                                  aDocumentURI, aStorage);
+                                  aDocumentURI, UsePrivateBrowsing(), aStorage);
   }
 
   return manager->GetStorage(domWin->GetCurrentInnerWindow(), aPrincipal,
-                             aStorage);
+                             UsePrivateBrowsing(), aStorage);
 }
 
 nsresult
