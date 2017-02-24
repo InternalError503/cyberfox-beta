@@ -1664,6 +1664,9 @@ pref("app.update.releasenotes.enabled", true);
 // Verifiy SHA512 on updates.
 pref("app.update.verifysha", true);
 
+// Start browser after update
+pref("app.update.startbrowser", true);
+
 //set bool pref for copy tab url enabled
 pref("browser.tabs.copyurl", true);
 pref("browser.tabs.copyurl.activetab", true);

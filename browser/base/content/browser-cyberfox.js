@@ -373,6 +373,9 @@
 					if (!Services.prefs.getBoolPref("app.update.verifysha")) {
 						args.push("--nosha");
 					}
+					if (!Services.prefs.getBoolPref("app.update.startbrowser")) { 
+						args.push("--nost");
+					}
 					process.run(false, args, args.length);
 				} else {
 					throw new Error('Whoops! Hey somethings is not right maybe contact support!');
