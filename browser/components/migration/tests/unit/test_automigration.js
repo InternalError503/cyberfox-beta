@@ -187,6 +187,7 @@ add_task(function* checkUndoPreconditions() {
  */
 add_task(function* checkUndoRemoval() {
   MigrationUtils.initializeUndoData();
+  Preferences.set("browser.migrate.automigrate.browser", "automationbrowser");
   // Insert a login and check that that worked.
   MigrationUtils.insertLoginWrapper({
     hostname: "www.mozilla.org",
@@ -611,6 +612,27 @@ add_task(function* checkUndoVisitsState() {
 });
 
 add_task(function* checkHistoryRemovalCompletion() {
+  AutoMigrate._errorMap = {bookmarks: 0, visits: 0, logins: 0};
   yield AutoMigrate._removeSomeVisits([{url: "http://www.example.com/", limit: -1}]);
   ok(true, "Removing visits should complete even if removing some visits failed.");
+  Assert.equal(AutoMigrate._errorMap.visits, 1, "Should have logged the error for visits.");
+
+  // Unfortunately there's not a reliable way to make removing bookmarks be
+  // unhappy unless the DB is messed up (e.g. contains children but has
+  // parents removed already).
+  yield AutoMigrate._removeUnchangedBookmarks([
+    {guid: PlacesUtils.bookmarks, lastModified: new Date(0), parentGuid: 0},
+    {guid: "gobbledygook", lastModified: new Date(0), parentGuid: 0},
+  ]);
+  ok(true, "Removing bookmarks should complete even if some items are gone or bogus.");
+  Assert.equal(AutoMigrate._errorMap.bookmarks, 0,
+               "Should have ignored removing non-existing (or builtin) bookmark.");
+
+
+  yield AutoMigrate._removeUnchangedLogins([
+    {guid: "gobbledygook", timePasswordChanged: new Date(0)},
+  ]);
+  ok(true, "Removing logins should complete even if logins don't exist.");
+  Assert.equal(AutoMigrate._errorMap.logins, 0,
+               "Should have ignored removing non-existing logins.");
 });

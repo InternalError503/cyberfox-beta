@@ -1272,6 +1272,23 @@ Event::GetShadowRelatedTarget(nsIContent* aCurrentTarget,
   return nullptr;
 }
 
+NS_IMETHODIMP
+Event::GetCancelBubble(bool* aCancelBubble)
+{
+  NS_ENSURE_ARG_POINTER(aCancelBubble);
+  *aCancelBubble = CancelBubble();
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+Event::SetCancelBubble(bool aCancelBubble)
+{
+  if (aCancelBubble) {
+    mEvent->StopPropagation();
+  }
+  return NS_OK;
+}
+
 } // namespace dom
 } // namespace mozilla
 

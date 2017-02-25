@@ -6,6 +6,7 @@
 
 DIRS += [
     'cyberctr',
+    'disableSHA1rollout',
     'pdfjs',
     'pocket',
 ]
