@@ -40,7 +40,7 @@
 <!ENTITY openLocationCmd.label         "Открыть адрес…">
 <!ENTITY openLocationCmd.accesskey     "L">
 <!ENTITY bookmarksMenuButton.tooltip   "Показать Ваши закладки">
-<!ENTITY restoreTabsOnDemand.label        "Don’t load tabs until selected">
+<!ENTITY restoreTabsOnDemand.label        "Не загружать вкладки без запроса">
 <!ENTITY restoreTabsOnDemand.accesskey    "u">
 
 <!-- cyberfox -->
@@ -71,7 +71,7 @@
 <!ENTITY turnonclone.label "Включить опцию клонирования вкладки">
 <!ENTITY cloneCurrentTab.label "Клонировать вкладку">
 <!ENTITY cloneInNewWindow.label "Клонировать в новом окне">
-<!ENTITY cloneInNewPrivate.label "Private">
+<!ENTITY cloneInNewPrivate.label "Клонировать приватно"><!-- Note: Need shorter translation for Private -->
 <!-- End Clone Current Tab Tweak -->
 
 <!-- Features Tab Tweak -->
