@@ -818,7 +818,6 @@ GCRuntime::GCRuntime(JSRuntime* rt) :
     numActiveZoneIters(0),
     cleanUpEverything(false),
     grayBufferState(GCRuntime::GrayBufferState::Unused),
-    grayBitsValid(false),
     majorGCTriggerReason(JS::gcreason::NO_REASON),
     minorGCTriggerReason(JS::gcreason::NO_REASON),
     fullGCForAtomsRequested_(false),
@@ -3630,9 +3629,11 @@ GCRuntime::purgeRuntime(AutoLockForExclusiveAccess& lock)
 
 bool
 GCRuntime::shouldPreserveJITCode(JSCompartment* comp, int64_t currentTime,
-                                 JS::gcreason::Reason reason)
+                                 JS::gcreason::Reason reason, bool canAllocateMoreCode)
 {
     if (cleanUpEverything)
+        return false;
+    if (!canAllocateMoreCode)
         return false;
 
     if (alwaysPreserveCode)
@@ -3793,15 +3794,19 @@ GCRuntime::beginMarkPhase(JS::gcreason::Reason reason, AutoLockForExclusiveAcces
         zone->setPreservingCode(false);
     }
 
+    // Discard JIT code more aggressively if the process is approaching its
+    // executable code limit.
+    bool canAllocateMoreCode = jit::CanLikelyAllocateMoreExecutableMemory();
+
     for (CompartmentsIter c(rt, WithAtoms); !c.done(); c.next()) {
         c->marked = false;
         c->scheduledForDestruction = false;
         c->maybeAlive = false;
-        if (shouldPreserveJITCode(c, currentTime, reason))
+        if (shouldPreserveJITCode(c, currentTime, reason, canAllocateMoreCode))
             c->zone()->setPreservingCode(true);
     }
 
-    if (!rt->gc.cleanUpEverything) {
+    if (!rt->gc.cleanUpEverything && canAllocateMoreCode) {
         if (JSCompartment* comp = jit::TopmostIonActivationCompartment(rt))
             comp->zone()->setPreservingCode(true);
     }
@@ -4458,6 +4463,11 @@ GCRuntime::findZoneEdgesForWeakMaps()
      * group.
      */
 
+#ifdef DEBUG
+    for (ZonesIter zone(rt, WithAtoms); !zone.done(); zone.next())
+        MOZ_ASSERT(zone->gcZoneGroupEdges.empty());
+#endif
+
     for (GCZonesIter zone(rt); !zone.done(); zone.next()) {
         if (!WeakMapBase::findInterZoneEdges(zone))
             return false;
@@ -4482,12 +4492,16 @@ GCRuntime::findZoneGroups(AutoLockForExclusiveAccess& lock)
     currentZoneGroup = zoneGroups;
     zoneGroupIndex = 0;
 
+#ifdef DEBUG
     for (Zone* head = currentZoneGroup; head; head = head->nextGroup()) {
         for (Zone* zone = head; zone; zone = zone->nextNodeInGroup())
             MOZ_ASSERT(zone->isGCMarking());
     }
 
     MOZ_ASSERT_IF(!isIncremental, !currentZoneGroup->nextGroup());
+    for (ZonesIter zone(rt, WithAtoms); !zone.done(); zone.next())
+        MOZ_ASSERT(zone->gcZoneGroupEdges.empty());
+#endif
 }
 
 static void
@@ -5443,7 +5457,7 @@ GCRuntime::endSweepPhase(bool destroyingRuntime, AutoLockForExclusiveAccess& loc
 
         /* If we finished a full GC, then the gray bits are correct. */
         if (isFull)
-            grayBitsValid = true;
+            rt->setGCGrayBitsValid(true);
     }
 
     finishMarkingValidation();
@@ -7675,3 +7689,28 @@ js::gc::Cell::dump() const
     dump(stderr);
 }
 #endif
+
+JS_PUBLIC_API(bool)
+js::gc::detail::CellIsMarkedGrayIfKnown(const Cell* cell)
+{
+    MOZ_ASSERT(cell);
+    if (!cell->isTenured())
+        return false;
+
+    // We ignore the gray marking state of cells and return false in two cases:
+    //
+    // 1) When OOM has caused us to clear the gcGrayBitsValid_ flag.
+    //
+    // 2) When we are in an incremental GC and examine a cell that is in a zone
+    // that is not being collected. Gray targets of CCWs that are marked black
+    // by a barrier will eventually be marked black in the next GC slice.
+    auto tc = &cell->asTenured();
+    auto rt = tc->runtimeFromMainThread();
+    if (!rt->areGCGrayBitsValid() ||
+        (rt->gc.isIncrementalGCInProgress() && !tc->zone()->wasGCStarted()))
+    {
+        return false;
+    }
+
+    return detail::CellIsMarkedGray(tc);
+}

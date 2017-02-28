@@ -9260,11 +9260,19 @@
   },
   "VIDEO_AS_CONTENT_SOURCE" : {
     "alert_emails": ["ajones@mozilla.com", "kaku@mozilla.com"],
-    "expires_in_version": "56",
+    "expires_in_version": "58",
     "description": "Usage of a {visible / invisible} video element as the source of {drawImage(), createPattern(), createImageBitmap() and captureStream()} APIs. (0 = ALL_VISIBLE, 1 = ALL_INVISIBLE, 2 = drawImage_VISIBLE, 3 = drawImage_INVISIBLE, 4 = createPattern_VISIBLE, 5 = createPattern_INVISIBLE, 6 = createImageBitmap_VISIBLE, 7 = createImageBitmap_INVISIBLE, 8 = captureStream_VISIBLE, 9 = captureStream_INVISIBLE)",
     "kind": "enumerated",
     "n_values": 12,
     "bug_numbers": [1299718]
+  },
+  "VIDEO_AS_CONTENT_SOURCE_IN_TREE_OR_NOT" : {
+    "alert_emails": ["ajones@mozilla.com", "kaku@mozilla.com"],
+    "expires_in_version": "58",
+    "description": "Usage of an invisible {in tree / not in tree} video element as the source of {drawImage(), createPattern(), createImageBitmap() and captureStream()} APIs. (0 = ALL_IN_TREE, 1 = ALL_NOT_IN_TREE, 2 = drawImage_IN_TREE, 3 = drawImage_NOT_IN_TREE, 4 = createPattern_IN_TREE, 5 = createPattern_NOT_IN_TREE, 6 = createImageBitmap_IN_TREE, 7 = createImageBitmap_NOT_IN_TREE, 8 = captureStream_IN_TREE, 9 = captureStream_NOT_IN_TREE)",
+    "kind": "enumerated",
+    "n_values": 12,
+    "bug_numbers": [1337301]
   },
   "VIDEO_UNLOAD_STATE": {
     "alert_emails": ["ajones@mozilla.com"],
@@ -10285,14 +10293,14 @@
     "description": "Count of scroll actions triggered by different input methods. See gfx/layers/apz/util/ScrollInputMethods.h for a list of possible values and their meanings."
   },
   "TOTAL_SCROLL_Y": {
-    "alert_emails": ["rhunt@mozilla.com"],
+    "alert_emails": ["hkirschner@mozilla.com"],
     "bug_numbers": [1297867],
     "expires_in_version": "58",
     "kind": "count",
     "description": "Count of the total number of CSS pixels scrolled up or down in the vertical axis of the root frame of all the pages visited in a subsession. This doesn't include any scrolling of nested scroll frames such as inputs, iframes, or scrollable divs."
   },
   "PAGE_MAX_SCROLL_Y": {
-    "alert_emails": ["rhunt@mozilla.com"],
+    "alert_emails": ["hkirschner@mozilla.com"],
     "bug_numbers": [1312881],
     "expires_in_version": "58",
     "kind": "exponential",

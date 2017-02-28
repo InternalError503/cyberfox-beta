@@ -6823,6 +6823,12 @@ HTMLMediaElement::MarkAsContentSource(CallerAPI aAPI)
   LOG(LogLevel::Debug,
       ("%p Log VIDEO_AS_CONTENT_SOURCE: visibility = %u, API: '%d' and 'All'",
        this, isVisible, aAPI));
+
+  if (!isVisible) {
+    LOG(LogLevel::Debug,
+        ("%p Log VIDEO_AS_CONTENT_SOURCE_IN_TREE_OR_NOT: inTree = %u, API: '%d' and 'All'",
+         this, IsInUncomposedDoc(), aAPI));
+  }
 }
 
 } // namespace dom

@@ -818,9 +818,6 @@ class GCRuntime
     bool isFullGc() const { return isFull; }
     bool isCompactingGc() const { return isCompacting; }
 
-    bool areGrayBitsValid() const { return grayBitsValid; }
-    void setGrayBitsInvalid() { grayBitsValid = false; }
-
     bool minorGCRequested() const { return minorGCTriggerReason != JS::gcreason::NO_REASON; }
     bool majorGCRequested() const { return majorGCTriggerReason != JS::gcreason::NO_REASON; }
     bool isGcNeeded() { return minorGCRequested() || majorGCRequested(); }
@@ -955,7 +952,7 @@ class GCRuntime
     void purgeRuntime(AutoLockForExclusiveAccess& lock);
     MOZ_MUST_USE bool beginMarkPhase(JS::gcreason::Reason reason, AutoLockForExclusiveAccess& lock);
     bool shouldPreserveJITCode(JSCompartment* comp, int64_t currentTime,
-                               JS::gcreason::Reason reason);
+                               JS::gcreason::Reason reason, bool canAllocateMoreCode);
     void traceRuntimeForMajorGC(JSTracer* trc, AutoLockForExclusiveAccess& lock);
     void traceRuntimeAtoms(JSTracer* trc, AutoLockForExclusiveAccess& lock);
     void traceRuntimeCommon(JSTracer* trc, TraceOrMarkRuntime traceOrMark,
@@ -1109,12 +1106,6 @@ class GCRuntime
         grayBufferState = GrayBufferState::Unused;
         resetBufferedGrayRoots();
     }
-
-    /*
-     * The gray bits can become invalid if UnmarkGray overflows the stack. A
-     * full GC will reset this bit, since it fills in all the gray bits.
-     */
-    bool grayBitsValid;
 
     mozilla::Atomic<JS::gcreason::Reason, mozilla::Relaxed> majorGCTriggerReason;
 
