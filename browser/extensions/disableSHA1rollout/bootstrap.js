@@ -12,7 +12,8 @@ Cu.import("resource://gre/modules/UpdateUtils.jsm");
 
  // Percentage of the population to attempt to disable SHA-1 for, by channel.
 const TEST_THRESHOLD = {
-  beta: 0.7, // 70%
+  beta: 1.0, // 100%
+  release: 0.65, // 65%
 };
 
 const PREF_COHORT_SAMPLE = "disableSHA1.rollout.cohortSample";
