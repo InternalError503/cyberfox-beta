@@ -7940,11 +7940,11 @@ nsDocShell::CreateAboutBlankContentViewer(nsIPrincipal* aPrincipal,
     return NS_ERROR_FAILURE;
   }
 
-  AutoRestore<bool> creatingDocument(mCreatingDocument);
-  mCreatingDocument = true;
-
   // mContentViewer->PermitUnload may release |this| docshell.
   nsCOMPtr<nsIDocShell> kungFuDeathGrip(this);
+
+  AutoRestore<bool> creatingDocument(mCreatingDocument);
+  mCreatingDocument = true;
 
   if (aPrincipal && !nsContentUtils::IsSystemPrincipal(aPrincipal) &&
       mItemType != typeChrome) {
@@ -8011,7 +8011,11 @@ nsDocShell::CreateAboutBlankContentViewer(nsIPrincipal* aPrincipal,
   if (docFactory) {
     nsCOMPtr<nsIPrincipal> principal;
     if (mSandboxFlags & SANDBOXED_ORIGIN) {
-      principal = nsNullPrincipal::CreateWithInheritedAttributes(aPrincipal);
+      if (aPrincipal) {
+        principal = nsNullPrincipal::CreateWithInheritedAttributes(aPrincipal);
+      } else {
+        principal = nsNullPrincipal::CreateWithInheritedAttributes(this);
+      }
     } else {
       principal = aPrincipal;
     }
