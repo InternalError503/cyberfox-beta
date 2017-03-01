@@ -28,6 +28,8 @@ XPCOMUtils.defineLazyModuleGetter(this, "PlacesUtils",
                                   "resource://gre/modules/PlacesUtils.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "PromiseUtils",
                                   "resource://gre/modules/PromiseUtils.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "ResponsivenessMonitor",
+                                  "resource://gre/modules/ResponsivenessMonitor.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "Sqlite",
                                   "resource://gre/modules/Sqlite.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "WindowsRegistry",
@@ -210,7 +212,7 @@ this.MigratorPrototype = {
     return types.reduce((a, b) => { a |= b; return a }, 0);
   },
 
-  getKey: function MP_getKey() {
+  getBrowserKey: function MP_getBrowserKey() {
     return this.contractID.match(/\=([^\=]+)$/)[1];
   },
 
@@ -229,7 +231,7 @@ this.MigratorPrototype = {
       resources = resources.filter(r => aItems & r.type);
 
     // Used to periodically give back control to the main-thread loop.
-    let unblockMainThread = function () {
+    let unblockMainThread = function() {
       return new Promise(resolve => {
         Services.tm.mainThread.dispatch(resolve, Ci.nsIThread.DISPATCH_NORMAL);
       });
@@ -256,19 +258,14 @@ this.MigratorPrototype = {
         MigrationUtils._importQuantities[resourceType] = 0;
       }
       notify("Migration:Started");
-      for (let [key, value] of resourcesGroupedByItems) {
-        // Workaround bug 449811.
-        let migrationType = key, itemResources = value;
-
+      for (let [migrationType, itemResources] of resourcesGroupedByItems) {
         notify("Migration:ItemBeforeMigrate", migrationType);
 
         let itemSuccess = false;
         for (let res of itemResources) {
-          // Workaround bug 449811.
-          let resource = res;
           let completeDeferred = PromiseUtils.defer();
           let resourceDone = function(aSuccess) {
-            itemResources.delete(resource);
+            itemResources.delete(res);
             itemSuccess |= aSuccess;
             if (itemResources.size == 0) {
               notify(itemSuccess ?
@@ -285,9 +282,8 @@ this.MigratorPrototype = {
           // If migrate throws, an error occurred, and the callback
           // (itemMayBeDone) might haven't been called.
           try {
-            resource.migrate(resourceDone);
-          }
-          catch (ex) {
+            res.migrate(resourceDone);
+          } catch (ex) {
             Cu.reportError(ex);
             resourceDone(false);
           }

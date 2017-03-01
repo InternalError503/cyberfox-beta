@@ -602,9 +602,6 @@ pref("media.video-queue.send-to-compositor-size", 9999);
 // Whether to disable the video stats to prevent fingerprinting
 pref("media.video_stats.enabled", true);
 
-// Whether to check the decoder supports recycling.
-pref("media.decoder.recycle.enabled", false);
-
 // Weather we allow AMD switchable graphics
 pref("layers.amd-switchable-gfx.enabled", true);
 
@@ -1238,7 +1235,7 @@ pref("javascript.options.strict.debug",     false);
 pref("javascript.options.baselinejit",      true);
 pref("javascript.options.ion",              true);
 pref("javascript.options.asmjs",            true);
-pref("javascript.options.wasm",             false);
+pref("javascript.options.wasm",             true);
 pref("javascript.options.wasm_baselinejit", false);
 pref("javascript.options.native_regexp",    true);
 pref("javascript.options.parallel_parsing", true);

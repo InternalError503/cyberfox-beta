@@ -269,6 +269,7 @@ nsHttpChannel::nsHttpChannel()
     , mPinCacheContent(0)
     , mIsCorsPreflightDone(0)
     , mStronglyFramed(false)
+    , mUsedNetwork(0)
     , mPushedStream(nullptr)
     , mLocalBlocklist(false)
     , mWarningReporter(nullptr)
@@ -771,6 +772,7 @@ nsHttpChannel::SetupTransaction()
 
     nsresult rv;
 
+    mUsedNetwork = 1;
     if (mCaps & NS_HTTP_ALLOW_PIPELINING) {
         //
         // disable pipelining if:

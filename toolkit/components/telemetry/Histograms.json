@@ -124,6 +124,41 @@
     "description": "The operating system audio back-end used when successfully opening an audio stream, or whether the failure occurred on the first try or not <https://dxr.mozilla.org/mozilla-central/search?q=AUDIOSTREAM_BACKEND_ID_STR>",
     "releaseChannelCollection": "opt-out"
   },
+  "AUSHELPER_CPU_ERROR_CODE": {
+    "alert_emails": ["application-update-telemetry-alerts@mozilla.com"],
+    "bug_numbers": [1296630],
+    "expires_in_version": "60",
+    "kind": "enumerated",
+    "n_values": 16,
+    "releaseChannelCollection": "opt-out",
+    "description": "The error code from the aushelper system add-on when querying the registry for CPU information for bug 1296630 (see browser/extensions/aushelper/bootstrap.js)."
+  },
+  "AUSHELPER_CPU_RESULT_CODE": {
+    "alert_emails": ["application-update-telemetry-alerts@mozilla.com"],
+    "bug_numbers": [1296630],
+    "expires_in_version": "60",
+    "kind": "enumerated",
+    "n_values": 5,
+    "releaseChannelCollection": "opt-out",
+    "description": "Whether the system is affected by bug 1296630 (1=No, 2=Yes, 3=Error, and 4=Unknown)."
+  },
+  "AUSHELPER_WEBSENSE_ERROR_CODE": {
+    "alert_emails": ["application-update-telemetry-alerts@mozilla.com"],
+    "bug_numbers": [1305847],
+    "expires_in_version": "60",
+    "kind": "enumerated",
+    "n_values": 8,
+    "releaseChannelCollection": "opt-out",
+    "description": "The error code from the aushelper system add-on when gathering information on Websense (see browser/extensions/aushelper/bootstrap.js)."
+  },
+  "AUSHELPER_WEBSENSE_REG_EXISTS": {
+    "alert_emails": ["application-update-telemetry-alerts@mozilla.com"],
+    "bug_numbers": [1305847],
+    "expires_in_version": "60",
+    "kind": "boolean",
+    "releaseChannelCollection": "opt-out",
+    "description": "Whether the system has a Websense InstallVersion registry value (see browser/extensions/aushelper/bootstrap.js)."
+  },
   "BACKGROUNDFILESAVER_THREAD_COUNT": {
     "expires_in_version": "never",
     "kind": "enumerated",
@@ -2066,6 +2101,15 @@
     "n_values": 16,
     "description": "SSL Version (1=tls1, 2=tls1.1, 3=tls1.2, 4=tls1.3)"
   },
+  "SSL_HANDSHAKE_RESULT": {
+    "alert_emails": ["seceng-telemetry@mozilla.com"],
+    "bug_numbers": [1331280],
+    "expires_in_version": "never",
+    "kind": "enumerated",
+    "n_values": 672,
+    "releaseChannelCollection": "opt-out",      
+    "description": "SSL handshake result, 0=success, 1-255=NSS error offset, 256-511=SEC error offset + 256, 512-639=NSPR error offset + 512, 640-670=PKIX error, 671=unknown err"
+  },
   "SSL_TIME_UNTIL_READY": {
     "alert_emails": ["seceng-telemetry@mozilla.com"],
     "expires_in_version": "never",
@@ -2416,6 +2460,15 @@
     "description": "HPACK: peak size in bytes of the table",
     "alert_emails": ["necko@mozilla.com", "hurley@mozilla.com"],
     "bug_numbers": [1296280]
+  },
+  "HTTP_CHANNEL_DISPOSITION" : {
+    "alert_emails": ["necko@mozilla.com"],
+    "bug_numbers": [1341128],
+    "expires_in_version": "60",
+    "kind": "enumerated",
+    "n_values": 16,
+    "releaseChannelCollection": "opt-out",
+    "description": "Channel Disposition: 0=Cancel, 1=Disk, 2=NetOK, 3=NetEarlyFail, 4=NetlateFail, +8 for HTTPS"
   },
   "HTTP_CONNECTION_ENTRY_CACHE_HIT_1" : {
     "expires_in_version": "never",
@@ -5147,6 +5200,39 @@
     "releaseChannelCollection": "opt-out",
     "keyed": true,
     "description": "How long it took to import logins (passwords) from another browser, keyed by the name of the browser."
+  },
+  "FX_MIGRATION_BOOKMARKS_JANK_MS": {
+    "bug_numbers": [1338522],
+    "alert_emails": ["dao@mozilla.com"],
+    "expires_in_version": "58",
+    "kind": "exponential",
+    "n_buckets": 20,
+    "high": 60000,
+    "releaseChannelCollection": "opt-out",
+    "keyed": true,
+    "description": "Accumulated timer delay (variance between when the timer was expected to fire and when it actually fired) in milliseconds as an indicator for decreased main-thread responsiveness while importing bookmarks from another browser, keyed by the name of the browser (see gAvailableMigratorKeys in MigrationUtils.jsm). The import is happening on a background thread and should ideally not affect the UI noticeably."
+  },
+  "FX_MIGRATION_HISTORY_JANK_MS": {
+    "bug_numbers": [1338522],
+    "alert_emails": ["dao@mozilla.com"],
+    "expires_in_version": "58",
+    "kind": "exponential",
+    "n_buckets": 20,
+    "high": 60000,
+    "releaseChannelCollection": "opt-out",
+    "keyed": true,
+    "description": "Accumulated timer delay (variance between when the timer was expected to fire and when it actually fired) in milliseconds as an indicator for decreased main-thread responsiveness while importing history from another browser, keyed by the name of the browser (see gAvailableMigratorKeys in MigrationUtils.jsm). The import is happening on a background thread and should ideally not affect the UI noticeably."
+  },
+  "FX_MIGRATION_LOGINS_JANK_MS": {
+    "bug_numbers": [1338522],
+    "alert_emails": ["dao@mozilla.com"],
+    "expires_in_version": "58",
+    "kind": "exponential",
+    "n_buckets": 20,
+    "high": 60000,
+    "releaseChannelCollection": "opt-out",
+    "keyed": true,
+    "description": "Accumulated timer delay (variance between when the timer was expected to fire and when it actually fired) in milliseconds as an indicator for decreased main-thread responsiveness while importing logins / passwords from another browser, keyed by the name of the browser (see gAvailableMigratorKeys in MigrationUtils.jsm). The import is happening on a background thread and should ideally not affect the UI noticeably."
   },
   "FX_MIGRATION_BOOKMARKS_QUANTITY": {
     "bug_numbers": [1279501],
