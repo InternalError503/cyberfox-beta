@@ -3,7 +3,7 @@ Section: web
 Priority: optional
 Maintainer: 8pecxstudios <support@8pecxstudios.com>
 Uploaders: hawkeye116477 <hawkeye116477@gmail.com>
-Build-Depends:debhelper (>= 7),
+Build-Depends:debhelper (>= 9),
 Standards-Version: 3.9.7
 Homepage: https://cyberfox.8pecxstudios.com/
 
@@ -23,18 +23,4 @@ Description: Fast, stable & reliable 64-bit web browser
  .
  Cyberfox is powered by Mozilla Firefox source code.
  .
- Note: Pocket and CyberCTR are available as separate packages to install.
-
-Package: cyberfox-ext-cyberctr
-Architecture: amd64
-Depends: ${misc:Depends}, cyberfox
-Description: Heavily (modified) version of 'Classic Theme Restorer' by Aris
- CyberCTR has all the feature CTR has and many additional for Cyberfox Web Browser.
-
-Package: cyberfox-ext-pocket
-Architecture: amd64
-Depends: ${misc:Depends}, cyberfox
-Description: Pocket integration for Cyberfox Web Browser
- The Pocket for Cyberfox button lets you save web pages and videos to Pocket in just one click.
- Pocket strips away clutter and saves the page in a clean, distraction-free view and lets you access them on the go through the Pocket app.
- All you need is a free account, an Internet connection and the Pocket button.
+ Note: Pocket, CyberCTR and language packs are included with this package too.

@@ -52,13 +52,13 @@ else
     exit 1 
 fi
 
-# Copy control file
+# Copy control file and scrpts
 if [ "$IDENTITY" == "Release" ]; then
-	cp $Dir/deb_and_ppa_templates/control.release $Dir/deb_ppa/cyberfox-$VERSION/debian/control
+	cp $Dir/deb_and_ppa_templates/release/* $Dir/deb_ppa/cyberfox-$VERSION/debian
 elif [ "$IDENTITY" == "Beta" ]; then
-	cp $Dir/deb_and_ppa_templates/control.beta $Dir/deb_ppa/cyberfox-$VERSION/debian/control
+	cp $Dir/deb_and_ppa_templates/beta/* $Dir/deb_ppa/cyberfox-$VERSION/debian
 else
-    echo "IDENTITY was not set. Unable to copy control file!"
+    echo "IDENTITY was not set. Unable to copy control file and scripts!"
     exit 1 
 fi	
 
@@ -86,24 +86,24 @@ fi
 # Copy latest build
 if [ -d "../../../../../obj64/dist/Cyberfox" ]; then
     cp -r ../../../../../obj64/dist/Cyberfox/* $Dir/deb_ppa/cyberfox-$VERSION/Cyberfox
-	mv $Dir/deb_ppa/cyberfox-$VERSION/Cyberfox/browser/features $Dir/deb_ppa/cyberfox-$VERSION
 else
     echo "Unable to Cyberfox package files, Please check the build was created and packaged successfully!"
     exit 1     
 fi
 
-#This is probably needed if beta won't have languagepacks. If language packs will be with every beta, this is not needed.
-mkdir $Dir/deb_ppa/cyberfox-$VERSION/Cyberfox/browser/features
-mv $Dir/deb_ppa/cyberfox-$VERSION/langpack-*@8pecxstudios.com.xpi $Dir/deb_ppa/cyberfox-$VERSION/Cyberfox/browser/features
+# Move features to another directory. 
+# Thanks to this, we can divide Cyberfox into few packages: cyberfox, cyberfox-ext-cyberctr, cyberfox-ext-pocket and cyberfox-locale-*.
+# This should be applied maybe only for release.
+if [ "$IDENTITY" == "Release" ]; then
+mv $Dir/deb_ppa/cyberfox-$VERSION/Cyberfox/browser/features $Dir/deb_ppa/cyberfox-$VERSION
 fi
 
 # Make sure correct permissions are set
 chmod  755 $Dir/deb_ppa/cyberfox-$VERSION/debian/cyberfox.prerm
 chmod  755 $Dir/deb_ppa/cyberfox-$VERSION/debian/cyberfox.postinst
-chmod  755 $Dir/deb_ppa/cyberfox-$VERSION/debian/rules
+chmod  755 $Dir/deb_ppa/cyberfox-$VERSION/debian/cyberfox.postrm
 chmod 755 $Dir/deb_ppa/cyberfox-$VERSION/debian/Cyberfox.sh
-
-
+chmod  755 $Dir/deb_ppa/cyberfox-$VERSION/debian/rules
 
 # Linux has hunspell dictionaries, so we can remove Cyberfox dictionaries and make symlink to Linux dictionaries. 
 # Thanks to this, we don't have to download dictionary from AMO for our language.
