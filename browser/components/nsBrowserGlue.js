@@ -52,7 +52,6 @@ XPCOMUtils.defineLazyServiceGetter(this, "AlertsService", "@mozilla.org/alerts-s
   ["ReaderParent", "resource:///modules/ReaderParent.jsm"],
   ["RecentWindow", "resource:///modules/RecentWindow.jsm"],
   ["RemotePrompt", "resource:///modules/RemotePrompt.jsm"],
-  ["SelfSupportBackend", "resource:///modules/SelfSupportBackend.jsm"],
   ["SessionStore", "resource:///modules/sessionstore/SessionStore.jsm"],
   ["ShellService", "resource:///modules/ShellService.jsm"],
   ["SimpleServiceDiscovery", "resource://gre/modules/SimpleServiceDiscovery.jsm"],
