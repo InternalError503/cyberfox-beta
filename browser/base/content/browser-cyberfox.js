@@ -431,12 +431,18 @@
 					type: "",
 					isDefault: false,
 					callback: function () {
-						openUILinkIn(Services.prefs.getCharPref("app.releaseNotesURL").replace("%VERSION%", version), 'tab');
+							if (Services.prefs.getCharPref("app.update.channel.type") == "release"){
+								openUILinkIn(Services.prefs.getCharPref("app.releaseNotesURL").replace("%VERSION%", version), 'tab');
+							}else if (Services.prefs.getCharPref("app.update.channel.type") == "beta"){
+								console.log(Services.prefs.getCharPref("app.releaseNotesURL") + version);
+								openUILinkIn(Services.prefs.getCharPref("app.releaseNotesURL") + version, 'tab');
+							}
 						}
 				};
-				
-				buttons.push(buttonViewNotes);
-				buttons.push(buttonDownload );
+				if (Services.prefs.getCharPref("app.update.channel.type") == "release"){
+					buttons.push(buttonViewNotes);
+				}
+				buttons.push(buttonDownload);
 
 				if (Services.prefs.getBoolPref("app.update.notification-new")) {
 

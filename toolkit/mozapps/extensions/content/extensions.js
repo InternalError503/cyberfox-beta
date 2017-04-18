@@ -2187,17 +2187,8 @@ var gDiscoverView = {
           if (!Services.prefs.getBoolPref(prefName))
             continue;
         } catch (e) { }
-        list[addon.id] = {
-          name: addon.name,
-          version: addon.version,
-          type: addon.type,
-          userDisabled: addon.userDisabled,
-          isCompatible: addon.isCompatible,
-          isBlocklisted: addon.blocklistState == Ci.nsIBlocklistService.STATE_BLOCKED
-        }
       }
-
-      setURL(url + "#" + JSON.stringify(list));
+      setURL(url);
     });
   },
 
